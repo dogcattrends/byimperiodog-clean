@@ -16,8 +16,8 @@ jobs:
         with:
           node-version: '20'
 
-        - name: Install packages
-          run: npm ci
+      - name: Install packages
+        run: npm ci
 
       - name: Generate contentlayer data
         run: |
