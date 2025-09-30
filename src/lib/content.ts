@@ -19,14 +19,37 @@ export type BlogPost = {
 const CMS = (process.env.CMS_DRIVER || 'contentlayer').toLowerCase();
 
 // Lazy import to avoid type errors when Contentlayer hasn't generated types yet.
+// Try multiple resolutions: the package alias 'contentlayer/generated' (TS path)
+// may not resolve at build time in Next/Vercel, so fall back to loading
+// the generated files under `.contentlayer/generated` using a file URL.
+import { pathToFileURL } from 'url';
+
 async function loadContentlayerPosts(): Promise<any[]> {
   try {
-    // The contentlayer generated module may not exist in dev before `contentlayer build`.
-    // Use a dynamic import and tolerate failure at runtime.
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const mod = await import('contentlayer/generated');
-    const src: any[] = (mod as any).allPosts || [];
-    return src;
+    // First try the conventional import used during development/TS builds.
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const mod = await import('contentlayer/generated');
+      return (mod as any).allPosts || [];
+    } catch (err) {
+      // If that fails (webpack/exports resolution on CI), try loading the
+      // generated file directly from the workspace `.contentlayer` folder.
+      const candidate = `${process.cwd()}/.contentlayer/generated/index.mjs`;
+      try {
+        const url = pathToFileURL(candidate).href;
+        const mod = await import(url);
+        return (mod as any).allPosts || [];
+      } catch (err2) {
+        // last-ditch: try without explicit index (some setups export directory)
+        try {
+          const url2 = pathToFileURL(`${process.cwd()}/.contentlayer/generated`).href;
+          const mod = await import(url2);
+          return (mod as any).allPosts || [];
+        } catch (err3) {
+          return [];
+        }
+      }
+    }
   } catch {
     return [];
   }
