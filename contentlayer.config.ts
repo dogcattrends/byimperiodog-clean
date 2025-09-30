@@ -35,6 +35,8 @@ export const Post = defineDocumentType(() => ({
 
 export default makeSource({
   contentDirPath: 'content',
+  // Disable noisy warning about path alias when TS paths are not configured
+  disableImportAliasWarning: true,
   documentTypes: [Post],
   mdx: {
     remarkPlugins: [remarkGfm],
