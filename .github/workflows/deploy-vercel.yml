@@ -1,0 +1,48 @@
+name: Deploy to Vercel
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+      - name: Debug: list vercel output
+        if: ${{ always() }}
+        run: |
+          echo "--- ls -la .vercel/output ---"
+          if [ -d .vercel/output ]; then ls -la .vercel/output || true; else echo ".vercel/output not found"; fi
+          echo "--- du -sh .vercel/output ---"
+          if [ -d .vercel/output ]; then du -sh .vercel/output || true; fi
+          echo "--- find .vercel/output (top 100) ---"
+          if [ -d .vercel/output ]; then find .vercel/output -maxdepth 3 -type f | head -n 100 || true; fi
+
+      - name: Deploy to Vercel
+        uses: nexterias/actions-vercel@v1.2.3
+        with:
+          token: ${{ secrets.VERCEL_TOKEN }}
+          project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          org-id: ${{ secrets.VERCEL_ORG_ID }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          production: true
+          prebuilt: true
+          cwd: .

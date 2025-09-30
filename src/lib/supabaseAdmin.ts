@@ -1,0 +1,54 @@
+import { createClient } from "@supabase/supabase-js";
+
+function makeStubBuilder(result: any = { data: null, error: null }) {
+  const methods = [
+    'select', 'maybeSingle', 'single', 'eq', 'in', 'order', 'limit',
+    'insert', 'update', 'delete', 'rpc', 'ilike', 'like', 'neq', 'upsert'
+  ];
+  const builder: any = {};
+  methods.forEach((m) => { builder[m] = (..._args: any[]) => builder; });
+  builder.then = (onFulfilled: any, onRejected: any) => Promise.resolve(result).then(onFulfilled, onRejected);
+  builder.catch = (onRejected: any) => Promise.resolve(result).catch(onRejected);
+  builder.finally = (cb: any) => Promise.resolve(result).finally(cb);
+  return builder;
+}
+
+export function hasServiceRoleKey() {
+  return Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
+}
+
+export function supabaseAdmin() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
+    if (process.env.NODE_ENV !== 'production') {
+      return { from: (_: string) => makeStubBuilder({ data: [], error: null }) } as any;
+    }
+    throw new Error('Supabase admin não configurado (requer NEXT_PUBLIC_SUPABASE_URL & SUPABASE_SERVICE_ROLE_KEY)');
+  }
+  try{
+    const client = createClient(url, key, { auth: { persistSession: false } });
+    return new Proxy(client, {
+      get(target, prop) {
+        const orig = (target as any)[prop];
+        if (prop === 'from' && typeof orig === 'function') {
+          return (table: string) => {
+            try {
+              const builder = orig.call(target, table);
+              if (builder && typeof builder === 'object') return builder;
+              return makeStubBuilder();
+            } catch (e: any) {
+              return makeStubBuilder({ data: null, error: e });
+            }
+          };
+        }
+        return orig;
+      }
+    }) as any;
+  }catch(e: any){
+    if(process.env.NODE_ENV !== 'production'){
+      return { from: (_: string) => makeStubBuilder({ data: [], error: null }) } as any;
+    }
+    throw e;
+  }
+}

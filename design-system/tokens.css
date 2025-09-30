@@ -1,0 +1,65 @@
+:root {
+  /* Colors */
+  /* Neutral adjustments (contrast AA) */
+  --bg: #f5f7f9; /* ligeiramente mais escuro para elevar contraste de texto-muted */
+  --surface: #ffffff;
+  --surface-2: #eef2f6; /* +1 step darker */
+  --border: #d9e1ea; /* mais contraste vs surface */
+  --text: #1e2530; /* mínima alteração sem afetar identidade */
+  --text-muted: #5a6b7f; /* + contraste sobre bg novo (~4.6:1) */
+  --accent: #047857;
+  --accent-hover: #036149;
+  --accent-contrast: #ffffff;
+  --success: #059669;
+  --warning: #d97706;
+  --error: #dc2626;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+  --radius-2xl: 28px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 2px 6px rgba(0,0,0,0.06);
+  --shadow-lg: 0 4px 16px rgba(0,0,0,0.08);
+  --shadow-xl-soft: 0 8px 32px -4px rgba(0,0,0,0.06);
+  --ease-standard: cubic-bezier(.4,0,.2,1);
+  --ease-enter: cubic-bezier(0,0,.2,1);
+  --ease-exit: cubic-bezier(.4,0,1,1);
+  --dur-150: 150ms; --dur-250: 250ms; --dur-400: 400ms;
+  --font-sans: system-ui, 'Inter', 'Segoe UI', Roboto, Arial, sans-serif;
+  /* Fluid Typography Scale (mobile -> desktop) */
+  --font-size-xs: clamp(0.72rem, 0.69rem + 0.15vw, 0.78rem);
+  --font-size-sm: clamp(0.82rem, 0.78rem + 0.20vw, 0.90rem);
+  --font-size-base: clamp(0.95rem, 0.90rem + 0.30vw, 1.05rem);
+  --font-size-md: clamp(1.05rem, 1.00rem + 0.40vw, 1.18rem);
+  --font-size-lg: clamp(1.20rem, 1.10rem + 0.60vw, 1.42rem);
+  --font-size-xl: clamp(1.45rem, 1.30rem + 0.90vw, 1.78rem);
+  --font-size-2xl: clamp(1.75rem, 1.55rem + 1.20vw, 2.20rem);
+  --font-size-3xl: clamp(2.10rem, 1.85rem + 1.60vw, 2.70rem);
+  --font-size-4xl: clamp(2.55rem, 2.20rem + 2.10vw, 3.25rem);
+  --line-tight: 1.15;
+  --line-snug: 1.25;
+  --line-normal: 1.45;
+  --line-relaxed: 1.65;
+}
+
+[data-theme='dark'] {
+  --bg: #0c0f13; /* +contrast background */
+  --surface: #161b21; /* slightly lifted for layering */
+  --surface-2: #20262d; /* mid panel */
+  --border: #36414c; /* clearer separation */
+  --text: #f1f5f9;
+  --text-muted: #8fa0b4; /* ensure 4.5:1 on new bg */
+  --accent: #10b981;
+  --accent-hover: #0d9568;
+  --accent-contrast: #0f1115;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.5);
+  --shadow-md: 0 2px 6px rgba(0,0,0,0.5);
+  --shadow-lg: 0 4px 16px rgba(0,0,0,0.5);
+  --shadow-xl-soft: 0 8px 32px -4px rgba(0,0,0,0.55);
+}
+
+:root { color-scheme: light; }
+[data-theme='dark'] { color-scheme: dark; }

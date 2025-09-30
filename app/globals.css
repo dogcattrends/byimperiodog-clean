@@ -1,0 +1,141 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* ---- Base / Neutral Tokens (Light) ---- */
+  /* legacy vars kept for compatibility (DO NOT REMOVE until audit): */
+  --bg: #f5f7f9; /* aligns with design-system tokens */
+  --bg-2: #eef2f6;
+  /* Core surfaces */
+  --background: hsl(0 0% 100%);
+  --surface: #ffffff;
+  --surface-2: #eef2f6;
+  --border: #d9e1ea; /* clearer separation vs surface */
+  --foreground: hsl(240 10% 3.9%);
+  --text: #1e2530; /* semantic primary text */
+  --text-muted: #5a6b7f; /* ~4.6:1 on --bg */
+
+  /* ---- Brand & Accents ---- */
+  /* Single source of truth: remove duplicate legacy --brand (prev #e2c48a) */
+  --brand: hsl(160 84% 39%); /* emerald-600 */
+  --brand-foreground: #ffffff; /* legacy naming */
+  --brand-contrast: #ffffff; /* preferred semantic naming */
+
+  --accent: hsl(45 93% 47%); /* amber-500 */
+  --accent-foreground: hsl(26 83% 14%);
+  --accent-contrast: hsl(26 83% 14%); /* alias for consistency */
+
+  --whatsapp: hsl(142 70% 45%); /* green-500 */
+  --whatsapp-contrast: #ffffff; /* ensures >4.5:1 */
+
+  /* State / semantic (future use) */
+  --success: #059669;
+  --warning: #d97706;
+  --error: #dc2626;
+
+  /* Motion */
+  --ease-out: cubic-bezier(.4,0,.2,1);
+}
+
+/* ---- Component Utilities (Buttons & Badges) ---- */
+@layer components {
+  .btn-base { @apply inline-flex items-center justify-center font-medium transition focus-visible:focus-ring disabled:opacity-60 disabled:pointer-events-none; }
+  /* Use opacity utility instead of unsupported / opacity on arbitrary value */
+  .btn { @apply btn-base rounded-xl px-4 py-2 bg-[var(--surface-2)] text-[var(--text)] hover:bg-[var(--surface-2)] hover:opacity-80; }
+  .btn-brand { @apply btn-base rounded-xl px-4 py-2 bg-brand text-on-brand hover:brightness-110; }
+  .btn-accent { @apply btn-base rounded-xl px-4 py-2 bg-accent text-on-accent hover:brightness-110; }
+  .btn-outline { @apply btn-base rounded-xl px-4 py-2 border border-[var(--border)] text-[var(--text)] hover:bg-[var(--surface-2)]; }
+  .btn-whatsapp { @apply btn-base rounded-xl px-4 py-2 bg-whatsapp text-on-whatsapp hover:brightness-110; }
+  .badge { @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold; }
+  .badge-neutral { @apply badge bg-[var(--surface-2)] text-[var(--text)] ring-1 ring-[var(--border)]; }
+  .badge-brand { @apply badge bg-brand text-on-brand; }
+  .badge-accent { @apply badge bg-accent text-on-accent; }
+  .badge-outline { @apply badge border border-[var(--border)] text-[var(--text)]; }
+}
+
+@layer base {
+  body { background-color:#ffffff; color:#18181b; }
+  html, body { overflow-x: hidden; }
+}
+/* Micro-interactions (semantic utilities) */
+.u-hover-card{transition:transform .25s var(--ease-out), box-shadow .25s var(--ease-out);will-change:transform}
+.u-hover-card:hover{transform:translateY(-2px) scale(1.01);box-shadow:0 4px 16px -4px rgba(0,0,0,.1),0 2px 6px -2px rgba(0,0,0,.08)}
+
+@media (prefers-reduced-motion: reduce){
+  .u-hover-card,.u-fade-in{transition:none !important}
+  .u-hover-card:hover{transform:none;box-shadow:none}
+}
+
+.u-fade-in{opacity:0;animation:fade-in-up .4s var(--ease-out, cubic-bezier(.4,0,.2,1)) forwards}
+@keyframes fade-in-up{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* Parallax container helper */
+.parallax-root{position:relative;overflow:clip}
+.parallax-root [data-parallax-layer]{position:relative;will-change:transform;transition:transform .25s linear}
+/* Legacy utility aliases (kept temporarily for backwards compatibility) */
+@layer utilities {
+  a { text-underline-offset:2px; }
+  .container { max-width:72rem; margin-left:auto; margin-right:auto; padding-left:1rem; padding-right:1rem; }
+}
+/* Deprecated legacy button/card utilities removidos (substituídos por variantes token-first) */
+
+/* ---- A11y Contrast Utilities ---- */
+.text-brand-strong { color: var(--brand); font-weight:600; text-decoration:underline; text-underline-offset:4px; }
+.link-brand { color: var(--brand); font-weight:500; }
+.link-brand:focus-visible { outline:2px solid var(--brand); outline-offset:2px; }
+.on-accent, .on-brand, .on-whatsapp { color:#fff !important; font-weight:600; }
+.bg-accent, .bg-brand, .bg-whatsapp { --tw-text-opacity:1; }
+.btn-ghost-strong { color:#334155; font-weight:500; }
+.placeholder-strong { color:#525f6b; }
+.badge-muted { background:var(--surface-2); color:#334155; font-weight:500; }
+.contrast-boost { filter:contrast(115%); }
+.underline-always { text-decoration:underline; text-underline-offset:4px; }
+.text-muted-strong { color: var(--text-muted); font-weight:500; }
+.contrast-fix-inline > *, .contrast-fix-inline { color: hsl(240 5% 20%) !important; }
+/* A11y contrast targeted overrides (report-based) */
+.bg-accent, .bg-whatsapp { color: var(--accent-foreground) !important; font-weight:600; }
+.contrast-fix-inline .inline-flex { color: hsl(240 5% 20%) !important; }
+.contrast-fix-inline .text-center { color: hsl(240 5% 20%) !important; }
+.contrast-fix-inline .rounded-xl, .contrast-fix-inline .rounded-2xl { color: hsl(240 5% 20%) !important; }
+@media (prefers-reduced-motion: reduce){ .underline-always { text-decoration:underline; } }
+
+@layer utilities {
+  @keyframes heartbeat {
+    0%, 100% {
+      transform: scale(1);
+    }
+    25% {
+      transform: scale(1.05);
+    }
+    50% {
+      transform: scale(0.97);
+    }
+    75% {
+      transform: scale(1.02);
+    }
+  }
+
+  .heartbeat:hover {
+    animation: heartbeat 0.7s ease-in-out;
+  }
+}
+
+.dark {
+  --background: hsl(240 10% 4%);
+  --surface: #161b21;
+  --surface-2: #20262d;
+  --border: #36414c;
+  --foreground: hsl(0 0% 98%);
+  --text: #f1f5f9;
+  --text-muted: #8fa0b4; /* >=4.5:1 on dark bg */
+  /* Brand & accents in dark */
+  --brand: hsl(160 84% 39%);
+  --brand-foreground: #ffffff;
+  --brand-contrast: #ffffff;
+  --accent: #10b981; /* brighter green for dark */
+  --accent-foreground: #0f1115;
+  --accent-contrast: #0f1115;
+  --whatsapp: #10b981;
+  --whatsapp-contrast: #0f1115;
+}
