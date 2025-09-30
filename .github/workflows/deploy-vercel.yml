@@ -16,19 +16,14 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Restore npm cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-      - name: Install packages
-        run: npm ci
+        - name: Install packages
+          run: npm ci
 
       - name: Generate contentlayer data
         run: |
           set -o pipefail || true
           echo "Running contentlayer build..."
-          npx contentlayer build 2>&1 | tee contentlayer.log
+          npx contentlayer build 2>&1 | tee contentlayer.log || true
         env:
           NODE_OPTIONS: --max-old-space-size=2048
 

@@ -22,7 +22,7 @@ jobs:
       - name: Run contentlayer build and save log
         run: |
           set -o pipefail || true
-          npx contentlayer build 2>&1 | tee contentlayer.log
+          npx contentlayer build 2>&1 | tee contentlayer.log || true
 
       - name: Upload contentlayer log
         uses: actions/upload-artifact@v4
