@@ -27,16 +27,36 @@ jobs:
         run: npm ci
 
       - name: Generate contentlayer data
-        run: npx contentlayer build
+        run: |
+          set -o pipefail || true
+          echo "Running contentlayer build..."
+          npx contentlayer build 2>&1 | tee contentlayer.log
         env:
           NODE_OPTIONS: --max-old-space-size=2048
 
+      - name: Upload contentlayer log
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: contentlayer-log
+          path: contentlayer.log
+
       - name: Build
-        run: npm run build
+        run: |
+          set -o pipefail || true
+          echo "Running npm run build..."
+          npm run build 2>&1 | tee build.log
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+      - name: Upload build log
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
 
       - name: Debug: list vercel output
         if: ${{ always() }}
@@ -47,6 +67,18 @@ jobs:
           if [ -d .vercel/output ]; then du -sh .vercel/output || true; fi
           echo "--- find .vercel/output (top 100) ---"
           if [ -d .vercel/output ]; then find .vercel/output -maxdepth 3 -type f | head -n 100 || true; fi
+
+      - name: Package .vercel/output (for debug)
+        if: ${{ always() }}
+        run: |
+          if [ -d .vercel/output ]; then tar -czf vercel_output.tgz .vercel/output || true; else echo ".vercel/output not found"; fi
+
+      - name: Upload vercel output artifact
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: vercel-output
+          path: vercel_output.tgz
 
       - name: Deploy to Vercel
         uses: nexterias/actions-vercel@v1.2.3
