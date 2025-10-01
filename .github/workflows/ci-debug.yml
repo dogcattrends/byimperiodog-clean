@@ -42,17 +42,12 @@ jobs:
         with:
           name: build-log
           path: build.log
-name: CI Debug
 
-on:
-  push:
-    branches: [ main ]
-
-jobs:
   hello:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Say hello
         run: echo "CI debug workflow running"

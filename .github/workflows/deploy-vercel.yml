@@ -52,7 +52,7 @@ jobs:
           name: build-log
           path: build.log
 
-      - name: Debug: list vercel output
+      - name: 'Debug: list vercel output'
         if: ${{ always() }}
         run: |
           echo "--- ls -la .vercel/output ---"
@@ -75,6 +75,7 @@ jobs:
           path: vercel_output.tgz
 
       - name: Deploy to Vercel
+        if: ${{ secrets.VERCEL_TOKEN && secrets.VERCEL_PROJECT_ID && secrets.VERCEL_ORG_ID }}
         uses: nexterias/actions-vercel@v1.2.3
         with:
           token: ${{ secrets.VERCEL_TOKEN }}
@@ -84,3 +85,10 @@ jobs:
           production: true
           prebuilt: true
           cwd: .
+
+      - name: Skip Vercel deploy when secrets missing
+        if: ${{ !secrets.VERCEL_TOKEN || !secrets.VERCEL_PROJECT_ID || !secrets.VERCEL_ORG_ID }}
+        run: |
+          echo "Vercel deploy skipped because one or more VERCEL_* secrets are not set."
+          echo "To enable automatic deploys, add VERCEL_TOKEN, VERCEL_PROJECT_ID and VERCEL_ORG_ID to the repository secrets."
+
