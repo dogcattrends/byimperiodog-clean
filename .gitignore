@@ -52,3 +52,4 @@ bkp*.zip
 
 # Temporary
 TEMP_*
+.vercel

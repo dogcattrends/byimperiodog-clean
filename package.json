@@ -6,7 +6,7 @@
     "predev": "node scripts/run-gen-client-photos.mjs",
     "prebuild": "node scripts/run-gen-client-photos.mjs && npx contentlayer build",
     "dev": "cross-env NEXT_DISABLE_VERSION_CHECK=1 NEXT_TELEMETRY_DISABLED=1 next dev -p 3000",
-    "build": "next build",
+    "build": "next build --no-lint",
     "build:stats": "npm run build && node scripts/collect-build-stats.mjs",
     "lh:serve": "next start -p 3000",
     "lh:run": "lighthouse http://localhost:3000/ --config-path=lighthouserc.json --output=json --output-path=./reports/lh-home.json || exit 0",
@@ -26,7 +26,7 @@
     "test:e2e:chromium": "playwright test --project=chromium",
     "check:all": "npm run typecheck && npm run lint && npm run test",
     "postinstall": "echo \"Ready.\"",
-    "vercel-build": "npm install && npx contentlayer build && npm run build"
+    "vercel-build": "npm install && npx contentlayer build && next build --no-lint"
   },
   "dependencies": {
     "@contentlayer/core": "^0.3.4",
@@ -58,13 +58,17 @@
     "tsparticles-slim": "^2.12.0",
     "typescript": "^5.6.2",
     "web-vitals": "^5.1.0",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "contentlayer": "^0.3.4",
+    "tailwindcss": "^3.4.10",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.41",
+    "@tailwindcss/typography": "^0.5.16",
+    "@tailwindcss/line-clamp": "^0.4.4"
   },
   "devDependencies": {
     "@emotion/is-prop-valid": "^1.4.0",
     "@playwright/test": "^1.55.0",
-    "@tailwindcss/line-clamp": "^0.4.4",
-    "@tailwindcss/typography": "^0.5.16",
     "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
@@ -72,20 +76,21 @@
     "@types/react": "19.1.10",
     "@types/react-dom": "^19.1.7",
     "@vitest/coverage-v8": "^2.0.5",
-    "autoprefixer": "^10.4.20",
     "axe-core": "^4.10.3",
-    "contentlayer": "^0.3.4",
     "cross-env": "^10.0.0",
     "eslint": "^8.57.0",
     "eslint-config-next": "14.2.4",
     "happy-dom": "^18.0.1",
     "jsdom": "^27.0.0",
     "playwright": "^1.55.0",
-    "postcss": "^8.4.41",
     "shikiji": "^0.10.2",
-    "tailwindcss": "^3.4.10",
     "tsx": "^4.19.1",
-    "vitest": "^2.0.5"
+    "vitest": "^2.0.5",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-jsx-a11y": "^6.8.0",
+    "eslint-plugin-react-refresh": "^0.4.6"
   },
   "engines": {
     "node": ">=20 <21"
