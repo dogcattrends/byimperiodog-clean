@@ -3,7 +3,6 @@
 // TODO: Restaurar UI completa se existia anteriormente (filtros, threads, ações em massa).
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { AdminShell } from '@/components/admin/AdminShell';
 import { BlogSubnav } from '@/components/admin/BlogSubnav';
 
 interface CommentRow { id:string; post_id:string; author?:string|null; content?:string|null; status?:string|null; created_at?:string; }
@@ -24,9 +23,9 @@ export default function BlogCommentsModeration(){
 	})(); },[]);
 
 	return (
-		<AdminShell>
-			<BlogSubnav />
-			<div className="p-6 space-y-4">
+		<>
+			<div className="space-y-4 px-4 py-6">
+				<BlogSubnav />
 				<h1 className="text-2xl font-bold">Comentários (Moderação)</h1>
 				<p className="text-sm text-zinc-600">Versão simplificada — lista até 50 comentários recentes.</p>
 				{loading && <div>Carregando...</div>}
@@ -57,7 +56,7 @@ export default function BlogCommentsModeration(){
 					</table>
 				)}
 			</div>
-		</AdminShell>
+		</>
 	);
 }
 

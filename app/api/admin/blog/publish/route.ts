@@ -1,28 +1,44 @@
 import { NextResponse } from 'next/server';
-import { revalidatePath } from 'next/cache';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { requireAdmin, logAdminAction } from '@/lib/adminAuth';
+import type { NextRequest } from 'next/server';
+import { supabaseAdmin, hasServiceRoleKey } from '@/lib/supabaseAdmin';
 
-// Publica um único post (ou vários via ids) definindo published_at se ainda não definido
-export async function POST(req: Request){
-  const auth = requireAdmin(req); if(auth) return auth;
+interface PublishBody { id?: string; slug?: string }
+
+/**
+ * POST /api/admin/blog/publish
+ * Body: { id?: string; slug?: string }
+ * Header: x-admin-token = ADMIN_TOKEN (ou DEBUG_TOKEN fallback)
+ * Ação: status -> published (trigger preenche published_at se null)
+ */
+export async function POST(req: NextRequest) {
+  const tokenHeader = req.headers.get('x-admin-token');
+  const adminToken = process.env.ADMIN_TOKEN || process.env.DEBUG_TOKEN;
+  if (!adminToken || tokenHeader !== adminToken) {
+    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+  if (!hasServiceRoleKey()) {
+    return NextResponse.json({ error: 'missing-service-role-key' }, { status: 500 });
+  }
+  let parsed: unknown;
   try {
-    const body = await req.json().catch(()=>({}));
-    const { id, ids } = body as { id?: string; ids?: string[] };
-    if(!id && !(ids && ids.length)) return NextResponse.json({ ok:false, error:'id ou ids obrigatório'}, { status:400 });
-    const sb = supabaseAdmin();
-    const targetIds = ids && ids.length ? ids : [id!];
-    const now = new Date().toISOString();
-    const { data, error } = await sb.from('blog_posts').update({ status:'published', published_at: now, scheduled_at: null }).in('id', targetIds).select('slug');
-    if(error) throw error;
-    logAdminAction({ route:'/api/admin/blog/publish', method:'POST', action:'publish_posts', payload:{ ids: targetIds } });
-    try {
-      revalidatePath('/blog');
-      for (const p of data||[]) revalidatePath(`/blog/${p.slug}`);
-    } catch {}
-    return NextResponse.json({ ok:true, updated: data?.length||0 });
-  } catch(e:any){
-    logAdminAction({ route:'/api/admin/blog/publish', method:'POST', action:'publish_posts_error', payload:{ error: e.message } });
-     return NextResponse.json({ ok:false, error: e.message }, { status:500 });
+    parsed = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'invalid-json' }, { status: 400 });
+  }
+  const { id, slug } = (parsed as PublishBody) || {};
+  if (!id && !slug) {
+    return NextResponse.json({ error: 'missing-id-or-slug' }, { status: 400 });
+  }
+  const sb = supabaseAdmin();
+  try {
+    let q = sb.from('blog_posts').update({ status: 'published' });
+    q = id ? q.eq('id', id) : q.eq('slug', slug!);
+    const { data, error } = await q.select('id, slug, status, published_at, updated_at, title').maybeSingle();
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (!data) return NextResponse.json({ error: 'not-found' }, { status: 404 });
+    return NextResponse.json({ ok: true, post: data });
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : 'unexpected-error';
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

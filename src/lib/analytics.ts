@@ -6,7 +6,7 @@ export type AnalyticsEvent = {
   value?: number;
   id?: string;
   label?: string;
-  meta?: Record<string, any>;
+  meta?: Record<string, unknown>;
 };
 
 const endpoint = '/api/analytics';
@@ -16,7 +16,7 @@ const FORCE = process.env.NEXT_PUBLIC_FORCE_ANALYTICS === '1';
 
 // Dedupe simples: evita spam de mesmo (name+id+path) em curta janela.
 const recent = new Set<string>();
-let recentTimer: any = null;
+let recentTimer: ReturnType<typeof setTimeout> | null = null;
 function markRecent(key: string) {
   recent.add(key);
   if (!recentTimer) {
@@ -57,7 +57,8 @@ async function post(evt: AnalyticsEvent) {
     // Preferir sendBeacon se disponível (menor chance de abort no unload)
     if (typeof navigator !== 'undefined' && 'sendBeacon' in navigator) {
       const blob = new Blob([json], { type: 'application/json' });
-      const ok = (navigator as any).sendBeacon(endpoint, blob);
+  const navBeacon = navigator as unknown as { sendBeacon?: (url: string, data: Blob) => boolean };
+  const ok = navBeacon.sendBeacon ? navBeacon.sendBeacon(endpoint, blob) : false;
       if (!ok) {
         // Fallback para fetch (mantém keepalive)
         await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: json, keepalive: true });
@@ -65,23 +66,36 @@ async function post(evt: AnalyticsEvent) {
     } else {
       await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: json, keepalive: true });
     }
-  } catch (err:any) {
+  } catch (err) {
     // Silencioso em produção; em dev mostrar debug leve (não stack completa)
     if (!IS_PROD && !DISABLED) {
+      const msg = typeof err === 'object' && err && 'message' in err ? (err as { message?: string }).message : undefined;
       // eslint-disable-next-line no-console
-      console.debug('[analytics.skip]', evt.name, err?.message);
+      console.debug('[analytics.skip]', evt.name, msg);
     }
   }
 }
+
+interface WebVitalMetric { value: number; id: string; name: string }
+interface WebVitalsLike {
+  onLCP(cb: (m: WebVitalMetric) => void): void;
+  onINP(cb: (m: WebVitalMetric) => void): void;
+  onCLS(cb: (m: WebVitalMetric) => void): void;
+}
+
+// Hook interno para testes: armazena implementação fake de web-vitals
+let webVitalsTest: WebVitalsLike | null = null;
+export function __setWebVitalsTest(api: WebVitalsLike) { webVitalsTest = api; }
 
 export async function initWebVitals() {
   if (DISABLED || (!IS_PROD && !FORCE)) return; // não inicializa listeners desnecessários
   if (typeof window === 'undefined') return;
   try {
-    const webVitals = await import('web-vitals');
-    webVitals.onLCP((m)=> post({ name:'web_vitals_lcp', value:m.value, id:m.id, label:m.name }));
-    webVitals.onINP((m)=> post({ name:'web_vitals_inp', value:m.value, id:m.id, label:m.name }));
-    webVitals.onCLS((m)=> post({ name:'web_vitals_cls', value:m.value, id:m.id, label:m.name }));
+    // Permite injeção em testes via globalThis.__WEB_VITALS__ para evitar depender do pacote real.
+  const webVitals: WebVitalsLike = webVitalsTest || await import('web-vitals');
+    webVitals.onLCP((m: WebVitalMetric)=> post({ name:'web_vitals_lcp', value:m.value, id:m.id, label:m.name }));
+    webVitals.onINP((m: WebVitalMetric)=> post({ name:'web_vitals_inp', value:m.value, id:m.id, label:m.name }));
+    webVitals.onCLS((m: WebVitalMetric)=> post({ name:'web_vitals_cls', value:m.value, id:m.id, label:m.name }));
   } catch {
     if (!IS_PROD) {
       // eslint-disable-next-line no-console
@@ -90,7 +104,18 @@ export async function initWebVitals() {
   }
 }
 
-export function logEvent(name: string, meta?: Record<string, any>) {
+export function logEvent(name: string, meta?: Record<string, unknown>) {
   post({ name, meta });
+}
+
+// Helper somente para testes / diagnóstico de gating
+export function __getAnalyticsGates() {
+  return {
+    DISABLED,
+    IS_PROD,
+    FORCE,
+    windowDefined: typeof window !== 'undefined',
+    navigatorOnline: typeof navigator !== 'undefined' ? navigator.onLine : undefined,
+  } as const;
 }
 

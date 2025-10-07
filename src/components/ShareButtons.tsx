@@ -1,6 +1,7 @@
 "use client";
+import { Share2, Link as LinkIcon, Twitter, Facebook, Linkedin } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
-import { Share2, Link as LinkIcon, Twitter, Facebook, Linkedin, MessageCircle } from 'lucide-react';
+import { WhatsAppIcon as WAIcon } from '@/components/icons/WhatsAppIcon';
 import { logEvent } from '@/lib/analytics';
 
 type Props = {
@@ -76,7 +77,7 @@ export default function ShareButtons({ url, title, summary, className, utm }: Pr
           <Share2 className="h-4 w-4" /> {copied ? 'Link copiado!' : 'Compartilhar'}
         </button>
   <a href={socials.whatsapp} target="_blank" rel="noopener" onClick={() => logEvent('share_click', { channel: 'whatsapp', url: shareUrl, title })} className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm hover:bg-zinc-50" aria-label="Compartilhar no WhatsApp" title="WhatsApp">
-          <MessageCircle className="h-4 w-4" /> WhatsApp
+    <WAIcon size={16} className="h-4 w-4" /> WhatsApp
         </a>
   <a href={socials.twitter} target="_blank" rel="noopener" onClick={() => logEvent('share_click', { channel: 'twitter', url: shareUrl, title })} className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm hover:bg-zinc-50" aria-label="Compartilhar no X/Twitter" title="X/Twitter">
           <Twitter className="h-4 w-4" /> X

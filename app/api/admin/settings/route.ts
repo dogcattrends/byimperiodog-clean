@@ -29,7 +29,19 @@ export async function POST(req: NextRequest) {
   }
   const payload: any = { id: 1, updated_at: new Date().toISOString() };
   if (goal) payload.weekly_post_goal = goal;
-  const allowed = ['gtm_id','ga4_id','meta_pixel_id','tiktok_pixel_id','google_ads_id','google_ads_label','pinterest_tag_id','hotjar_id','clarity_id','meta_domain_verify'];
+  const allowed = [
+    'gtm_id',
+    'ga4_id',
+    'meta_pixel_id',
+    'tiktok_pixel_id',
+    'google_ads_id',
+    'google_ads_label',
+    'pinterest_tag_id',
+    'hotjar_id',
+    'clarity_id',
+    'meta_domain_verify',
+    'custom_pixels',
+  ];
   for (const k of allowed) if (body[k] !== undefined) payload[k] = body[k];
   const { data, error } = await supabaseAdmin()
     .from("site_settings")

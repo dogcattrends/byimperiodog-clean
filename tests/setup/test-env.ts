@@ -1,8 +1,11 @@
 import { expect } from 'vitest';
-import * as jestDomMatchers from '@testing-library/jest-dom/matchers';
-// @ts-ignore
+
+// Import dinâmico para evitar conflito de tipos estritos
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const jestDomMatchers = require('@testing-library/jest-dom/matchers');
 expect.extend(jestDomMatchers);
 
-if(!HTMLElement.prototype.scrollIntoView){
-  HTMLElement.prototype.scrollIntoView = function(){ /* noop */ } as any;
+if (!HTMLElement.prototype.scrollIntoView) {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  HTMLElement.prototype.scrollIntoView = function scrollIntoViewMock() {};
 }

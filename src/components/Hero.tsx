@@ -1,269 +1,346 @@
-"use client";
+﻿"use client";
 
-import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
-import { CheckCircle, Star, Heart, MessageCircle } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState, useRef } from "react";
-import { buttonVariants } from "@/components/ui/button"; // reutiliza design system
+import { CheckCircle, Heart, Shield, Stethoscope } from "lucide-react";
+import Image from "next/image";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { ComponentType, SVGProps } from "react";
+
+import { WhatsAppIcon as WAIcon } from "@/components/icons/WhatsAppIcon";
+import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 
-// Partículas: carregamento realmente adiado (intersection + idle + import dinâmico manual)
-let ParticlesCmp: any = null; // cache em escopo de módulo
-async function ensureParticles(){
-  if(!ParticlesCmp){
-    const mod = await import('react-tsparticles');
-    ParticlesCmp = mod.default || mod;
+interface ParticlesEngine {}
+interface ParticlesProps {
+  init: (engine: ParticlesEngine) => Promise<void>;
+  className?: string;
+  options?: unknown;
+}
+type ParticlesComponent = React.ComponentType<ParticlesProps>;
+let ParticlesCmp: ParticlesComponent | null = null;
+async function ensureParticles() {
+  if (!ParticlesCmp) {
+    const mod = await import("react-tsparticles");
+    ParticlesCmp = (mod as any).default || (mod as any);
   }
   return ParticlesCmp;
 }
-async function loadSlimEngine(engine:any){
-  const { loadSlim } = await import('tsparticles-slim');
-  await loadSlim(engine);
+async function loadSlimEngine(engine: ParticlesEngine) {
+  const slim: any = await import("tsparticles-slim");
+  await slim.loadSlim(engine as any);
 }
+
+type SvgIcon = ComponentType<SVGProps<SVGSVGElement> & { size?: number }>;
+
+type SellingPoint = {
+  icon: SvgIcon;
+  title: string;
+  description: string;
+};
+
+const SELLING_POINTS: SellingPoint[] = [
+  {
+    icon: Stethoscope,
+    title: "Saúde validada",
+    description: "Check-up veterinário completo, pedigree CBKC e histórico de exames disponíveis para cada Spitz Alemão Anão Lulu da Pomerânia.",
+  },
+  {
+    icon: Heart,
+    title: "Cuidado familiar",
+    description: "Filhotes criados dentro de casa, socializados com crianças e rotina de enriquecimento ambiental."
+  },
+  {
+    icon: Shield,
+    title: "Transparência total",
+    description: "Contrato digital, orientação financeira clara e acompanhamento direto da criadora em todas as etapas.",
+  },
+];
+
+const TRUST_BADGES = [
+  "Entrega humanizada em todo o Brasil",
+  "Mentoria vitalícia pelo WhatsApp",
+  "Planejamento de rotina e enxoval sob medida",
+];
+
+const METRICS = [
+  { value: "10+", label: "anos com Spitz Alemão Anão Lulu da Pomerânia" },
+  { value: "180+", label: "famílias acompanhadas" },
+  { value: "24h", label: "suporte humano dedicado" },
+];
 
 export default function Hero() {
   const prefersReducedMotion = useReducedMotion();
-  const [showFx, setShowFx] = useState(false); // sinal para render
-  const [ready, setReady] = useState(false); // módulo carregado
-  const hostRef = useRef<HTMLElement|null>(null);
+  const [mounted, setMounted] = useState(false);
+  const [showFx, setShowFx] = useState(false);
+  const hostRef = useRef<HTMLElement | null>(null);
 
-  useEffect(()=>{
-    if(prefersReducedMotion) return; // não carregar se usuário prefere menos movimento
-    const el = hostRef.current;
-    if(!el) return;
-    const io = new IntersectionObserver((entries)=>{
-      const e = entries[0];
-      if(e && e.isIntersecting){
-        // usar idle para postergar CPU se disponível
-        const schedule = (cb:()=>void)=> (window as any).requestIdleCallback? (window as any).requestIdleCallback(cb,{ timeout:1500 }): setTimeout(cb,90);
-        schedule(async ()=>{
-          try {
-            await ensureParticles();
-            setReady(true);
-            setShowFx(true);
-          } catch {/* silencioso */}
-        });
-        io.disconnect();
-      }
-    }, { rootMargin: '0px 0px 200px 0px', threshold: 0.15 });
-    io.observe(el);
-    return ()=> io.disconnect();
-  }, [prefersReducedMotion]);
-
-  // Remove effect antigo de exibição imediata; showFx agora controlado por intersection.
-
-  const greeting = useMemo(() => {
-    const h = new Date().getHours();
-  if (h < 12) return "Bom dia! ☀️ Seu Spitz te esperando.";
-  if (h < 18) return "Boa tarde! 🐾 Ainda dá tempo de garantir o seu.";
-  return "Boa noite! 🌙 Um Spitz te espera para dormir juntinho.";
+  useEffect(() => {
+    setMounted(true);
   }, []);
 
-  const particlesInit = useCallback(async (engine: any) => {
+  useEffect(() => {
+    if (prefersReducedMotion) return;
+    const el = hostRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry?.isIntersecting) {
+          const schedule = (cb: () => void) =>
+            (window as any).requestIdleCallback
+              ? (window as any).requestIdleCallback(cb, { timeout: 1200 })
+              : setTimeout(cb, 120);
+
+          schedule(async () => {
+            try {
+              await ensureParticles();
+              setShowFx(true);
+            } catch {
+              /* ignore */
+            }
+          });
+
+          io.disconnect();
+        }
+      },
+      { rootMargin: "0px 0px 200px 0px", threshold: 0.1 },
+    );
+
+    io.observe(el);
+    return () => io.disconnect();
+  }, [prefersReducedMotion]);
+
+  const particlesInit = useCallback(async (engine: ParticlesEngine) => {
     await loadSlimEngine(engine);
   }, []);
 
-  // Variantes de animação com fallback para usuários que reduzem motion
-  // Helper para retornar variants consistentes sem conflito de tipos do framer-motion
-  const fadeSlide = (delay = 0) => ({
-    initial: { opacity: 0, y: prefersReducedMotion ? 0 : 28 },
-    whileInView: { opacity: 1, y: 0 },
-    delay,
-  });
+  const waHref = useMemo(() => {
+    const trimmed = process.env.NEXT_PUBLIC_WA_PHONE?.replace(/\D/g, "") ?? "";
+    if (trimmed) return `https://wa.me/${trimmed}`;
+    return process.env.NEXT_PUBLIC_WA_LINK ?? "#";
+  }, []);
 
-  const FEATURES = [
-    "Pedigree reconhecido com garantia 🧬",
-    "Entrega segura em todo Brasil 🚚",
-    "Acompanhamento e suporte vitalício ❤️",
-  ];
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Bom dia! Vamos escolher juntos o Spitz Alemão Anão Lulu da Pomerânia ideal para sua rotina.";
+    if (hour < 18) return "Boa tarde! Temos filhotes socializados de Spitz Alemão Anão Lulu da Pomerânia aguardando por você.";
+    return "Boa noite! Ainda dá tempo de receber orientação personalizada hoje.";
+  }, []);
+
+  const variants = {
+    hidden: { opacity: 0, y: prefersReducedMotion ? 0 : 24 },
+    show: { opacity: 1, y: 0 },
+  };
+
+  const metricsVariant = {
+    hidden: { opacity: 0, scale: prefersReducedMotion ? 1 : 0.98 },
+    show: { opacity: 1, scale: 1 },
+  };
+
+  const animateState = mounted ? "show" : "hidden";
 
   return (
     <section
-  ref={hostRef as any}
+      ref={hostRef}
       aria-labelledby="hero-heading"
-      className="relative isolate w-full overflow-hidden bg-[#0f3d37] text-white dark:text-white"
+      className="relative isolate overflow-hidden bg-gradient-to-br from-[#faede0] via-[#f8f1ea] to-[#fffaf4] text-[var(--text)]"
       role="banner"
     >
-      {/* Background base: gradiente + textura sutil para profundidade sem peso de rede */}
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.08),transparent_65%)]" aria-hidden />
-      {/* Scrim para contraste do texto (lado esquerdo) */}
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-r from-black/60 via-black/40 to-transparent" aria-hidden />
-      {/* Partículas (adiadas e reduzidas) */}
-      {showFx && ready && !prefersReducedMotion && ParticlesCmp && (
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,rgba(31,77,58,0.18),transparent_60%)]" aria-hidden />
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-r from-white/70 via-transparent to-transparent" aria-hidden />
+      {showFx && !prefersReducedMotion && ParticlesCmp && (
         <ParticlesCmp
           init={particlesInit}
           className="absolute inset-0 -z-10"
           options={{
             fullScreen: false,
-            background: { color: 'transparent' },
+            background: { color: "transparent" },
             fpsLimit: 60,
             particles: {
-              color: { value: '#ffffff' },
-              number: { value: 14 },
-              opacity: { value: 0.13 },
-              size: { value: { min: 1, max: 3 } },
-              move: { enable: true, speed: 0.35, direction: 'top', outModes: { default: 'out' } },
+              color: { value: "#f3b562" },
+              number: { value: 18 },
+              opacity: { value: 0.18 },
+              size: { value: { min: 1, max: 2.5 } },
+              move: { enable: true, speed: 0.35, direction: "top", outModes: { default: "out" } },
             },
             detectRetina: true,
           }}
         />
       )}
 
-      <div className="mx-auto max-w-7xl px-5 pt-20 pb-24 sm:pt-28 md:px-8 lg:flex lg:items-center lg:gap-x-16">
-        {/* Coluna de texto */}
+      <div className="mx-auto flex w-full max-w-7xl flex-col items-center gap-16 px-5 pt-20 pb-28 sm:px-8 lg:flex-row lg:items-stretch lg:pt-24">
         <motion.div
-          initial={fadeSlide(0).initial}
-          whileInView={fadeSlide(0).whileInView}
-          viewport={{ once: true, amount: 0.6 }}
-          transition={{ duration: 0.55, delay: fadeSlide(0).delay }}
-          className="mx-auto max-w-2xl lg:mx-0 lg:flex-auto"
+          initial="hidden"
+          animate={animateState}
+          variants={variants}
+          transition={{ duration: 0.65, ease: "easeOut" }}
+          className="w-full max-w-3xl space-y-8 lg:flex-1"
         >
-          <p className="mb-3 text-xs font-medium tracking-wide text-white/80">
-            <span className="inline-block rounded-full bg-white/10 px-3 py-1 backdrop-blur-sm ring-1 ring-inset ring-white/15">
+          <span className="inline-flex items-center gap-3 rounded-full border border-[var(--brand)]/30 bg-white/85 px-4 py-1 text-xs font-semibold uppercase tracking-[0.35em] text-[var(--brand)]">
+            Criação boutique de Spitz Alemão Anão Lulu da Pomerânia
+          </span>
+          <div className="space-y-4">
+            <h1 id="hero-heading" className="text-4xl font-bold tracking-tight text-[var(--text)] sm:text-5xl">
+              Receba seu Spitz Alemão Anão Lulu da Pomerânia com suporte estratégico da By Império Dog
+            </h1>
+            <p className="text-base text-[var(--text-muted)] sm:text-lg" aria-live="polite">
               {greeting}
-            </span>
-          </p>
-          <h1
-            id="hero-heading"
-            className="text-balance break-words text-3xl font-bold leading-tight tracking-tight drop-shadow-sm sm:text-5xl"
-          >
-            <span className="pr-2">Spitz Alemão Anão</span>
-            <span aria-hidden className="inline-block align-middle">🦊</span>
-            <span className="sr-only"> - </span>
-            <span className="whitespace-nowrap">(Lulu da Pomerânia)</span>
-          </h1>
-          <motion.p
-            initial={fadeSlide(0.05).initial}
-            whileInView={fadeSlide(0.05).whileInView}
-            viewport={{ once: true, amount: 0.6 }}
-            transition={{ duration: 0.55, delay: fadeSlide(0.05).delay }}
-            className="mt-5 text-base leading-relaxed text-white/95 sm:text-lg sm:leading-8"
-          >
-            Compra segura, pedigree garantido e suporte pós-venda. Seu filhote dos sonhos começa aqui.
-          </motion.p>
-
-          <ul className="mt-7 space-y-3 text-white/90" aria-label="Diferenciais principais">
-            {FEATURES.map((txt, i) => (
-              <motion.li
-                key={txt}
-                initial={fadeSlide(0.1 + i * 0.08).initial}
-                whileInView={fadeSlide(0.1 + i * 0.08).whileInView}
-                viewport={{ once: true, amount: 0.6 }}
-                transition={{ duration: 0.5, delay: fadeSlide(0.1 + i * 0.08).delay }}
-                className="flex items-start gap-2 text-sm sm:text-base"
-              >
-                <CheckCircle className="mt-0.5 h-5 w-5 flex-none text-accent" aria-hidden="true" />
-                <span>{txt}</span>
-              </motion.li>
-            ))}
-          </ul>
-
-          {/* Trust indicators acessíveis */}
-          <div className="mt-7 grid grid-cols-1 gap-3 text-sm text-white/85 sm:grid-cols-3" role="list" aria-label="Indicadores de confiança">
-            <div role="listitem" className="flex items-center gap-2">
-              <Star className="h-4 w-4" aria-hidden="true" /> Criador há 10+ anos
-            </div>
-            <div role="listitem" className="flex items-center gap-2">
-              <Heart className="h-4 w-4" aria-hidden="true" /> Pedigree garantido
-            </div>
-            <div role="listitem" className="flex items-center gap-2">
-              <MessageCircle className="h-4 w-4" aria-hidden="true" /> Pós-venda vitalício
-            </div>
+            </p>
+            <p className="text-base text-[var(--text-muted)] sm:text-lg">
+              Do primeiro contato à chegada em casa, guiamos cada passo com laudos atualizados, socialização carinhosa e mentoria direta pelo WhatsApp.
+            </p>
           </div>
 
-          {/* CTA Buttons usando design system */}
-          <div className="mt-10 flex flex-wrap gap-4">
-            <motion.a
-              initial={fadeSlide(0.15).initial}
-              whileInView={fadeSlide(0.15).whileInView}
-              viewport={{ once: true, amount: 0.6 }}
-              transition={{ duration: 0.55, delay: fadeSlide(0.15).delay }}
-              href="#filhotes"
-              className={cn(
-                buttonVariants({ variant: "solid", size: "lg" }),
-                "w-full sm:w-auto min-w-[220px] shadow-sm hover:shadow focus-visible:ring-offset-0"
-              )}
-            >
-              Ver filhotes disponíveis
-            </motion.a>
-            <motion.a
-              initial={fadeSlide(0.2).initial}
-              whileInView={fadeSlide(0.2).whileInView}
-              viewport={{ once: true, amount: 0.6 }}
-              transition={{ duration: 0.55, delay: fadeSlide(0.2).delay }}
-              href={`${process.env.NEXT_PUBLIC_WA_LINK ?? "#"}`}
+          <div className="grid gap-4 sm:grid-cols-2">
+            {SELLING_POINTS.map((item) => (
+              <motion.article
+                key={item.title}
+                initial="hidden"
+                animate={animateState}
+                variants={variants}
+                transition={{ duration: 0.55, delay: 0.1, ease: "easeOut" }}
+                className="flex h-full items-start gap-3 rounded-2xl border border-[var(--border)] bg-white/90 p-4 shadow-sm backdrop-blur"
+              >
+                <item.icon className="mt-1 h-5 w-5 flex-none text-[var(--brand)]" aria-hidden size={20} />
+                <div>
+                  <h3 className="text-sm font-semibold text-[var(--text)]">{item.title}</h3>
+                  <p className="mt-1 text-sm text-[var(--text-muted)]">{item.description}</p>
+                </div>
+              </motion.article>
+            ))}
+          </div>
+
+          <motion.ul
+            initial="hidden"
+            animate={animateState}
+            variants={variants}
+            transition={{ duration: 0.55, delay: 0.18, ease: "easeOut" }}
+            className="mt-6 flex flex-col gap-3 text-sm text-[var(--text)] sm:flex-row sm:flex-wrap"
+            role="list"
+            aria-label="Compromissos"
+          >
+            {TRUST_BADGES.map((badge) => (
+              <li
+                key={badge}
+                className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white/80 px-4 py-2 shadow-sm"
+              >
+                <CheckCircle className="h-4 w-4 text-[var(--brand)]" aria-hidden />
+                <span>{badge}</span>
+              </li>
+            ))}
+          </motion.ul>
+
+          <div className="mt-8 flex w-full max-w-md flex-col gap-4 xs:flex-row">
+            <a
+              href={waHref}
               target="_blank"
               rel="noopener noreferrer"
               className={cn(
-                buttonVariants({ variant: "outline", size: "lg" }),
-                "w-full sm:w-auto min-w-[220px] border-white/30 bg-white/10 text-white hover:bg-white/15 hover:border-white/40"
+                buttonVariants({ variant: "solid", size: "lg" }),
+                "h-12 w-full xs:flex-1 bg-[var(--brand)] text-[var(--brand-foreground)] shadow-md hover:shadow-lg focus-visible:ring-offset-0"
               )}
             >
-              Falar com um especialista
-            </motion.a>
-          </div>
-        </motion.div>
-
-        {/* Coluna da imagem / Hero visual */}
-        <motion.div
-          initial={fadeSlide(0.1).initial}
-          whileInView={fadeSlide(0.1).whileInView}
-          viewport={{ once: true, amount: 0.6 }}
-          transition={{ duration: 0.6, delay: fadeSlide(0.1).delay }}
-          className="relative mt-16 w-full lg:mt-0 lg:w-[50%] lg:flex-shrink-0"
-        >
-          {/* Mobile image */}
-          <div className="mx-auto w-full max-w-md lg:hidden">
-            <figure className="relative aspect-[4/3] overflow-hidden rounded-2xl ring-1 ring-inset ring-black/25 shadow-xl">
-              <Image
-                src="/spitz-hero-mobile.png"
-                alt="Família com filhotes de Spitz Alemão Anão"
-                fill
-                priority
-                sizes="(max-width: 1024px) 90vw, 600px"
-                className="object-cover"
-                style={{ objectPosition: "50% 26%" }}
-                draggable={false}
-              />
-              <figcaption className="absolute bottom-2 left-2 rounded-full bg-white/95 px-3 py-1 text-xs font-medium text-emerald-800 shadow ring-1 ring-black/10 backdrop-blur-[1px]">
-                Entrega garantida
-              </figcaption>
-            </figure>
-          </div>
-          {/* Desktop image */}
-          <div className="hidden lg:block">
-            <figure className="relative mx-auto aspect-[16/10] w-full max-w-xl overflow-hidden rounded-2xl ring-1 ring-inset ring-black/25 shadow-xl">
-              <Image
-                src="/spitz-hero-desktop.webp"
-                alt="Filhotes de Spitz Alemão Anão em destaque"
-                fill
-                priority
-                sizes="(min-width: 1024px) 560px, 100vw"
-                className="object-cover"
-                style={{ objectPosition: "50% 38%" }}
-                draggable={false}
-              />
-              <figcaption className="absolute bottom-3 left-3 rounded-full bg-white/95 px-3 py-1 text-xs font-medium text-emerald-800 shadow ring-1 ring-black/10 backdrop-blur-[1px]">
-                Entrega garantida
-              </figcaption>
-            </figure>
-            <div
-              className="mt-2 inline-block text-sm text-white/85 drop-shadow"
-              title="Criador certificado há mais de 10 anos com reconhecimento nacional"
-              aria-label="Criador certificado há mais de 10 anos com reconhecimento nacional"
+              Falar com a criadora
+            </a>
+            <a
+              href="#filhotes"
+              className={cn(
+                buttonVariants({ variant: "outline", size: "lg" }),
+                "h-12 w-full xs:flex-1 border-[var(--brand)] bg-white/70 text-[var(--brand)] hover:bg-white/90"
+              )}
             >
-              Criador certificado <span aria-hidden>✅</span>
-            </div>
+              Ver filhotes disponíveis
+            </a>
           </div>
-        </motion.div>
-      </div>
 
-      {/* Selo flutuante (aria-live para senso de urgência sem poluição) */}
-      <div
-        className="fixed bottom-5 left-5 z-40 hidden rounded-full bg-white/95 px-4 py-2 text-sm font-medium text-emerald-800 shadow-lg ring-1 ring-black/10 backdrop-blur supports-[backdrop-filter]:bg-white/85 transition-transform duration-200 hover:scale-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 motion-reduce:transform-none md:flex"
-        aria-live="polite"
-      >
-  Últimos filhotes disponíveis! <span aria-hidden>🔥</span>
+          <motion.dl
+            initial="hidden"
+            animate={animateState}
+            variants={metricsVariant}
+            transition={{ duration: 0.55, delay: 0.24, ease: "easeOut" }}
+            className="mt-10 grid gap-4 text-left sm:grid-cols-3"
+            aria-label="Resultados"
+          >
+            {METRICS.map((metric) => (
+              <div key={metric.label} className="rounded-2xl border border-[var(--border)] bg-white/90 p-4 shadow-sm">
+                <dt className="text-xs font-medium uppercase tracking-[0.18em] text-[var(--text-muted)]">{metric.label}</dt>
+                <dd className="mt-2 text-2xl font-semibold text-[var(--text)]">{metric.value}</dd>
+              </div>
+            ))}
+          </motion.dl>
+        </motion.div>
+
+        <motion.div
+          initial="hidden"
+          animate={animateState}
+          variants={variants}
+          transition={{ duration: 0.65, delay: 0.15, ease: "easeOut" }}
+          className="w-full max-w-xl flex-1 space-y-6"
+        >
+          <figure className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--surface)] shadow-2xl lg:aspect-[16/10]">
+            <Image
+              src="/spitz-hero-desktop.webp"
+              alt="Filhotes de Spitz Alemão Anão Lulu da Pomerânia saudáveis alinhados"
+              fill
+              priority
+              sizes="(min-width: 1024px) 560px, 100vw"
+              className="object-cover"
+              style={{ objectPosition: "50% 38%" }}
+              draggable={false}
+            />
+            <figcaption className="absolute bottom-3 left-3 rounded-full bg-white/95 px-4 py-1 text-xs font-semibold text-[var(--brand)] shadow">
+              Entrega segura em todo o Brasil
+            </figcaption>
+          </figure>
+
+          <motion.div
+            initial="hidden"
+            animate={animateState}
+            variants={metricsVariant}
+            transition={{ duration: 0.55, delay: 0.28, ease: "easeOut" }}
+            className="mt-5 rounded-2xl border border-[var(--border)] bg-white/95 p-6 shadow-xl lg:hidden"
+          >
+            <p className="text-sm font-semibold text-[var(--text)]">Atendimento humano em tempo real</p>
+            <p className="mt-1 text-xs text-[var(--text-muted)]">
+              Compartilhe vídeos do seu lar e receba orientação sobre rotina, enxoval e comportamento em minutos.
+            </p>
+            <a
+              href={waHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-[var(--brand)] hover:underline"
+            >
+              <WAIcon size={16} className="h-4 w-4" aria-hidden />
+              Falar agora
+            </a>
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            animate={animateState}
+            variants={metricsVariant}
+            transition={{ duration: 0.55, delay: 0.32, ease: "easeOut" }}
+            className="hidden rounded-2xl border border-[var(--border)] bg-white/95 p-6 shadow-xl lg:block"
+          >
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="max-w-xs">
+                <p className="text-sm font-semibold text-[var(--text)]">Atendimento humano em tempo real</p>
+                <p className="mt-1 text-xs text-[var(--text-muted)]">
+                  Compartilhe vídeos do seu lar e receba orientação sobre rotina, enxoval e comportamento em minutos.
+                </p>
+              </div>
+              <a
+                href={waHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--brand)] hover:underline"
+              >
+                <WAIcon size={16} className="h-4 w-4" aria-hidden />
+                Falar agora
+              </a>
+            </div>
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   );

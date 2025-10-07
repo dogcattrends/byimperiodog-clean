@@ -1,14 +1,31 @@
-import type { Metadata } from "next";
-import { baseSiteMetadata } from '@/lib/seo.core';
+﻿import type { Metadata } from "next";
+import { Fragment } from "react";
+import { headers } from "next/headers";
 import Script from "next/script";
-import "./globals.css";
-import '../design-system/tokens.css';
-import { ThemeProvider } from '../design-system/theme-provider';
-import TrackingScripts from "@/components/TrackingScripts";
-import { getSiteSettings } from "@/lib/getSettings";
-import ToastContainer from "@/components/Toast";
 
-export const metadata: Metadata = baseSiteMetadata();
+import "./globals.css";
+import "../design-system/tokens.css";
+
+// Components
+import FloatingPuppiesCTA from "@/components/FloatingPuppiesCTA";
+import FooterFixed from "@/components/Footer";
+import Navbar from "@/components/Navbar";
+import ToastContainer from "@/components/Toast";
+import TrackingScripts from "@/components/TrackingScripts";
+// Libs / utils
+import { getSiteSettings } from "@/lib/getSettings";
+import { resolveRobots, baseMetaOverrides } from "@/lib/seo";
+import { baseSiteMetadata } from "@/lib/seo.core";
+import { resolveTracking, buildOrganizationLD, buildWebsiteLD, type CustomPixelConfig } from "@/lib/tracking";
+
+// Theme
+import { ThemeProvider } from "../design-system/theme-provider";
+
+export const metadata: Metadata = baseSiteMetadata({
+  // Garantir template consistente; se já definido em baseSiteMetadata mantém.
+  // Robots default (podem ser sobrescritos dinamicamente em headers runtime se necessário)
+  robots: resolveRobots(),
+});
 
 export const viewport = {
   width: "device-width",
@@ -17,57 +34,96 @@ export const viewport = {
   themeColor: "#052e2b",
 };
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+function resolvePathname() {
+  const reqHeaders = headers();
+  const candidates = [
+    "x-invoke-path",
+    "x-matched-path",
+    "x-rewrite-url",
+    "x-original-url",
+    "x-original-uri",
+    "x-forwarded-url",
+    "x-forwarded-uri",
+    "x-next-url",
+    "next-url",
+  ];
+  for (const key of candidates) {
+    const raw = reqHeaders.get(key);
+    if (!raw) continue;
+    const value = raw.trim();
+    if (!value) continue;
+    try {
+      if (value.startsWith("http://") || value.startsWith("https://")) {
+        return new URL(value).pathname;
+      }
+      if (value.startsWith("/")) return value;
+      // Algumas plataformas enviam apenas path + query sem barra inicial.
+      if (/^[a-zA-Z0-9\-_.~%]+(\/.+)?$/.test(value)) {
+        return `/${value}`;
+      }
+    } catch {
+      // ignore parsing errors and continue to next header
+    }
+  }
+  return "";
+}
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  // Lê do DB e faz fallback para .env
-  const s = await getSiteSettings();
-  const GTM_ID = (s.gtm_id ?? process.env.NEXT_PUBLIC_GTM_ID ?? "").trim();
-  const GA4_ID = (s.ga4_id ?? process.env.NEXT_PUBLIC_GA4_ID ?? "").trim();
-  const FB_ID = (s.meta_pixel_id ?? process.env.NEXT_PUBLIC_META_PIXEL_ID ?? "").trim();
-  const TT_ID = (s.tiktok_pixel_id ?? process.env.NEXT_PUBLIC_TIKTOK_PIXEL_ID ?? "").trim();
-  const PIN_ID = (s.pinterest_tag_id ?? process.env.NEXT_PUBLIC_PINTEREST_TAG_ID ?? "").trim();
-  const HOTJAR_ID = (s.hotjar_id ?? process.env.NEXT_PUBLIC_HOTJAR_ID ?? "").trim();
-  const CLARITY_ID = (s.clarity_id ?? process.env.NEXT_PUBLIC_CLARITY_ID ?? "").trim();
-  const META_VERIFY = (s.meta_domain_verify ?? process.env.NEXT_PUBLIC_META_DOMAIN_VERIFY ?? "").trim();
+  const pathname = resolvePathname();
+  const isAdminRoute = pathname.startsWith("/admin");
+  // Ajustes dinâmicos de canonical/OG URL (Next não reexecuta metadata para cada navegação SPA, mas em SSR inicial temos path)
+  const metaRuntime = baseMetaOverrides(pathname);
 
-  const ORG_LD = {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-  name: "By Imperio Dog",
-  url: process.env.NEXT_PUBLIC_SITE_URL || "https://www.byimperiodog.com.br/",
-  logo: (process.env.NEXT_PUBLIC_SITE_URL || "https://www.byimperiodog.com.br") + "/logo.png",
-    telephone: "+55 11 98663-3239",
-    sameAs: [
-      "https://instagram.com/byimperiodog",
-      "https://www.youtube.com/@byimperiodog",
-      "https://www.tiktok.com/@byimperiodog",
-      "https://t.me/byimperiodog",
-    ],
-  };
+  let GTM_ID: string | undefined;
+  let GA4_ID: string | undefined;
+  let FB_ID: string | undefined;
+  let TT_ID: string | undefined;
+  let PIN_ID: string | undefined;
+  let HOTJAR_ID: string | undefined;
+  let CLARITY_ID: string | undefined;
+  let META_VERIFY: string | undefined;
+  let organizationLd: Record<string, unknown> | null = null;
+  let websiteLd: Record<string, unknown> | null = null;
+  let customPixels: CustomPixelConfig[] = [];
+  let useGTM = false;
 
-  const WEBSITE_LD = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-  name: "By Imperio Dog",
-  url: process.env.NEXT_PUBLIC_SITE_URL || "https://www.byimperiodog.com.br/",
-    potentialAction: {
-      "@type": "SearchAction",
-  target: `${process.env.NEXT_PUBLIC_SITE_URL || "https://www.byimperiodog.com.br"}/?q={search_term_string}`,
-      "query-input": "required name=search_term_string",
-    },
-  };
+  if (!isAdminRoute) {
+    const settings = await getSiteSettings();
+    const ids = resolveTracking(settings);
+    GTM_ID = ids.gtm;
+    GA4_ID = ids.ga4;
+    FB_ID = ids.fb;
+    TT_ID = ids.tiktok;
+    PIN_ID = ids.pinterest;
+    HOTJAR_ID = ids.hotjar;
+    CLARITY_ID = ids.clarity;
+    META_VERIFY = ids.metaVerify;
+    customPixels = ids.custom;
+    useGTM = Boolean(GTM_ID);
 
-  const useGTM = Boolean(GTM_ID);
+    if (ids.siteUrl) {
+      organizationLd = buildOrganizationLD(ids.siteUrl);
+      websiteLd = buildWebsiteLD(ids.siteUrl);
+    }
+  }
 
   return (
     <html lang="pt-BR" className="scroll-smooth">
       <head>
+        {/* Canonical dinâmico (reforço; alternates via metadata) */}
+        {metaRuntime.alternates?.canonical && (
+          <link rel="canonical" href={metaRuntime.alternates.canonical as string} />
+        )}
         {/* Verificação de domínio Meta (se houver) */}
-        {META_VERIFY && <meta name="facebook-domain-verification" content={META_VERIFY} />}
+        {!isAdminRoute && META_VERIFY && (
+          <meta name="facebook-domain-verification" content={META_VERIFY} />
+        )}
 
         {/* Preconnect / DNS Prefetch condicional para analytics: evita custo em páginas sem tags */}
-        {useGTM && (
+        {!isAdminRoute && useGTM && (
           <>
             <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
             <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
@@ -75,19 +131,31 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <link rel="dns-prefetch" href="https://www.google-analytics.com" />
           </>
         )}
-        {!useGTM && GA4_ID && (
+        {!isAdminRoute && !useGTM && GA4_ID && (
           <>
             <link rel="preconnect" href="https://www.google-analytics.com" crossOrigin="anonymous" />
             <link rel="dns-prefetch" href="https://www.google-analytics.com" />
           </>
         )}
 
-        {/* JSON-LD (Organization + WebSite) */}
-        <Script id="org-ld" type="application/ld+json" strategy="afterInteractive">{JSON.stringify(ORG_LD)}</Script>
-        <Script id="website-ld" type="application/ld+json" strategy="afterInteractive">{JSON.stringify(WEBSITE_LD)}</Script>
+        {/* JSON-LD inline para renderização imediata (melhor SEO) */}
+        {!isAdminRoute && organizationLd && (
+          <script
+            type="application/ld+json"
+            // eslint-disable-next-line react/no-danger
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationLd) }}
+          />
+        )}
+        {!isAdminRoute && websiteLd && (
+          <script
+            type="application/ld+json"
+            // eslint-disable-next-line react/no-danger
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteLd) }}
+          />
+        )}
 
         {/* GTM (preferencial) */}
-        {useGTM && (
+        {!isAdminRoute && useGTM && GTM_ID && (
           <Script id="gtm" strategy="afterInteractive">{`
             (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
             new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -98,7 +166,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         )}
 
         {/* GA4 direto (somente se NÃO usar GTM) */}
-        {!useGTM && GA4_ID && (
+        {!isAdminRoute && !useGTM && GA4_ID && (
           <>
             <Script id="ga4-src" src={`https://www.googletagmanager.com/gtag/js?id=${GA4_ID}`} strategy="afterInteractive" />
             <Script id="ga4" strategy="afterInteractive">{`
@@ -110,7 +178,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         )}
 
         {/* Meta Pixel */}
-        {FB_ID && (
+        {!isAdminRoute && FB_ID && (
           <Script id="fb-pixel" strategy="afterInteractive">{`
             !(function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
             n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
@@ -121,7 +189,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         )}
 
         {/* TikTok Pixel */}
-        {TT_ID && (
+        {!isAdminRoute && TT_ID && (
           <Script id="tiktok" strategy="afterInteractive">{`
             !function (w, d, t) {w.TiktokAnalyticsObject = t; var ttq = w[t] = w[t] || [];
             ttq.methods = ["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"],
@@ -137,7 +205,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         )}
 
         {/* Pinterest Tag */}
-        {PIN_ID && (
+        {!isAdminRoute && PIN_ID && (
           <Script id="pinterest" strategy="afterInteractive">{`
             !function(e){if(!window.pintrk){window.pintrk=function(){window.pintrk.queue.push(Array.prototype.slice.call(arguments))};
             var n=window.pintrk;n.queue=[],n.version="3.0";var t=document.createElement("script");
@@ -147,7 +215,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         )}
 
         {/* Hotjar */}
-        {HOTJAR_ID && (
+        {!isAdminRoute && HOTJAR_ID && (
           <Script id="hotjar" strategy="afterInteractive">{`
             (function(h,o,t,j,a,r){ h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
             h._hjSettings={hjid:${Number(HOTJAR_ID)},hjsv:6}; a=o.getElementsByTagName('head')[0];
@@ -156,45 +224,67 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         )}
 
         {/* Microsoft Clarity */}
-        {CLARITY_ID && (
+        {!isAdminRoute && CLARITY_ID && (
           <Script id="clarity" strategy="afterInteractive">{`
             (function(c,l,a,r,i,t,y){ c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
             t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i; y=l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t,y); })(window, document, "clarity", "script", "${CLARITY_ID}");
           `}</Script>
         )}
+
+        {!isAdminRoute &&
+          customPixels
+            .filter((pixel) => pixel.enabled && pixel.slot === 'head')
+            .map((pixel) => (
+              <script key={`custom-head-${pixel.id}`} dangerouslySetInnerHTML={{ __html: pixel.code }} />
+            ))}
       </head>
 
-      <body className="min-h-screen bg-white text-zinc-900 antialiased">
-        <a href="#conteudo-principal" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 z-50 rounded bg-emerald-700 px-4 py-2 text-white text-sm">Pular para o conteúdo</a>
-        {/* GTM noscript — recomendado logo após <body> */}
-        {useGTM && (
+      <body
+        className={`min-h-screen bg-[var(--bg)] text-[var(--text)] antialiased ${
+          isAdminRoute ? "admin-shell" : ""
+        }`}
+      >
+        <a
+          href="#conteudo-principal"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 z-50 rounded bg-emerald-700 px-4 py-2 text-white text-sm"
+        >
+          Pular para o conteúdo
+        </a>
+        {/* GTM noscript - recomendado logo após <body> */}
+        {!isAdminRoute && useGTM && GTM_ID && (
           <noscript
             dangerouslySetInnerHTML={{ __html: `<iframe src="https://www.googletagmanager.com/ns.html?id=${GTM_ID}" height="0" width="0" style="display:none;visibility:hidden"></iframe>` }}
           />
         )}
 
         {/* Dispara page_view em navegações SPA */}
-        <TrackingScripts />
+        {!isAdminRoute && <TrackingScripts />}
 
         <ThemeProvider>
           <div className="flex min-h-screen flex-col">
+            {!isAdminRoute && <Navbar />}
+            {!isAdminRoute && <div aria-hidden className="h-20" />}
             <div className="flex-1" id="conteudo-principal" tabIndex={-1}>
               {children}
             </div>
-            <footer role="contentinfo" className="mt-8 border-t border-emerald-900/10 bg-emerald-50/40 py-8 text-xs text-emerald-900 dark:border-emerald-300/10 dark:bg-emerald-900/30 dark:text-emerald-100">
-              <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-wrap items-center gap-4 justify-between">
-                <p>&copy; {new Date().getFullYear()} By Imperio Dog</p>
-                <nav aria-label="Links institucionais" className="flex gap-4">
-                  <a href="/sobre" className="hover:underline">Sobre</a>
-                  <a href="/contato" className="hover:underline">Contato</a>
-                  <a href="/politica-de-privacidade" className="hover:underline">Privacidade</a>
-                </nav>
-              </div>
-            </footer>
+            {!isAdminRoute && <FooterFixed />}
+            {!isAdminRoute && <FloatingPuppiesCTA disabled={false} />}
           </div>
         </ThemeProvider>
-        <ToastContainer />
-      </body>
+		{!isAdminRoute &&
+			customPixels
+				.filter((pixel) => pixel.enabled && pixel.slot === 'body')
+				.map((pixel) => (
+					<Fragment key={`custom-body-${pixel.id}`}>
+						<script dangerouslySetInnerHTML={{ __html: pixel.code }} />
+						{pixel.noscript ? (
+							<noscript dangerouslySetInnerHTML={{ __html: pixel.noscript }} />
+						) : null}
+					</Fragment>
+				))}
+
+		<ToastContainer />
+		</body>
     </html>
   );
 }

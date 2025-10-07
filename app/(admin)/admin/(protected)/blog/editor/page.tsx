@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { AdminShell } from "@/components/admin/AdminShell";
 import { BlogSubnav } from "@/components/admin/BlogSubnav";
 import EditorShell, { type FormState } from "@/app/admin/blog/editor/EditorShell";
 import { adminFetch } from "@/lib/adminFetch";
@@ -71,15 +70,15 @@ export default function BlogEditorPage() {
   }, [id]);
 
   return (
-    <AdminShell>
-      <BlogSubnav />
+    <>
       <div className="mx-auto max-w-7xl space-y-6 p-6">
+        <BlogSubnav />
         <header className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <h1 className="text-2xl font-bold tracking-tight">Editor de Post</h1>
           {id && <span className="rounded-full bg-[var(--surface-2)] px-3 py-1 text-xs text-[var(--text-muted)]">ID: {id}</span>}
         </header>
         <EditorShell initial={initial || undefined} onSave={persist} />
       </div>
-    </AdminShell>
+    </>
   );
 }

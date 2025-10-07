@@ -27,4 +27,22 @@ Próximos candidatos (avaliar antes de agir):
 - pasta `bk/` (dup completo do root)
 - diretório `coverage/` (pode ser gerado em CI, considerar ignorar no VCS se não for necessário)
 - arquivos `.run_dev_*` (logs transitórios)
-\n+Atualização posterior: pasta `bk/` removida; `.gitignore` criado e reforçado para evitar reintrodução de artefatos.
+
+## Atualização 2025-10-03: Correção de Mojibake
+
+Ocorrência isolada de mojibake (UTF-8 interpretado como ISO-8859-1) encontrada em `archive_routes/app_site_backup/page.tsx` e corrigida.
+
+Substituições aplicadas:
+| Antes | Depois |
+|-------|--------|
+| Spitz AlemÃ£o AnÃ£o | Spitz Alemão Anão |
+| excelÃªncia | excelência |
+| responsÃ¡vel | responsável |
+| pÃ³s-venda | pós-venda |
+| disponÃ­veis | disponíveis |
+
+Ferramentas adicionadas:
+- `scripts/fix-encoding.mjs` (varre e corrige mojibake comum)
+- Scripts npm: `fix:encoding:dry` (dry-run) e `fix:encoding` (write)
+
+Recomendação: executar `npm run fix:encoding:dry` em PRs com grande volume de texto para prevenir regressões.

@@ -2,8 +2,10 @@
 
 import { ChevronRight, Heart } from "lucide-react";
 import Image from "next/image";
-import track from "@/lib/track";
 import { useState } from "react";
+
+import track from "@/lib/track";
+
 
 type Puppy = {
   id: string;
@@ -17,7 +19,10 @@ type Puppy = {
   priceCents?: number | null;
 };
 
-const WA_BASE = (process.env.NEXT_PUBLIC_WA_LINK || "https://wa.me/5511968633239").replace(/\?.*$/, "");
+// Número oficial atualizado
+const WA_BASE = (process.env.NEXT_PUBLIC_WA_LINK || "https://wa.me/551196863239").replace(/\?.*$/, "");
+// SITE_URL não é mais necessário para construir link da foto (foto removida da mensagem)
+// const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.byimperiodog.com.br";
 
 function fmtPrice(cents?: number | null) {
   return typeof cents === "number"
@@ -33,16 +38,14 @@ const statusClass: Record<string, string> = {
   vendido: "bg-rose-100 text-rose-800 ring-rose-300",
 };
 
-function buildWaLink({ action, name, color, gender, puppyId }: { action: "info" | "video" | "visit"; name: string; color: string; gender: string; puppyId: string }) {
-  const baseMsg =
-    action === "video"
-      ? `Olá! Quero um *vídeo atual* do filhote *${name}* (${color}, ${gender}). ID: ${puppyId}.`
-      : action === "visit"
-      ? `Olá! Quero *agendar uma visita* para conhecer o filhote *${name}* (${color}, ${gender}). ID: ${puppyId}.`
-      : `Olá! Vi o filhote *${name}* (${color}, ${gender}) no site e quero saber mais. ID: ${puppyId}.`;
-
-  const utm = `\n\nref=site_byimperio&src=card_${action}`;
-  return `${WA_BASE}?text=${encodeURIComponent(baseMsg + utm)}`;
+function buildWaLink({ action, name, color, gender }: { action: "info" | "video" | "visit"; name: string; color: string; gender: string }) {
+  const base = `Olá! Vi o filhote ${name} (${color}, ${gender}) e gostaria de saber disponibilidade, valor e condições.`;
+  const variants: Record<string,string> = {
+    info: base,
+    video: `Olá! Pode enviar vídeo atual do filhote ${name} (${color}, ${gender})?` ,
+    visit: `Olá! Quero agendar visita para conhecer o filhote ${name} (${color}, ${gender}).`
+  };
+  return `${WA_BASE}?text=${encodeURIComponent(variants[action])}`;
 }
 
 export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: string; onOpen?: () => void }) {
@@ -53,9 +56,9 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
 
   const label = p.status === "vendido" ? "Vendido" : p.status === "reservado" ? "Reservado" : "Disponível";
 
-  const waInfo = buildWaLink({ action: "info", name, color, gender, puppyId: p.id });
-  const waVideo = buildWaLink({ action: "video", name, color, gender, puppyId: p.id });
-  const waVisit = buildWaLink({ action: "visit", name, color, gender, puppyId: p.id });
+  const waInfo = buildWaLink({ action: "info", name, color, gender });
+  const waVideo = buildWaLink({ action: "video", name, color, gender });
+  const waVisit = buildWaLink({ action: "visit", name, color, gender });
 
   const [imgLoaded, setImgLoaded] = useState(false);
   const [liked, setLiked] = useState(false);
@@ -73,20 +76,23 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
         data-id={p.id}
         aria-label={`Ver detalhes de ${name}`}
       >
-        <div className="relative aspect-[4/3] w-full min-h-[180px] overflow-hidden bg-zinc-100">
+  <div className="relative aspect-[9/16] w-full min-h-[180px] overflow-hidden bg-zinc-100">
           {!imgLoaded && cover && <div className="absolute inset-0 animate-pulse bg-zinc-200" />}
           {cover ? (
-            <Image
-              src={cover}
-              alt={`Filhote ${name} | ${color}, ${gender}`}
-              fill
-              sizes="(max-width: 768px) 100vw, 33vw"
-              loading="lazy"
-              className={`object-cover transition-transform duration-500 group-hover:scale-105 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
-              onLoad={() => setImgLoaded(true)}
-              placeholder="blur"
-              blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII="
-            />
+            <>
+              <Image
+                src={cover}
+                alt={`Filhote ${name} | ${color}, ${gender}`}
+                fill
+                sizes="(max-width:640px) 100vw, (max-width:1024px) 50vw, 33vw"
+                loading="lazy"
+                className={`object-cover transition-opacity duration-500 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
+                onLoad={() => setImgLoaded(true)}
+                placeholder="blur"
+                blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII="
+              />
+              <div aria-hidden className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.08),transparent_60%)]" />
+            </>
           ) : (
             <div className="absolute inset-0 grid place-items-center text-zinc-400">
               <span className="text-sm">Sem imagem</span>

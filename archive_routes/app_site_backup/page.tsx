@@ -21,10 +21,10 @@ export default async function Home() {
         <div className="mx-auto grid max-w-7xl gap-8 px-4 py-16 md:grid-cols-2">
           <div>
             <h1 className="text-4xl font-extrabold leading-tight tracking-tight">
-              Spitz AlemÃ£o AnÃ£o com excelÃªncia
+              Spitz Alemão Anão com excelência
             </h1>
             <p className="mt-4 max-w-prose text-on-brand/90">
-              Filhotes selecionados, entrega responsÃ¡vel e pÃ³s-venda acolhedor.
+              Filhotes selecionados, entrega responsável e pós-venda acolhedor.
             </p>
             <a href="/#filhotes" className="mt-6 inline-flex items-center justify-center rounded-2xl bg-accent px-6 py-3 font-semibold text-on-accent shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:focus-ring-accent active:translate-y-0">
               Ver filhotes disponíveis
@@ -38,7 +38,7 @@ export default async function Home() {
 
       <section id="filhotes" className="mx-auto max-w-7xl px-4 py-12">
         <div className="mb-4 flex items-end justify-between">
-          <h2 className="text-2xl font-semibold">Filhotes disponÃ­veis</h2>
+          <h2 className="text-2xl font-semibold">Filhotes disponíveis</h2>
           <a href="/contato" className="hidden rounded-xl border border-[var(--border)] px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-2)] focus-visible:focus-ring active:scale-[0.98] transition md:inline-block">
             Falar no WhatsApp
           </a>
@@ -54,7 +54,10 @@ export default async function Home() {
                 <h3 className="text-lg font-semibold text-[var(--text)]">{p.nome ?? "Spitz Alemão Anão"}</h3>
                 <p className="text-sm text-[var(--text-muted)]">{p.cor ?? "Cor indefinida"} {" · "} {p.gender === "female" ? "Fêmea" : "Macho"}</p>
                 <p className="mt-2 text-xl font-bold text-[var(--text)]">
-                  R$ {(((p as any).price_cents ?? p.price_cents ?? 0) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                  {(() => {
+                    const priceCents = (p && typeof p === 'object' && 'price_cents' in p) ? (p as { price_cents?: number }).price_cents ?? 0 : 0;
+                    return `R$ ${(priceCents / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+                  })()}
                 </p>
                 <div className="mt-4 flex gap-2">
                   <a href={`/filhote/${p.id}`} className="flex-1 rounded-xl border border-[var(--border)] px-4 py-2 text-center text-[var(--text)] transition hover:bg-[var(--surface-2)] focus-visible:focus-ring active:scale-[0.98]">Ver detalhes</a>

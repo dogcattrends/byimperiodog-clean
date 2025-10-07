@@ -4,7 +4,6 @@
 // Usa endpoints já existentes: /api/admin/blog/ai/outline, /ai/generate-post, /seo-suggestions, /ai/image, /blog (CRUD)
 
 import React, { useEffect, useMemo, useState } from "react";
-import { AdminShell } from "@/components/admin/AdminShell";
 import { BlogSubnav } from "@/components/admin/BlogSubnav";
 import { adminFetch } from "@/lib/adminFetch";
 import Link from "next/link";
@@ -89,9 +88,9 @@ export default function WizardPage(){
     }catch(e:any){ setMsg(String(e?.message||e)); } finally{ setLoading(false);} }
 
   return (
-    <AdminShell>
-      <BlogSubnav />
-      <main className="mx-auto max-w-4xl p-6 space-y-6">
+    <>
+      <main className="mx-auto max-w-4xl space-y-6 p-6">
+        <BlogSubnav />
         <header>
           <h1 className="text-2xl font-bold">Wizard Editorial (IA)</h1>
           <p className="text-sm text-zinc-600">Fluxo guiado: Brief → Outline → Rascunho → SEO → Imagem → Publicar</p>
@@ -189,6 +188,6 @@ export default function WizardPage(){
           </section>
         )}
       </main>
-    </AdminShell>
+    </>
   );
 }

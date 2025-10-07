@@ -3,7 +3,7 @@
 export default function WhatsAppFloatingButton() {
   return (
     <a
-      href="https://wa.me/5511968633239?text=Olá!%20Tenho%20interesse%20em%20um%20Spitz%20Alemão%20Anão."
+  href="https://wa.me/551196863239?text=Olá!%20Tenho%20interesse%20em%20um%20Spitz%20Alemão%20Anão."
       target="_blank"
       rel="noopener noreferrer"
       data-evt="share_click"

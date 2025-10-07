@@ -1,8 +1,6 @@
 // Página simplificada de Analytics do Blog (temporária)
 // TODO: Restaurar versão completa se necessário (gráficos detalhados, etc.)
 import React from 'react';
-import Link from 'next/link';
-import { AdminShell } from '@/components/admin/AdminShell';
 import { BlogSubnav } from '@/components/admin/BlogSubnav';
 import ReindexEmbeddingsButton from '@/components/admin/ReindexEmbeddingsButton';
 
@@ -22,9 +20,8 @@ async function getStats(): Promise<{total:number; published:number; scheduled:nu
 export default async function BlogAnalyticsPage(){
 	const stats = await getStats();
 	return (
-		<AdminShell>
+		<div className="space-y-6 px-4 py-6">
 			<BlogSubnav />
-			<div className="p-6 space-y-6">
 				<header>
 					<div className="flex items-center justify-between gap-3">
 						<h1 className="text-2xl font-bold">Analytics do Blog</h1>
@@ -41,8 +38,7 @@ export default async function BlogAnalyticsPage(){
 				<div className="text-sm text-zinc-600">
 					<p>Funcionalidade completa de analytics será reimplementada após estabilização do build.</p>
 				</div>
-			</div>
-		</AdminShell>
+		</div>
 	);
 }
 

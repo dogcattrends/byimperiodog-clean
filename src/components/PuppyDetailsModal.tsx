@@ -1,14 +1,17 @@
 "use client";
 
+import { Loader, Link as LinkIcon, Share2, X } from 'lucide-react';
+import Image from 'next/image';
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
+import { Modal } from '@/components/dashboard/Modal';
+import { WhatsAppIcon as WAIcon } from '@/components/icons/WhatsAppIcon';
 import { supabasePublic } from '@/lib/supabasePublic';
 import track from '@/lib/track';
-import { Loader, Link as LinkIcon, Share2, MessageCircle } from 'lucide-react';
-import Image from 'next/image';
-import { Modal } from '@/components/dashboard/Modal';
 
 export default function PuppyDetailsModal({ id, onClose }: { id:string; onClose:()=>void }){
-  const [puppy, setPuppy] = useState<any>(null);
+  interface MediaItem { url?:string }
+  interface PuppyRecord { id:string; nome?:string; name?:string; midia?: (MediaItem|string)[]; media?: (MediaItem|string)[]; imageUrl?:string; image_url?:string; image?:string; foto?:string; thumb?:string; capa?:string; cover?:string; main_photo?:string; photo?:string; picture?:string; priceCents?:number; price_cents?:number; status?:string; birth_date?:string; nascimento?:string; gender?:string; color?:string; cor?:string; description?:string; notes?:string; }
+  const [puppy, setPuppy] = useState<PuppyRecord|null>(null);
   const [copied, setCopied] = useState(false);
   const [loading,setLoading] = useState(true);
   const [error,setError] = useState<string|null>(null);
@@ -18,8 +21,13 @@ export default function PuppyDetailsModal({ id, onClose }: { id:string; onClose:
   const [fitMode,setFitMode] = useState<'contain'|'cover'>('contain');
   const [lightbox,setLightbox] = useState(false);
   const lbWrapperRef = useRef<HTMLDivElement|null>(null);
+  const firstFocusableRef = useRef<HTMLButtonElement|null>(null);
   const [zoom,setZoom] = useState(1);
   const [pan,setPan] = useState({x:0,y:0});
+  const openerButtonRef = useRef<HTMLElement|null>(null);
+  const [showUI,setShowUI] = useState(true);
+  const uiTimerRef = useRef<number|undefined>();
+  const [zoomIndicator,setZoomIndicator] = useState('1x');
   const panRef = useRef({x:0,y:0});
   // A11y roving focus para miniaturas
   const [thumbFocus,setThumbFocus] = useState(0);
@@ -46,7 +54,7 @@ export default function PuppyDetailsModal({ id, onClose }: { id:string; onClose:
           setPuppy(data);
           track.event?.('view_puppy_modal',{ id:data?.id, name: data?.nome||data?.name });
         }
-      } catch(e:any){ if(!abort) setError(e?.message||'Erro'); }
+  } catch(e){ if(!abort) setError((e as Error)?.message||'Erro'); }
       finally { if(!abort) setLoading(false); }
     })();
 
@@ -62,7 +70,11 @@ export default function PuppyDetailsModal({ id, onClose }: { id:string; onClose:
     if(!puppy) return undefined;
     const media = puppy.midia || puppy.media;
     // midia pode ser array de objetos {url} ou strings
-    const firstMedia = Array.isArray(media) && media.length? (media[0]?.url || media[0]): undefined;
+    let firstMedia: string | undefined = undefined;
+    if(Array.isArray(media) && media.length){
+      const first = media[0];
+      firstMedia = typeof first === 'string' ? first : first?.url;
+    }
     return puppy.imageUrl||puppy.image_url||puppy.image||puppy.foto||puppy.thumb||puppy.capa||puppy.cover||puppy.main_photo||puppy.photo||puppy.picture|| firstMedia;
   },[puppy]);
 
@@ -125,8 +137,14 @@ export default function PuppyDetailsModal({ id, onClose }: { id:string; onClose:
     if(!lightbox){
       setZoom(1); setPan({x:0,y:0}); panRef.current={x:0,y:0}; lastPanPointRef.current=null;
       pointersRef.current.clear(); pinchStartRef.current=null;
+      // Restaurar foco ao fechar
+      openerButtonRef.current?.focus?.();
       return;
     }
+    // Focar wrapper ao abrir para leitura de instruções por leitor de tela
+    requestAnimationFrame(()=>{
+      lbWrapperRef.current?.focus();
+    });
     function onWheel(e:WheelEvent){
       e.preventDefault();
       setZoom(z=> {
@@ -136,8 +154,15 @@ export default function PuppyDetailsModal({ id, onClose }: { id:string; onClose:
     }
     const el = lbWrapperRef.current;
     if(el) el.addEventListener('wheel', onWheel, { passive:false });
-    return ()=> { if(el) el.removeEventListener('wheel', onWheel as any); };
+  return ()=> { if(el) el.removeEventListener('wheel', onWheel as EventListener); };
   },[lightbox]);
+  // Reset zoom/pan ao mudar a imagem em modo lightbox para evitar carregar com pan antigo
+  useEffect(()=>{
+    if(lightbox){
+      setZoom(1); setPan({x:0,y:0}); panRef.current={x:0,y:0};
+      setZoomIndicator('1x');
+    }
+  },[index, lightbox]);
   // Clamp pan para não "perder" a imagem
   const clampPan = useCallback((p:{x:number;y:number}, z:number)=>{
     const el = lbWrapperRef.current;
@@ -245,6 +270,7 @@ export default function PuppyDetailsModal({ id, onClose }: { id:string; onClose:
       })
     : null;
   const instructionsId = `puppy-gallery-instructions-${id}`;
+  const lightboxInstructionsId = `puppy-lightbox-instructions-${id}`;
   const statusLiveId = `puppy-status-${id}`;
 
   // Focar miniatura quando roving index muda
@@ -255,7 +281,7 @@ export default function PuppyDetailsModal({ id, onClose }: { id:string; onClose:
     if(lightbox) lightboxThumbRefs.current[thumbFocus]?.focus();
   },[thumbFocus, lightbox]);
 
-  const onThumbListKey = (e:React.KeyboardEvent, inLightbox:boolean)=>{
+  const onThumbListKey = (e:React.KeyboardEvent)=>{
     if(e.key==='ArrowRight' || e.key==='ArrowLeft'){
       e.preventDefault();
       setThumbFocus(f=>{
@@ -276,7 +302,7 @@ export default function PuppyDetailsModal({ id, onClose }: { id:string; onClose:
       )}
       {error && <p className="text-sm text-red-600">Falha ao carregar: {error}</p>}
       {!loading && puppy && (
-        <div className="space-y-5">
+  <div className="space-y-5 pb-8 sm:pb-6 md:pb-6 mb-[env(safe-area-inset-bottom)]">
       {mediaUrls.length>0 && (
             <div
               className="relative group select-none"
@@ -285,13 +311,14 @@ export default function PuppyDetailsModal({ id, onClose }: { id:string; onClose:
               aria-label={`Galeria de imagens de ${name}`}
               aria-describedby={instructionsId}
             >
-              <div
+              <section
                 className="w-full overflow-hidden rounded-xl bg-zinc-100 aspect-[4/3] sm:aspect-[3/2] md:aspect-[16/10] relative"
                 onTouchStart={onTouchStart}
                 onTouchMove={onTouchMove}
                 onTouchEnd={onTouchEnd}
-        onDoubleClick={()=> setLightbox(true)}
-        onClick={(e)=> { if(e.detail===2) return; /* single click ignore */ }}
+                onDoubleClick={()=> setLightbox(true)}
+                aria-roledescription="visualização de imagem"
+                aria-label={`Imagem ${index+1} de ${mediaUrls.length}`}
               >
                 {/* Slider container */}
                 <div className="h-full w-full relative">
@@ -339,19 +366,21 @@ export default function PuppyDetailsModal({ id, onClose }: { id:string; onClose:
                     >{fitMode==='contain'? 'Ajustar (cover)':'Enquadrar (contain)'}</button>
                     <button
                       type="button"
-                      onClick={()=> setLightbox(true)}
+                      ref={el=> { if(el) openerButtonRef.current=el; }}
+                      onClick={()=> { setLightbox(true); setShowUI(true); resetAutoHide(); }}
                       className="absolute bottom-2 right-2 text-[11px] font-medium bg-black/50 text-white px-2 py-0.5 rounded-md backdrop-blur-sm hover:bg-black/60"
                       aria-label="Abrir em tela cheia"
                     >Zoom</button>
                   </>
                 )}
-              </div>
+              </section>
               {mediaUrls.length>1 && (
                 <div
                   className="mt-2 flex gap-2 overflow-x-auto pb-1 scrollbar-thin"
                   role="listbox"
                   aria-label="Miniaturas do filhote"
-                  onKeyDown={(e)=> onThumbListKey(e,false)}
+                  tabIndex={0}
+                  onKeyDown={onThumbListKey}
                 >
                   {mediaUrls.map((u,i)=> (
                     <button
@@ -376,9 +405,9 @@ export default function PuppyDetailsModal({ id, onClose }: { id:string; onClose:
           <div className="flex flex-wrap gap-4 text-xs sm:text-sm text-zinc-600">
             {formattedDate && <span className="inline-flex items-center gap-1"><span className="font-medium text-zinc-800">Nascimento:</span> {formattedDate}</span>}
             <span className="inline-flex items-center gap-1"><span className="font-medium text-zinc-800">Preço:</span> <span className="text-emerald-700 font-semibold">{formattedPrice}</span></span>
-            {puppy.gender && <span className="inline-flex items-center gap-1 capitalize"><span className="font-medium text-zinc-800">Sexo:</span> {puppy.gender}</span>}
+            {puppy.gender && <span className="inline-flex items-center gap-1"><span className="font-medium text-zinc-800">Sexo:</span> {puppy.gender === 'male' || puppy.gender === 'Male' ? 'Macho' : puppy.gender === 'female' || puppy.gender === 'Female' ? 'Fêmea' : puppy.gender}</span>}
             {puppy.color && <span className="inline-flex items-center gap-1"><span className="font-medium text-zinc-800">Cor:</span> {puppy.color}</span>}
-            {puppy.codigo && <span className="inline-flex items-center gap-1"><span className="font-medium text-zinc-800">Código:</span> {puppy.codigo}</span>}
+            {/* Código interno oculto para o cliente */}
             {puppy.status && (
               <span id={statusLiveId} className="inline-flex items-center gap-1" aria-live="polite">
                 <span className="font-medium text-zinc-800">Status:</span> {statusLabel(puppy.status)}
@@ -394,8 +423,8 @@ export default function PuppyDetailsModal({ id, onClose }: { id:string; onClose:
           )}
           {Array.isArray(puppy.midia) && puppy.midia.length>1 && (
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
-              {puppy.midia.slice(1,13).map((m:any,i:number)=>{
-                const url = m?.url || m; if(!url) return null;
+              {puppy.midia.slice(1,13).map((m: MediaItem|string,i:number)=>{
+                const url = (typeof m === 'string')? m : m.url; if(!url) return null;
                 return (
                   <div key={i} className="relative aspect-square overflow-hidden rounded-lg bg-zinc-100">
                     <Image
@@ -413,16 +442,17 @@ export default function PuppyDetailsModal({ id, onClose }: { id:string; onClose:
           <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:justify-end pt-1">
             <button
               onClick={()=>{
-                const phone = process.env.NEXT_PUBLIC_WA_PHONE;
-                const msg = `Olá! Quero saber mais sobre o filhote ${name}.`;
+                const raw = (process.env.NEXT_PUBLIC_WA_PHONE || process.env.NEXT_PUBLIC_WA_LINK || '551196863239').replace(/\D/g,'');
+                const phone = raw.startsWith('55')? raw : `55${raw}`;
+                const msg = `Olá! Vi o filhote ${name} (${puppy?.color || puppy?.cor || 'Cor não informada'}, ${puppy?.gender==='male'?'Macho':puppy?.gender==='female'?'Fêmea': 'Sexo não informado'}) e gostaria de saber disponibilidade, valor e condições.`;
                 const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
                 track.event?.('whatsapp_click_modal',{ puppy:name, id });
                 window.open(url,'_blank');
               }}
-              className="inline-flex items-center justify-center rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-white shadow hover:bg-emerald-600 transition w-full sm:w-auto"
+              className="inline-flex items-center justify-center rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-white shadow hover:bg-emerald-600 transition w-full sm:w-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
               aria-label="Conversar via WhatsApp sobre o filhote"
             >
-              <MessageCircle className="mr-2 h-4 w-4" /> Falar no WhatsApp
+              <WAIcon size={16} className="mr-2 h-4 w-4" /> Falar no WhatsApp
             </button>
             <button
               onClick={shareLink}
@@ -441,17 +471,36 @@ export default function PuppyDetailsModal({ id, onClose }: { id:string; onClose:
   {lightbox ? (
       <div
         ref={lbWrapperRef}
-        className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex flex-col"
+        className="fixed inset-0 z-[200] bg-black/95"
         role="dialog"
         aria-modal="true"
         aria-label={`Imagem ampliada ${index+1} de ${mediaUrls.length}`}
-        onClick={()=> setLightbox(false)}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
+        aria-describedby={lightboxInstructionsId}
+        tabIndex={-1}
+        onMouseDown={(e)=> { if(e.target === e.currentTarget){ setLightbox(false); } }}
+        onKeyDown={(e)=> {
+          if(e.key==='Escape') { e.preventDefault(); setLightbox(false); return; }
+          if(e.key==='ArrowRight') { e.preventDefault(); goNext(); }
+          else if(e.key==='ArrowLeft') { e.preventDefault(); goPrev(); }
+          else if(e.key==='Tab') {
+            // Trap de foco simples
+            const root = lbWrapperRef.current;
+            if(!root) return;
+            const focusables = Array.from(root.querySelectorAll<HTMLElement>("button,[href],[tabindex]:not([tabindex='-1'])"))
+              .filter(el=> !el.hasAttribute('disabled'));
+            if(focusables.length===0) return;
+            const first = focusables[0];
+            const last = focusables[focusables.length-1];
+            const active = document.activeElement as HTMLElement | null;
+            if(e.shiftKey){
+              if(active===first || active===root){ e.preventDefault(); last.focus(); }
+            } else {
+              if(active===last){ e.preventDefault(); first.focus(); }
+            }
+          }
+        }}
       >
-        <div className="flex items-center justify-between p-3 text-white text-xs gap-3 select-none">
+  <header className="absolute top-0 left-0 right-0 flex items-center justify-between p-3 text-white text-xs gap-3 select-none bg-gradient-to-b from-black/70 to-transparent" aria-label="Controles do visualizador">
           <div className="flex items-center gap-3">
             <span className="font-medium">{name}</span>
             <span className="opacity-70">{index+1}/{mediaUrls.length}</span>
@@ -461,28 +510,45 @@ export default function PuppyDetailsModal({ id, onClose }: { id:string; onClose:
             <button onClick={(e)=>{ e.stopPropagation(); goNext(); }} disabled={!canNext} className="px-3 py-1 rounded bg-white/10 hover:bg-white/20 disabled:opacity-30">›</button>
             <button onClick={(e)=>{ e.stopPropagation(); setFitMode(f=> f==='contain'?'cover':'contain'); }} className="px-3 py-1 rounded bg-white/10 hover:bg-white/20">{fitMode==='contain'? 'Cover':'Contain'}</button>
             <button onClick={(e)=>{ e.stopPropagation(); setZoom(1); setPan({x:0,y:0}); panRef.current={x:0,y:0}; }} className="px-3 py-1 rounded bg-white/10 hover:bg-white/20">Reset</button>
-            <button onClick={(e)=>{ e.stopPropagation(); setLightbox(false); }} className="px-3 py-1 rounded bg-white/20 hover:bg-white/30 font-medium">Fechar</button>
+            <button ref={firstFocusableRef} onClick={(e)=>{ e.stopPropagation(); setLightbox(false); }} className="h-8 w-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center" aria-label="Fechar visualização em tela cheia"><X className="h-4 w-4" /></button>
           </div>
-        </div>
-        <div className="flex-1 relative overflow-hidden" onClick={(e)=> e.stopPropagation()}>
+  </header>
+        <section
+          className="absolute inset-0 overflow-hidden select-none flex items-center justify-center"
+          role="group"
+          aria-label="Área de imagem"
+          onTouchStart={(e)=> { if(e.touches.length===1){ touchStartX.current = e.touches[0].clientX; }}}
+          onTouchEnd={(e)=> { if(touchStartX.current!=null){ const dx = (e.changedTouches[0].clientX - touchStartX.current); if(Math.abs(dx) > 60){ dx < 0 ? goNext() : goPrev(); } touchStartX.current=null; }}}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
+        >
           {mediaUrls[index] && (
             <Image
               src={mediaUrls[index]}
               alt={`Imagem ampliada ${index+1} de ${mediaUrls.length}`}
               fill
               sizes="100vw"
-              className={`${fitMode==='contain'? 'object-contain':'object-cover'} select-none`}
+              className={`${fitMode==='contain'? 'object-contain':'object-cover'} select-none transition-[filter] duration-300`}
               style={{ transform:`translate(${pan.x}px,${pan.y}px) scale(${zoom})`, transition:'transform 0.05s linear' }}
               draggable={false}
             />
           )}
-        </div>
+          {mediaUrls.length > 1 && (
+            <>
+              <button aria-label="Anterior" disabled={!canPrev} onClick={(e)=>{ e.stopPropagation(); goPrev(); }} className="absolute inset-y-0 left-0 w-1/4 cursor-pointer focus:outline-none disabled:opacity-0" />
+              <button aria-label="Próxima" disabled={!canNext} onClick={(e)=>{ e.stopPropagation(); goNext(); }} className="absolute inset-y-0 right-0 w-1/4 cursor-pointer focus:outline-none disabled:opacity-0" />
+            </>
+          )}
+  </section>
   {mediaUrls.length>1 && (
           <div
             className="w-full overflow-x-auto flex gap-2 p-3 bg-black/60 backdrop-blur-sm"
             role="listbox"
             aria-label="Miniaturas em tela cheia"
-            onKeyDown={(e)=> onThumbListKey(e,true)}
+            tabIndex={0}
+            onKeyDown={onThumbListKey}
           >
             {mediaUrls.map((u,i)=> (
               <button
@@ -501,6 +567,10 @@ export default function PuppyDetailsModal({ id, onClose }: { id:string; onClose:
             ))}
           </div>
         )}
+        {/* Instruções do lightbox para leitores de tela */}
+        <p id={lightboxInstructionsId} className="sr-only">
+          Visualização ampliada. Use setas esquerda e direita ou deslize para trocar a imagem. Pinça para aplicar zoom. Arraste a imagem quando ampliada para mover. Pressione Esc para fechar. Use Tab para navegar pelos botões e Shift + Tab para voltar.
+        </p>
       </div>
     ) : null}
     {/* Região viva para leitores de tela anunciar mudança de imagem */}

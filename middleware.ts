@@ -9,6 +9,11 @@ export function middleware(req: NextRequest) {
   const targetBase = (process.env.NEXT_PUBLIC_SITE_URL || "").trim();
   const shouldForceWww = targetBase.startsWith("https://www.");
   const { pathname } = url;
+  // Redirect canonical de /authors -> /autores (unificar idioma)
+  if (pathname.startsWith('/authors')) {
+    url.pathname = pathname.replace(/^\/authors/, '/autores');
+    return NextResponse.redirect(url, 308);
+  }
   if (!pathname.startsWith('/api') && shouldForceWww && url.hostname === targetBase.replace(/^https?:\/\//, "").replace(/^www\./, "") ) {
     // sem www (naked) -> redireciona para www
     url.hostname = `www.${url.hostname}`;

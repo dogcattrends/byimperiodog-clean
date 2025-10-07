@@ -1,8 +1,8 @@
 // src/components/home/RecentPostsListAnimated.tsx
 'use client';
 import { motion, useReducedMotion } from 'framer-motion';
-import Link from 'next/link';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export interface RecentPostItem {
 	id: string | number;
@@ -29,28 +29,31 @@ export default function RecentPostsListAnimated({ posts }: { posts: RecentPostIt
 						initial={baseHidden}
 						whileInView={{ opacity: 1, y: 0 }}
 						viewport={{ once: true, margin: '-40px' }}
-						transition={{ duration: 0.4, delay: idx * 0.06, ease: [0.16, 0.84, 0.44, 1] as any }}
+						transition={{ duration: 0.4, delay: idx * 0.06, ease: [0.16, 0.84, 0.44, 1] as [number, number, number, number] }}
 						className="group relative flex flex-col overflow-hidden rounded-2xl ring-1 ring-zinc-200/70 dark:ring-zinc-800 bg-white dark:bg-zinc-900 shadow-sm transition-shadow hover:shadow-md focus-within:ring-emerald-500/50"
 					>
 						<Link href={`/blog/${p.slug}`} className="focus:outline-none" aria-label={`Ler artigo: ${p.title}`}>
-							<div className="relative aspect-[16/9] w-full overflow-hidden bg-zinc-100 dark:bg-zinc-800">
-								{p.cover_url ? (
-									<Image
-										src={p.cover_url}
-										alt={p.title}
+						<div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-800">
+							{p.cover_url ? (
+								<Image
+									src={p.cover_url}
+									alt={p.title}
 										width={800}
 										height={450}
-										loading="lazy"
-										sizes="(min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw"
-										className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-									/>
-								) : (
-									<div className="absolute inset-0 flex items-center justify-center text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
-										Sem capa
-									</div>
-								)}
-								<span className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/40 to-transparent" aria-hidden="true" />
-							</div>
+										loading={idx===0 ? 'eager':'lazy'}
+										priority={idx===0}
+										fetchPriority={idx===0 ? 'high':'auto'}
+										decoding={idx===0 ? 'sync':'async'}
+										sizes="(max-width:640px) 100vw, (max-width:1024px) 50vw, 33vw"
+									className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+								/>
+							) : (
+								<div className="absolute inset-0 flex items-center justify-center text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
+									Sem capa
+								</div>
+							)}
+							<span className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/35 to-transparent" aria-hidden="true" />
+						</div>
 							<div className="flex flex-1 flex-col p-4">
 								<h3 className="line-clamp-2 font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 group-hover:text-emerald-700 transition-colors">
 									{p.title}

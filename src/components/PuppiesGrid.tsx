@@ -1,15 +1,18 @@
 "use client";
 
+import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useMemo, useState, useCallback, useRef, useTransition } from "react";
+
 import { supabasePublic } from "@/lib/supabasePublic";
 import track from "@/lib/track";
-import PuppyCard from "./PuppyCard";
-import PuppyDetailsModal from "./PuppyDetailsModal";
-import PuppiesFilterBar from "./PuppiesFilterBar";
-import PuppyCardSkeleton from "./PuppyCardSkeleton";
-import { motion, AnimatePresence } from "framer-motion";
 
-// Tipagem permissiva porém consolidada para reduzir "any" espalhado
+import PuppiesFilterBar from "./PuppiesFilterBar";
+import PuppyCard from "./PuppyCard";
+import PuppyCardSkeleton from "./PuppyCardSkeleton";
+import PuppyDetailsModal from "./PuppyDetailsModal";
+import PuppyStories from "./PuppyStories";
+
+// Tipagem permissiva, mas consolidada para reduzir o uso de any espalhado
 type Puppy = {
   id: string;
   nome?: string | null; name?: string | null;
@@ -20,7 +23,7 @@ type Puppy = {
   imageUrl?: string | null; image_url?: string | null; image?: string | null; imagem?: string | null;
   foto?: string | null; foto_principal?: string | null; thumb?: string | null; thumbnail?: string | null;
   capa?: string | null; cover?: string | null; main_photo?: string | null; photo?: string | null; picture?: string | null;
-  midia?: any;
+  midia?: unknown;
   created_at?: string | null;
 };
 
@@ -28,26 +31,21 @@ function isVideo(u: string) {
   return /\.(mp4|webm|mov)$/i.test(u);
 }
 
-function firstImageFromMedia(m: any): string | undefined {
+function firstImageFromMedia(m: unknown): string | undefined {
   if (!m) return;
   if (!Array.isArray(m) && typeof m === "object") {
-    const bucket =
-      (m as any).images ||
-      (m as any).fotos ||
-      (m as any).media ||
-      (m as any).itens ||
-      (m as any).items;
+    const o = m as Record<string, unknown>;
+    const bucket = (o as Record<string, unknown>).images as unknown[]
+      || (o as Record<string, unknown>).fotos as unknown[]
+      || (o as Record<string, unknown>).media as unknown[]
+      || (o as Record<string, unknown>).itens as unknown[]
+      || (o as Record<string, unknown>).items as unknown[];
     if (Array.isArray(bucket)) m = bucket;
   }
-  const tryAnyUrl = (obj: any): string | undefined => {
+  const tryAnyUrl = (obj: unknown): string | undefined => {
     if (!obj || typeof obj !== "object") return;
-    const u =
-      obj.url ||
-      obj.src ||
-      obj.href ||
-      obj.path ||
-      obj.publicUrl ||
-      obj.downloadURL;
+    const o = obj as Record<string, unknown>;
+    const u = (o.url || o.src || o.href || o.path || o.publicUrl || o.downloadURL) as unknown;
     if (typeof u === "string" && !isVideo(u)) return u;
   };
   const arr = Array.isArray(m) ? m : [];
@@ -59,18 +57,19 @@ function firstImageFromMedia(m: any): string | undefined {
       if (u) return u;
     }
   }
+  return undefined;
 }
 const pickCover = (p: Puppy): string | undefined => (
   p.imageUrl || p.image_url || p.image || p.imagem ||
-  p.cover || (p as any).cover_url || p.capa ||
+  p.cover || (p as Record<string, unknown> & { cover_url?: string }).cover_url || p.capa ||
   p.foto || p.foto_principal || p.thumb || p.thumbnail ||
   p.main_photo || p.photo || p.picture ||
-  // media/ midia array já normalizada (strings) pode existir após script de normalização
-  (Array.isArray((p as any).media) && (p as any).media[0]) ||
+  // Media ou midia em array ja normalizada pode existir apos scripts de normalizacao
+  (Array.isArray((p as unknown as { media?: unknown[] }).media) && (p as unknown as { media?: unknown[] }).media?.[0] as string) ||
   firstImageFromMedia(p.midia)
 );
 
-// Normaliza string para busca (remove acentos + lower)
+// Normaliza string para busca removendo acentos e convertendo para minusculas
 const normalize = (s: string) => s
   .normalize("NFD")
   .replace(/\p{Diacritic}/gu, "")
@@ -80,7 +79,7 @@ export default function PuppiesGrid() {
   const [items, setItems] = useState<Puppy[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [retryMark, setRetryMark] = useState(0); // força re-execução
+  const [retryMark, setRetryMark] = useState(0); // fora re-execuo
   const [isPendingFilter, startTransition] = useTransition();
   const mountedRef = useRef(true);
 
@@ -90,8 +89,11 @@ export default function PuppiesGrid() {
   const [status, setStatus] = useState<string>("");
   const [color, setColor] = useState<string>("");
 
-  // modal
+  // modal de detalhes
   const [openId, setOpenId] = useState<string | null>(null);
+  // stories
+  const [storiesOpen, setStoriesOpen] = useState(false);
+  const [storyIndex, setStoryIndex] = useState(0);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -105,19 +107,15 @@ export default function PuppiesGrid() {
           .from("puppies")
           .select("*")
           .order("created_at", { ascending: false });
-        if (error) {
-          console.debug('[puppies.grid] supabase error', error);
-          throw error;
-        }
+  if (error) { throw error; }
         if (mountedRef.current) {
-          console.debug('[puppies.grid] loaded rows', data?.length);
           setItems((data ?? []) as Puppy[]);
           track.event?.("list_loaded", { count: (data ?? []).length });
         }
-      } catch (e: any) {
-        if (e?.name === 'AbortError') return;
-        console.error(e);
-        if (mountedRef.current) setError(e?.message || "Erro ao carregar filhotes.");
+      } catch (e) {
+        const err = e as { name?: string; message?: string };
+        if (err?.name === 'AbortError') return;
+        if (mountedRef.current) setError(err?.message || "Erro ao carregar filhotes.");
       } finally {
         if (mountedRef.current) setLoading(false);
       }
@@ -142,7 +140,7 @@ export default function PuppiesGrid() {
   }, [items]);
 
   const filtered = useMemo(() => {
-    // Filtragem pura (rápida) - strings já normalizadas sob demanda
+    // Filtragem rapida - strings ja normalizadas sob demanda
     let arr = items;
     const qTerm = q.trim();
     const wantsSearch = !!qTerm;
@@ -167,18 +165,17 @@ export default function PuppiesGrid() {
       const cSel = color.toLowerCase();
       arr = arr.filter(p => String(p.cor || p.color || '').toLowerCase() === cSel);
     }
-  console.debug('[puppies.grid] filtering result', arr.length);
   return arr;
   }, [items, q, gender, status, color]);
 
-  // Handlers que usam transição para evitar travar digitação
+  // Handlers que usam transicao para evitar travar digitacao
   const setQDeferred = useCallback((val: string) => {
     startTransition(() => setQ(val));
   }, []);
 
   return (
-    <section id="filhotes" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      {/* 🔹 Barra de filtros */}
+    <section id="filhotes" className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+      {/* Barra de filtros */}
       <PuppiesFilterBar
         q={q}
         setQ={setQDeferred}
@@ -195,7 +192,7 @@ export default function PuppiesGrid() {
       />
 
       <div className="sr-only" role="status" aria-live="polite">
-        {isPendingFilter ? 'Atualizando lista…' : `${filtered.length} de ${items.length} filhotes exibidos`}
+        {isPendingFilter ? 'Atualizando lista...' : `${filtered.length} de ${items.length} filhotes exibidos`}
       </div>
 
       {/* Mensagem de erro */}
@@ -212,20 +209,50 @@ export default function PuppiesGrid() {
               type="button"
               onClick={()=>{ setError(null); setItems([]); setRetryMark(m=>m+1); }}
               className="rounded-md bg-white text-rose-600 px-3 py-1.5 text-xs font-medium shadow ring-1 ring-rose-300 hover:bg-rose-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-400"
-            >Limpar & Recarregar</button>
+            >Limpar e recarregar</button>
           </div>
         </div>
       )}
 
       {/* Carregando */}
       {loading && (
-        <p className="py-4 text-center text-sm text-zinc-500 animate-pulse">
-          🐾 Procurando os filhotes mais fofos...
+        <p className="py-4 text-center text-sm text-[var(--text-muted)] animate-pulse">
+          Procurando os filhotes mais fofos...
         </p>
       )}
 
+      {/* Stories launcher - mobile only */}
+      {items.length > 0 && (
+        <div className="mt-6 -mb-2 block sm:hidden" aria-label="Stories de filhotes">
+          <div className="flex gap-3 overflow-x-auto pb-2 pl-1 pr-1 snap-x" role="list">
+            {items.slice(0,12).map((p,i)=>{
+              const cover = pickCover(p) || undefined;
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={()=>{ setStoryIndex(i); setStoriesOpen(true); track.event?.('stories_open', { puppy_id: p.id, index: i }); }}
+                  className="flex flex-col items-center gap-1 snap-start"
+                  aria-label={`Abrir story de ${p.nome || p.name || 'filhote'}`}
+                >
+                  <span className="relative inline-block h-16 w-16 overflow-hidden rounded-full ring-2 ring-emerald-500 ring-offset-2 ring-offset-white shadow">
+                    {cover ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={cover} alt="" className="h-full w-full object-cover" loading="lazy" />
+                    ) : (
+                      <span className="grid h-full w-full place-items-center text-[10px] text-zinc-400 bg-zinc-100">Sem</span>
+                    )}
+                  </span>
+                  <span className="w-16 truncate text-center text-[10px] font-medium text-zinc-600">{(p.nome||p.name||'Filhote').split(' ')[0]}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Grid */}
-  <div className="grid grid-cols-1 gap-6 py-6 sm:grid-cols-2 xl:grid-cols-3" aria-busy={loading || undefined} aria-live="polite">
+      <div className="grid grid-cols-1 gap-6 py-6 sm:grid-cols-2 xl:grid-cols-3" aria-busy={loading || undefined} aria-live="polite">
         <AnimatePresence>
           {loading
             ? Array.from({ length: 6 }).map((_, i) => (
@@ -250,14 +277,24 @@ export default function PuppiesGrid() {
 
       {/* Nenhum encontrado */}
       {!loading && filtered.length === 0 && !error && (
-        <p className="mt-6 text-center text-sm text-zinc-500">
-          😢 Nenhum Spitz encontrado com esses filtros.
+        <p className="mt-6 text-center text-sm text-[var(--text-muted)]">
+          Nenhum Spitz encontrado com esses filtros.
         </p>
       )}
 
-      {/* Modal */}
+      {/* Modal detalhes */}
       {openId && (
         <PuppyDetailsModal id={openId} onClose={() => setOpenId(null)} />
+      )}
+
+      {/* Stories fullscreen */}
+      {storiesOpen && (
+        <PuppyStories
+          items={items.map(p=>({ id: p.id, name: p.nome || p.name, cover: pickCover(p) || null, color: p.cor || p.color, gender: p.gender }))}
+          initialIndex={storyIndex}
+          open={storiesOpen}
+          onClose={()=> setStoriesOpen(false)}
+        />
       )}
     </section>
   );

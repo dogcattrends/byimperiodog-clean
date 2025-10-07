@@ -7,6 +7,8 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     env:
+      # NOTE: Alguns validadores locais podem sinalizar "Context access might be invalid" para secrets abaixo.
+      # Se o workflow roda corretamente no GitHub Actions, estes avisos podem ser ignorados.
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}

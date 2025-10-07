@@ -7,7 +7,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { adminFetch } from "@/lib/adminFetch";
 import { formatDateShort, formatDateTime } from "@/lib/format/date";
-import { AdminShell } from "@/components/admin/AdminShell";
 import { BlogSubnav } from "@/components/admin/BlogSubnav";
 import { MetricCard } from "@/components/admin/MetricCard";
 import { Button } from "@/components/ui/button";
@@ -262,9 +261,9 @@ export default function AdminBlogPage() {
   const draftCount = posts.filter((post) => post.status === "draft").length;
 
   return (
-    <AdminShell>
-      <BlogSubnav />
+    <>
       <div className="mx-auto max-w-7xl space-y-6 px-4 py-6">
+        <BlogSubnav />
         <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Posts do Blog</h1>
@@ -574,6 +573,6 @@ export default function AdminBlogPage() {
           </DialogActions>
         </DialogContent>
       </Dialog>
-    </AdminShell>
+    </>
   );
 }

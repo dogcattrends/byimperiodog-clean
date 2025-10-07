@@ -10,9 +10,13 @@ reports
 test-results
 
 # Arquivos temporários/pesados
---backup.zip
+backup.zip
 *.tgz
 *.log
+
+# Conteúdo e dados não necessários no deploy
+sql
+docs
 
 # IDE/config local
 .vscode

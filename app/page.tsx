@@ -1,47 +1,43 @@
-﻿// app/page.tsx (refatorado premium)
+﻿// app/page.tsx
 import "server-only";
-// Componentes estruturais / seções
-import Navbar from "@/components/Navbar";
+
 import Hero from "@/components/Hero";
 import HeroParallaxClient from "@/components/HeroParallaxClient";
-import Footer from "@/components/Footer";
-import Testimonials from "@/components/Testimonials";
-import PuppiesGrid from "@/components/PuppiesGrid";
-// Infra
 import { RecentPostsSectionSuspense } from "@/components/home/RecentPostsSection";
+import PuppiesGrid from "@/components/PuppiesGrid";
+import Testimonials from "@/components/Testimonials";
 
-export const revalidate = 60; // ISR 60s
+export const revalidate = 60; // ISR interval in seconds
 
 export default async function HomePage() {
   return (
     <main id="conteudo-principal" className="relative flex flex-col">
-      <Navbar />
-      {/* Parallax & Hero (H1 interno no componente Hero) */}
+      {/* Hero and parallax experience */}
       <HeroParallaxClient />
       <div className="parallax-root" id="hero-parallax">
         <Hero />
       </div>
-      {/* Grade dinâmica de filhotes */}
+
+      {/* Puppies listing */}
       <PuppiesGrid />
       <RecentPostsSectionSuspense />
-  <Testimonials />
-      <Footer />
-  {/* JSON-LD básico para WebSite */}
+      <Testimonials />
+
+      {/* Basic WebSite structured data */}
       <script
         type="application/ld+json"
-        // SEO: Estrutura mínima agregada; lista de posts recent será injetada via seção client (opcional) se necessário.
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'WebSite',
-    name: 'By Império Dog',
-  url: process.env.NEXT_PUBLIC_SITE_URL || 'https://www.byimperiodog.com.br',
+            name: 'By Imperio Dog',
+            url: (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.byimperiodog.com.br'),
             potentialAction: {
               '@type': 'SearchAction',
-  target: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.byimperiodog.com.br'}/blog?q={search_term_string}`,
-              'query-input': 'required name=search_term_string'
-            }
-          })
+              target: `${(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.byimperiodog.com.br')}/blog?q={search_term_string}`,
+              'query-input': 'required name=search_term_string',
+            },
+          }),
         }}
       />
     </main>

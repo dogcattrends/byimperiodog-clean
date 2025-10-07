@@ -3,7 +3,6 @@
 // Mantém API simples para o front.
 
 import { getRelatedPosts as getRelatedSupabase } from '@/lib/relatedPosts';
-import { getRelatedPosts as getRelatedContent } from '@/lib/content';
 
 /**
  * Obtém posts relacionados independente da origem.
@@ -12,12 +11,9 @@ import { getRelatedPosts as getRelatedContent } from '@/lib/content';
 export async function getRelatedUnified(slug: string, limit = 6) {
   try {
     const supa = await getRelatedSupabase(slug, limit);
-    if (supa && supa.length) return supa.slice(0, limit);
-  } catch {}
-  try {
-    const alt = await getRelatedContent(slug, limit);
-    return alt.slice(0, limit);
-  } catch {
+    return supa.slice(0, limit);
+  } catch (e) {
+    console.error('relatedUnified erro', e);
     return [];
   }
 }

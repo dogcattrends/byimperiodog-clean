@@ -13,6 +13,7 @@ create table if not exists public.site_settings (
   hotjar_id text,              -- 123456
   clarity_id text,             -- abcdef
   meta_domain_verify text,     -- para <meta name="facebook-domain-verification" ...>
+  custom_pixels jsonb default '[]'::jsonb,
 
   -- Meta semanal customizável de criação de posts
   weekly_post_goal int default 7 check (weekly_post_goal between 1 and 100),
@@ -23,6 +24,9 @@ create table if not exists public.site_settings (
 
   updated_at timestamptz not null default now()
 );
+
+alter table public.site_settings
+  add column if not exists custom_pixels jsonb default '[]'::jsonb;
 
 -- Touch
 create or replace function public.site_settings_touch()
