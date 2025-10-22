@@ -29,18 +29,19 @@ function norm(v: unknown): string {
 export function resolveTracking(settings: Record<string, unknown> | null | undefined, env = process.env): TrackingIDs {
   const rawCustom = Array.isArray(settings?.custom_pixels) ? settings?.custom_pixels : [];
   const custom: CustomPixelConfig[] = rawCustom
-    .map((item: any, index: number) => {
-      if (!item) return null;
+    .map((item: Record<string, unknown>, index: number): CustomPixelConfig | undefined => {
+      if (!item) return undefined;
       const id = typeof item.id === 'string' && item.id.trim() ? item.id.trim() : `custom-${index + 1}`;
       const label = typeof item.label === 'string' ? item.label.trim() : `Pixel ${index + 1}`;
-      const slot = item.slot === 'body' ? 'body' : 'head';
+      const slot = item.slot === 'body' ? 'body' as const : 'head' as const;
       const enabled = item.enabled === false ? false : true;
       const code = typeof item.code === 'string' ? item.code.trim() : '';
       const noscript = typeof item.noscript === 'string' ? item.noscript.trim() : undefined;
-      if (!code || !label) return null;
+      if (!code || !label) return undefined;
+      return { id, label, slot, enabled, code, noscript } as CustomPixelConfig;
       return { id, label, slot, enabled, code, noscript } satisfies CustomPixelConfig;
     })
-    .filter((item): item is CustomPixelConfig => Boolean(item));
+    .filter((item): item is CustomPixelConfig => item !== undefined);
 
   return {
     gtm: norm(settings?.gtm_id ?? env.NEXT_PUBLIC_GTM_ID),
