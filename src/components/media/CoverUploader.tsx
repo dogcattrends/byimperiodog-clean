@@ -1,12 +1,13 @@
 ﻿// PATH: src/components/media/CoverUploader.tsx
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
 import { UploadCloud, Loader2, ImageIcon, Trash2 } from "lucide-react";
-import { adminFetch } from "@/lib/adminFetch";
+import Image from "next/image";
+import { useEffect, useMemo, useRef, useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { adminFetch } from "@/lib/adminFetch";
 import { cn } from "@/lib/cn";
 
 type Aspect = "16:9" | "4:3" | "1:1";
@@ -89,7 +90,7 @@ export default function CoverUploader({
       if (postId) form.set("post_id", postId);
       const response = await adminFetch("/api/admin/blog/media/upload", {
         method: "POST",
-        body: form as any,
+        body: form,
         cache: "no-store",
       });
       const payload = await response.json();
@@ -112,8 +113,9 @@ export default function CoverUploader({
     if (!file) return;
     try {
       await handleUpload(file);
-    } catch (err: any) {
-      setError(err?.message || "Erro desconhecido");
+    } catch (err: Error | unknown) {
+      const error = err instanceof Error ? err : new Error("Erro desconhecido");
+      setError(error.message);
       setObjectPreview(null);
     } finally {
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -127,8 +129,9 @@ export default function CoverUploader({
     if (!file) return;
     try {
       await handleUpload(file);
-    } catch (err: any) {
-      setError(err?.message || "Erro desconhecido");
+    } catch (err: Error | unknown) {
+      const error = err instanceof Error ? err : new Error("Erro desconhecido");
+      setError(error.message);
       setObjectPreview(null);
     }
   }
