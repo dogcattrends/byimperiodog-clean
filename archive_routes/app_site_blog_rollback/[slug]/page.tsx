@@ -3,9 +3,7 @@ import type { Metadata } from "next";
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from "next/navigation";
-
 // Módulos externos
-import type { MDXRemoteProps } from "next-mdx-remote/rsc";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeSlug from "rehype-slug";
@@ -18,7 +16,6 @@ import { mdxComponents } from "@/components/MDXContent";
 import { SeoArticle } from "@/components/SeoArticle";
 import SeoJsonLd from "@/components/SeoJsonLd";
 import ShareButtons from '@/components/ShareButtons';
-
 // Utilitários e serviços
 import { getBreadcrumbJsonLd, getPostJsonLd } from '@/lib/jsonld';
 import { getRelatedPosts } from '@/lib/relatedPosts';
@@ -30,59 +27,35 @@ interface NavigationItem {
   title: string;
 }
 
-interface Category {
-  name: string;
-  slug: string;
-}
-
-interface PostCategory {
-  blog_categories: Category;
-}
-
-interface JsonLdData {
-  '@context': string;
-  '@type': string;
-  [key: string]: unknown;
-}
-
-interface Author {
-  name: string;
-  slug: string;
-  avatar_url?: string;
-  bio?: string;
-}
-
 interface Post {
   id: string;
   slug: string;
   title: string;
-  subtitle?: string;
-  published_at: string;
-  reading_time?: number;
   content: string;
-  excerpt?: string;
-  content_mdx?: string;
-  cover_url?: string;
-  blog_authors?: Author;
-  blog_post_categories?: PostCategory[];
-}
-
-type Post = {
-  id: string;
-  slug: string;
-  title: string;
   subtitle: string | null;
-  cover_url: string | null;
+  published_at: string | null;
+  reading_time: number | null;
   excerpt: string | null;
   content_mdx: string | null;
+  cover_url: string | null;
   seo_title?: string | null;
   seo_description?: string | null;
   og_image_url?: string | null;
-  published_at: string | null;
-  reading_time?: number | null;
-  blog_post_categories?: { category_id:string; blog_categories?: { name:string; slug:string } | null }[];
-  blog_authors?: { id:string; name:string; slug:string; avatar_url:string|null; bio:string|null } | null;
-};
+  blog_post_categories?: { 
+    category_id: string; 
+    blog_categories?: { 
+      name: string; 
+      slug: string; 
+    } | null;
+  }[];
+  blog_authors?: { 
+    id: string;
+    name: string;
+    slug: string;
+    avatar_url: string | null;
+    bio: string | null;
+  } | null;
+}
 
 export const revalidate = 60;
 
