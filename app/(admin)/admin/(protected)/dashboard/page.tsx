@@ -1,17 +1,17 @@
 ﻿"use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { motion } from "framer-motion";
+import Link from "next/link";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
-import { adminFetch } from "@/lib/adminFetch";
-import { describeAdminStreak, readAdminStreak, type AdminStreak } from "@/lib/adminStreak";
-import { Header } from "@/components/dashboard/Header";
-import { Main } from "@/components/dashboard/Main";
 import { ChartCard } from "@/components/dashboard/ChartCard";
 import { DataTable } from "@/components/dashboard/DataTable";
 import { FiltersBar, type DashboardFilters } from "@/components/dashboard/FiltersBar";
+import { Header } from "@/components/dashboard/Header";
+import { Main } from "@/components/dashboard/Main";
 import { ErrorState } from "@/components/dashboard/states";
+import { adminFetch } from "@/lib/adminFetch";
+import { describeAdminStreak, readAdminStreak, type AdminStreak } from "@/lib/adminStreak";
 
 interface CoverageSummary {
   percent: number;
@@ -52,7 +52,7 @@ interface Metrics {
   series: number[];
   mediaDia: number;
   topFontes: { src: string; count: number; pct: number }[];
-  recent: any[];
+  recent: Array<{ id: string; name?: string; phone?: string; email?: string; created_at: string }>;
   pupStatus: Record<string, number>;
   contratos: number;
   contractStatus?: Record<string, number>;
@@ -302,7 +302,7 @@ export default function AdminDashboard() {
   }, []);
 
   const xpProfile = useMemo(() => buildXpProfile(metrics), [metrics]);
-  const quests = useMemo(() => buildQuests(metrics), [metrics, timeframe]);
+  const quests = useMemo(() => buildQuests(metrics), [metrics]);
   const questCompletion = useMemo(() => {
     if (!quests.length) return 0;
     const completed = quests.filter((quest) => quest.done).length;
@@ -343,10 +343,8 @@ export default function AdminDashboard() {
         <motion.div {...motionConfig} className="space-y-10" id="main">
           {error ? (
             <ErrorState
-              title="Nao conseguimos carregar os dados"
-              description="Verifique sua conexao ou tente novamente em instantes."
-              actionLabel="Recarregar"
-              onAction={() => load(timeframe)}
+              message="Não conseguimos carregar os dados. Verifique sua conexão ou tente novamente em instantes."
+              retry={() => load(timeframe)}
             />
           ) : null}
 
