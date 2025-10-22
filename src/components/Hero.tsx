@@ -20,14 +20,16 @@ type ParticlesComponent = React.ComponentType<ParticlesProps>;
 let ParticlesCmp: ParticlesComponent | null = null;
 async function ensureParticles() {
   if (!ParticlesCmp) {
-    const mod = await import("react-tsparticles");
-    ParticlesCmp = (mod as any).default || (mod as any);
+  const mod = await import("react-tsparticles");
+  ParticlesCmp = (mod as Record<string, unknown>).default as unknown as ParticlesComponent || (mod as unknown as ParticlesComponent);
   }
   return ParticlesCmp;
 }
 async function loadSlimEngine(engine: ParticlesEngine) {
-  const slim: any = await import("tsparticles-slim");
-  await slim.loadSlim(engine as any);
+  const slim = await import("tsparticles-slim") as Record<string, unknown>;
+  if (typeof slim.loadSlim === "function") {
+    await slim.loadSlim(engine);
+  }
 }
 
 type SvgIcon = ComponentType<SVGProps<SVGSVGElement> & { size?: number }>;
@@ -86,10 +88,16 @@ export default function Hero() {
       (entries) => {
         const entry = entries[0];
         if (entry?.isIntersecting) {
-          const schedule = (cb: () => void) =>
-            (window as any).requestIdleCallback
-              ? (window as any).requestIdleCallback(cb, { timeout: 1200 })
-              : setTimeout(cb, 120);
+          const schedule = (cb: () => void) => {
+            const win = window as Window & {
+              requestIdleCallback?: (cb: () => void, opts?: { timeout?: number }) => void;
+            };
+            if (typeof win.requestIdleCallback === "function") {
+              win.requestIdleCallback(cb, { timeout: 1200 });
+            } else {
+              setTimeout(cb, 120);
+            }
+          };
 
           schedule(async () => {
             try {
@@ -177,7 +185,7 @@ export default function Hero() {
           className="w-full max-w-3xl space-y-8 lg:flex-1"
         >
           <span className="inline-flex items-center gap-3 rounded-full border border-[var(--brand)]/30 bg-white/85 px-4 py-1 text-xs font-semibold uppercase tracking-[0.35em] text-[var(--brand)]">
-            Criação boutique de Spitz Alemão Anão Lulu da Pomerânia
+            Criação de Spitz Alemão Anão Lulu da Pomerânia
           </span>
           <div className="space-y-4">
             <h1 id="hero-heading" className="text-4xl font-bold tracking-tight text-[var(--text)] sm:text-5xl">

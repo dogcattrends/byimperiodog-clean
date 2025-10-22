@@ -1,11 +1,12 @@
-﻿import type { Metadata } from "next";
+﻿
+import { CheckCircle, Heart, Home, PawPrint, Shield, Users } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { WhatsAppIcon as WAIcon } from "@/components/icons/WhatsAppIcon";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { routes } from "@/lib/route";
-import { CheckCircle, Heart, Home, PawPrint, Shield, Users } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Sobre a By Império Dog | Criadora especialista em Spitz Alemão Anão Lulu da Pomerânia",
@@ -30,7 +31,7 @@ const timeline = [
     year: "2019",
     title: "Estrutura dedicada aos filhotes",
     description:
-      "Construímos um canil boutique integrado à residência, com ambientes climatizados, maternidade monitorada e espaço de socialização para o Spitz Alemão Anão Lulu da Pomerânia.",
+      "Construímos um canil integrado à residência, com ambientes climatizados, maternidade monitorada e espaço de socialização para o Spitz Alemão Anão Lulu da Pomerânia.",
   },
   {
     year: "2023",
@@ -100,7 +101,7 @@ export default function SobrePage() {
           By Império Dog: criação familiar dedicada ao Spitz Alemão Anão Lulu da Pomerânia
         </h1>
         <p className="mt-4 max-w-3xl text-base text-[var(--text-muted)] sm:text-lg">
-          Localizada em Bragança Paulista, nossa criação boutique prioriza afeto, responsabilidade genética e mentoria contínua para famílias que buscam um Spitz Alemão Anão Lulu da Pomerânia equilibrado e saudável.
+          Localizada em Bragança Paulista, nossa criação prioriza afeto, responsabilidade genética e mentoria contínua para famílias que buscam um Spitz Alemão Anão Lulu da Pomerânia equilibrado e saudável.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3 sm:justify-start">
           <Link
@@ -175,7 +176,7 @@ export default function SobrePage() {
           <p className="mt-2 text-sm text-[var(--text-muted)]">
             Após a chegada do Spitz Alemão Anão Lulu da Pomerânia, você continua próximo da nossa equipe e especialistas parceiros.
           </p>
-          <ul className="mt-4 space-y-3" role="list">
+          <ul className="mt-4 space-y-3">
             {supportItems.map((item) => (
               <li key={item} className="flex items-start gap-2 text-sm text-[var(--text)]">
                 <CheckCircle className="mt-1 h-4 w-4 flex-none text-[var(--brand)]" aria-hidden />
