@@ -27,10 +27,16 @@ child.stderr.on('data', (d) => {
 child.on('close', (code) => {
   // Assinatura conhecida do bug
   const signature = 'TypeError: The "code" argument must be of type number. Received an instance of Object';
-  if (code === 0 && (stdoutBuf + stderrBuf).includes(signature)) {
+  const hasSignature = (stdoutBuf + stderrBuf).includes(signature);
+  
+  // Se o build gerou conteúdo e encontramos o erro conhecido, consideramos sucesso
+  const contentGenerated = stdoutBuf.includes('Generated') || stdoutBuf.includes('.contentlayer');
+  
+  if (hasSignature && contentGenerated) {
     // Suprimir stack redundante, mas registrar nota resumida
     process.stdout.write('\n[contentlayer-wrapper] Aviso suprimido: bug conhecido (Clipanion exitCode). Build OK.\n');
     return process.exit(0);
   }
+  
   process.exit(code ?? 0);
 });

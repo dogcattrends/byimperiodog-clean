@@ -3,6 +3,7 @@
 import { Loader, Link as LinkIcon, Share2, X } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
+
 import { Modal } from '@/components/dashboard/Modal';
 import { WhatsAppIcon as WAIcon } from '@/components/icons/WhatsAppIcon';
 import { supabasePublic } from '@/lib/supabasePublic';
@@ -20,14 +21,13 @@ export default function PuppyDetailsModal({ id, onClose }: { id:string; onClose:
   const touchDeltaX = useRef(0);
   const [fitMode,setFitMode] = useState<'contain'|'cover'>('contain');
   const [lightbox,setLightbox] = useState(false);
-  const lbWrapperRef = useRef<HTMLDivElement|null>(null);
+  const lbWrapperRef = useRef<HTMLButtonElement|null>(null);
   const firstFocusableRef = useRef<HTMLButtonElement|null>(null);
   const [zoom,setZoom] = useState(1);
   const [pan,setPan] = useState({x:0,y:0});
   const openerButtonRef = useRef<HTMLElement|null>(null);
   const [showUI,setShowUI] = useState(true);
-  const uiTimerRef = useRef<number|undefined>();
-  const [zoomIndicator,setZoomIndicator] = useState('1x');
+  const uiTimerRef = useRef<number|undefined>(undefined);
   const panRef = useRef({x:0,y:0});
   // A11y roving focus para miniaturas
   const [thumbFocus,setThumbFocus] = useState(0);
@@ -42,6 +42,16 @@ export default function PuppyDetailsModal({ id, onClose }: { id:string; onClose:
     center:{x:number;y:number};
     pan:{x:number;y:number};
   }|null>(null);
+
+  const resetAutoHide = useCallback(() => {
+    if (uiTimerRef.current) {
+      clearTimeout(uiTimerRef.current);
+    }
+    setShowUI(true);
+    uiTimerRef.current = window.setTimeout(() => {
+      setShowUI(false);
+    }, 3000);
+  }, []);
 
   useEffect(() => {
     let abort = false;
@@ -160,7 +170,6 @@ export default function PuppyDetailsModal({ id, onClose }: { id:string; onClose:
   useEffect(()=>{
     if(lightbox){
       setZoom(1); setPan({x:0,y:0}); panRef.current={x:0,y:0};
-      setZoomIndicator('1x');
     }
   },[index, lightbox]);
   // Clamp pan para não "perder" a imagem
@@ -469,108 +478,138 @@ export default function PuppyDetailsModal({ id, onClose }: { id:string; onClose:
       )}
   </Modal>
   {lightbox ? (
-      <div
-        ref={lbWrapperRef}
-        className="fixed inset-0 z-[200] bg-black/95"
-        role="dialog"
-        aria-modal="true"
-        aria-label={`Imagem ampliada ${index+1} de ${mediaUrls.length}`}
-        aria-describedby={lightboxInstructionsId}
-        tabIndex={-1}
-        onMouseDown={(e)=> { if(e.target === e.currentTarget){ setLightbox(false); } }}
-        onKeyDown={(e)=> {
-          if(e.key==='Escape') { e.preventDefault(); setLightbox(false); return; }
-          if(e.key==='ArrowRight') { e.preventDefault(); goNext(); }
-          else if(e.key==='ArrowLeft') { e.preventDefault(); goPrev(); }
-          else if(e.key==='Tab') {
-            // Trap de foco simples
-            const root = lbWrapperRef.current;
-            if(!root) return;
-            const focusables = Array.from(root.querySelectorAll<HTMLElement>("button,[href],[tabindex]:not([tabindex='-1'])"))
-              .filter(el=> !el.hasAttribute('disabled'));
-            if(focusables.length===0) return;
-            const first = focusables[0];
-            const last = focusables[focusables.length-1];
-            const active = document.activeElement as HTMLElement | null;
-            if(e.shiftKey){
-              if(active===first || active===root){ e.preventDefault(); last.focus(); }
-            } else {
-              if(active===last){ e.preventDefault(); first.focus(); }
-            }
-          }
-        }}
-      >
-  <header className="absolute top-0 left-0 right-0 flex items-center justify-between p-3 text-white text-xs gap-3 select-none bg-gradient-to-b from-black/70 to-transparent" aria-label="Controles do visualizador">
-          <div className="flex items-center gap-3">
-            <span className="font-medium">{name}</span>
-            <span className="opacity-70">{index+1}/{mediaUrls.length}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button onClick={(e)=>{ e.stopPropagation(); goPrev(); }} disabled={!canPrev} className="px-3 py-1 rounded bg-white/10 hover:bg-white/20 disabled:opacity-30">‹</button>
-            <button onClick={(e)=>{ e.stopPropagation(); goNext(); }} disabled={!canNext} className="px-3 py-1 rounded bg-white/10 hover:bg-white/20 disabled:opacity-30">›</button>
-            <button onClick={(e)=>{ e.stopPropagation(); setFitMode(f=> f==='contain'?'cover':'contain'); }} className="px-3 py-1 rounded bg-white/10 hover:bg-white/20">{fitMode==='contain'? 'Cover':'Contain'}</button>
-            <button onClick={(e)=>{ e.stopPropagation(); setZoom(1); setPan({x:0,y:0}); panRef.current={x:0,y:0}; }} className="px-3 py-1 rounded bg-white/10 hover:bg-white/20">Reset</button>
-            <button ref={firstFocusableRef} onClick={(e)=>{ e.stopPropagation(); setLightbox(false); }} className="h-8 w-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center" aria-label="Fechar visualização em tela cheia"><X className="h-4 w-4" /></button>
-          </div>
-  </header>
-        <section
-          className="absolute inset-0 overflow-hidden select-none flex items-center justify-center"
-          role="group"
-          aria-label="Área de imagem"
-          onTouchStart={(e)=> { if(e.touches.length===1){ touchStartX.current = e.touches[0].clientX; }}}
-          onTouchEnd={(e)=> { if(touchStartX.current!=null){ const dx = (e.changedTouches[0].clientX - touchStartX.current); if(Math.abs(dx) > 60){ dx < 0 ? goNext() : goPrev(); } touchStartX.current=null; }}}
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onPointerCancel={onPointerUp}
-        >
-          {mediaUrls[index] && (
-            <Image
-              src={mediaUrls[index]}
-              alt={`Imagem ampliada ${index+1} de ${mediaUrls.length}`}
-              fill
-              sizes="100vw"
-              className={`${fitMode==='contain'? 'object-contain':'object-cover'} select-none transition-[filter] duration-300`}
-              style={{ transform:`translate(${pan.x}px,${pan.y}px) scale(${zoom})`, transition:'transform 0.05s linear' }}
-              draggable={false}
-            />
+      <div role="dialog" aria-modal="true" className="fixed inset-0 z-[200]">
+        <div className="relative w-full h-full">
+          {/* Botão de background para fechar */}
+          <button 
+            ref={lbWrapperRef}
+            className="fixed inset-0 bg-black/95 w-full h-full"
+            aria-label={`Imagem ampliada ${index+1} de ${mediaUrls.length}`}
+            aria-describedby={lightboxInstructionsId}
+            onMouseDown={(e: React.MouseEvent<HTMLButtonElement>)=> { 
+              if(e.target === e.currentTarget){ 
+                setLightbox(false); 
+              } 
+            }}
+            onKeyDown={(e: React.KeyboardEvent<HTMLButtonElement>)=> {
+              if(e.key==='Escape') { 
+                e.preventDefault(); 
+                setLightbox(false); 
+                return; 
+              }
+              if(e.key==='ArrowRight') { 
+                e.preventDefault(); 
+                goNext(); 
+              }
+              else if(e.key==='ArrowLeft') { 
+                e.preventDefault(); 
+                goPrev(); 
+              }
+              else if(e.key==='Tab') {
+                // Trap de foco simples
+                const root = lbWrapperRef.current;
+                if(!root) return;
+                const focusables = Array.from(root.querySelectorAll<HTMLElement>("button,[href],[tabindex]:not([tabindex='-1'])"))
+                  .filter(el=> !el.hasAttribute('disabled'));
+                if(focusables.length===0) return;
+                const first = focusables[0];
+                const last = focusables[focusables.length-1];
+                const active = document.activeElement as HTMLElement | null;
+                if(e.shiftKey){
+                  if(active===first || active===root){ 
+                    e.preventDefault(); 
+                    last.focus(); 
+                  }
+                } else {
+                  if(active===last){ 
+                    e.preventDefault(); 
+                    first.focus(); 
+                  }
+                }
+              }
+            }}
+          />
+          
+          {/* Header com controles */}
+          {showUI && (
+            <header className="absolute top-0 left-0 right-0 flex items-center justify-between p-3 text-white text-xs gap-3 select-none bg-gradient-to-b from-black/70 to-transparent" aria-label="Controles do visualizador">
+              <div className="flex items-center gap-3">
+                <span className="font-medium">{name}</span>
+                <span className="opacity-70">{index+1}/{mediaUrls.length}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button onClick={(e)=>{ e.stopPropagation(); goPrev(); }} disabled={!canPrev} className="px-3 py-1 rounded bg-white/10 hover:bg-white/20 disabled:opacity-30">‹</button>
+                <button onClick={(e)=>{ e.stopPropagation(); goNext(); }} disabled={!canNext} className="px-3 py-1 rounded bg-white/10 hover:bg-white/20 disabled:opacity-30">›</button>
+                <button onClick={(e)=>{ e.stopPropagation(); setFitMode(f=> f==='contain'?'cover':'contain'); }} className="px-3 py-1 rounded bg-white/10 hover:bg-white/20">{fitMode==='contain'? 'Cover':'Contain'}</button>
+                <button onClick={(e)=>{ e.stopPropagation(); setZoom(1); setPan({x:0,y:0}); panRef.current={x:0,y:0}; }} className="px-3 py-1 rounded bg-white/10 hover:bg-white/20">Reset</button>
+                <button ref={firstFocusableRef} onClick={(e)=>{ e.stopPropagation(); setLightbox(false); }} className="h-8 w-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center" aria-label="Fechar visualização em tela cheia"><X className="h-4 w-4" /></button>
+              </div>
+            </header>
           )}
-          {mediaUrls.length > 1 && (
-            <>
-              <button aria-label="Anterior" disabled={!canPrev} onClick={(e)=>{ e.stopPropagation(); goPrev(); }} className="absolute inset-y-0 left-0 w-1/4 cursor-pointer focus:outline-none disabled:opacity-0" />
-              <button aria-label="Próxima" disabled={!canNext} onClick={(e)=>{ e.stopPropagation(); goNext(); }} className="absolute inset-y-0 right-0 w-1/4 cursor-pointer focus:outline-none disabled:opacity-0" />
-            </>
-          )}
-  </section>
-  {mediaUrls.length>1 && (
-          <div
-            className="w-full overflow-x-auto flex gap-2 p-3 bg-black/60 backdrop-blur-sm"
-            role="listbox"
-            aria-label="Miniaturas em tela cheia"
-            tabIndex={0}
-            onKeyDown={onThumbListKey}
+
+          {/* Área principal da imagem */}
+          <section
+            className="absolute inset-0 overflow-hidden select-none flex items-center justify-center"
+            role="group"
+            aria-label="Área de imagem"
+            onTouchStart={(e)=> { if(e.touches.length===1){ touchStartX.current = e.touches[0].clientX; }}}
+            onTouchEnd={(e)=> { if(touchStartX.current!=null){ const dx = (e.changedTouches[0].clientX - touchStartX.current); if(Math.abs(dx) > 60){ dx < 0 ? goNext() : goPrev(); } touchStartX.current=null; }}}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onPointerCancel={onPointerUp}
           >
-            {mediaUrls.map((u,i)=> (
-              <button
-                key={u}
-                ref={el=> { lightboxThumbRefs.current[i]=el; }}
-                onClick={(e)=> { e.stopPropagation(); setIndex(i); setThumbFocus(i); }}
-                role="option"
-                aria-selected={i===index}
-    aria-current={i===index? 'true': undefined}
-                tabIndex={i===thumbFocus? 0 : -1}
-                className={`relative flex-shrink-0 rounded-md overflow-hidden border focus:outline-none focus:ring-2 focus:ring-emerald-400 ${i===index? 'ring-2 ring-white border-white':'border-transparent opacity-60 hover:opacity-100'}`}
-                style={{ width:60, height:60 }}
-              >
-    <Image src={u} alt={`Miniatura ${i+1} de ${mediaUrls.length}`} fill sizes="60px" className="object-cover" />
-              </button>
-            ))}
-          </div>
-        )}
-        {/* Instruções do lightbox para leitores de tela */}
-        <p id={lightboxInstructionsId} className="sr-only">
-          Visualização ampliada. Use setas esquerda e direita ou deslize para trocar a imagem. Pinça para aplicar zoom. Arraste a imagem quando ampliada para mover. Pressione Esc para fechar. Use Tab para navegar pelos botões e Shift + Tab para voltar.
-        </p>
+            {mediaUrls[index] && (
+              <Image
+                src={mediaUrls[index]}
+                alt={`Imagem ampliada ${index+1} de ${mediaUrls.length}`}
+                fill
+                sizes="100vw"
+                className={`${fitMode==='contain'? 'object-contain':'object-cover'} select-none transition-[filter] duration-300`}
+                style={{ transform:`translate(${pan.x}px,${pan.y}px) scale(${zoom})`, transition:'transform 0.05s linear' }}
+                draggable={false}
+              />
+            )}
+            {mediaUrls.length > 1 && (
+              <>
+                <button aria-label="Anterior" disabled={!canPrev} onClick={(e)=>{ e.stopPropagation(); goPrev(); }} className="absolute inset-y-0 left-0 w-1/4 cursor-pointer focus:outline-none disabled:opacity-0" />
+                <button aria-label="Próxima" disabled={!canNext} onClick={(e)=>{ e.stopPropagation(); goNext(); }} className="absolute inset-y-0 right-0 w-1/4 cursor-pointer focus:outline-none disabled:opacity-0" />
+              </>
+            )}
+          </section>
+
+          {/* Miniaturas */}
+          {mediaUrls.length>1 && (
+            <div
+              className="w-full overflow-x-auto flex gap-2 p-3 bg-black/60 backdrop-blur-sm"
+              role="listbox"
+              aria-label="Miniaturas em tela cheia"
+              tabIndex={0}
+              onKeyDown={onThumbListKey}
+            >
+              {mediaUrls.map((u,i)=> (
+                <button
+                  key={u}
+                  ref={el=> { lightboxThumbRefs.current[i]=el; }}
+                  onClick={(e)=> { e.stopPropagation(); setIndex(i); setThumbFocus(i); }}
+                  role="option"
+                  aria-selected={i===index}
+                  aria-current={i===index? 'true': undefined}
+                  tabIndex={i===thumbFocus? 0 : -1}
+                  className={`relative flex-shrink-0 rounded-md overflow-hidden border focus:outline-none focus:ring-2 focus:ring-emerald-400 ${i===index? 'ring-2 ring-white border-white':'border-transparent opacity-60 hover:opacity-100'}`}
+                  style={{ width:60, height:60 }}
+                >
+                  <Image src={u} alt={`Miniatura ${i+1} de ${mediaUrls.length}`} fill sizes="60px" className="object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
+          
+          {/* Instruções do lightbox para leitores de tela */}
+          <p id={lightboxInstructionsId} className="sr-only">
+            Visualização ampliada. Use setas esquerda e direita ou deslize para trocar a imagem. Pinça para aplicar zoom. Arraste a imagem quando ampliada para mover. Pressione Esc para fechar. Use Tab para navegar pelos botões e Shift + Tab para voltar.
+          </p>
+        </div>
       </div>
     ) : null}
     {/* Região viva para leitores de tela anunciar mudança de imagem */}

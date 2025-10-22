@@ -30,7 +30,7 @@
     "check:all": "npm run typecheck && npm run lint && npm run test && npm run check:encoding",
     "check:encoding": "node scripts/check-encoding.mjs",
     "postinstall": "echo \"Ready.\"",
-    "vercel-build": "npm install && npx contentlayer build && next build --no-lint"
+    "vercel-build": "npm install && node scripts/contentlayer-build-wrapper.mjs && next build --no-lint"
   },
   "dependencies": {
     "@contentlayer/core": "^0.3.4",
