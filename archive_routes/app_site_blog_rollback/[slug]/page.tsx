@@ -1,22 +1,71 @@
+// Módulos Next.js
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { supabasePublic } from "@/lib/supabasePublic";
-import { getPostJsonLd, getBreadcrumbJsonLd, serializeJsonLd } from '@/lib/jsonld';
 import Image from 'next/image';
-import { buildPostMetadata } from "@/lib/seo.core";
-import { MDXRemote } from "next-mdx-remote/rsc";
-import { mdxComponents } from "@/components/MDXContent";
-import { Toc } from '@/components/blog/Toc';
 import Link from 'next/link';
-import remarkGfm from "remark-gfm";
-import rehypeSlug from "rehype-slug";
+import { notFound } from "next/navigation";
+
+// Módulos externos
+import type { MDXRemoteProps } from "next-mdx-remote/rsc";
+import { MDXRemote } from "next-mdx-remote/rsc";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
+import rehypeSlug from "rehype-slug";
+import remarkGfm from "remark-gfm";
+
+// Componentes internos
 import BlogComments from "@/components/BlogComments";
-import { getRelatedPosts } from '@/lib/relatedPosts';
-import { SeoArticle } from "@/components/SeoArticle";
 import Breadcrumbs from '@/components/Breadcrumbs';
-import ShareButtons from '@/components/ShareButtons';
+import { mdxComponents } from "@/components/MDXContent";
+import { SeoArticle } from "@/components/SeoArticle";
 import SeoJsonLd from "@/components/SeoJsonLd";
+import ShareButtons from '@/components/ShareButtons';
+
+// Utilitários e serviços
+import { getBreadcrumbJsonLd, getPostJsonLd } from '@/lib/jsonld';
+import { getRelatedPosts } from '@/lib/relatedPosts';
+import { buildPostMetadata } from "@/lib/seo.core";
+import { supabasePublic } from "@/lib/supabasePublic";
+
+interface NavigationItem {
+  slug: string;
+  title: string;
+}
+
+interface Category {
+  name: string;
+  slug: string;
+}
+
+interface PostCategory {
+  blog_categories: Category;
+}
+
+interface JsonLdData {
+  '@context': string;
+  '@type': string;
+  [key: string]: unknown;
+}
+
+interface Author {
+  name: string;
+  slug: string;
+  avatar_url?: string;
+  bio?: string;
+}
+
+interface Post {
+  id: string;
+  slug: string;
+  title: string;
+  subtitle?: string;
+  published_at: string;
+  reading_time?: number;
+  content: string;
+  excerpt?: string;
+  content_mdx?: string;
+  cover_url?: string;
+  blog_authors?: Author;
+  blog_post_categories?: PostCategory[];
+}
 
 type Post = {
   id: string;
@@ -127,23 +176,24 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
       .lt('published_at', post.published_at)
       .order('published_at', { ascending: false })
       .limit(1);
-    if(older?.length) prev = { slug: older[0].slug, title: older[0].title } as any;
-    if(newer?.length) next = { slug: newer[0].slug, title: newer[0].title } as any;
+    if(older?.length) prev = { slug: older[0].slug, title: older[0].title } as NavigationItem;
+    if(newer?.length) next = { slug: newer[0].slug, title: newer[0].title } as NavigationItem;
   }
   const breadcrumbItems = [ { name:'Blog', url:'/blog' }, { name: post.title, url:`/blog/${post.slug}` } ];
   const jsonLdBreadcrumb = getBreadcrumbJsonLd({ siteUrl, items: breadcrumbItems });
   const jsonLdPrevNext = prev || next ? {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
-    itemListElement: [prev, next].filter(Boolean).map((p:any, i:number)=> ({ '@type':'ListItem', position:i+1, name:p.title, url: `${siteUrl}/blog/${p.slug}` }))
+    itemListElement: [prev, next]
+      .filter((p): p is NavigationItem => p !== null)
+      .map((p, i)=> ({ '@type':'ListItem', position:i+1, name:p.title, url: `${siteUrl}/blog/${p.slug}` }))
   } : null;
 
   return (
     <div className="mx-auto flex gap-8 px-6 py-10 max-w-6xl">
-      <Toc />
       <article className="flex-1 max-w-3xl text-zinc-900">
   <SeoJsonLd data={jsonLdPost} />
-  {jsonLdAuthor ? <SeoJsonLd data={jsonLdAuthor as any} /> : null}
+  {jsonLdAuthor ? <SeoJsonLd data={jsonLdAuthor} /> : null}
   <SeoJsonLd data={jsonLdBreadcrumb} />
   {jsonLdPrevNext ? <SeoJsonLd data={jsonLdPrevNext} /> : null}
       <Breadcrumbs className="mb-3" items={[{ label: 'Início', href: '/' }, { label: 'Blog', href: '/blog' }, { label: post.title }]} />
@@ -168,7 +218,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
         {post.published_at ? (
           <p className="mt-1 text-xs text-zinc-500">Publicado em {new Date(post.published_at).toLocaleDateString("pt-BR")}</p>
         ) : null}
-        { (post as any).reading_time ? <p className="mt-1 text-xs text-zinc-500">Tempo de leitura: {(post as any).reading_time} min</p> : null }
+        {post.reading_time ? <p className="mt-1 text-xs text-zinc-500">Tempo de leitura: {post.reading_time} min</p> : null}
         <CategoryChips post={post} />
         <ShareButtons className="mt-4" url={`${siteUrl}/blog/${post.slug}`} title={post.title} summary={post.excerpt || undefined} utm="utm_source=share&utm_medium=blog" />
       </header>
@@ -180,7 +230,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
         <div className="prose prose-zinc max-w-none">
           <MDXRemote
             source={post.content_mdx}
-            components={mdxComponents as any}
+            components={mdxComponents}
             options={{
               mdxOptions: {
                 remarkPlugins: [remarkGfm],
