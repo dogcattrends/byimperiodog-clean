@@ -93,20 +93,32 @@ export default async function BlogPostPage({ params, searchParams }:{ params:{ s
       {faqBlock && <SeoJsonLd data={faqBlock} />}
       <div className="flex flex-col xl:flex-row gap-10">
         <article className="flex-1 min-w-0">
-          <header className="mb-8">
-            <div className="mb-4 flex flex-wrap items-center gap-2 text-[11px] text-[var(--text-muted)]">
-              {post.published_at && <time dateTime={post.published_at}>{new Date(post.published_at).toLocaleDateString('pt-BR')}</time>}
+          <header className="mb-10 space-y-4">
+            <div className="flex flex-wrap items-center gap-2 text-sm text-[var(--text-muted)]">
+              {post.published_at && (
+                <time dateTime={post.published_at} className="font-medium">
+                  {new Date(post.published_at).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                </time>
+              )}
               <span aria-hidden="true">•</span>
-              <span>{minutes} min leitura</span>
+              <span className="font-medium">{minutes} min de leitura</span>
               {author && (
                 <>
                   <span aria-hidden="true">•</span>
-                  <a href={`/autores/${author.slug}`} className="hover:underline">{author.name}</a>
+                  <a href={`/autores/${author.slug}`} className="font-medium hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
+                    {author.name}
+                  </a>
                 </>
               )}
             </div>
-            <h1 className="text-3xl font-bold tracking-tight leading-tight mb-3">{post.title}</h1>
-            {post.subtitle && <p className="text-lg text-[var(--text-muted)] max-w-prose">{post.subtitle}</p>}
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight leading-tight text-[var(--text)]">
+              {post.title}
+            </h1>
+            {post.subtitle && (
+              <p className="text-xl md:text-2xl text-[var(--text-muted)] max-w-prose leading-relaxed">
+                {post.subtitle}
+              </p>
+            )}
           </header>
           {post.cover_url && (
             <figure className="mb-10 overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface-2)]">
@@ -123,9 +135,11 @@ export default async function BlogPostPage({ params, searchParams }:{ params:{ s
             ): <p className="italic text-[var(--text-muted)]">(Sem conteúdo)</p>}
           </Prose>
           {related?.length>0 && (
-            <aside className="mt-16 border-t border-[var(--border)] pt-10">
-              <h2 className="mb-4 text-sm font-semibold tracking-wide text-[var(--text-muted)]">Artigos relacionados</h2>
-              <ul className="grid gap-4 sm:grid-cols-2">
+            <aside className="mt-20 border-t border-[var(--border)] pt-12">
+              <h2 className="mb-6 text-2xl font-bold text-[var(--text)]">
+                Artigos relacionados
+              </h2>
+              <ul className="grid gap-6 sm:grid-cols-2">
                 {related.slice(0,4).map(r=> (
                   <PostCard
                     key={r.slug}
