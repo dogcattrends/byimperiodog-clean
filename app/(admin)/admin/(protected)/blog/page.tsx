@@ -106,8 +106,15 @@ export default function AdminBlogPage() {
       if (statusFilter !== "all") params.set("status", statusFilter);
       if (search) params.set("q", search);
 
-      const response = await adminFetch(`/api/admin/blog?${params.toString()}`);
+      const url = `/api/admin/blog?${params.toString()}`;
+      console.log('[Blog] Fetching posts from:', url);
+      
+      const response = await adminFetch(url);
       const json = await response.json();
+      
+      console.log('[Blog] Response status:', response.status);
+      console.log('[Blog] Response data:', json);
+      
       if (!response.ok) {
         throw new Error(json?.error || "Nao foi possivel carregar os posts");
       }
