@@ -4,8 +4,9 @@ import { ChevronRight, Heart } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 
+import { PUPPY_CARD_SIZES } from "@/lib/image-sizes";
 import track from "@/lib/track";
-
+import { buildWhatsAppLink } from "@/lib/whatsapp";
 
 type Puppy = {
   id: string;
@@ -19,16 +20,13 @@ type Puppy = {
   priceCents?: number | null;
 };
 
-// Número oficial atualizado
-const WA_BASE = (process.env.NEXT_PUBLIC_WA_LINK || "https://wa.me/551196863239").replace(/\?.*$/, "");
-// SITE_URL não é mais necessário para construir link da foto (foto removida da mensagem)
-// const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.byimperiodog.com.br";
-
 function fmtPrice(cents?: number | null) {
   return typeof cents === "number"
-    ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(
-        cents / 100
-      )
+    ? new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+        maximumFractionDigits: 0,
+      }).format(cents / 100)
     : "Sob consulta";
 }
 
@@ -38,94 +36,113 @@ const statusClass: Record<string, string> = {
   vendido: "bg-rose-100 text-rose-800 ring-rose-300",
 };
 
-function buildWaLink({ action, name, color, gender }: { action: "info" | "video" | "visit"; name: string; color: string; gender: string }) {
-  const base = `Olá! Vi o filhote ${name} (${color}, ${gender}) e gostaria de saber disponibilidade, valor e condições.`;
-  const variants: Record<string,string> = {
-    info: base,
-    video: `Olá! Pode enviar vídeo atual do filhote ${name} (${color}, ${gender})?` ,
-    visit: `Olá! Quero agendar visita para conhecer o filhote ${name} (${color}, ${gender}).`
+function buildWaLink(action: "info" | "video" | "visit", name: string, color: string, gender: string) {
+  const messageMap: Record<typeof action, string> = {
+    info: `Ola! Vi o filhote ${name} (${color}, ${gender}) e quero entender disponibilidade, valor e condicoes.`,
+    video: `Ola! Pode me enviar video atualizado do filhote ${name} (${color}, ${gender})?`,
+    visit: `Ola! Quero agendar visita para conhecer o filhote ${name} (${color}, ${gender}).`,
   };
-  return `${WA_BASE}?text=${encodeURIComponent(variants[action])}`;
+
+  return buildWhatsAppLink({
+    message: messageMap[action],
+    utmSource: "site",
+    utmMedium: "grid_filhotes",
+    utmCampaign: "puppies_cta",
+    utmContent: action,
+  });
 }
 
 export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: string; onOpen?: () => void }) {
   const name = p.nome || p.name || "Filhote";
-  const color = p.cor || p.color || "Cor indefinida";
-  const gender = p.gender === "male" ? "Macho" : p.gender === "female" ? "Fêmea" : "Sexo indefinido";
+  const color = p.cor || p.color || "cor em avaliacao";
+  const gender = p.gender === "male" ? "macho" : p.gender === "female" ? "femea" : "sexo em avaliacao";
   const price = fmtPrice(p.priceCents ?? p.price_cents);
 
-  const label = p.status === "vendido" ? "Vendido" : p.status === "reservado" ? "Reservado" : "Disponível";
+  const label = p.status === "vendido" ? "Vendido" : p.status === "reservado" ? "Reservado" : "Disponivel";
 
-  const waInfo = buildWaLink({ action: "info", name, color, gender });
-  const waVideo = buildWaLink({ action: "video", name, color, gender });
-  const waVisit = buildWaLink({ action: "visit", name, color, gender });
+  const waInfo = buildWaLink("info", name, color, gender);
+  const waVideo = buildWaLink("video", name, color, gender);
+  const waVisit = buildWaLink("visit", name, color, gender);
 
   const [imgLoaded, setImgLoaded] = useState(false);
   const [liked, setLiked] = useState(false);
 
   return (
-  <article className="u-hover-card u-fade-in group relative overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-md">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-white shadow-sm ring-1 ring-transparent transition-all duration-200 hover:shadow-lg hover:ring-[var(--brand)]/20">
+      {/* ================================================================ */}
+      {/* IMAGEM 4:3 Otimizada (aspect-[4/3] maior e centralizada) */}
+      {/* ================================================================ */}
       <button
         type="button"
         onClick={() => {
           onOpen?.();
           track.event?.("open_details", { placement: "card", puppy_id: p.id });
         }}
-        className="block w-full text-left focus:outline-none"
+        className="relative block w-full overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2"
         data-evt="card_click"
         data-id={p.id}
         aria-label={`Ver detalhes de ${name}`}
       >
-  <div className="relative aspect-[9/16] w-full min-h-[180px] overflow-hidden bg-zinc-100">
-          {!imgLoaded && cover && <div className="absolute inset-0 animate-pulse bg-zinc-200" />}
+        <div className="relative aspect-[4/3] w-full overflow-hidden bg-zinc-100">
+          {!imgLoaded && cover ? <div className="absolute inset-0 animate-pulse bg-zinc-200" /> : null}
           {cover ? (
             <>
               <Image
                 src={cover}
-                alt={`Filhote ${name} | ${color}, ${gender}`}
+                alt={`Filhote Spitz Alemão ${name} - ${color}, ${gender}, ${label.toLowerCase()}`}
                 fill
-                sizes="(max-width:640px) 100vw, (max-width:1024px) 50vw, 33vw"
+                sizes={PUPPY_CARD_SIZES}
                 loading="lazy"
-                className={`object-cover transition-opacity duration-500 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
+                className={`object-cover transition-all duration-300 ${imgLoaded ? "opacity-100 group-hover:scale-105" : "opacity-0"}`}
                 onLoad={() => setImgLoaded(true)}
                 placeholder="blur"
-                blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII="
+                blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjRmNGY1Ii8+PC9zdmc+"
               />
-              <div aria-hidden className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.08),transparent_60%)]" />
+              <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 to-transparent" />
             </>
           ) : (
-            <div className="absolute inset-0 grid place-items-center text-zinc-400">
-              <span className="text-sm">Sem imagem</span>
-            </div>
+            <div className="absolute inset-0 grid place-items-center text-sm text-zinc-400">Sem imagem</div>
           )}
 
-          <span className={`absolute left-3 top-3 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 transition-all duration-200 ${statusClass[p.status || "disponivel"]}`}>
+          {/* Badges - Melhor contraste */}
+          <span
+            className={`absolute left-3 top-3 rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm ring-1 backdrop-blur-sm transition-all duration-200 ${statusClass[p.status || "disponivel"]}`}
+          >
             {label}
           </span>
 
-          <span className="absolute right-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-zinc-900 shadow ring-1 ring-black/10 transition-all duration-200">
+          <span className="absolute right-3 top-3 rounded-full bg-white/95 px-3 py-1.5 text-xs font-semibold text-zinc-900 shadow-md ring-1 ring-black/5 backdrop-blur-sm transition-all duration-200">
             {price}
           </span>
 
+          {/* Botão de Favoritar - Tap target ≥48px */}
           <button
             type="button"
-            onClick={(e) => {
-              e.stopPropagation();
+            onClick={(event) => {
+              event.stopPropagation();
               setLiked((prev) => !prev);
-              track.event?.("puppy_like_toggle", { puppy_id: p.id, liked: !liked });
+              track.event?.("puppy_like_toggle", { puppy_id: p.id, liked: !liked, placement: "grid" });
             }}
             aria-label={liked ? "Remover dos favoritos" : "Adicionar aos favoritos"}
-            className="absolute bottom-3 right-3 z-10 rounded-full bg-white/90 p-1.5 text-rose-500 shadow ring-1 ring-black/10 transition-all duration-200 hover:scale-110 hover:bg-white"
+            className="absolute bottom-3 right-3 z-10 flex min-h-[48px] min-w-[48px] items-center justify-center rounded-full bg-white/95 p-2 text-rose-500 shadow-md ring-1 ring-black/5 backdrop-blur-sm transition-all duration-200 hover:scale-110 hover:bg-white hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2"
           >
-            <Heart className={`h-5 w-5 ${liked ? "fill-rose-500" : "fill-none"}`} />
+            <Heart className={`h-5 w-5 ${liked ? "fill-rose-500" : "fill-none"}`} aria-hidden="true" />
           </button>
         </div>
       </button>
 
-      <div className="space-y-2 p-5">
-        <h3 className="text-lg font-semibold text-zinc-800">{name}</h3>
-        <p className="text-sm text-zinc-500">{color} • {gender}</p>
+      {/* ================================================================ */}
+      {/* CONTEÚDO - line-clamp e espaçamento */}
+      {/* ================================================================ */}
+      <div className="flex flex-1 flex-col gap-4 p-5">
+        <div>
+          <h3 className="line-clamp-2 text-lg font-semibold leading-tight text-zinc-800">{name}</h3>
+          <p className="mt-1 text-sm text-zinc-500">
+            {color} • {gender}
+          </p>
+        </div>
 
+        {/* CTA Principal - Tap target ≥48px */}
         <a
           href={waInfo}
           target="_blank"
@@ -133,19 +150,20 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
           data-evt="share_click"
           data-id={`wa_info_${p.id}`}
           onClick={() => track.event?.("whatsapp_click", { placement: "card", action: "info", puppy_id: p.id })}
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+          className="mt-auto flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-[var(--brand)] px-4 py-3 text-sm font-semibold text-white shadow-md transition-all duration-200 hover:bg-[var(--brand)]/90 hover:shadow-lg active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2"
           title="Conversar sobre este filhote no WhatsApp"
         >
-          Quero esse filhote!
+          Quero esse filhote
         </a>
 
-        <div className="mt-3 grid grid-cols-3 gap-2 text-sm font-medium" data-evt="share_click" data-id={p.id}>
+        {/* CTAs Secundários - Tap targets ≥48px */}
+        <div className="grid grid-cols-3 gap-2 text-xs font-semibold" data-evt="share_click" data-id={p.id}>
           <a
             href={waVideo}
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => track.event?.("whatsapp_click", { placement: "card", action: "video", puppy_id: p.id })}
-            className="flex items-center justify-center gap-1.5 rounded-xl border border-zinc-200 px-3 py-2 text-zinc-700 transition hover:bg-zinc-100"
+            className="flex min-h-[44px] items-center justify-center rounded-lg border border-zinc-200 px-2 py-2.5 text-zinc-700 transition-all duration-200 hover:bg-zinc-50 hover:border-zinc-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-1"
             title="Pedir vídeo do filhote"
           >
             Vídeo
@@ -156,7 +174,7 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => track.event?.("whatsapp_click", { placement: "card", action: "visit", puppy_id: p.id })}
-            className="flex items-center justify-center gap-1.5 rounded-xl border border-zinc-200 px-3 py-2 text-zinc-700 transition hover:bg-zinc-100"
+            className="flex min-h-[44px] items-center justify-center rounded-lg border border-zinc-200 px-2 py-2.5 text-zinc-700 transition-all duration-200 hover:bg-zinc-50 hover:border-zinc-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-1"
             title="Agendar visita"
           >
             Visita
@@ -168,17 +186,17 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
               onOpen?.();
               track.event?.("open_details", { placement: "card", puppy_id: p.id });
             }}
-            className="flex items-center justify-center gap-1.5 rounded-xl border border-zinc-200 px-3 py-2 text-zinc-800 transition hover:bg-zinc-100"
+            className="flex min-h-[44px] items-center justify-center gap-1 rounded-lg border border-zinc-200 px-2 py-2.5 text-zinc-800 transition-all duration-200 hover:bg-zinc-50 hover:border-zinc-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-1"
             data-evt="card_click"
             data-id={p.id}
-            title="Ver detalhes"
+            title="Ver detalhes completos"
           >
-            Ver <ChevronRight className="h-4 w-4" />
+            Ver <ChevronRight className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
 
-        <p className="pt-3 text-xs italic leading-relaxed tracking-tight text-zinc-500">
-          Criado com amor, vacinado e pronto para encher seu lar de alegria.
+        <p className="text-xs leading-relaxed text-zinc-500">
+          Criado com acompanhamento veterinário, socialização guiada e mentoria vitalícia.
         </p>
       </div>
     </article>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import clsx from 'classnames';
 import { Heart, Share2, X, ChevronLeft, ChevronRight, Phone } from 'lucide-react';
 import Image from 'next/image';
@@ -6,8 +6,9 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom';
 
 import track from '@/lib/track';
+import { buildWhatsAppLink } from '@/lib/whatsapp';
 
-// Tipagem básica (pode ser estendida conforme o backend evoluir)
+// Tipagem bÃ¡sica (pode ser estendida conforme o backend evoluir)
 export interface PuppyStoryItem {
   id: string;
   name?: string | null;
@@ -25,25 +26,29 @@ interface PuppyStoriesProps {
   open: boolean;
   onClose: () => void;
   /**
-   * Se true, avança automaticamente a cada autoAdvanceMs.
-   * (Por padrão desativado; pode ser ligado depois se quiser comportamento mais parecido com IG Stories.)
+   * Se true, avanÃ§a automaticamente a cada autoAdvanceMs.
+   * (Por padrÃ£o desativado; pode ser ligado depois se quiser comportamento mais parecido com IG Stories.)
    */
   autoPlay?: boolean;
   autoAdvanceMs?: number;
 }
 
-const WA_BASE = (process.env.NEXT_PUBLIC_WA_LINK || 'https://wa.me/551196863239').replace(/\?.*$/, '');
-
 function buildWaMessage(p: PuppyStoryItem) {
-  const name = p.nome || p.name || 'Filhote';
-  const color = p.cor || p.color || 'cor indefinida';
-  const gender = p.gender === 'male' ? 'macho' : p.gender === 'female' ? 'fêmea' : 'sexo indefinido';
-  return `Olá! Tenho interesse no filhote ${name} (${color}, ${gender}). Poderia me enviar mais informações?`;
+  const name = p.nome || p.name || "Filhote";
+  const color = p.cor || p.color || "cor em avaliacao";
+  const gender = p.gender === "male" ? "macho" : p.gender === "female" ? "femea" : "sexo em avaliacao";
+  return `Ola! Tenho interesse no filhote ${name} (${color}, ${gender}). Pode me enviar mais informacoes?`;
 }
 
 function buildWaLink(p: PuppyStoryItem) {
   if (p.whatsappOverrideLink) return p.whatsappOverrideLink;
-  return `${WA_BASE}?text=${encodeURIComponent(buildWaMessage(p))}`;
+  return buildWhatsAppLink({
+    message: buildWaMessage(p),
+    utmSource: "site",
+    utmMedium: "stories",
+    utmCampaign: "puppies_cta",
+    utmContent: "stories_cta",
+  });
 }
 
 export default function PuppyStories(props: PuppyStoriesProps) {
@@ -59,7 +64,7 @@ export default function PuppyStories(props: PuppyStoriesProps) {
   const [, force] = useState({});
   const inactivityTimer = useRef<number | null>(null);
 
-  // Preload próxima e anterior
+  // Preload prÃ³xima e anterior
   useEffect(()=>{
     const nextItem = items[(index + 1) % items.length];
     const prevItem = items[(index - 1 + items.length) % items.length];
@@ -163,7 +168,7 @@ export default function PuppyStories(props: PuppyStoriesProps) {
     touchStart.current = null; touchDiff.current = 0;
   };
 
-  // Auto-hide UI após inatividade (apenas se não estiver interagindo com inputs)
+  // Auto-hide UI apÃ³s inatividade (apenas se nÃ£o estiver interagindo com inputs)
   const bumpActivity = useCallback(() => {
     setUiVisible(true);
     if (inactivityTimer.current) window.clearTimeout(inactivityTimer.current);
@@ -193,7 +198,7 @@ export default function PuppyStories(props: PuppyStoriesProps) {
     return () => document.removeEventListener('visibilitychange', vis);
   }, [open]);
 
-  // Anunciar mudança para tecnologias assistivas
+  // Anunciar mudanÃ§a para tecnologias assistivas
   const liveRef = useRef<HTMLDivElement | null>(null);
   useEffect(()=>{
     if (!liveRef.current) return;
@@ -251,8 +256,8 @@ export default function PuppyStories(props: PuppyStoriesProps) {
             <div className="space-y-1">
               <h3 className="text-base font-semibold leading-tight drop-shadow">{current?.nome || current?.name}</h3>
               <p className="text-xs text-zinc-200/90 leading-snug line-clamp-2">
-                {(current?.cor || current?.color) && <><span>{current.cor || current.color}</span> • </>}
-                {current?.gender === 'male' ? 'Macho' : current?.gender === 'female' ? 'Fêmea' : 'Sexo indef.'}
+                {(current?.cor || current?.color) && <><span>{current.cor || current.color}</span> â€¢ </>}
+                {current?.gender === 'male' ? 'Macho' : current?.gender === 'female' ? 'FÃªmea' : 'Sexo indef.'}
               </p>
             </div>
             <button
@@ -266,7 +271,7 @@ export default function PuppyStories(props: PuppyStoriesProps) {
 
           {/* Bottom actions */}
           {current && (
-            <div className={clsx("absolute bottom-4 left-0 right-0 flex flex-col items-center gap-3 px-3 transition-opacity", uiVisible ? 'opacity-100' : 'opacity-0')}>
+            <div className={clsx("absolute bottom-4 left-0 right-0 z-20 flex flex-col items-center gap-3 px-3 transition-opacity", uiVisible ? 'opacity-100' : 'opacity-0')}>
               <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-center sm:gap-3">
                 <button
                   onClick={() => toggleLike(current.id)}
@@ -302,13 +307,13 @@ export default function PuppyStories(props: PuppyStoriesProps) {
               </div>
               <div className="flex w-full justify-between px-1 text-[10px] sm:text-[11px] text-zinc-300">
                 <span>Story {index + 1}/{items.length}</span>
-                <span>Tocar p/ UI • ← / →</span>
+                <span>Tocar p/ UI â€¢ â† / â†’</span>
               </div>
             </div>
           )}
 
           {/* Navigation hotspots */}
-          <div className="pointer-events-none absolute inset-0 grid grid-cols-2" aria-hidden="true">
+          <div className="pointer-events-none absolute inset-x-0 top-0 bottom-32 z-10 grid grid-cols-2" aria-hidden="true">
             <button
               type="button"
               tabIndex={-1}
@@ -319,7 +324,7 @@ export default function PuppyStories(props: PuppyStoriesProps) {
             <button
               type="button"
               tabIndex={-1}
-              aria-label="Próximo story"
+              aria-label="PrÃ³ximo story"
               onClick={next}
               className="pointer-events-auto h-full w-full bg-transparent"
             />
@@ -332,7 +337,7 @@ export default function PuppyStories(props: PuppyStoriesProps) {
             <ChevronLeft className="h-5 w-5" />
           </button>
           <button
-            aria-label="Próximo"
+            aria-label="PrÃ³ximo"
             onClick={next}
             className={clsx("absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-black/40 p-2 backdrop-blur transition hover:bg-black/60", uiVisible ? 'opacity-100' : 'opacity-0')}
           >
@@ -352,7 +357,7 @@ export default function PuppyStories(props: PuppyStoriesProps) {
       />
       <style jsx global>{`
         @keyframes pf-story-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-        /* Evita seleção acidental de texto durante taps rápidos */
+        /* Evita seleÃ§Ã£o acidental de texto durante taps rÃ¡pidos */
         body.user-select-none * { user-select: none; }
       `}</style>
     </div>,
@@ -363,7 +368,7 @@ export default function PuppyStories(props: PuppyStoriesProps) {
 /*
 Como integrar:
 -----------------
-1. Em um componente pai que já lista os filhotes:
+1. Em um componente pai que jÃ¡ lista os filhotes:
 
   const [open, setOpen] = useState(false);
   const [storyIndex, setStoryIndex] = useState(0);
@@ -374,5 +379,10 @@ Como integrar:
                 open={open}
                 onClose={() => setOpen(false)} />
 
-2. Ajustar fonte da imagem para garantir proporção 9:16 quando disponível.
+2. Ajustar fonte da imagem para garantir proporÃ§Ã£o 9:16 quando disponÃ­vel.
 */
+
+
+
+
+

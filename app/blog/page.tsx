@@ -244,7 +244,8 @@ async function fetchPosts(sort: SortOption): Promise<FetchState> {
     const { data, error } = await query;
     if (error) throw error;
 
-    const posts = (data ?? []).filter((item) => item.slug && item.title) as PublicPost[];
+    const raw = (data ?? []) as Partial<PublicPost>[];
+    const posts = raw.filter((item): item is PublicPost => Boolean(item.slug && item.title));
     if (posts.length === 0) {
       return { status: "empty" };
     }

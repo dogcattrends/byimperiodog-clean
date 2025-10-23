@@ -1,36 +1,16 @@
 ﻿"use client";
 
-import { motion, useReducedMotion } from "framer-motion";
 import { CheckCircle, Heart, Shield, Stethoscope } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
 import type { ComponentType, SVGProps } from "react";
 
 import { WhatsAppIcon as WAIcon } from "@/components/icons/WhatsAppIcon";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
-
-interface ParticlesEngine {}
-interface ParticlesProps {
-  init: (engine: ParticlesEngine) => Promise<void>;
-  className?: string;
-  options?: unknown;
-}
-type ParticlesComponent = React.ComponentType<ParticlesProps>;
-let ParticlesCmp: ParticlesComponent | null = null;
-async function ensureParticles() {
-  if (!ParticlesCmp) {
-  const mod = await import("react-tsparticles");
-  ParticlesCmp = (mod as Record<string, unknown>).default as unknown as ParticlesComponent || (mod as unknown as ParticlesComponent);
-  }
-  return ParticlesCmp;
-}
-async function loadSlimEngine(engine: ParticlesEngine) {
-  const slim = await import("tsparticles-slim") as Record<string, unknown>;
-  if (typeof slim.loadSlim === "function") {
-    await slim.loadSlim(engine);
-  }
-}
+import { trackWhatsAppClick } from "@/lib/events";
+import { HERO_IMAGE_SIZES } from "@/lib/image-sizes";
+import { WHATSAPP_LINK } from "@/lib/whatsapp";
 
 type SvgIcon = ComponentType<SVGProps<SVGSVGElement> & { size?: number }>;
 
@@ -71,63 +51,6 @@ const METRICS = [
 ];
 
 export default function Hero() {
-  const prefersReducedMotion = useReducedMotion();
-  const [mounted, setMounted] = useState(false);
-  const [showFx, setShowFx] = useState(false);
-  const hostRef = useRef<HTMLElement | null>(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (prefersReducedMotion) return;
-    const el = hostRef.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        if (entry?.isIntersecting) {
-          const schedule = (cb: () => void) => {
-            const win = window as Window & {
-              requestIdleCallback?: (cb: () => void, opts?: { timeout?: number }) => void;
-            };
-            if (typeof win.requestIdleCallback === "function") {
-              win.requestIdleCallback(cb, { timeout: 1200 });
-            } else {
-              setTimeout(cb, 120);
-            }
-          };
-
-          schedule(async () => {
-            try {
-              await ensureParticles();
-              setShowFx(true);
-            } catch {
-              /* ignore */
-            }
-          });
-
-          io.disconnect();
-        }
-      },
-      { rootMargin: "0px 0px 200px 0px", threshold: 0.1 },
-    );
-
-    io.observe(el);
-    return () => io.disconnect();
-  }, [prefersReducedMotion]);
-
-  const particlesInit = useCallback(async (engine: ParticlesEngine) => {
-    await loadSlimEngine(engine);
-  }, []);
-
-  const waHref = useMemo(() => {
-    const trimmed = process.env.NEXT_PUBLIC_WA_PHONE?.replace(/\D/g, "") ?? "";
-    if (trimmed) return `https://wa.me/${trimmed}`;
-    return process.env.NEXT_PUBLIC_WA_LINK ?? "#";
-  }, []);
-
   const greeting = useMemo(() => {
     const hour = new Date().getHours();
     if (hour < 12) return "Bom dia! Vamos escolher juntos o Spitz Alemão Anão Lulu da Pomerânia ideal para sua rotina.";
@@ -135,117 +58,80 @@ export default function Hero() {
     return "Boa noite! Ainda dá tempo de receber orientação personalizada hoje.";
   }, []);
 
-  const variants = {
-    hidden: { opacity: 0, y: prefersReducedMotion ? 0 : 24 },
-    show: { opacity: 1, y: 0 },
-  };
-
-  const metricsVariant = {
-    hidden: { opacity: 0, scale: prefersReducedMotion ? 1 : 0.98 },
-    show: { opacity: 1, scale: 1 },
-  };
-
-  const animateState = mounted ? "show" : "hidden";
-
   return (
     <section
-      ref={hostRef}
       aria-labelledby="hero-heading"
       className="relative isolate overflow-hidden bg-gradient-to-br from-[#faede0] via-[#f8f1ea] to-[#fffaf4] text-[var(--text)]"
       role="banner"
     >
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,rgba(31,77,58,0.18),transparent_60%)]" aria-hidden />
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-r from-white/70 via-transparent to-transparent" aria-hidden />
-      {showFx && !prefersReducedMotion && ParticlesCmp && (
-        <ParticlesCmp
-          init={particlesInit}
-          className="absolute inset-0 -z-10"
-          options={{
-            fullScreen: false,
-            background: { color: "transparent" },
-            fpsLimit: 60,
-            particles: {
-              color: { value: "#f3b562" },
-              number: { value: 18 },
-              opacity: { value: 0.18 },
-              size: { value: { min: 1, max: 2.5 } },
-              move: { enable: true, speed: 0.35, direction: "top", outModes: { default: "out" } },
-            },
-            detectRetina: true,
-          }}
-        />
-      )}
+      {/* Gradientes decorativos (CSS puro, sem JS) */}
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,rgba(31,77,58,0.18),transparent_60%)]" aria-hidden="true" />
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-r from-white/70 via-transparent to-transparent" aria-hidden="true" />
 
-      <div className="mx-auto flex w-full max-w-7xl flex-col items-center gap-16 px-5 pt-20 pb-28 sm:px-8 lg:flex-row lg:items-stretch lg:pt-24">
-        <motion.div
-          initial="hidden"
-          animate={animateState}
-          variants={variants}
-          transition={{ duration: 0.65, ease: "easeOut" }}
-          className="w-full max-w-3xl space-y-8 lg:flex-1"
-        >
-          <span className="inline-flex items-center gap-3 rounded-full border border-[var(--brand)]/30 bg-white/85 px-4 py-1 text-xs font-semibold uppercase tracking-[0.35em] text-[var(--brand)]">
+      <div className="mx-auto flex w-full max-w-7xl flex-col items-center gap-12 px-5 pt-16 pb-20 sm:px-8 lg:flex-row lg:items-stretch lg:gap-16 lg:pt-20 lg:pb-24">
+        
+        {/* ================================================================ */}
+        {/* TEXTO PRIMEIRO (Critical render path - LCP optimization) */}
+        {/* ================================================================ */}
+        <div className="w-full max-w-3xl space-y-6 lg:flex-1 lg:space-y-8">
+          <span className="inline-flex items-center gap-3 rounded-full border border-[var(--brand)]/30 bg-white/85 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.35em] text-[var(--brand)]">
             Criação de Spitz Alemão Anão Lulu da Pomerânia
           </span>
+          
           <div className="space-y-4">
-            <h1 id="hero-heading" className="text-4xl font-bold tracking-tight text-[var(--text)] sm:text-5xl">
+            <h1 id="hero-heading" className="text-4xl font-bold leading-tight tracking-tight text-[var(--text)] sm:text-5xl lg:text-5xl">
               Receba seu Spitz Alemão Anão Lulu da Pomerânia com suporte estratégico da By Império Dog
             </h1>
-            <p className="text-base text-[var(--text-muted)] sm:text-lg" aria-live="polite">
+            <p className="text-base leading-relaxed text-[var(--text-muted)] sm:text-lg" aria-live="polite">
               {greeting}
             </p>
-            <p className="text-base text-[var(--text-muted)] sm:text-lg">
+            <p className="text-base leading-relaxed text-[var(--text-muted)] sm:text-lg">
               Do primeiro contato à chegada em casa, guiamos cada passo com laudos atualizados, socialização carinhosa e mentoria direta pelo WhatsApp.
             </p>
           </div>
 
+          {/* Selling Points */}
           <div className="grid gap-4 sm:grid-cols-2">
             {SELLING_POINTS.map((item) => (
-              <motion.article
+              <article
                 key={item.title}
-                initial="hidden"
-                animate={animateState}
-                variants={variants}
-                transition={{ duration: 0.55, delay: 0.1, ease: "easeOut" }}
-                className="flex h-full items-start gap-3 rounded-2xl border border-[var(--border)] bg-white/90 p-4 shadow-sm backdrop-blur"
+                className="flex h-full items-start gap-3 rounded-2xl border border-[var(--border)] bg-white/90 p-4 shadow-sm backdrop-blur transition-shadow duration-200 hover:shadow-md"
               >
-                <item.icon className="mt-1 h-5 w-5 flex-none text-[var(--brand)]" aria-hidden size={20} />
+                <item.icon className="mt-1 h-5 w-5 flex-none text-[var(--brand)]" aria-hidden="true" size={20} />
                 <div>
                   <h3 className="text-sm font-semibold text-[var(--text)]">{item.title}</h3>
-                  <p className="mt-1 text-sm text-[var(--text-muted)]">{item.description}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-[var(--text-muted)]">{item.description}</p>
                 </div>
-              </motion.article>
+              </article>
             ))}
           </div>
 
-          <motion.ul
-            initial="hidden"
-            animate={animateState}
-            variants={variants}
-            transition={{ duration: 0.55, delay: 0.18, ease: "easeOut" }}
-            className="mt-6 flex flex-col gap-3 text-sm text-[var(--text)] sm:flex-row sm:flex-wrap"
-            role="list"
+          {/* Trust Badges */}
+          <ul
+            className="flex flex-col gap-3 text-sm text-[var(--text)] sm:flex-row sm:flex-wrap"
             aria-label="Compromissos"
           >
             {TRUST_BADGES.map((badge) => (
               <li
                 key={badge}
-                className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white/80 px-4 py-2 shadow-sm"
+                className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white/80 px-4 py-2 shadow-sm transition-shadow duration-200 hover:shadow-md"
               >
-                <CheckCircle className="h-4 w-4 text-[var(--brand)]" aria-hidden />
+                <CheckCircle className="h-4 w-4 flex-none text-[var(--brand)]" aria-hidden="true" />
                 <span>{badge}</span>
               </li>
             ))}
-          </motion.ul>
+          </ul>
 
-          <div className="mt-8 flex w-full max-w-md flex-col gap-4 xs:flex-row">
+          {/* CTAs - Tap targets ≥48px */}
+          <div className="flex w-full max-w-md flex-col gap-4 xs:flex-row">
             <a
-              href={waHref}
+              href={WHATSAPP_LINK}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackWhatsAppClick('hero-cta', 'Falar com a criadora')}
               className={cn(
                 buttonVariants({ variant: "solid", size: "lg" }),
-                "h-12 w-full xs:flex-1 bg-[var(--brand)] text-[var(--brand-foreground)] shadow-md hover:shadow-lg focus-visible:ring-offset-0"
+                "min-h-[48px] w-full justify-center xs:flex-1 bg-[var(--brand)] text-[var(--brand-foreground)] shadow-md transition-all duration-200 hover:shadow-lg hover:brightness-110 focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2"
               )}
             >
               Falar com a criadora
@@ -254,101 +140,90 @@ export default function Hero() {
               href="#filhotes"
               className={cn(
                 buttonVariants({ variant: "outline", size: "lg" }),
-                "h-12 w-full xs:flex-1 border-[var(--brand)] bg-white/70 text-[var(--brand)] hover:bg-white/90"
+                "min-h-[48px] w-full justify-center xs:flex-1 border-[var(--brand)] bg-white/70 text-[var(--brand)] transition-all duration-200 hover:bg-white/90 hover:shadow-md focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2"
               )}
             >
               Ver filhotes disponíveis
             </a>
           </div>
 
-          <motion.dl
-            initial="hidden"
-            animate={animateState}
-            variants={metricsVariant}
-            transition={{ duration: 0.55, delay: 0.24, ease: "easeOut" }}
-            className="mt-10 grid gap-4 text-left sm:grid-cols-3"
+          {/* Metrics */}
+          <dl
+            className="mt-8 grid gap-4 text-left sm:grid-cols-3"
             aria-label="Resultados"
           >
             {METRICS.map((metric) => (
-              <div key={metric.label} className="rounded-2xl border border-[var(--border)] bg-white/90 p-4 shadow-sm">
+              <div key={metric.label} className="rounded-2xl border border-[var(--border)] bg-white/90 p-4 shadow-sm transition-shadow duration-200 hover:shadow-md">
                 <dt className="text-xs font-medium uppercase tracking-[0.18em] text-[var(--text-muted)]">{metric.label}</dt>
                 <dd className="mt-2 text-2xl font-semibold text-[var(--text)]">{metric.value}</dd>
               </div>
             ))}
-          </motion.dl>
-        </motion.div>
+          </dl>
+        </div>
 
-        <motion.div
-          initial="hidden"
-          animate={animateState}
-          variants={variants}
-          transition={{ duration: 0.65, delay: 0.15, ease: "easeOut" }}
-          className="w-full max-w-xl flex-1 space-y-6"
-        >
+        {/* ================================================================ */}
+        {/* IMAGEM DEPOIS (Optimized LCP) */}
+        {/* ================================================================ */}
+        <div className="w-full max-w-xl flex-1 space-y-6">
           <figure className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--surface)] shadow-2xl lg:aspect-[16/10]">
             <Image
               src="/spitz-hero-desktop.webp"
               alt="Filhotes de Spitz Alemão Anão Lulu da Pomerânia saudáveis alinhados"
               fill
               priority
-              sizes="(min-width: 1024px) 560px, 100vw"
+              fetchPriority="high"
+              sizes={HERO_IMAGE_SIZES}
               className="object-cover"
               style={{ objectPosition: "50% 38%" }}
               draggable={false}
+              placeholder="blur"
+              blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzAwIiBoZWlnaHQ9IjQ3NSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjhmMWVhIi8+PC9zdmc+"
             />
-            <figcaption className="absolute bottom-3 left-3 rounded-full bg-white/95 px-4 py-1 text-xs font-semibold text-[var(--brand)] shadow">
+            <figcaption className="absolute bottom-3 left-3 rounded-full bg-white/95 px-4 py-1.5 text-xs font-semibold text-[var(--brand)] shadow-md backdrop-blur">
               Entrega segura em todo o Brasil
             </figcaption>
           </figure>
 
-          <motion.div
-            initial="hidden"
-            animate={animateState}
-            variants={metricsVariant}
-            transition={{ duration: 0.55, delay: 0.28, ease: "easeOut" }}
-            className="mt-5 rounded-2xl border border-[var(--border)] bg-white/95 p-6 shadow-xl lg:hidden"
-          >
+          {/* WhatsApp CTA Card - Mobile */}
+          <div className="rounded-2xl border border-[var(--border)] bg-white/95 p-6 shadow-xl transition-shadow duration-200 hover:shadow-2xl lg:hidden">
             <p className="text-sm font-semibold text-[var(--text)]">Atendimento humano em tempo real</p>
-            <p className="mt-1 text-xs text-[var(--text-muted)]">
+            <p className="mt-1 text-xs leading-relaxed text-[var(--text-muted)]">
               Compartilhe vídeos do seu lar e receba orientação sobre rotina, enxoval e comportamento em minutos.
             </p>
             <a
-              href={waHref}
+              href={WHATSAPP_LINK}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-[var(--brand)] hover:underline"
+              onClick={() => trackWhatsAppClick('hero-secondary', 'Falar agora mobile')}
+              className="mt-3 inline-flex min-h-[48px] items-center gap-2 text-sm font-semibold text-[var(--brand)] transition-colors hover:text-[var(--brand)]/80 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2"
             >
-              <WAIcon size={16} className="h-4 w-4" aria-hidden />
+              <WAIcon size={16} className="h-4 w-4 flex-none" aria-hidden="true" />
               Falar agora
             </a>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial="hidden"
-            animate={animateState}
-            variants={metricsVariant}
-            transition={{ duration: 0.55, delay: 0.32, ease: "easeOut" }}
-            className="hidden rounded-2xl border border-[var(--border)] bg-white/95 p-6 shadow-xl lg:block"
-          >
+          {/* WhatsApp CTA Card - Desktop */}
+          <div className="hidden rounded-2xl border border-[var(--border)] bg-white/95 p-6 shadow-xl transition-shadow duration-200 hover:shadow-2xl lg:block">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="max-w-xs">
                 <p className="text-sm font-semibold text-[var(--text)]">Atendimento humano em tempo real</p>
-                <p className="mt-1 text-xs text-[var(--text-muted)]">
+                <p className="mt-1 text-xs leading-relaxed text-[var(--text-muted)]">
                   Compartilhe vídeos do seu lar e receba orientação sobre rotina, enxoval e comportamento em minutos.
                 </p>
               </div>
               <a
-                href={waHref}
+                href={WHATSAPP_LINK}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--brand)] hover:underline"
+                onClick={() => trackWhatsAppClick('hero-secondary', 'Falar agora desktop')}
+                className="inline-flex min-h-[48px] items-center gap-2 text-sm font-semibold text-[var(--brand)] transition-colors hover:text-[var(--brand)]/80 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2"
               >
-                <WAIcon size={16} className="h-4 w-4" aria-hidden />
+                <WAIcon size={16} className="h-4 w-4 flex-none" aria-hidden="true" />
                 Falar agora
               </a>
             </div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </div>
     </section>
   );

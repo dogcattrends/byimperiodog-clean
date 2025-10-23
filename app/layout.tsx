@@ -114,6 +114,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="pt-BR" className="scroll-smooth">
       <head>
+        {/* ================================================================ */}
+        {/* PERFORMANCE: Preconnects críticos para fontes e CDNs */}
+        {/* ================================================================ */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+        <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+        
         {/* Canonical dinâmico (reforço; alternates via metadata) */}
         {metaRuntime.alternates?.canonical && (
           <link rel="canonical" href={metaRuntime.alternates.canonical as string} />

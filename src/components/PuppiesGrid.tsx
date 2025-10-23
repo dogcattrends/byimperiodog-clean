@@ -1,8 +1,9 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useMemo, useState, useCallback, useRef, useTransition } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 
+import StoriesBar, { type StoriesBarItem } from "@/components/StoriesBar";
 import { supabasePublic } from "@/lib/supabasePublic";
 import track from "@/lib/track";
 
@@ -94,6 +95,25 @@ export default function PuppiesGrid() {
   // stories
   const [storiesOpen, setStoriesOpen] = useState(false);
   const [storyIndex, setStoryIndex] = useState(0);
+  const storyItems = useMemo<StoriesBarItem[]>(() => {
+    return items.slice(0, 12).map((puppy, index) => ({
+      id: puppy.id,
+      name: puppy.nome || puppy.name,
+      cover: pickCover(puppy) || undefined,
+      originalIndex: index,
+    }));
+  }, [items]);
+
+  const openStory = (targetIndex: number) => {
+    if (!Number.isFinite(targetIndex) || !items.length) return;
+    const safeIndex = Math.min(Math.max(0, targetIndex), items.length - 1);
+    setStoryIndex(safeIndex);
+    setStoriesOpen(true);
+    const puppy = items[safeIndex];
+    if (puppy) {
+      track.event?.("stories_open", { puppy_id: puppy.id, index: safeIndex });
+    }
+  };
 
   useEffect(() => {
     mountedRef.current = true;
@@ -221,52 +241,36 @@ export default function PuppiesGrid() {
         </p>
       )}
 
-      {/* Stories launcher - mobile only */}
-      {items.length > 0 && (
-        <div className="mt-6 -mb-2 block sm:hidden" aria-label="Stories de filhotes">
-          <div className="flex gap-3 overflow-x-auto pb-2 pl-1 pr-1 snap-x" role="list">
-            {items.slice(0,12).map((p,i)=>{
-              const cover = pickCover(p) || undefined;
-              return (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={()=>{ setStoryIndex(i); setStoriesOpen(true); track.event?.('stories_open', { puppy_id: p.id, index: i }); }}
-                  className="flex flex-col items-center gap-1 snap-start"
-                  aria-label={`Abrir story de ${p.nome || p.name || 'filhote'}`}
-                >
-                  <span className="relative inline-block h-16 w-16 overflow-hidden rounded-full ring-2 ring-emerald-500 ring-offset-2 ring-offset-white shadow">
-                    {cover ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={cover} alt="" className="h-full w-full object-cover" loading="lazy" />
-                    ) : (
-                      <span className="grid h-full w-full place-items-center text-[10px] text-zinc-400 bg-zinc-100">Sem</span>
-                    )}
-                  </span>
-                  <span className="w-16 truncate text-center text-[10px] font-medium text-zinc-600">{(p.nome||p.name||'Filhote').split(' ')[0]}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+      {/* Stories carousel */}
+      {storyItems.length > 0 && (
+        <StoriesBar
+          items={storyItems}
+          onSelect={openStory}
+          className="-mx-4 mt-6 max-w-full sm:-mx-6 lg:-mx-8"
+          ariaLabel="Pré-visualização em stories dos filhotes"
+        />
       )}
 
-      {/* Grid */}
-      <div className="grid grid-cols-1 gap-6 py-6 sm:grid-cols-2 xl:grid-cols-3" aria-busy={loading || undefined} aria-live="polite">
-        <AnimatePresence>
+      {/* ================================================================ */}
+      {/* GRID OTIMIZADO: auto-rows-fr para equalizar alturas */}
+      {/* ================================================================ */}
+      <div className="grid auto-rows-fr grid-cols-1 gap-6 py-6 sm:grid-cols-2 xl:grid-cols-3" aria-busy={loading || undefined} aria-live="polite">
+        <AnimatePresence mode="popLayout">
           {loading
             ? Array.from({ length: 6 }).map((_, i) => (
-                <PuppyCardSkeleton key={i} />
+                <PuppyCardSkeleton key={`skeleton-${i}`} />
               ))
             : filtered.map((p) => {
         const cover = pickCover(p) || undefined;
                 return (
                   <motion.div
                     key={p.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
+                    layout
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                    className="h-full"
                   >
                     <PuppyCard p={p} cover={cover} onOpen={() => setOpenId(p.id)} />
                   </motion.div>

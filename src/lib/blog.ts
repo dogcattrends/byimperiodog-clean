@@ -5,9 +5,11 @@ export type BlogPost = {
   subtitle?: string | null;
   excerpt?: string | null;
   coverUrl?: string | null;
+  coverAlt?: string | null;
   publishedAt: string; // ISO date
   updatedAt?: string | null; // ISO date
   author?: { name: string } | null;
+  category?: string | null;
   // Content rendered as React component to avoid extra deps
   Content: () => JSX.Element;
   tags?: string[];
