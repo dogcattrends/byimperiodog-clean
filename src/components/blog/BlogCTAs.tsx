@@ -1,152 +1,136 @@
-'use client';
+"use client";
 
-import { ArrowRight, MessageCircle, Phone } from 'lucide-react';
-import Link from 'next/link';
+import { ArrowRight, MessageCircle, Phone } from "lucide-react";
+import Link from "next/link";
 
-import { buildWhatsAppLink, WHATSAPP_MESSAGES } from '@/lib/whatsapp';
+import { buildWhatsAppLink, WHATSAPP_MESSAGES } from "@/lib/whatsapp";
 
 interface BlogCTAsProps {
   postTitle: string;
   category?: string | null;
 }
 
-export default function BlogCTAs({ postTitle, category }: BlogCTAsProps) {
-  const whatsappUrl = buildWhatsAppLink(WHATSAPP_MESSAGES.blog(postTitle));
+const CTA_LINKS = [
+  {
+    title: "Filhotes sob consulta",
+    description: "Visualize disponibilidade, cronograma de entrevistas e acompanhe a socializacao em tempo real.",
+    href: "/filhotes",
+    utmContent: "cta_filhotes",
+  },
+  {
+    title: "Processo completo",
+    description: "Conheca cada etapa: entrevista, socializacao guiada, entrega humanizada e mentoria vitalicia.",
+    href: "/sobre#processo",
+    utmContent: "cta_processo",
+  },
+  {
+    title: "FAQ do tutor",
+    description: "Transparencia sobre investimento, logistica, nutricao e convivencia com outras especies.",
+    href: "/faq",
+    utmContent: "cta_faq",
+  },
+];
 
-  // CTAs relevantes baseados na categoria
-  const isAboutPuppies = category?.toLowerCase().includes('filhote') || 
-                        postTitle.toLowerCase().includes('filhote');
-  
-  const isAboutCare = category?.toLowerCase().includes('cuidado') || 
-                     category?.toLowerCase().includes('saúde') ||
-                     postTitle.toLowerCase().includes('cuidado');
+export default function BlogCTAs({ postTitle, category }: BlogCTAsProps) {
+  const categorySafe = (category || "").toLowerCase();
+
+  const whatsappUrl = buildWhatsAppLink({
+    message: WHATSAPP_MESSAGES.blog(postTitle),
+    utmSource: "blog",
+    utmMedium: "cta",
+    utmCampaign: "blog_post",
+    utmContent: "cta_whatsapp",
+  });
+
+  const highlightCards = CTA_LINKS.filter((item) => {
+    if (!categorySafe) return true;
+    if (categorySafe.includes("filhote")) return item.utmContent !== "cta_processo";
+    if (categorySafe.includes("cuidado") || categorySafe.includes("saude")) return item.utmContent !== "cta_faq";
+    if (categorySafe.includes("pergunta")) return item.utmContent !== "cta_faq";
+    return true;
+  });
 
   return (
-    <div className="mt-12 space-y-6">
-      {/* CTA Principal - WhatsApp */}
-      <div className="rounded-2xl border-2 border-emerald-600 bg-gradient-to-br from-emerald-50 to-green-50 p-8 shadow-lg dark:from-emerald-950/30 dark:to-green-950/30">
+    <div className="space-y-8">
+      <div className="rounded-3xl border border-border bg-surface-subtle p-8 shadow-soft">
         <div className="flex flex-col items-center gap-6 text-center sm:flex-row sm:text-left">
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white">
-            <MessageCircle className="h-8 w-8" />
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-brand text-brand-foreground shadow-soft">
+            <MessageCircle className="h-8 w-8" aria-hidden />
           </div>
-          <div className="flex-1">
-            <h3 className="mb-2 text-2xl font-bold text-[var(--text)]">
-              Tem dúvidas sobre Spitz Alemão?
+          <div className="flex-1 space-y-2">
+            <h3 className="text-2xl font-serif text-text">
+              Pronto para uma conversa sob consulta?
             </h3>
-            <p className="text-[var(--text-muted)]">
-              Fale diretamente conosco pelo WhatsApp! Nossa equipe está pronta para ajudar você.
+            <p className="text-sm text-text-muted">
+              Atendimento humano, analise de perfil em ate 30 minutos e material exclusivo para planejar a chegada do Spitz.
             </p>
           </div>
-          <a 
+          <a
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-6 py-3 text-base font-medium text-white shadow-sm transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-pill bg-brand px-6 py-3 text-sm font-semibold text-brand-foreground shadow-soft transition hover:bg-brand-600 focus-ring"
+            data-track-event="blog_whatsapp_cta"
           >
-            <Phone className="h-5 w-5" />
-            Falar no WhatsApp
+            <Phone className="h-5 w-5" aria-hidden />
+            Conversar agora
           </a>
         </div>
       </div>
 
-      {/* CTAs condicionais */}
       <div className="grid gap-6 md:grid-cols-2">
-        {isAboutPuppies && (
-          <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
-            <h4 className="mb-2 text-lg font-bold text-[var(--text)]">
-              Filhotes Disponíveis
-            </h4>
-            <p className="mb-4 text-sm text-[var(--text-muted)]">
-              Conheça nossos filhotes Spitz Alemão disponíveis.
-            </p>
-            <Link 
-              href="/filhotes" 
-              className="flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 text-sm font-medium text-[var(--text)] transition hover:bg-[var(--surface-2)]"
-            >
-              Ver Filhotes
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-        )}
-
-        {isAboutCare && (
-          <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
-            <h4 className="mb-2 text-lg font-bold text-[var(--text)]">
-              Guia Completo de Cuidados
-            </h4>
-            <p className="mb-4 text-sm text-[var(--text-muted)]">
-              Baixe nosso guia completo sobre cuidados com Spitz Alemão.
-            </p>
-            <Link 
-              href="/contato?assunto=guia" 
-              className="flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 text-sm font-medium text-[var(--text)] transition hover:bg-[var(--surface-2)]"
-            >
-              Solicitar Guia Grátis
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-        )}
-
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
-          <h4 className="mb-2 text-lg font-bold text-[var(--text)]">
-            Mais Artigos sobre Spitz
-          </h4>
-          <p className="mb-4 text-sm text-[var(--text-muted)]">
-            Explore nosso blog com dicas, guias e novidades sobre a raça.
-          </p>
-          <Link 
-            href="/blog" 
-            className="flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 text-sm font-medium text-[var(--text)] transition hover:bg-[var(--surface-2)]"
+        {highlightCards.map((item) => (
+          <article
+            key={item.href}
+            className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-6 shadow-soft transition hover:-translate-y-1"
           >
-            Ver Mais Artigos
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
+            <h4 className="text-lg font-semibold text-text">{item.title}</h4>
+            <p className="text-sm text-text-muted">{item.description}</p>
+            <Link
+              href={`${item.href}?utm_source=blog&utm_medium=cta&utm_campaign=blog_post&utm_content=${item.utmContent}`}
+              className="inline-flex items-center justify-center gap-2 rounded-pill border border-border px-5 py-2 text-sm font-semibold text-text transition hover:border-brand focus-ring"
+            >
+              Acessar agora
+              <ArrowRight className="h-4 w-4" aria-hidden />
+            </Link>
+          </article>
+        ))}
 
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
-          <h4 className="mb-2 text-lg font-bold text-[var(--text)]">
-            Conheça Nosso Canil
-          </h4>
-          <p className="mb-4 text-sm text-[var(--text-muted)]">
-            Saiba mais sobre nossa história e compromisso com a raça.
+        <article className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-6 shadow-soft">
+          <h4 className="text-lg font-semibold text-text">Newsletter para tutores premium</h4>
+          <p className="text-sm text-text-muted">
+            Receba insights trimestrais sobre nutricao, comportamento e investimentos para o primeiro ano.
           </p>
-          <Link 
-            href="/sobre" 
-            className="flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 text-sm font-medium text-[var(--text)] transition hover:bg-[var(--surface-2)]"
+          <form
+            className="flex flex-col gap-3 sm:flex-row"
+            action="https://byimperiodog.us21.list-manage.com/subscribe/post"
+            method="POST"
           >
-            Sobre Nós
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-      </div>
-
-      {/* CTA de Newsletter */}
-      <div className="rounded-xl border border-[var(--border)] bg-gradient-to-r from-[var(--surface)] to-[var(--surface-2)] p-8">
-        <div className="mx-auto max-w-2xl text-center">
-          <h3 className="mb-2 text-xl font-bold text-[var(--text)]">
-            📧 Receba dicas exclusivas sobre Spitz Alemão
-          </h3>
-          <p className="mb-6 text-sm text-[var(--text-muted)]">
-            Cadastre-se em nossa newsletter e receba conteúdos exclusivos, dicas de cuidados e novidades sobre filhotes.
-          </p>
-          <form className="flex flex-col gap-3 sm:flex-row">
+            <input type="hidden" name="utm_source" value="blog" />
+            <input type="hidden" name="utm_medium" value="cta" />
+            <input type="hidden" name="utm_campaign" value="blog_post" />
+            <label htmlFor="newsletter-email-blog" className="sr-only">
+              Seu melhor e-mail
+            </label>
             <input
+              id="newsletter-email-blog"
+              name="EMAIL"
               type="email"
-              placeholder="Seu melhor e-mail"
-              className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-[var(--text)] placeholder:text-[var(--text-muted)] focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
               required
+              placeholder="Seu melhor e-mail"
+              className="flex-1 rounded-pill border border-border bg-surface-subtle px-4 py-2 text-sm text-text focus:ring-2 focus:ring-brand/30"
             />
-            <button 
-              type="submit" 
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-medium text-white transition hover:bg-emerald-700"
+            <button
+              type="submit"
+              className="inline-flex items-center justify-center gap-2 rounded-pill bg-brand px-5 py-2 text-sm font-semibold text-brand-foreground shadow-soft hover:bg-brand-600 focus-ring"
             >
-              Inscrever-se
+              Quero receber
             </button>
           </form>
-          <p className="mt-3 text-xs text-[var(--text-muted)]">
-            Não enviamos spam. Você pode cancelar a qualquer momento.
+          <p className="text-xs text-text-soft">
+            Sem spam. Cancelamento com um clique.
           </p>
-        </div>
+        </article>
       </div>
     </div>
   );

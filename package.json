@@ -23,11 +23,12 @@
     "fix:encoding:dry": "node scripts/fix-encoding.mjs --dry",
     "fix:encoding": "node scripts/fix-encoding.mjs --write",
     "a11y:contrast": "node scripts/a11y-contrast.mjs",
+    "check:banned-words": "node scripts/check-banned-words.mjs",
     "test": "vitest --run",
     "test:unit": "vitest --run",
     "test:e2e": "playwright test || echo 'playwright not configured'",
     "test:e2e:chromium": "playwright test --project=chromium",
-    "check:all": "npm run typecheck && npm run lint && npm run test && npm run check:encoding",
+    "check:all": "npm run typecheck && npm run lint && npm run test && npm run check:encoding && npm run check:banned-words",
     "check:encoding": "node scripts/check-encoding.mjs",
     "postinstall": "echo \"Ready.\"",
     "vercel-build": "npm install && node scripts/contentlayer-build-wrapper.mjs && next build --no-lint"

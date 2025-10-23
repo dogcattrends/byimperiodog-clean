@@ -1,12 +1,13 @@
 ﻿import type { Metadata } from "next";
-import { Fragment } from "react";
 import { headers } from "next/headers";
 import Script from "next/script";
+import { Fragment } from "react";
 
 import "./globals.css";
 import "../design-system/tokens.css";
 
 // Components
+import ConsentBanner from "@/components/ConsentBanner";
 import FloatingPuppiesCTA from "@/components/FloatingPuppiesCTA";
 import FooterFixed from "@/components/Footer";
 import Navbar from "@/components/Navbar";
@@ -269,6 +270,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </div>
             {!isAdminRoute && <FooterFixed />}
             {!isAdminRoute && <FloatingPuppiesCTA disabled={false} />}
+            {!isAdminRoute && <ConsentBanner />}
           </div>
         </ThemeProvider>
 		{!isAdminRoute &&

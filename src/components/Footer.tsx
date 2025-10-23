@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useEffect, useState, useCallback } from "react";
 
 import { WhatsAppIcon as WAIcon } from "@/components/icons/WhatsAppIcon";
+import { trackWhatsAppClick, trackNewsletterSubscribe } from "@/lib/events";
 import { routes, type AppRoutes } from "@/lib/route";
 import { WHATSAPP_LINK } from "@/lib/whatsapp";
 
@@ -141,6 +142,7 @@ export default function FooterFixed() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Fale conosco no WhatsApp"
+            onClick={() => trackWhatsAppClick('footer-cta', 'CTA Principal Footer')}
             className="inline-flex mt-6 items-center justify-center gap-2 rounded-full bg-white px-7 py-3 text-sm font-semibold text-zinc-900 shadow-lg ring-1 ring-white/40 hover:shadow-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-white/70 motion-reduce:transform-none"
             whileHover={reduceMotion ? undefined : { scale: 1.03 }}
             whileTap={reduceMotion ? undefined : { scale: 0.97 }}
@@ -300,6 +302,7 @@ export default function FooterFixed() {
         href={WA}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={() => trackWhatsAppClick('footer-floating', 'Botão Flutuante WhatsApp')}
         className="fixed right-4 bottom-6 h-14 w-14 min-h-[44px] min-w-[44px] bg-whatsapp text-white rounded-full shadow-xl ring-1 ring-white/10 flex items-center justify-center hover:shadow-2xl hover:brightness-110 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 motion-reduce:transform-none mb-[env(safe-area-inset-bottom)] z-50"
         aria-label="Conversar no WhatsApp"
       >
@@ -333,6 +336,7 @@ function NewsletterForm() {
       if (res.ok) {
   setMsg({ type: "success", text: data?.message || "Inscrição realizada com sucesso!" });
         setEmail("");
+        trackNewsletterSubscribe('footer-newsletter');
       } else {
   setMsg({ type: "error", text: data?.message || "Não foi possível inscrever agora." });
       }

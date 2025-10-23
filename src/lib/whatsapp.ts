@@ -1,63 +1,69 @@
 /**
- * Centraliza a configuração e helpers do WhatsApp para toda a aplicação.
- * - Número oficial do WhatsApp (env + fallback)
- * - Helper para gerar links com mensagem e UTM
- * - Tipos para tracking de origem
+ * Helpers centralizados para gerar links e mensagens de WhatsApp.
+ * Mantem compatibilidade com chamadas existentes que passam apenas a mensagem.
  */
 
-/**
- * Número do WhatsApp oficial da By Imperio Dog
- * Lê de NEXT_PUBLIC_WA_LINK ou fallback para número padrão
- */
-export const WHATSAPP_NUMBER = '5511968633239'; // Número oficial
+export const WHATSAPP_NUMBER = "5511968633239";
 
-/**
- * Link base do WhatsApp
- */
-export const WHATSAPP_LINK = process.env.NEXT_PUBLIC_WA_LINK || `https://wa.me/${WHATSAPP_NUMBER}`;
+export const WHATSAPP_LINK =
+  process.env.NEXT_PUBLIC_WA_LINK || `https://wa.me/${WHATSAPP_NUMBER}`;
 
-/**
- * Origens possíveis de CTAs do WhatsApp para tracking
- */
 export type WhatsAppSource =
-  | 'footer'
-  | 'navbar'
-  | 'blog-float'
-  | 'blog-cta'
-  | 'blog-share'
-  | 'filhotes-card'
-  | 'contato'
-  | 'sobre'
-  | 'home-hero'
-  | 'home-cta'
-  | 'puppies-modal'
-  | 'other';
+  | "footer"
+  | "navbar"
+  | "blog-float"
+  | "blog-cta"
+  | "blog-share"
+  | "filhotes-card"
+  | "contato"
+  | "sobre"
+  | "home-hero"
+  | "home-cta"
+  | "puppies-modal"
+  | "other";
 
-/**
- * Gera um link do WhatsApp com mensagem pré-preenchida
- * @param message - Mensagem opcional pré-preenchida
- * @returns URL completa do WhatsApp
- */
-export function buildWhatsAppLink(message?: string): string {
-  const baseUrl = WHATSAPP_LINK;
-  if (!message) return baseUrl;
+export type WhatsAppLinkOptions =
+  | string
+  | {
+      message?: string;
+      utmSource?: string;
+      utmMedium?: string;
+      utmCampaign?: string;
+      utmContent?: string;
+    };
 
-  const params = new URLSearchParams();
-  params.set('text', message);
-  return `${baseUrl}?${params.toString()}`;
+export function buildWhatsAppLink(options?: WhatsAppLinkOptions): string {
+  try {
+    const url = new URL(WHATSAPP_LINK);
+    const opts =
+      typeof options === "string"
+        ? { message: options }
+        : options || {};
+
+    if (opts.message) url.searchParams.set("text", opts.message);
+    if (opts.utmSource) url.searchParams.set("utm_source", opts.utmSource);
+    if (opts.utmMedium) url.searchParams.set("utm_medium", opts.utmMedium);
+    if (opts.utmCampaign) url.searchParams.set("utm_campaign", opts.utmCampaign);
+    if (opts.utmContent) url.searchParams.set("utm_content", opts.utmContent);
+
+    return url.toString();
+  } catch {
+    const message =
+      typeof options === "string"
+        ? options
+        : options?.message;
+    return message ? `${WHATSAPP_LINK}?text=${encodeURIComponent(message)}` : WHATSAPP_LINK;
+  }
 }
 
-/**
- * Mensagens padrão por contexto
- */
 export const WHATSAPP_MESSAGES = {
-  default: 'Olá! Tenho interesse em um Spitz Alemão Anão.',
+  default: "Ola! Tenho interesse em um Spitz Alemao Anao.",
   blog: (postTitle: string) =>
-    `Olá! Vi o artigo "${postTitle}" no blog e gostaria de saber mais sobre Spitz Alemão.`,
+    `Ola! Li o artigo "${postTitle}" no blog da By Imperio Dog e quero receber orientacoes personalizadas.`,
   filhotes: (puppyName?: string) =>
     puppyName
-      ? `Olá! Tenho interesse no filhote ${puppyName}. Poderia me enviar mais informações?`
-      : 'Olá! Tenho interesse nos filhotes disponíveis. Poderia me enviar mais informações?',
-  contato: 'Olá! Gostaria de tirar algumas dúvidas sobre os filhotes.',
-  sobre: 'Olá! Gostaria de conhecer mais sobre o By Imperio Dog.',
+      ? `Ola! Quero saber mais sobre o Spitz ${puppyName}. Poderia me enviar disponibilidade e valores?`
+      : "Ola! Quero conversar sobre os Spitz Alemao Anao sob consulta.",
+  contato: "Ola! Gostaria de tirar duvidas sobre o processo By Imperio Dog.",
+  sobre: "Ola! Quero conhecer mais sobre a criadora e o acompanhamento vitalicio.",
 } as const;
