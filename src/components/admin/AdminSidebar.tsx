@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, FileText, Users, MessageSquare } from "lucide-react";
+import { Home, FileText, Users, MessageSquare, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -9,6 +9,7 @@ const NAV = [
   { label: "Posts", href: "/admin/posts", icon: FileText },
   { label: "Comentários", href: "/admin/comentarios", icon: MessageSquare },
   { label: "Autores", href: "/admin/autores", icon: Users },
+  { label: "Wizard", href: "/admin/cadastros/wizard", icon: Sparkles },
 ];
 
 export default function AdminSidebar() {

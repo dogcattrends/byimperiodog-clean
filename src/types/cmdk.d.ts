@@ -1,3 +1,4 @@
 declare module "cmdk" {
-  export const Command: unknown;
+  // Minimal fallback types for cmdk to satisfy TS without installing types
+  export const Command: any;
 }

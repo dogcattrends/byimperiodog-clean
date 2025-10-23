@@ -16,6 +16,9 @@
       "@/lib/*": [
         "src/lib/*"
       ],
+      "@/hooks/*": [
+        "src/hooks/*"
+      ],
       "@/types/*": [
         "src/types/*"
       ],
