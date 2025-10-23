@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { ChevronRight, Heart } from "lucide-react";
 import Image from "next/image";
@@ -90,7 +90,7 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
             <>
               <Image
                 src={cover}
-                alt={`Filhote Spitz Alemão ${name} - ${color}, ${gender}, ${label.toLowerCase()}`}
+                alt={`Filhote de Spitz Alemao Anao ate 22 cm: ${name} em ${color}, ${gender}, status ${label.toLowerCase()}`}
                 fill
                 sizes={PUPPY_CARD_SIZES}
                 loading="lazy"
@@ -116,7 +116,7 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
             {price}
           </span>
 
-          {/* Botão de Favoritar - Tap target ≥48px */}
+          {/* BotÃ£o de Favoritar - Tap target â‰¥48px */}
           <button
             type="button"
             onClick={(event) => {
@@ -133,17 +133,17 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
       </button>
 
       {/* ================================================================ */}
-      {/* CONTEÚDO - line-clamp e espaçamento */}
+      {/* CONTEÃšDO - line-clamp e espaÃ§amento */}
       {/* ================================================================ */}
       <div className="flex flex-1 flex-col gap-4 p-5">
         <div>
           <h3 className="line-clamp-2 text-lg font-semibold leading-tight text-zinc-800">{name}</h3>
           <p className="mt-1 text-sm text-zinc-500">
-            {color} • {gender}
+            {color} â€¢ {gender}
           </p>
         </div>
 
-        {/* CTA Principal - Tap target ≥48px */}
+        {/* CTA Principal - Tap target â‰¥48px */}
         <a
           href={waInfo}
           target="_blank"
@@ -157,7 +157,7 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
           Quero esse filhote
         </a>
 
-        {/* CTAs Secundários - Tap targets ≥48px */}
+        {/* CTAs SecundÃ¡rios - Tap targets â‰¥48px */}
         <div className="grid grid-cols-3 gap-2 text-xs font-semibold" data-evt="share_click" data-id={p.id}>
           <a
             href={waVideo}
@@ -165,9 +165,9 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
             rel="noopener noreferrer"
             onClick={() => track.event?.("whatsapp_click", { placement: "card", action: "video", puppy_id: p.id })}
             className="flex min-h-[44px] items-center justify-center rounded-lg border border-zinc-200 px-2 py-2.5 text-zinc-700 transition-all duration-200 hover:bg-zinc-50 hover:border-zinc-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-1"
-            title="Pedir vídeo do filhote"
+            title="Pedir vÃ­deo do filhote"
           >
-            Vídeo
+            VÃ­deo
           </a>
 
           <a
@@ -181,25 +181,28 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
             Visita
           </a>
 
-          <button
-            type="button"
+          <Link
+            href={`/filhotes?detalhe=${encodeURIComponent(p.id)}`}
             onClick={() => {
               onOpen?.();
-              track.event?.("open_details", { placement: "card", puppy_id: p.id });
+              track.event?.("open_details", { placement: "card", puppy_id: p.id, target: "route" });
             }}
             className="flex min-h-[44px] items-center justify-center gap-1 rounded-lg border border-zinc-200 px-2 py-2.5 text-zinc-800 transition-all duration-200 hover:bg-zinc-50 hover:border-zinc-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-1"
             data-evt="card_click"
             data-id={p.id}
             title="Ver detalhes completos"
           >
-            Ver <ChevronRight className="h-4 w-4" aria-hidden="true" />
-          </button>
+            Detalhes <ChevronRight className="h-4 w-4" aria-hidden="true" />
+          </Link>
         </div>
 
         <p className="text-xs leading-relaxed text-zinc-500">
-          Criado com acompanhamento veterinário, socialização guiada e mentoria vitalícia.
+          Criado com acompanhamento veterinÃ¡rio, socializaÃ§Ã£o guiada e mentoria vitalÃ­cia.
         </p>
       </div>
     </article>
   );
 }
+
+
+

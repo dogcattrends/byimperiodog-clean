@@ -1,6 +1,5 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 
@@ -256,29 +255,18 @@ export default function PuppiesGrid() {
       {/* GRID OTIMIZADO: auto-rows-fr para equalizar alturas */}
       {/* ================================================================ */}
       <div className="grid auto-rows-fr grid-cols-1 gap-6 py-6 sm:grid-cols-2 xl:grid-cols-3" aria-busy={loading || undefined} aria-live="polite">
-        <AnimatePresence mode="popLayout">
-          {loading
-            ? Array.from({ length: 6 }).map((_, i) => (
-                <PuppyCardSkeleton key={`skeleton-${i}`} />
-              ))
-            : filtered.map((p) => {
-        const cover = pickCover(p) || undefined;
-                return (
-                  <motion.div
-                    key={p.id}
-                    id={`filhote-${p.id}`}
-                    layout
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 0.2, ease: "easeOut" }}
-                    className="h-full"
-                  >
-                    <PuppyCard p={p} cover={cover} onOpen={() => setOpenId(p.id)} />
-                  </motion.div>
-                );
-              })}
-        </AnimatePresence>
+        {loading
+          ? Array.from({ length: 6 }).map((_, i) => (
+              <PuppyCardSkeleton key={`skeleton-${i}`} />
+            ))
+          : filtered.map((p) => {
+              const cover = pickCover(p) || undefined;
+              return (
+                <div key={p.id} id={`filhote-${p.id}`} className="h-full">
+                  <PuppyCard p={p} cover={cover} onOpen={() => setOpenId(p.id)} />
+                </div>
+              );
+            })}
       </div>
 
       {/* Nenhum encontrado */}

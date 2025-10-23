@@ -1,11 +1,11 @@
 "use client";
 
-import { useReducedMotion, AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
 import Script from 'next/script';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { cn } from '@/lib/cn';
+
 import CLIENT_PHOTOS from './clientPhotos';
 
 type Variant = 'carousel' | 'grid';
@@ -40,7 +40,17 @@ export default function Testimonials({
   variant = 'carousel',
   showCount = 6
 }: TestimonialsProps) {
-  const reduceMotion = useReducedMotion();
+  // Detectar preferência por movimento reduzido (CSS já trata via motion-reduce:*)
+  const [reduceMotion, setReduceMotion] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mql = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReduceMotion(mql.matches);
+    const handler = (e: MediaQueryListEvent) => setReduceMotion(e.matches);
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
+  }, []);
+
   const list = photos?.length ? photos : CLIENT_PHOTOS.slice();
   const CITY_POOL = cities?.length ? cities : DEFAULT_CITY_POOL;
   const total = list.length;
@@ -168,32 +178,26 @@ export default function Testimonials({
               'relative mx-auto w-full max-w-[640px] aspect-[4/3] rounded-2xl overflow-hidden ring-1 ring-[var(--border)] bg-[var(--surface)] flex items-center justify-center shadow-sm',
               bgPattern && '[background:repeating-linear-gradient(45deg,rgba(16,185,129,0.07)_0_6px,transparent_6px_12px)]'
             )}>
-              <AnimatePresence mode="wait" initial={false}>
-                {current && (
-                  <motion.figure
-                    key={current}
-                    className="relative w-full h-full"
-                    initial={reduceMotion ? false : { opacity: 0, scale: 1.02 }}
-                    animate={reduceMotion ? { opacity: 1 } : { opacity: 1, scale: 1 }}
-                    exit={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.985 }}
-                    transition={{ duration: 0.45, ease: 'easeOut' }}
-                  >
-                    <Image
-                      src={current}
-                      alt={altFor(current, index)}
-                      fill
-                      className={cn('will-change-transform', fit === 'contain' ? 'object-contain p-2' : 'object-cover')}
-                      sizes="(max-width: 768px) 90vw, 640px"
-                      placeholder="blur"
-                      blurDataURL={BLUR}
-                      unoptimized
-                    />
-                    <figcaption className="pointer-events-none absolute bottom-2 left-2 rounded-md bg-black/55 text-white text-[11px] px-2 py-1 backdrop-blur-sm shadow-sm">
-                      {city}
-                    </figcaption>
-                  </motion.figure>
-                )}
-              </AnimatePresence>
+              {current && (
+                <figure
+                  key={current}
+                  className="relative w-full h-full opacity-0 scale-[1.02] animate-fade-in motion-reduce:opacity-100 motion-reduce:scale-100 motion-reduce:animate-none"
+                >
+                  <Image
+                    src={current}
+                    alt={altFor(current, index)}
+                    fill
+                    className={cn('will-change-transform', fit === 'contain' ? 'object-contain p-2' : 'object-cover')}
+                    sizes="(max-width: 768px) 90vw, 640px"
+                    placeholder="blur"
+                    blurDataURL={BLUR}
+                    unoptimized
+                  />
+                  <figcaption className="pointer-events-none absolute bottom-2 left-2 rounded-md bg-black/55 text-white text-[11px] px-2 py-1 backdrop-blur-sm shadow-sm">
+                    {city}
+                  </figcaption>
+                </figure>
+              )}
               {total > 1 && (
                 <>
                   <button type="button" aria-label="Anterior" onClick={prev} className="focus-visible:focus-ring absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/45 text-white px-2 py-1 text-sm backdrop-blur-sm transition-opacity opacity-0 group-hover:opacity-100">

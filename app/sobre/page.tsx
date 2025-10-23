@@ -2,6 +2,7 @@
 import { CheckCircle, Heart, Home, PawPrint, Shield, Users } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import Script from "next/script";
 
 import { WhatsAppIcon as WAIcon } from "@/components/icons/WhatsAppIcon";
 import { buttonVariants } from "@/components/ui/button";
@@ -12,6 +13,14 @@ export const metadata: Metadata = {
   title: "Sobre a By Império Dog | Criadora especialista em Spitz Alemão Anão Lulu da Pomerânia",
   description:
     "Conheça a história da By Império Dog, nossa estrutura familiar e a metodologia responsável de criação do Spitz Alemão Anão Lulu da Pomerânia em Bragança Paulista.",
+  alternates: { canonical: "/sobre" },
+  openGraph: {
+    type: "website",
+    url: "/sobre",
+    title: "Sobre a By Império Dog",
+    description:
+      "Nossa história, estrutura e valores na criação responsável do Spitz Alemão Anão Lulu da Pomerânia.",
+  },
 };
 
 const timeline = [
@@ -90,9 +99,20 @@ const supportItems = [
 export default function SobrePage() {
   const trimmedPhone = process.env.NEXT_PUBLIC_WA_PHONE?.replace(/\D/g, "") ?? "";
   const waHref = trimmedPhone ? `https://wa.me/${trimmedPhone}` : process.env.NEXT_PUBLIC_WA_LINK ?? "#";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "https://www.byimperiodog.com.br";
+
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Início", item: `${siteUrl}/` },
+      { "@type": "ListItem", position: 2, name: "Sobre", item: `${siteUrl}/sobre` },
+    ],
+  };
 
   return (
     <main className="space-y-20 bg-[var(--bg)] pb-24 pt-16 text-[var(--text)]">
+      <Script id="ld-breadcrumb-sobre" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
       <section className="mx-auto max-w-6xl px-5 text-center sm:text-left">
         <span className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-[var(--brand)]">
           Sobre a criadora

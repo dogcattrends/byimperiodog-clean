@@ -1,15 +1,23 @@
-﻿import type { Metadata } from "next";
-
+﻿import { CheckCircle, Heart, PawPrint, Shield } from "lucide-react";
+import type { Metadata } from "next";
+ 
+import { WhatsAppIcon as WAIcon } from "@/components/icons/WhatsAppIcon";
+import PuppiesGrid from "@/components/PuppiesGrid";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
-import PuppiesGrid from "@/components/PuppiesGrid";
-import { WhatsAppIcon as WAIcon } from "@/components/icons/WhatsAppIcon";
-import { CheckCircle, Heart, PawPrint, Shield } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Filhotes de Spitz Alemão Anão Lulu da Pomerânia | By Império Dog",
   description:
     "Conheça filhotes de Spitz Alemão Anão Lulu da Pomerânia socializados, com pedigree CBKC, laudos veterinários e acompanhamento vitalício direto com a criadora By Império Dog.",
+  alternates: { canonical: "/filhotes" },
+  openGraph: {
+    type: "website",
+    url: "/filhotes",
+    title: "Filhotes de Spitz Alemão Anão | By Império Dog",
+    description:
+      "Filhotes de Spitz Alemão Anão Lulu da Pomerânia com suporte direto da criadora. Documentação completa e acompanhamento responsável.",
+  },
 };
 
 const adoptionSteps = [
@@ -86,6 +94,7 @@ const faqEntries = [
 export default function FilhotesPage() {
   const trimmedPhone = process.env.NEXT_PUBLIC_WA_PHONE?.replace(/\D/g, "") ?? "";
   const waHref = trimmedPhone ? `https://wa.me/${trimmedPhone}` : process.env.NEXT_PUBLIC_WA_LINK ?? "#";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "https://www.byimperiodog.com.br";
 
   const faqJsonLd = {
     "@context": "https://schema.org",
@@ -98,6 +107,15 @@ export default function FilhotesPage() {
         text: item.answer,
       },
     })),
+  };
+
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Início", item: `${siteUrl}/` },
+      { "@type": "ListItem", position: 2, name: "Filhotes", item: `${siteUrl}/filhotes` },
+    ],
   };
 
   return (
@@ -159,7 +177,7 @@ export default function FilhotesPage() {
       <section className="mx-auto grid max-w-6xl gap-10 px-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <div>
           <h2 className="text-2xl font-semibold text-[var(--text)]">Como funciona a jornada responsável</h2>
-          <ol className="mt-6 grid gap-6 md:grid-cols-2" aria-label="Passo a passo" role="list">
+          <ol className="mt-6 grid gap-6 md:grid-cols-2" aria-label="Passo a passo">
             {adoptionSteps.map((step, index) => (
               <li key={step.title} className="relative rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
                 <span className="absolute -top-4 left-6 flex h-9 w-9 items-center justify-center rounded-full bg-[var(--brand)] text-sm font-semibold text-[var(--brand-foreground)] shadow">
@@ -177,7 +195,7 @@ export default function FilhotesPage() {
           <p className="mt-2 text-sm text-[var(--text-muted)]">
             Cada filhote sai preparado para viver em família e com documentação completa.
           </p>
-          <ul className="mt-4 space-y-3" role="list">
+          <ul className="mt-4 space-y-3">
             {includedItems.map((item) => (
               <li key={item} className="flex items-start gap-2 text-sm text-[var(--text)]">
                 <CheckCircle className="mt-1 h-4 w-4 flex-none text-[var(--brand)]" aria-hidden />
@@ -277,6 +295,10 @@ export default function FilhotesPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
     </main>
   );

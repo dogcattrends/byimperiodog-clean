@@ -2,7 +2,6 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import classNames from "classnames";
-import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -49,8 +48,7 @@ export default function Navbar() {
   }, [open]);
 
   const firstLinkRef = useRef<HTMLAnchorElement | null>(null);
-  const prefersReducedMotion =
-    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // Prefers-reduced-motion agora tratado via classes CSS (motion-reduce:*), sem JS.
 
   useEffect(() => {
     if (open) setTimeout(() => firstLinkRef.current?.focus(), 10);
@@ -126,92 +124,80 @@ export default function Navbar() {
                 <Menu className="h-6 w-6" aria-hidden />
               </button>
             </Dialog.Trigger>
-            <AnimatePresence>
-              {open && (
-                <Dialog.Portal forceMount>
-                  <Dialog.Overlay asChild>
-                    <motion.div
-                      className="fixed inset-0 z-[60] bg-black/40"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: prefersReducedMotion ? 0 : 0.18 }}
-                    />
-                  </Dialog.Overlay>
-                  <Dialog.Content asChild onEscapeKeyDown={close}>
-                    <motion.aside
-                      className="fixed inset-y-0 right-0 z-[61] w-full max-w-[86%] bg-white text-zinc-900 shadow-2xl outline-none"
-                      initial={{ x: "100%" }}
-                      animate={{ x: 0 }}
-                      exit={{ x: "100%" }}
-                      transition={{ type: "tween", duration: prefersReducedMotion ? 0 : 0.22 }}
-                      role="dialog"
-                      aria-label="Menu"
-                      id="menu-mobile"
-                    >
-                      <div className="flex items-center justify-between px-4 py-4 border-b border-zinc-200">
-                        <span className="text-sm font-semibold text-zinc-700">Menu</span>
-                        <Dialog.Close asChild>
-                          <button
-                            className="rounded-full p-2 min-h-[48px] min-w-[48px] flex items-center justify-center hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2"
-                            aria-label="Fechar menu"
+            <Dialog.Portal forceMount>
+              <Dialog.Overlay asChild>
+                <div
+                  className="fixed inset-0 z-[60] bg-black/40 opacity-0 transition-opacity duration-200 data-[state=open]:opacity-100 motion-reduce:transition-none"
+                />
+              </Dialog.Overlay>
+              <Dialog.Content asChild onEscapeKeyDown={close}>
+                <aside
+                  className="fixed inset-y-0 right-0 z-[61] w-full max-w-[86%] bg-white text-zinc-900 shadow-2xl outline-none translate-x-full data-[state=open]:translate-x-0 transition-transform duration-200 ease-out motion-reduce:transition-none"
+                  role="dialog"
+                  aria-label="Menu"
+                  id="menu-mobile"
+                >
+                  <div className="flex items-center justify-between px-4 py-4 border-b border-zinc-200">
+                    <span className="text-sm font-semibold text-zinc-700">Menu</span>
+                    <Dialog.Close asChild>
+                      <button
+                        className="rounded-full p-2 min-h-[48px] min-w-[48px] flex items-center justify-center hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2"
+                        aria-label="Fechar menu"
+                      >
+                        <X className="h-6 w-6" aria-hidden />
+                      </button>
+                    </Dialog.Close>
+                  </div>
+                  <nav className="px-2 pb-6 pt-4" aria-label="Menu mobile">
+                    <ul className="flex flex-col gap-1" role="menu">
+                      {navLinks.map((link) => {
+                        const active = isActive(link.href, pathname, hash);
+                        const cls = classNames(
+                          "relative rounded-md px-4 py-3 text-base font-medium min-h-[48px] flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2",
+                          active ? "bg-zinc-100 text-[var(--brand)]" : "text-zinc-700 hover:bg-zinc-50"
+                        );
+                        return (
+                          <li key={link.href}>
+                            <Link
+                              href={link.href}
+                              onClick={close}
+                              aria-current={active ? "page" : undefined}
+                              className={cls}
+                              role="menuitem"
+                              ref={firstLinkRef}
+                            >
+                              {link.label}
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                    <div className="px-4 pt-6">
+                      {(() => {
+                        const trimmed = process.env.NEXT_PUBLIC_WA_PHONE?.replace(/\D/g, "") ?? "";
+                        const waHref = trimmed
+                          ? `https://wa.me/${trimmed}`
+                          : process.env.NEXT_PUBLIC_WA_LINK || "https://wa.me/";
+                        return (
+                          <a
+                            href={waHref}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={close}
+                            className="flex items-center justify-center gap-2 rounded-full bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 min-h-[48px] w-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+                            title="Atendimento humano com carinho"
+                            aria-label="Abrir conversa no WhatsApp"
                           >
-                            <X className="h-6 w-6" aria-hidden />
-                          </button>
-                        </Dialog.Close>
-                      </div>
-                      <nav className="px-2 pb-6 pt-4" aria-label="Menu mobile">
-                        <ul className="flex flex-col gap-1" role="menu">
-                          {navLinks.map((link) => {
-                            const active = isActive(link.href, pathname, hash);
-                            const cls = classNames(
-                              "relative rounded-md px-4 py-3 text-base font-medium min-h-[48px] flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2",
-                              active ? "bg-zinc-100 text-[var(--brand)]" : "text-zinc-700 hover:bg-zinc-50"
-                            );
-                            return (
-                              <li key={link.href}>
-                                <Link
-                                  href={link.href}
-                                  onClick={close}
-                                  aria-current={active ? "page" : undefined}
-                                  className={cls}
-                                  role="menuitem"
-                                  ref={firstLinkRef}
-                                >
-                                  {link.label}
-                                </Link>
-                              </li>
-                            );
-                          })}
-                        </ul>
-                        <div className="px-4 pt-6">
-                          {(() => {
-                            const trimmed = process.env.NEXT_PUBLIC_WA_PHONE?.replace(/\D/g, "") ?? "";
-                            const waHref = trimmed
-                              ? `https://wa.me/${trimmed}`
-                              : process.env.NEXT_PUBLIC_WA_LINK || "https://wa.me/";
-                            return (
-                              <a
-                                href={waHref}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={close}
-                                className="flex items-center justify-center gap-2 rounded-full bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 min-h-[48px] w-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
-                                title="Atendimento humano com carinho"
-                                aria-label="Abrir conversa no WhatsApp"
-                              >
-                                <WAIcon size={18} className="h-[18px] w-[18px]" aria-hidden />
-                                WhatsApp
-                              </a>
-                            );
-                          })()}
-                        </div>
-                      </nav>
-                    </motion.aside>
-                  </Dialog.Content>
-                </Dialog.Portal>
-              )}
-            </AnimatePresence>
+                            <WAIcon size={18} className="h-[18px] w-[18px]" aria-hidden />
+                            WhatsApp
+                          </a>
+                        );
+                      })()}
+                    </div>
+                  </nav>
+                </aside>
+              </Dialog.Content>
+            </Dialog.Portal>
           </Dialog.Root>
         </div>
       </nav>

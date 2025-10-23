@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -88,10 +89,18 @@ const CATEGORY_DEFINITIONS: CategoryDefinition[] = [
 
 export const revalidate = 300;
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Guia completo do tutor de Spitz Alemão Anão",
   description:
     "Conteúdo evergreen para quem busca Spitz Alemão Anão com responsabilidade: cuidados, rotina, comportamento, saúde preventiva e respostas das principais dúvidas.",
+  alternates: { canonical: "/blog" },
+  openGraph: {
+    type: "website",
+    url: "/blog",
+    title: "Blog | By Império Dog",
+    description:
+      "Pilares evergreen sobre saúde, rotina e comportamento do Spitz Alemão Anão para uma decisão responsável.",
+  },
 };
 
 type PageSearchParams = {
@@ -168,18 +177,30 @@ export default async function BlogListPage({ searchParams }: { searchParams?: Pa
   const featured = filtered[0] ?? fetchState.posts[0];
   const collections = buildCollections(filtered);
 
+  const metaTitleStr = typeof metadata.title === "string" ? metadata.title : "Blog | By Império Dog";
+  const metaDescStr = metadata.description ?? "Conteúdo evergreen sobre saúde, rotina e comportamento do Spitz Alemão Anão.";
   const blogSchema = buildBlogSchema({
     url: process.env.NEXT_PUBLIC_SITE_URL || "https://www.byimperiodog.com.br",
-    headline: metadata.title,
-    description: metadata.description,
+    headline: metaTitleStr,
+    description: metaDescStr,
     posts: fetchState.posts.slice(0, 12),
   });
+
+  // Separar "Guia do Tutor" para destaque
+  const guiaDoTutorCollection = collections.find(c => c.definition.id === "guia-do-tutor");
+  const otherCollections = collections.filter(c => c.definition.id !== "guia-do-tutor");
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-16 px-4 py-16 sm:px-6 lg:px-8">
       <SeoJsonLd data={blogSchema} />
       <Hero searchTerm={searchTerm} links={heroLinks} />
       {featured ? <FeaturedPost post={featured} /> : null}
+
+      {/* Anúncio de resultados para leitores de tela */}
+      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {searchTerm && filtered.length > 0 && `${filtered.length} artigo${filtered.length > 1 ? 's' : ''} encontrado${filtered.length > 1 ? 's' : ''} para "${searchTerm}"`}
+        {searchTerm && filtered.length === 0 && `Nenhum artigo encontrado para "${searchTerm}"`}
+      </div>
 
       {searchTerm && filtered.length === 0 ? (
         <EmptyState
@@ -188,7 +209,12 @@ export default async function BlogListPage({ searchParams }: { searchParams?: Pa
         />
       ) : null}
 
-      {collections.map((collection) =>
+      {/* Guia do Tutor em destaque */}
+      {guiaDoTutorCollection && guiaDoTutorCollection.posts.length > 0 && !searchTerm ? (
+        <GuiaDoTutorSection collection={guiaDoTutorCollection} />
+      ) : null}
+
+      {otherCollections.map((collection) =>
         collection.posts.length > 0 ? (
           <CategorySection key={collection.definition.id} collection={collection} />
         ) : null
@@ -424,22 +450,126 @@ function CategorySection({
 
       <p className="text-xs uppercase tracking-[0.3em] text-brand">{definition.highlight}</p>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {posts.map((post) => (
-          <article key={post.id} className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-soft transition hover:-translate-y-1">
-            <BlogCardImage post={post} />
-            <div className="flex flex-1 flex-col gap-3 p-6">
-              <h3 className="text-lg font-semibold text-text group-hover:text-brand">
-                <Link href={`/blog/${post.slug}`}>{post.title}</Link>
-              </h3>
-              {post.excerpt ? <p className="text-sm text-text-muted">{post.excerpt}</p> : null}
-              <div className="mt-auto flex items-center justify-between text-xs text-text-soft">
-                <span>{formatDate(post.published_at)}</span>
-                <span>{estimateReadingTime(post.content_mdx ?? post.excerpt ?? "")} min</span>
+      <div className="grid auto-rows-fr gap-6 md:grid-cols-2">
+        {posts.map((post) => {
+          const trimmedPhone = process.env.NEXT_PUBLIC_WA_PHONE?.replace(/\D/g, "") ?? "";
+          const waBase = trimmedPhone ? `https://wa.me/${trimmedPhone}` : (process.env.NEXT_PUBLIC_WA_LINK || "https://wa.me/");
+          const waHref = `${waBase}?text=${encodeURIComponent(`Olá! Li o artigo "${post.title}" e gostaria de saber mais sobre Spitz Alemão.`)}&utm_source=blog&utm_medium=card&utm_campaign=post-${post.slug}`;
+          
+          return (
+            <article key={post.id} className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-soft transition hover:-translate-y-1">
+              <BlogCardImage post={post} />
+              <div className="flex flex-1 flex-col gap-3 p-6">
+                <h3 className="line-clamp-2 text-lg font-semibold text-text group-hover:text-brand">
+                  <Link href={`/blog/${post.slug}`} className="hover:underline">{post.title}</Link>
+                </h3>
+                {post.excerpt ? <p className="line-clamp-3 text-sm text-text-muted">{post.excerpt}</p> : null}
+                <div className="mt-auto flex items-center justify-between text-xs text-text-soft">
+                  <span>{formatDate(post.published_at)}</span>
+                  <span>{estimateReadingTime(post.content_mdx ?? post.excerpt ?? "")} min</span>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Link
+                    href={`/blog/${post.slug}`}
+                    className="inline-flex min-h-[44px] items-center justify-center rounded-pill bg-brand px-5 py-2 text-sm font-semibold text-brand-foreground shadow-soft transition hover:bg-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+                  >
+                    Ler artigo
+                  </Link>
+                  <a
+                    href={waHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex min-h-[44px] items-center justify-center rounded-pill border border-border px-4 py-2 text-sm font-semibold text-text transition hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+                    aria-label={`Falar sobre ${post.title} via WhatsApp`}
+                  >
+                    💬 Falar sobre isso
+                  </a>
+                </div>
               </div>
-            </div>
-          </article>
-        ))}
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function GuiaDoTutorSection({
+  collection,
+}: {
+  collection: { definition: CategoryDefinition; posts: PublicPost[] };
+}) {
+  const { definition, posts } = collection;
+  const trimmedPhone = process.env.NEXT_PUBLIC_WA_PHONE?.replace(/\D/g, "") ?? "";
+  const waBase = trimmedPhone ? `https://wa.me/${trimmedPhone}` : (process.env.NEXT_PUBLIC_WA_LINK || "https://wa.me/");
+
+  return (
+    <section
+      aria-labelledby="guia-tutor-heading"
+      className="space-y-6 rounded-3xl border-2 border-brand/20 bg-gradient-to-br from-brand/5 via-surface to-surface p-8 shadow-lg"
+    >
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="space-y-3">
+          <span className="inline-flex items-center gap-2 rounded-pill bg-brand px-4 py-1 text-xs font-semibold uppercase tracking-[0.32em] text-white">
+            ⭐ Conteúdo essencial
+          </span>
+          <h2 id="guia-tutor-heading" className="text-3xl font-serif text-text">
+            {definition.title}
+          </h2>
+          <p className="max-w-3xl text-base text-text-muted">{definition.description}</p>
+          <p className="text-sm font-semibold text-brand">{definition.highlight}</p>
+        </div>
+        <div className="flex flex-col gap-2 sm:items-end">
+          <Link
+            href="/filhotes"
+            className="inline-flex min-h-[48px] items-center justify-center rounded-pill bg-brand px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+          >
+            Ver filhotes disponíveis
+          </Link>
+          <a
+            href={`${waBase}?text=${encodeURIComponent("Olá! Li o Guia do Tutor e gostaria de conversar sobre a jornada responsável com um Spitz Alemão.")}&utm_source=blog&utm_medium=guia-tutor&utm_campaign=conversao`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex min-h-[48px] items-center justify-center rounded-pill border-2 border-brand px-6 py-3 text-sm font-semibold text-brand transition hover:bg-brand/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+          >
+            💬 Falar com a criadora
+          </a>
+        </div>
+      </div>
+
+      <div className="grid auto-rows-fr gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {posts.map((post) => {
+          const waHref = `${waBase}?text=${encodeURIComponent(`Olá! Li "${post.title}" no Guia do Tutor e gostaria de saber mais.`)}&utm_source=blog&utm_medium=guia-card&utm_campaign=post-${post.slug}`;
+          
+          return (
+            <article key={post.id} className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-white shadow-md transition hover:-translate-y-1 hover:shadow-lg">
+              <BlogCardImage post={post} />
+              <div className="flex flex-1 flex-col gap-3 p-5">
+                <h3 className="line-clamp-2 text-base font-semibold text-text group-hover:text-brand">
+                  <Link href={`/blog/${post.slug}`} className="hover:underline">{post.title}</Link>
+                </h3>
+                {post.excerpt ? <p className="line-clamp-2 text-xs text-text-muted">{post.excerpt}</p> : null}
+                <div className="mt-auto flex flex-col gap-2">
+                  <Link
+                    href={`/blog/${post.slug}`}
+                    className="inline-flex min-h-[44px] items-center justify-center rounded-pill bg-brand px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+                  >
+                    Ler agora
+                  </Link>
+                  <a
+                    href={waHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex min-h-[44px] items-center justify-center rounded-pill border border-border px-4 py-2 text-xs font-semibold text-text transition hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+                    aria-label={`Falar sobre ${post.title} via WhatsApp`}
+                  >
+                    💬 Conversar
+                  </a>
+                </div>
+              </div>
+            </article>
+          );
+        })}
       </div>
     </section>
   );
@@ -448,14 +578,14 @@ function CategorySection({
 function BlogCardImage({ post }: { post: PublicPost }) {
   if (!post.cover_url) {
     return (
-      <div className="flex h-48 w-full items-center justify-center bg-surface-subtle text-xs font-semibold uppercase tracking-[0.28em] text-text-soft">
+      <div className="flex aspect-[4/3] w-full items-center justify-center bg-surface-subtle text-xs font-semibold uppercase tracking-[0.28em] text-text-soft">
         Conteúdo evergreen
       </div>
     );
   }
 
   return (
-    <div className="relative h-48 w-full overflow-hidden bg-surface-subtle">
+    <div className="relative aspect-[4/3] w-full overflow-hidden bg-surface-subtle">
       <Image
         src={post.cover_url}
         alt={post.cover_alt || post.title}

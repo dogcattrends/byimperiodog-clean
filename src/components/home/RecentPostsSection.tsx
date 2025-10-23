@@ -1,10 +1,18 @@
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { Suspense } from 'react';
+
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/cn';
 import { supabasePublic } from '@/lib/supabasePublic';
-import { Suspense } from 'react';
+
 import RecentPostsSkeleton from './RecentPostsSkeleton';
-import RecentPostsListAnimated from './RecentPostsListAnimated';
+
+// Deferir animações não-críticas para reduzir JS inicial
+const RecentPostsListAnimated = dynamic(() => import('./RecentPostsListAnimated'), {
+	ssr: false,
+	loading: () => null,
+});
 
 export async function RecentPostsSection() {
 	const supa = supabasePublic();
@@ -24,7 +32,6 @@ export async function RecentPostsSection() {
 		<section
 			className="mx-auto w-full max-w-6xl px-5 md:px-6 py-16 sm:py-20"
 			aria-labelledby="home-blog-heading"
-			role="region"
 		>
 			<div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
 				<div>
@@ -47,14 +54,14 @@ export async function RecentPostsSection() {
 				</div>
 			) : (
 				<>
-					<RecentPostsListAnimated posts={recentPosts as any} />
+					<RecentPostsListAnimated posts={recentPosts as Array<{ id: string | number; slug: string; title: string; cover_url?: string | null; excerpt?: string | null; published_at?: string | null; reading_time?: number | null; }>} />
 					<script
 						type="application/ld+json"
 						dangerouslySetInnerHTML={{
 							__html: JSON.stringify({
 								'@context': 'https://schema.org',
 								'@type': 'ItemList',
-								itemListElement: recentPosts.map((p:any, i:number) => ({
+								itemListElement: recentPosts.map((p: { slug: string; title: string }, i:number) => ({
 									'@type': 'ListItem',
 									position: i + 1,
 									url: `https://imperio.dog/blog/${p.slug}`,
