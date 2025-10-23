@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import NextDynamic from "next/dynamic";
 import { headers } from "next/headers";
 import Script from "next/script";
@@ -9,10 +9,11 @@ import "../design-system/tokens.css";
 
 // Components
 import ConsentBanner from "@/components/ConsentBanner";
-import FooterFixed from "@/components/Footer";
-import Navbar from "@/components/Navbar";
 import ToastContainer from "@/components/Toast";
 import TrackingScripts from "@/components/TrackingScripts";
+import Footer from "@/components/common/Footer";
+import Header from "@/components/common/Header";
+import SkipLink from "@/components/common/SkipLink";
 // Libs / utils
 import { getSiteSettings } from "@/lib/getSettings";
 import { resolveRobots, baseMetaOverrides } from "@/lib/seo";
@@ -22,12 +23,12 @@ import { resolveTracking, buildOrganizationLD, buildWebsiteLD, type CustomPixelC
 // Theme
 import { ThemeProvider } from "../design-system/theme-provider";
 
-// Deferir carregamento de componentes não-críticos para reduzir JS inicial
+// Deferir carregamento de componentes nÃ£o-crÃ­ticos para reduzir JS inicial
 const FloatingPuppiesCTA = NextDynamic(() => import("@/components/FloatingPuppiesCTA"), { ssr: false });
 
 export const metadata: Metadata = baseSiteMetadata({
-  // Garantir template consistente; se j� definido em baseSiteMetadata mant�m.
-  // Robots default (podem ser sobrescritos dinamicamente em headers runtime se necess�rio)
+  // Garantir template consistente; se jï¿½ definido em baseSiteMetadata mantï¿½m.
+  // Robots default (podem ser sobrescritos dinamicamente em headers runtime se necessï¿½rio)
   robots: resolveRobots(),
 });
 
@@ -78,7 +79,7 @@ function resolvePathname() {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const pathname = resolvePathname();
   const isAdminRoute = pathname.startsWith("/admin");
-  // Ajustes din�micos de canonical/OG URL (Next n�o reexecuta metadata para cada navega��o SPA, mas em SSR inicial temos path)
+  // Ajustes dinï¿½micos de canonical/OG URL (Next nï¿½o reexecuta metadata para cada navegaï¿½ï¿½o SPA, mas em SSR inicial temos path)
   const metaRuntime = baseMetaOverrides(pathname);
 
   let GTM_ID: string | undefined;
@@ -118,7 +119,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="pt-BR" className="scroll-smooth">
       <head>
         {/* ================================================================ */}
-        {/* PERFORMANCE: Preconnects cr�ticos para fontes e CDNs */}
+        {/* PERFORMANCE: Preconnects crï¿½ticos para fontes e CDNs */}
         {/* ================================================================ */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -132,16 +133,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           fetchPriority="high"
         />
         
-        {/* Canonical din�mico (refor�o; alternates via metadata) */}
+        {/* Canonical dinï¿½mico (reforï¿½o; alternates via metadata) */}
         {metaRuntime.alternates?.canonical && (
           <link rel="canonical" href={metaRuntime.alternates.canonical as string} />
         )}
-        {/* Verifica��o de dom�nio Meta (se houver) */}
+        {/* Verificaï¿½ï¿½o de domï¿½nio Meta (se houver) */}
         {!isAdminRoute && META_VERIFY && (
           <meta name="facebook-domain-verification" content={META_VERIFY} />
         )}
 
-        {/* Preconnect / DNS Prefetch condicional para analytics: evita custo em p�ginas sem tags */}
+        {/* Preconnect / DNS Prefetch condicional para analytics: evita custo em pï¿½ginas sem tags */}
         {!isAdminRoute && useGTM && (
           <>
             <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
@@ -157,7 +158,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </>
         )}
 
-        {/* JSON-LD inline para renderiza��o imediata (melhor SEO) */}
+        {/* JSON-LD inline para renderizaï¿½ï¿½o imediata (melhor SEO) */}
         {!isAdminRoute && organizationLd && (
           <script
             type="application/ld+json"
@@ -184,7 +185,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           `}</Script>
         )}
 
-        {/* GA4 direto (somente se N�O usar GTM) */}
+        {/* GA4 direto (somente se Nï¿½O usar GTM) */}
         {!isAdminRoute && !useGTM && GA4_ID && (
           <>
             <Script id="ga4-src" src={`https://www.googletagmanager.com/gtag/js?id=${GA4_ID}`} strategy="afterInteractive" />
@@ -263,30 +264,25 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           isAdminRoute ? "admin-shell" : ""
         }`}
       >
-        <a
-          href="#conteudo-principal"
-          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 z-50 rounded bg-emerald-700 px-4 py-2 text-white text-sm"
-        >
-          Pular para o conte�do
-        </a>
-        {/* GTM noscript - recomendado logo ap�s <body> */}
+        {!isAdminRoute && <SkipLink />}
+        {/* GTM noscript - recomendado logo apï¿½s <body> */}
         {!isAdminRoute && useGTM && GTM_ID && (
           <noscript
             dangerouslySetInnerHTML={{ __html: `<iframe src="https://www.googletagmanager.com/ns.html?id=${GTM_ID}" height="0" width="0" style="display:none;visibility:hidden"></iframe>` }}
           />
         )}
 
-        {/* Dispara page_view em navega��es SPA */}
+        {/* Dispara page_view em navegaï¿½ï¿½es SPA */}
         {!isAdminRoute && <TrackingScripts />}
 
         <ThemeProvider>
           <div className="flex min-h-screen flex-col">
-            {!isAdminRoute && <Navbar />}
+            {!isAdminRoute && <Header />}
             {!isAdminRoute && <div aria-hidden className="h-20" />}
             <div className="flex-1" id="conteudo-principal" tabIndex={-1}>
               {children}
             </div>
-            {!isAdminRoute && <FooterFixed />}
+            {!isAdminRoute && <Footer />}
             {!isAdminRoute && <FloatingPuppiesCTA disabled={false} />}
             {!isAdminRoute && <ConsentBanner />}
           </div>
@@ -308,3 +304,5 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     </html>
   );
 }
+
+
