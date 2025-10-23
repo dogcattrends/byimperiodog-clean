@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 
 import StoriesBar, { type StoriesBarItem } from "@/components/StoriesBar";
@@ -11,7 +12,7 @@ import PuppiesFilterBar from "./PuppiesFilterBar";
 import PuppyCard from "./PuppyCard";
 import PuppyCardSkeleton from "./PuppyCardSkeleton";
 import PuppyDetailsModal from "./PuppyDetailsModal";
-import PuppyStories from "./PuppyStories";
+const PuppyStories = dynamic(() => import("./PuppyStories"), { ssr: false });
 
 // Tipagem permissiva, mas consolidada para reduzir o uso de any espalhado
 type Puppy = {

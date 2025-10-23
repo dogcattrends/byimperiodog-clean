@@ -2,6 +2,7 @@
 
 import { ChevronRight, Heart } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 
 import { PUPPY_CARD_SIZES } from "@/lib/image-sizes";
@@ -68,7 +69,7 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
   const [liked, setLiked] = useState(false);
 
   return (
-    <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-white shadow-sm ring-1 ring-transparent transition-all duration-200 hover:shadow-lg hover:ring-[var(--brand)]/20">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-emerald-100/60 bg-white/98 shadow-sm ring-1 ring-transparent transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:ring-emerald-200">
       {/* ================================================================ */}
       {/* IMAGEM 4:3 Otimizada (aspect-[4/3] maior e centralizada) */}
       {/* ================================================================ */}

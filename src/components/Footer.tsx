@@ -1,6 +1,4 @@
 ﻿"use client";
-
-import { motion, useReducedMotion } from "framer-motion";
 import { Instagram, Youtube, MessageCircle, Rocket, Facebook } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, useCallback } from "react";
@@ -43,7 +41,7 @@ const menuLinks: { label: string; path: AppRoutes }[] = [
 
 export default function FooterFixed() {
   const [showTop, setShowTop] = useState(false);
-  
+
   // Throttle via rAF (INP friendly)
   useEffect(() => {
     let ticking = false;
@@ -61,10 +59,11 @@ export default function FooterFixed() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const reduceMotion = useReducedMotion();
+  // Respeita prefers-reduced-motion sem depender de libs
   const scrollTop = useCallback(() => {
-    window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
-  }, [reduceMotion]);
+    const prefersReduced = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: 0, behavior: prefersReduced ? 'auto' : 'smooth' });
+  }, []);
 
   const rootClasses = "relative text-sm border-t bg-zinc-900 text-zinc-200 border-zinc-700";
 
@@ -72,16 +71,11 @@ export default function FooterFixed() {
     <footer className={rootClasses} data-site-shell="footer">
       {/* Divisor topo simples */}
       <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent" />
-      
+
       {/* CTA Section */}
-      <motion.section
-        role="region"
+      <section
         aria-labelledby="cta-filhotes"
         className="relative isolate px-6 py-12 sm:py-14 text-center text-white"
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.5 }}
-        transition={{ duration: 0.4, ease: 'easeOut' }}
       >
         <div className="mx-auto max-w-3xl">
           <h2 id="cta-filhotes" className="text-2xl sm:text-3xl font-bold leading-snug tracking-tight">
@@ -90,22 +84,19 @@ export default function FooterFixed() {
           <p className="mt-3 text-zinc-300 text-sm sm:text-base leading-relaxed">
             Atendimento humano, suporte pós-venda e acompanhamento responsável.
           </p>
-          <motion.a
+          <a
             href={WA}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Fale conosco no WhatsApp"
             onClick={() => trackWhatsAppClick('footer-cta', 'CTA Principal Footer')}
-            className="inline-flex mt-6 items-center justify-center gap-2 rounded-full bg-white px-7 py-3 text-sm font-semibold text-zinc-900 shadow-lg hover:shadow-xl transition-all min-h-[48px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900 motion-reduce:transform-none"
-            whileHover={reduceMotion ? undefined : { scale: 1.03 }}
-            whileTap={reduceMotion ? undefined : { scale: 0.97 }}
-            transition={{ type: 'spring', stiffness: 260, damping: 20, duration: 0.25 }}
+            className="inline-flex mt-6 items-center justify-center gap-2 rounded-full bg-white px-7 py-3 text-sm font-semibold text-zinc-900 shadow-lg hover:shadow-xl transition-all min-h-[48px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900"
           >
             <span>Falar no WhatsApp</span>
             <WAIcon size={18} aria-hidden="true" />
-          </motion.a>
+          </a>
         </div>
-      </motion.section>
+      </section>
 
       <nav
         aria-label="Links do rodapé"
