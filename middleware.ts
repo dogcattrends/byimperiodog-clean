@@ -48,6 +48,13 @@ export function middleware(req: NextRequest) {
     }
   }
 
+  // 3) X-Robots-Tag para rotas de admin (SEO: noindex, nofollow)
+  if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
+    const res = NextResponse.next();
+    res.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive, nosnippet");
+    return res;
+  }
+
   return NextResponse.next();
 }
 

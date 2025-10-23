@@ -8,20 +8,20 @@ import "./globals.css";
 import "../design-system/tokens.css";
 
 // Components
-import ConsentBanner from "@/components/ConsentBanner";
-import ToastContainer from "@/components/Toast";
-import TrackingScripts from "@/components/TrackingScripts";
 import Footer from "@/components/common/Footer";
 import Header from "@/components/common/Header";
 import SkipLink from "@/components/common/SkipLink";
-// Libs / utils
+import ConsentBanner from "@/components/ConsentBanner";
+import ToastContainer from "@/components/Toast";
+import TrackingScripts from "@/components/TrackingScripts";
+
 import { getSiteSettings } from "@/lib/getSettings";
 import { resolveRobots, baseMetaOverrides } from "@/lib/seo";
 import { baseSiteMetadata } from "@/lib/seo.core";
 import { resolveTracking, buildOrganizationLD, buildWebsiteLD, type CustomPixelConfig } from "@/lib/tracking";
 
-// Theme
 import { ThemeProvider } from "../design-system/theme-provider";
+import { dmSans, inter } from "./fonts";
 
 // Deferir carregamento de componentes nÃ£o-crÃ­ticos para reduzir JS inicial
 const FloatingPuppiesCTA = NextDynamic(() => import("@/components/FloatingPuppiesCTA"), { ssr: false });
@@ -116,13 +116,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   }
 
   return (
-    <html lang="pt-BR" className="scroll-smooth">
+    <html lang="pt-BR" className={`scroll-smooth ${dmSans.variable} ${inter.variable}`}>
       <head>
-        {/* ================================================================ */}
-        {/* PERFORMANCE: Preconnects crï¿½ticos para fontes e CDNs */}
-        {/* ================================================================ */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+  {/* ================================================================ */}
+  {/* PERFORMANCE: Resource hints essenciais (sem preconnect de fonts porque usamos next/font) */}
+  {/* ================================================================ */}
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
         <link
