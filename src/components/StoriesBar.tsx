@@ -4,6 +4,7 @@ import Image from "next/image";
 import { forwardRef } from "react";
 
 import { cn } from "@/lib/cn";
+import { STORY_AVATAR_SIZES } from "@/lib/image-sizes";
 
 export type StoriesBarItem = {
   id: string;
@@ -43,17 +44,17 @@ const StoriesBar = forwardRef<HTMLDivElement, StoriesBarProps>(function StoriesB
             key={item.id}
             type="button"
             onClick={() => onSelect(item.originalIndex ?? index)}
-            className="group flex w-[5.5rem] shrink-0 snap-start flex-col items-center gap-2 focus:outline-none"
+            className="group flex min-h-[80px] min-w-[80px] shrink-0 snap-start flex-col items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2"
             aria-label={`Abrir story de ${item.name || "filhote"}`}
           >
-            <span className="relative h-[5.5rem] w-[5.5rem] overflow-hidden rounded-full ring-2 ring-brand ring-offset-2 ring-offset-white transition group-hover:scale-[1.02]">
+            <span className="relative aspect-square h-20 w-20 overflow-hidden rounded-full ring-2 ring-[var(--brand)] ring-offset-2 ring-offset-white transition-transform group-hover:scale-105 group-focus-visible:ring-[var(--brand)] group-focus-visible:ring-offset-2">
               {item.cover ? (
                 <Image
                   src={item.cover}
                   alt={`Prévia do filhote ${item.name || "Filhote"}`}
                   fill
                   className="object-cover"
-                  sizes="88px"
+                  sizes={STORY_AVATAR_SIZES}
                   priority={index < 4}
                 />
               ) : (
@@ -62,7 +63,7 @@ const StoriesBar = forwardRef<HTMLDivElement, StoriesBarProps>(function StoriesB
                 </span>
               )}
             </span>
-            <span className="max-w-[5.5rem] truncate text-center text-xs font-medium text-zinc-600">
+            <span className="max-w-[5.5rem] truncate text-center text-xs font-medium text-zinc-600 group-hover:text-[var(--brand)] transition-colors">
               {firstName}
             </span>
           </button>

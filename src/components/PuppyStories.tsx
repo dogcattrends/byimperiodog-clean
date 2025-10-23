@@ -263,7 +263,7 @@ export default function PuppyStories(props: PuppyStoriesProps) {
             <button
               onClick={onClose}
               aria-label="Fechar"
-              className="rounded-full bg-black/50 p-2 backdrop-blur hover:bg-black/70 transition"
+              className="min-h-[48px] min-w-[48px] flex items-center justify-center rounded-full bg-black/50 backdrop-blur hover:bg-black/70 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
             >
               <X className="h-5 w-5" />
             </button>
@@ -276,7 +276,7 @@ export default function PuppyStories(props: PuppyStoriesProps) {
                 <button
                   onClick={() => toggleLike(current.id)}
                   aria-label="Curtir"
-                  className={clsx('flex items-center justify-center gap-1 rounded-full px-3 py-2 text-xs sm:text-sm font-medium backdrop-blur transition min-w-[110px]', likedSet.has(current.id) ? 'bg-rose-600 text-white' : 'bg-white/15 text-white hover:bg-white/25')}
+                  className={clsx('flex items-center justify-center gap-1 rounded-full px-4 py-3 text-xs sm:text-sm font-medium backdrop-blur transition min-h-[48px] min-w-[120px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2', likedSet.has(current.id) ? 'bg-rose-600 text-white focus-visible:ring-offset-rose-600' : 'bg-white/15 text-white hover:bg-white/25 focus-visible:ring-offset-black')}
                 >
                   <Heart className={clsx('h-4 w-4 sm:h-5 sm:w-5', likedSet.has(current.id) && 'fill-current')} />
                   {likedSet.has(current.id) ? 'Curtido' : 'Curtir'}
@@ -284,7 +284,7 @@ export default function PuppyStories(props: PuppyStoriesProps) {
                 <button
                   onClick={() => handleShare(current)}
                   aria-label="Compartilhar"
-                  className="flex items-center justify-center gap-1 rounded-full bg-white/15 px-3 py-2 text-xs sm:text-sm font-medium text-white backdrop-blur hover:bg-white/25 transition min-w-[110px]"
+                  className="flex items-center justify-center gap-1 rounded-full bg-white/15 px-4 py-3 text-xs sm:text-sm font-medium text-white backdrop-blur hover:bg-white/25 transition min-h-[48px] min-w-[120px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                 >
                   <Share2 className="h-4 w-4 sm:h-5 sm:w-5" /> Compartilhar
                 </button>
@@ -293,14 +293,14 @@ export default function PuppyStories(props: PuppyStoriesProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => track.event?.('whatsapp_click', { placement: 'stories', action: 'info', puppy_id: current.id })}
-                  className="flex items-center justify-center gap-1 rounded-full bg-emerald-600 px-3 py-2 text-xs sm:text-sm font-medium text-white shadow hover:bg-emerald-700 transition min-w-[110px]"
+                  className="flex items-center justify-center gap-1 rounded-full bg-emerald-600 px-4 py-3 text-xs sm:text-sm font-medium text-white shadow hover:bg-emerald-700 transition min-h-[48px] min-w-[120px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-emerald-600"
                 >
                   <Phone className="h-4 w-4 sm:h-5 sm:w-5" /> WhatsApp
                 </a>
                 <button
                   onClick={()=> setPaused(p => !p)}
                   aria-label={paused ? 'Reproduzir stories' : 'Pausar stories'}
-                  className="flex items-center justify-center gap-1 rounded-full bg-white/15 px-3 py-2 text-xs sm:text-sm font-medium text-white backdrop-blur hover:bg-white/25 transition min-w-[110px]"
+                  className="flex items-center justify-center gap-1 rounded-full bg-white/15 px-4 py-3 text-xs sm:text-sm font-medium text-white backdrop-blur hover:bg-white/25 transition min-h-[48px] min-w-[120px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                 >
                   {paused ? 'Play' : 'Pause'}
                 </button>
@@ -332,14 +332,14 @@ export default function PuppyStories(props: PuppyStoriesProps) {
           <button
             aria-label="Anterior"
             onClick={prev}
-            className={clsx("absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-black/40 p-2 backdrop-blur transition hover:bg-black/60", uiVisible ? 'opacity-100' : 'opacity-0')}
+            className={clsx("absolute left-3 top-1/2 -translate-y-1/2 min-h-[48px] min-w-[48px] flex items-center justify-center rounded-full bg-black/40 backdrop-blur transition hover:bg-black/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black", uiVisible ? 'opacity-100' : 'opacity-0')}
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
           <button
-            aria-label="PrÃ³ximo"
+            aria-label="Próximo"
             onClick={next}
-            className={clsx("absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-black/40 p-2 backdrop-blur transition hover:bg-black/60", uiVisible ? 'opacity-100' : 'opacity-0')}
+            className={clsx("absolute right-3 top-1/2 -translate-y-1/2 min-h-[48px] min-w-[48px] flex items-center justify-center rounded-full bg-black/40 backdrop-blur transition hover:bg-black/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black", uiVisible ? 'opacity-100' : 'opacity-0')}
           >
             <ChevronRight className="h-5 w-5" />
           </button>

@@ -59,16 +59,16 @@ export default function Navbar() {
   return (
     <header
       data-site-shell="navbar"
-      className="fixed inset-x-0 top-0 z-50 w-full border-b border-transparent bg-[var(--surface)]/90 text-[var(--text)] backdrop-blur-md shadow-[0_12px_30px_-20px_rgba(32,26,21,0.35)]"
+      className="fixed inset-x-0 top-0 z-50 w-full border-b border-zinc-200/50 bg-white/95 text-zinc-900 backdrop-blur-md shadow-sm"
       role="banner"
     >
       <nav
-        className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8"
+        className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8"
         aria-label="Navegacao principal"
       >
         <Link
           href={routes.home}
-          className="flex min-w-0 max-w-[70%] items-center gap-2 text-base font-semibold tracking-tight text-inherit transition-transform duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]/30 rounded sm:max-w-none"
+          className="flex min-w-0 max-w-[70%] items-center gap-2 text-base font-semibold tracking-tight text-inherit transition-transform duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2 rounded px-1 min-h-[48px] sm:max-w-none"
           aria-label="By Imperio Dog - Pagina inicial"
         >
           <Image src="/byimperiologo.svg" alt="Logotipo By Imperio Dog" width={32} height={32} className="h-8 w-8" />
@@ -82,10 +82,10 @@ export default function Navbar() {
           {navLinks.map((link) => {
             const active = isActive(link.href, pathname, hash);
             const cls = classNames(
-              "relative py-1 text-[15px] tracking-wide transition-all duration-200 ease-in-out hover:-translate-y-0.5",
+              "relative min-h-[48px] flex items-center px-2 text-[15px] font-medium tracking-wide transition-all duration-200 ease-in-out hover:-translate-y-0.5",
               active
-                ? "font-semibold text-[var(--brand)] after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:rounded-full after:bg-[var(--accent)] underline-offset-4"
-                : "text-[var(--text-muted)] hover:text-[var(--text)] hover:underline decoration-[var(--accent)] underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/40 rounded"
+                ? "text-[var(--brand)] after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:rounded-full after:bg-[var(--brand)]"
+                : "text-zinc-700 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2 rounded"
             );
             return (
               <Link key={link.href} href={link.href} aria-current={active ? "page" : undefined} className={cls} role="menuitem">
@@ -104,11 +104,11 @@ export default function Navbar() {
                 href={waHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--accent-foreground)] shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/50"
+                className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-emerald-700 hover:shadow-md min-h-[48px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
                 title="Atendimento humano com carinho"
                 aria-label="Falar com equipe via WhatsApp"
               >
-                <WAIcon size={16} className="h-4 w-4" aria-hidden />
+                <WAIcon size={18} className="h-[18px] w-[18px]" aria-hidden />
                 WhatsApp
               </a>
             );
@@ -120,7 +120,7 @@ export default function Navbar() {
             <Dialog.Trigger asChild>
               <button
                 type="button"
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/40"
+                className="inline-flex min-h-[48px] min-w-[48px] items-center justify-center rounded-full border border-zinc-300 bg-white text-zinc-900 shadow-sm hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2"
                 aria-label="Abrir menu"
               >
                 <Menu className="h-6 w-6" aria-hidden />
@@ -140,7 +140,7 @@ export default function Navbar() {
                   </Dialog.Overlay>
                   <Dialog.Content asChild onEscapeKeyDown={close}>
                     <motion.aside
-                      className="fixed inset-y-0 right-0 z-[61] w-full max-w-[86%] bg-[var(--surface)] text-[var(--text)] shadow-2xl outline-none"
+                      className="fixed inset-y-0 right-0 z-[61] w-full max-w-[86%] bg-white text-zinc-900 shadow-2xl outline-none"
                       initial={{ x: "100%" }}
                       animate={{ x: 0 }}
                       exit={{ x: "100%" }}
@@ -149,24 +149,24 @@ export default function Navbar() {
                       aria-label="Menu"
                       id="menu-mobile"
                     >
-                      <div className="flex items-center justify-between px-4 py-4">
-                        <span className="text-sm font-medium text-[var(--text-muted)]">Menu</span>
+                      <div className="flex items-center justify-between px-4 py-4 border-b border-zinc-200">
+                        <span className="text-sm font-semibold text-zinc-700">Menu</span>
                         <Dialog.Close asChild>
                           <button
-                            className="rounded p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/40"
+                            className="rounded-full p-2 min-h-[48px] min-w-[48px] flex items-center justify-center hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2"
                             aria-label="Fechar menu"
                           >
                             <X className="h-6 w-6" aria-hidden />
                           </button>
                         </Dialog.Close>
                       </div>
-                      <nav className="px-2 pb-6" aria-label="Menu mobile">
+                      <nav className="px-2 pb-6 pt-4" aria-label="Menu mobile">
                         <ul className="flex flex-col gap-1" role="menu">
                           {navLinks.map((link) => {
                             const active = isActive(link.href, pathname, hash);
                             const cls = classNames(
-                              "relative rounded-md px-4 py-3 text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/40",
-                              active ? "font-semibold bg-[var(--surface-2)] text-[var(--brand)]" : "hover:bg-[var(--surface-2)]"
+                              "relative rounded-md px-4 py-3 text-base font-medium min-h-[48px] flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2",
+                              active ? "bg-zinc-100 text-[var(--brand)]" : "text-zinc-700 hover:bg-zinc-50"
                             );
                             return (
                               <li key={link.href}>
@@ -184,7 +184,7 @@ export default function Navbar() {
                             );
                           })}
                         </ul>
-                        <div className="px-4 pt-4">
+                        <div className="px-4 pt-6">
                           {(() => {
                             const trimmed = process.env.NEXT_PUBLIC_WA_PHONE?.replace(/\D/g, "") ?? "";
                             const waHref = trimmed
@@ -196,11 +196,11 @@ export default function Navbar() {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 onClick={close}
-                                className="mt-2 inline-flex h-11 min-w-[44px] items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-4 text-sm font-semibold text-[var(--accent-foreground)] shadow-sm transition-all hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/40"
+                                className="flex items-center justify-center gap-2 rounded-full bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 min-h-[48px] w-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
                                 title="Atendimento humano com carinho"
                                 aria-label="Abrir conversa no WhatsApp"
                               >
-                                <WAIcon size={16} className="h-4 w-4" aria-hidden />
+                                <WAIcon size={18} className="h-[18px] w-[18px]" aria-hidden />
                                 WhatsApp
                               </a>
                             );
