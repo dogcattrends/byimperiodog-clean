@@ -1,19 +1,6 @@
 ﻿// PATH: app/(admin)/admin/(protected)/blog/page.tsx
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { adminFetch } from "@/lib/adminFetch";
-import { formatDateShort, formatDateTime } from "@/lib/format/date";
-import { BlogSubnav } from "@/components/admin/BlogSubnav";
-import { MetricCard } from "@/components/admin/MetricCard";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogActions, DialogContent } from "@/components/ui/dialog";
-import { useToast } from "@/components/ui/toast";
 import {
   CalendarClock,
   CalendarDays,
@@ -26,6 +13,20 @@ import {
   Search,
   Tag as TagIcon,
 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
+
+import { BlogSubnav } from "@/components/admin/BlogSubnav";
+import { MetricCard } from "@/components/admin/MetricCard";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogActions, DialogContent } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/toast";
+import { adminFetch } from "@/lib/adminFetch";
+import { formatDateShort, formatDateTime } from "@/lib/format/date";
 
 const PER_PAGE = 24;
 
@@ -107,13 +108,9 @@ export default function AdminBlogPage() {
       if (search) params.set("q", search);
 
       const url = `/api/admin/blog?${params.toString()}`;
-      console.log('[Blog] Fetching posts from:', url);
       
       const response = await adminFetch(url);
       const json = await response.json();
-      
-      console.log('[Blog] Response status:', response.status);
-      console.log('[Blog] Response data:', json);
       
       if (!response.ok) {
         throw new Error(json?.error || "Nao foi possivel carregar os posts");
@@ -139,8 +136,8 @@ export default function AdminBlogPage() {
 
       setPosts(mapped);
       setTotal(typeof json?.total === "number" ? json.total : mapped.length);
-    } catch (error: any) {
-      pushToast({ message: error?.message || "Erro ao carregar posts", type: "error" });
+    } catch (error) {
+      pushToast({ message: error instanceof Error ? error.message : "Erro ao carregar posts", type: "error" });
       setPosts([]);
       setTotal(0);
     } finally {
@@ -184,7 +181,7 @@ export default function AdminBlogPage() {
     setActionLoading({ id: post.id, type: "publish" });
     try {
       const full = await fetchFullPost(post.id);
-      const payload: Record<string, any> = {
+      const payload: Record<string, unknown> = {
         ...full,
         status: "published",
         scheduled_at: null,
@@ -201,8 +198,8 @@ export default function AdminBlogPage() {
       }
       pushToast({ message: "Post publicado", type: "success" });
       fetchPosts();
-    } catch (error: any) {
-      pushToast({ message: error?.message || "Nao foi possivel publicar agora", type: "error" });
+    } catch (error) {
+      pushToast({ message: error instanceof Error ? error.message : "Nao foi possivel publicar agora", type: "error" });
     } finally {
       setActionLoading(null);
     }
@@ -217,7 +214,7 @@ export default function AdminBlogPage() {
     setActionLoading({ id: post.id, type: "duplicate" });
     try {
       const full = await fetchFullPost(post.id);
-      const payload: Record<string, any> = { ...full };
+      const payload: Record<string, unknown> = { ...full };
       delete payload.id;
       delete payload.created_at;
       delete payload.updated_at;
@@ -238,8 +235,8 @@ export default function AdminBlogPage() {
       }
       pushToast({ message: "Copia criada como rascunho", type: "success" });
       fetchPosts();
-    } catch (error: any) {
-      pushToast({ message: error?.message || "Erro ao duplicar post", type: "error" });
+    } catch (error) {
+      pushToast({ message: error instanceof Error ? error.message : "Erro ao duplicar post", type: "error" });
     } finally {
       setActionLoading(null);
     }
@@ -256,8 +253,8 @@ export default function AdminBlogPage() {
       pushToast({ message: "Post excluido", type: "success" });
       setDeleteTarget(null);
       fetchPosts();
-    } catch (error: any) {
-      pushToast({ message: error?.message || "Nao foi possivel excluir", type: "error" });
+    } catch (error) {
+      pushToast({ message: error instanceof Error ? error.message : "Nao foi possivel excluir", type: "error" });
     } finally {
       setActionLoading(null);
     }
@@ -563,7 +560,7 @@ export default function AdminBlogPage() {
 
       <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <DialogContent title="Excluir post" description="Esta acao removera o post permanentemente.">
-          <p className="text-sm text-[var(--text-muted)]">Tem certeza que deseja excluir "{deleteTarget?.title}"?</p>
+          <p className="text-sm text-[var(--text-muted)]">Tem certeza que deseja excluir &ldquo;{deleteTarget?.title}&rdquo;?</p>
           <DialogActions>
             <Button type="button" variant="outline" size="sm" onClick={() => setDeleteTarget(null)}>
               Cancelar

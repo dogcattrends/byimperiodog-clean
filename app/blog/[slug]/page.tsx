@@ -6,10 +6,13 @@ import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypeSlug from 'rehype-slug';
 import remarkGfm from 'remark-gfm';
 
+import BlogCTAs from '@/components/blog/BlogCTAs';
+import Comments from '@/components/blog/Comments';
 import PostCard from '@/components/blog/PostCard';
 import Prose from '@/components/blog/Prose';
 import ReadingProgress from '@/components/blog/ReadingProgress';
 import ScrollAnalytics from '@/components/blog/ScrollAnalytics';
+import ShareButtons from '@/components/blog/ShareButtons';
 import TocNav from '@/components/blog/Toc';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { mdxComponents } from '@/components/MDXContent';
@@ -125,6 +128,15 @@ export default async function BlogPostPage({ params, searchParams }:{ params:{ s
               <Image src={post.cover_url} alt={post.cover_alt||post.title} width={1280} height={720} className="aspect-[16/9] w-full object-cover" priority />
             </figure>
           )}
+          
+          {/* Botões de compartilhamento */}
+          <div className="mb-8 flex items-center justify-between border-y border-[var(--border)] py-4">
+            <ShareButtons 
+              title={post.title} 
+              url={`${process.env.NEXT_PUBLIC_SITE_URL || ''}/blog/${post.slug}`} 
+            />
+          </div>
+
           <Prose>
             {post.content_mdx? (
               <MDXRemote
@@ -134,6 +146,14 @@ export default async function BlogPostPage({ params, searchParams }:{ params:{ s
               />
             ): <p className="italic text-[var(--text-muted)]">(Sem conteúdo)</p>}
           </Prose>
+          {/* CTAs estratégicos */}
+          <BlogCTAs postTitle={post.title} category={post.category} />
+
+          {/* Sistema de comentários */}
+          <div className="mt-16 border-t border-[var(--border)] pt-12">
+            <Comments postId={post.id} />
+          </div>
+
           {related?.length>0 && (
             <aside className="mt-20 border-t border-[var(--border)] pt-12">
               <h2 className="mb-6 text-2xl font-bold text-[var(--text)]">

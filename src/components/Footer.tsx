@@ -3,10 +3,11 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { Instagram, Youtube, MessageCircle, Rocket, Facebook, Twitter } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 import { WhatsAppIcon as WAIcon } from "@/components/icons/WhatsAppIcon";
 import { routes, type AppRoutes } from "@/lib/route";
+import { WHATSAPP_LINK } from "@/lib/whatsapp";
 
 // Ícone TikTok custom leve (monocromático neutro para herdar cor)
 function TikTokIcon({ size = 18, className, ...props }: React.SVGProps<SVGSVGElement> & { size?: number }) {
@@ -44,8 +45,8 @@ function PinterestIcon({ size = 18, className, ...props }: React.SVGProps<SVGSVG
   );
 }
 
-// Número oficial atualizado
-const WA = process.env.NEXT_PUBLIC_WA_LINK || "https://wa.me/551196863239";
+// Número oficial atualizado via helper centralizado
+const WA = WHATSAPP_LINK;
 
 const year = new Date().getFullYear();
 
@@ -312,7 +313,6 @@ function NewsletterForm() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<{ type: "success" | "error" | "info"; text: string } | null>(null);
-  const liveRef = useRef<HTMLSpanElement | null>(null);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -369,17 +369,18 @@ function NewsletterForm() {
         {loading && <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/50 border-t-white" aria-hidden="true" />}
         {loading ? "Enviando..." : "Inscrever"}
       </button>
-      <span ref={liveRef} id="newsletter-msg" aria-live="polite" className="sr-only">{msg?.text}</span>
       {msg && (
-        <a
-          href={WA}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="fixed right-4 bottom-6 h-14 w-14 min-h-[44px] min-w-[44px] bg-whatsapp text-white rounded-full shadow-xl ring-1 ring-white/10 flex items-center justify-center hover:shadow-2xl hover:brightness-110 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 motion-reduce:transform-none mb-[env(safe-area-inset-bottom)] z-50"
-          aria-label="Conversar no WhatsApp"
+        <p
+          id="newsletter-msg"
+          aria-live="polite"
+          role={msg.type === 'error' ? 'alert' : 'status'}
+          className={
+            "sm:col-span-2 text-xs mt-1 " +
+            (msg.type === 'success' ? 'text-emerald-200' : msg.type === 'error' ? 'text-red-200' : 'text-white/80')
+          }
         >
-          <WAIcon size={22} />
-        </a>
+          {msg.text}
+        </p>
       )}
     </form>
   );

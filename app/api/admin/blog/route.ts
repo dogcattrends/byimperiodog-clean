@@ -95,21 +95,14 @@ export async function GET(req: Request) {
 
     let selectableCols = [...essentialCols, ...preferredCols];
     let response: SupaResponse = { data: null, error: null, count: 0 };
-    console.log('Tentando buscar posts com colunas:', selectableCols);
     
     for (let safety = 0; safety < 25; safety++) { // evita loop infinito improvável
       const attempt = (await buildQuery(selectableCols)) as SupaResponse;
       response = attempt;
-      console.log('Tentativa', safety + 1, 'resposta:', {
-        error: attempt.error,
-        data: attempt.data ? `${attempt.data.length} posts encontrados` : 'nenhum dado',
-        count: attempt.count
-      });
       
       if (!attempt.error) break;
       const missing = missingColumnFrom(attempt.error);
       if (missing && selectableCols.includes(missing) && !essentialCols.includes(missing)) {
-        console.log('Removendo coluna ausente:', missing);
         selectableCols = selectableCols.filter((col) => col !== missing);
         continue;
       }
