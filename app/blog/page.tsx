@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
+import BlogCard from "@/components/blog/BlogCard";
 import SeoJsonLd from "@/components/SeoJsonLd";
 import { estimateReadingTime } from "@/lib/blog/reading-time";
 import { supabaseAnon } from "@/lib/supabaseAnon";
@@ -45,7 +46,7 @@ const CATEGORY_DEFINITIONS: CategoryDefinition[] = [
     title: "Guia do Tutor",
     description:
       "Rotinas, enxoval, planejamento financeiro e a jornada completa para receber um Spitz equilibrado em casa.",
-    highlight: "Checklist premium e mentoria vitalícia para famílias exigentes.",
+    highlight: "Checklist premium e mentoria vitalÃ­cia para famÃ­lias exigentes.",
     match: (post) => includesCategory(post, ["guia", "tutor", "planejamento"]),
     cta: { label: "Planejar rotina", href: "/sobre" },
   },
@@ -53,8 +54,8 @@ const CATEGORY_DEFINITIONS: CategoryDefinition[] = [
     id: "cuidados",
     title: "Cuidados",
     description:
-      "Nutrição personalizada, higiene estratégica e protocolos preventivos para manter o Spitz saudável e confiante.",
-    highlight: "Orientações da neonatologia ao primeiro ano com suporte contínuo.",
+      "NutriÃ§Ã£o personalizada, higiene estratÃ©gica e protocolos preventivos para manter o Spitz saudÃ¡vel e confiante.",
+    highlight: "OrientaÃ§Ãµes da neonatologia ao primeiro ano com suporte contÃ­nuo.",
     match: (post) => includesCategory(post, ["cuidado", "rotina", "nutri", "higiene"]),
     cta: { label: "Ver dicas de cuidados", href: "/faq#cuidados" },
   },
@@ -62,26 +63,26 @@ const CATEGORY_DEFINITIONS: CategoryDefinition[] = [
     id: "adestramento",
     title: "Adestramento",
     description:
-      "Socialização guiada, enriquecimento ambiental e reforço positivo focado em lares urbanos com agenda cheia.",
-    highlight: "Protocolos semanais com vídeos e check-ins pelo WhatsApp.",
+      "SocializaÃ§Ã£o guiada, enriquecimento ambiental e reforÃ§o positivo focado em lares urbanos com agenda cheia.",
+    highlight: "Protocolos semanais com vÃ­deos e check-ins pelo WhatsApp.",
     match: (post) => includesCategory(post, ["adestramento", "comportamento", "socializacao"]),
     cta: { label: "Conhecer nosso processo", href: "/sobre#processo" },
   },
   {
     id: "saude",
-    title: "Saúde",
+    title: "SaÃºde",
     description:
-      "Preventivo completo: exames genéticos, cardiológicos e protocolos veterinários para Spitz até 22 cm.",
-    highlight: "Transparência total com laudos digitais e acompanhamento pós-entrega.",
-    match: (post) => includesCategory(post, ["saude", "clínico", "veterin", "check-up"]),
+      "Preventivo completo: exames genÃ©ticos, cardiolÃ³gicos e protocolos veterinÃ¡rios para Spitz atÃ© 22 cm.",
+    highlight: "TransparÃªncia total com laudos digitais e acompanhamento pÃ³s-entrega.",
+    match: (post) => includesCategory(post, ["saude", "clÃ­nico", "veterin", "check-up"]),
     cta: { label: "Entender exames", href: "/faq#saude" },
   },
   {
     id: "perguntas-frequentes",
     title: "Perguntas Frequentes",
     description:
-      "Respostas diretas sobre investimento, logística, convivência com crianças e integração com outros pets.",
-    highlight: "Conteúdo didático produzido com base nas dúvidas reais dos tutores.",
+      "Respostas diretas sobre investimento, logÃ­stica, convivÃªncia com crianÃ§as e integraÃ§Ã£o com outros pets.",
+    highlight: "ConteÃºdo didÃ¡tico produzido com base nas dÃºvidas reais dos tutores.",
     match: (post) => includesCategory(post, ["pergunta", "faq", "investimento", "logistica"]),
     cta: { label: "FAQ completo", href: "/faq" },
   },
@@ -90,16 +91,16 @@ const CATEGORY_DEFINITIONS: CategoryDefinition[] = [
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "Guia completo do tutor de Spitz Alemão Anão",
+  title: "Guia completo do tutor de Spitz AlemÃ£o AnÃ£o",
   description:
-    "Conteúdo evergreen para quem busca Spitz Alemão Anão com responsabilidade: cuidados, rotina, comportamento, saúde preventiva e respostas das principais dúvidas.",
+    "ConteÃºdo evergreen para quem busca Spitz AlemÃ£o AnÃ£o com responsabilidade: cuidados, rotina, comportamento, saÃºde preventiva e respostas das principais dÃºvidas.",
   alternates: { canonical: "/blog" },
   openGraph: {
     type: "website",
     url: "/blog",
-    title: "Blog | By Império Dog",
+    title: "Blog | By ImpÃ©rio Dog",
     description:
-      "Pilares evergreen sobre saúde, rotina e comportamento do Spitz Alemão Anão para uma decisão responsável.",
+      "Pilares evergreen sobre saÃºde, rotina e comportamento do Spitz AlemÃ£o AnÃ£o para uma decisÃ£o responsÃ¡vel.",
   },
 };
 
@@ -115,18 +116,18 @@ export default async function BlogListPage({ searchParams }: { searchParams?: Pa
 
   const heroLinks = [
     {
-      title: "Filhotes disponíveis sob consulta",
-      description: "Acesso antecipado às ninhadas com saúde validada e mentoria vitalícia.",
+      title: "Filhotes disponÃ­veis sob consulta",
+      description: "Acesso antecipado Ã s ninhadas com saÃºde validada e mentoria vitalÃ­cia.",
       href: "/filhotes",
     },
     {
       title: "Processo By Imperio Dog",
-      description: "Entenda cada etapa: entrevista, socialização, entrega humanizada e suporte 24h.",
+      description: "Entenda cada etapa: entrevista, socializaÃ§Ã£o, entrega humanizada e suporte 24h.",
       href: "/sobre#processo",
     },
     {
       title: "FAQ para tutores",
-      description: "Perguntas frequentes sobre investimento, logística e rotina em família.",
+      description: "Perguntas frequentes sobre investimento, logÃ­stica e rotina em famÃ­lia.",
       href: "/faq",
     },
   ];
@@ -136,7 +137,7 @@ export default async function BlogListPage({ searchParams }: { searchParams?: Pa
       <div className="mx-auto max-w-4xl px-4 py-16">
         <Hero searchTerm={searchTerm} links={heroLinks} />
         <EmptyState
-          title="Configuração necessária"
+          title="ConfiguraÃ§Ã£o necessÃ¡ria"
           message="Defina NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY para carregar o blog."
         />
       </div>
@@ -148,7 +149,7 @@ export default async function BlogListPage({ searchParams }: { searchParams?: Pa
       <div className="mx-auto max-w-4xl px-4 py-16">
         <Hero searchTerm={searchTerm} links={heroLinks} />
         <EmptyState
-          title="Não foi possível carregar os artigos"
+          title="NÃ£o foi possÃ­vel carregar os artigos"
           message={fetchState.message || "Tente novamente em instantes."}
         />
       </div>
@@ -161,7 +162,7 @@ export default async function BlogListPage({ searchParams }: { searchParams?: Pa
         <Hero searchTerm={searchTerm} links={heroLinks} />
         <EmptyState
           title="Nenhum artigo publicado ainda"
-          message="Assim que novos conteúdos estiverem prontos, você será notificado nas redes sociais."
+          message="Assim que novos conteÃºdos estiverem prontos, vocÃª serÃ¡ notificado nas redes sociais."
         />
       </div>
     );
@@ -177,8 +178,8 @@ export default async function BlogListPage({ searchParams }: { searchParams?: Pa
   const featured = filtered[0] ?? fetchState.posts[0];
   const collections = buildCollections(filtered);
 
-  const metaTitleStr = typeof metadata.title === "string" ? metadata.title : "Blog | By Império Dog";
-  const metaDescStr = metadata.description ?? "Conteúdo evergreen sobre saúde, rotina e comportamento do Spitz Alemão Anão.";
+  const metaTitleStr = typeof metadata.title === "string" ? metadata.title : "Blog | By ImpÃ©rio Dog";
+  const metaDescStr = metadata.description ?? "ConteÃºdo evergreen sobre saÃºde, rotina e comportamento do Spitz AlemÃ£o AnÃ£o.";
   const blogSchema = buildBlogSchema({
     url: process.env.NEXT_PUBLIC_SITE_URL || "https://www.byimperiodog.com.br",
     headline: metaTitleStr,
@@ -196,7 +197,7 @@ export default async function BlogListPage({ searchParams }: { searchParams?: Pa
       <Hero searchTerm={searchTerm} links={heroLinks} />
       {featured ? <FeaturedPost post={featured} /> : null}
 
-      {/* Anúncio de resultados para leitores de tela */}
+      {/* AnÃºncio de resultados para leitores de tela */}
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         {searchTerm && filtered.length > 0 && `${filtered.length} artigo${filtered.length > 1 ? 's' : ''} encontrado${filtered.length > 1 ? 's' : ''} para "${searchTerm}"`}
         {searchTerm && filtered.length === 0 && `Nenhum artigo encontrado para "${searchTerm}"`}
@@ -205,7 +206,7 @@ export default async function BlogListPage({ searchParams }: { searchParams?: Pa
       {searchTerm && filtered.length === 0 ? (
         <EmptyState
           title="Nenhum artigo corresponde ao termo pesquisado"
-          message="Use palavras-chave como saúde, rotina, comportamento ou investimento."
+          message="Use palavras-chave como saÃºde, rotina, comportamento ou investimento."
         />
       ) : null}
 
@@ -230,7 +231,7 @@ export default async function BlogListPage({ searchParams }: { searchParams?: Pa
             <h3 className="text-base font-semibold text-text group-hover:text-brand">{link.title}</h3>
             <p className="text-sm text-text-muted">{link.description}</p>
             <span className="text-xs font-semibold uppercase tracking-[0.3em] text-brand">
-              Leia também
+              Leia tambÃ©m
             </span>
           </Link>
         ))}
@@ -316,14 +317,14 @@ function Hero({ searchTerm, links }: { searchTerm: string; links: Array<{ title:
     <header className="flex flex-col gap-8 rounded-3xl border border-border bg-surface p-8 shadow-soft sm:p-10 lg:flex-row lg:items-center">
       <div className="flex-1 space-y-4">
         <span className="inline-flex items-center gap-2 rounded-pill bg-brand/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.32em] text-brand">
-          Conteúdo premium para tutores
+          ConteÃºdo premium para tutores
         </span>
         <h1 className="text-3xl font-serif text-text sm:text-4xl">
-          Blog By Imperio Dog: decisão com responsabilidade começa pelo conhecimento.
+          Blog By Imperio Dog: decisÃ£o com responsabilidade comeÃ§a pelo conhecimento.
         </h1>
         <p className="text-sm text-text-muted">
-          Damos transparência total sobre rotina, saúde e comportamento do Spitz Alemão Anão.
-          Leia os pilares evergreen e avance para o formulário sob consulta quando estiver pronto.
+          Damos transparÃªncia total sobre rotina, saÃºde e comportamento do Spitz AlemÃ£o AnÃ£o.
+          Leia os pilares evergreen e avance para o formulÃ¡rio sob consulta quando estiver pronto.
         </p>
         <form className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
           <label htmlFor="blog-search" className="sr-only">
@@ -333,7 +334,7 @@ function Hero({ searchTerm, links }: { searchTerm: string; links: Array<{ title:
             id="blog-search"
             name="q"
             defaultValue={searchTerm}
-            placeholder="Buscar por saúde, rotina, comportamento..."
+            placeholder="Buscar por saÃºde, rotina, comportamento..."
             className="flex-1 rounded-pill border border-border bg-surface-subtle px-5 py-3 text-sm text-text focus:ring-2 focus:ring-brand/30"
           />
           <button
@@ -351,7 +352,7 @@ function Hero({ searchTerm, links }: { searchTerm: string; links: Array<{ title:
             href={link.href}
             className="group flex flex-col gap-2 rounded-2xl border border-border/60 bg-surface-subtle p-5 transition hover:-translate-y-1 hover:border-brand/70"
           >
-            <span className="text-xs font-semibold uppercase tracking-[0.3em] text-brand">Leia também</span>
+            <span className="text-xs font-semibold uppercase tracking-[0.3em] text-brand">Leia tambÃ©m</span>
             <h3 className="text-base font-semibold text-text group-hover:text-brand">{link.title}</h3>
             <p className="text-sm text-text-muted">{link.description}</p>
           </Link>
@@ -415,7 +416,7 @@ function FeaturedPost({ post }: { post: PublicPost }) {
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-sm font-semibold uppercase tracking-[0.28em] text-text-soft">
-            Conteúdo exclusivo
+            ConteÃºdo exclusivo
           </div>
         )}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/35 via-black/0" />
@@ -451,57 +452,19 @@ function CategorySection({
       <p className="text-xs uppercase tracking-[0.3em] text-brand">{definition.highlight}</p>
 
       <div className="grid auto-rows-fr gap-6 md:grid-cols-2">
-        {posts.map((post) => {
-          const trimmedPhone = process.env.NEXT_PUBLIC_WA_PHONE?.replace(/\D/g, "") ?? "";
-          const waBase = trimmedPhone ? `https://wa.me/${trimmedPhone}` : (process.env.NEXT_PUBLIC_WA_LINK || "https://wa.me/");
-          const waHref = `${waBase}?text=${encodeURIComponent(`Olá! Li o artigo "${post.title}" e gostaria de saber mais sobre Spitz Alemão.`)}&utm_source=blog&utm_medium=card&utm_campaign=post-${post.slug}`;
-          
-          return (
-            <article key={post.id} className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-soft transition hover:-translate-y-1">
-              <BlogCardImage post={post} />
-              <div className="flex flex-1 flex-col gap-3 p-6">
-                <h3 className="line-clamp-2 text-lg font-semibold text-text group-hover:text-brand">
-                  <Link href={`/blog/${post.slug}`} className="hover:underline">{post.title}</Link>
-                </h3>
-                {post.excerpt ? <p className="line-clamp-3 text-sm text-text-muted">{post.excerpt}</p> : null}
-                <div className="mt-auto flex items-center justify-between text-xs text-text-soft">
-                  <span>{formatDate(post.published_at)}</span>
-                  <span>{estimateReadingTime(post.content_mdx ?? post.excerpt ?? "")} min</span>
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <Link
-                    href={`/blog/${post.slug}`}
-                    className="inline-flex min-h-[44px] items-center justify-center rounded-pill bg-brand px-5 py-2 text-sm font-semibold text-brand-foreground shadow-soft transition hover:bg-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
-                  >
-                    Ler artigo
-                  </Link>
-                  <a
-                    href={waHref}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex min-h-[44px] items-center justify-center rounded-pill border border-border px-4 py-2 text-sm font-semibold text-text transition hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
-                    aria-label={`Falar sobre ${post.title} via WhatsApp`}
-                  >
-                    💬 Falar sobre isso
-                  </a>
-                </div>
-              </div>
-            </article>
-          );
-        })}
+        {posts.map((post) => (
+          <BlogCard key={post.id} post={post} />
+        ))}
       </div>
     </section>
   );
 }
-
 function GuiaDoTutorSection({
   collection,
 }: {
   collection: { definition: CategoryDefinition; posts: PublicPost[] };
 }) {
   const { definition, posts } = collection;
-  const trimmedPhone = process.env.NEXT_PUBLIC_WA_PHONE?.replace(/\D/g, "") ?? "";
-  const waBase = trimmedPhone ? `https://wa.me/${trimmedPhone}` : (process.env.NEXT_PUBLIC_WA_LINK || "https://wa.me/");
 
   return (
     <section
@@ -511,98 +474,29 @@ function GuiaDoTutorSection({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-3">
           <span className="inline-flex items-center gap-2 rounded-pill bg-brand px-4 py-1 text-xs font-semibold uppercase tracking-[0.32em] text-white">
-            ⭐ Conteúdo essencial
+            Guia do Tutor
           </span>
           <h2 id="guia-tutor-heading" className="text-3xl font-serif text-text">
             {definition.title}
           </h2>
           <p className="max-w-3xl text-base text-text-muted">{definition.description}</p>
-          <p className="text-sm font-semibold text-brand">{definition.highlight}</p>
         </div>
-        <div className="flex flex-col gap-2 sm:items-end">
-          <Link
-            href="/filhotes"
-            className="inline-flex min-h-[48px] items-center justify-center rounded-pill bg-brand px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
-          >
-            Ver filhotes disponíveis
-          </Link>
-          <a
-            href={`${waBase}?text=${encodeURIComponent("Olá! Li o Guia do Tutor e gostaria de conversar sobre a jornada responsável com um Spitz Alemão.")}&utm_source=blog&utm_medium=guia-tutor&utm_campaign=conversao`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex min-h-[48px] items-center justify-center rounded-pill border-2 border-brand px-6 py-3 text-sm font-semibold text-brand transition hover:bg-brand/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
-          >
-            💬 Falar com a criadora
-          </a>
-        </div>
+        <Link
+          href={definition.cta.href}
+          className="inline-flex items-center justify-center rounded-pill border border-brand/30 px-5 py-2 text-sm font-semibold text-brand hover:border-brand hover:bg-brand/10"
+        >
+          {definition.cta.label}
+        </Link>
       </div>
 
-      <div className="grid auto-rows-fr gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {posts.map((post) => {
-          const waHref = `${waBase}?text=${encodeURIComponent(`Olá! Li "${post.title}" no Guia do Tutor e gostaria de saber mais.`)}&utm_source=blog&utm_medium=guia-card&utm_campaign=post-${post.slug}`;
-          
-          return (
-            <article key={post.id} className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-white shadow-md transition hover:-translate-y-1 hover:shadow-lg">
-              <BlogCardImage post={post} />
-              <div className="flex flex-1 flex-col gap-3 p-5">
-                <h3 className="line-clamp-2 text-base font-semibold text-text group-hover:text-brand">
-                  <Link href={`/blog/${post.slug}`} className="hover:underline">{post.title}</Link>
-                </h3>
-                {post.excerpt ? <p className="line-clamp-2 text-xs text-text-muted">{post.excerpt}</p> : null}
-                <div className="mt-auto flex flex-col gap-2">
-                  <Link
-                    href={`/blog/${post.slug}`}
-                    className="inline-flex min-h-[44px] items-center justify-center rounded-pill bg-brand px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
-                  >
-                    Ler agora
-                  </Link>
-                  <a
-                    href={waHref}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex min-h-[44px] items-center justify-center rounded-pill border border-border px-4 py-2 text-xs font-semibold text-text transition hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
-                    aria-label={`Falar sobre ${post.title} via WhatsApp`}
-                  >
-                    💬 Conversar
-                  </a>
-                </div>
-              </div>
-            </article>
-          );
-        })}
+      <p className="text-sm font-semibold text-brand">{definition.highlight}</p>
+
+      <div className="grid auto-rows-fr gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {posts.map((post) => (
+          <BlogCard key={post.id} post={post} />
+        ))}
       </div>
     </section>
-  );
-}
-
-function BlogCardImage({ post }: { post: PublicPost }) {
-  if (!post.cover_url) {
-    return (
-      <div className="flex aspect-[4/3] w-full items-center justify-center bg-surface-subtle text-xs font-semibold uppercase tracking-[0.28em] text-text-soft">
-        Conteúdo evergreen
-      </div>
-    );
-  }
-
-  return (
-    <div className="relative aspect-[4/3] w-full overflow-hidden bg-surface-subtle">
-      <Image
-        src={post.cover_url}
-        alt={post.cover_alt || post.title}
-        fill
-        sizes="(max-width: 768px) 100vw, 50vw"
-        className="h-full w-full object-cover"
-      />
-    </div>
-  );
-}
-
-function EmptyState({ title, message }: { title: string; message: string }) {
-  return (
-    <div className="space-y-3 rounded-2xl border border-border bg-surface-subtle px-6 py-10 text-center shadow-soft">
-      <h2 className="text-lg font-semibold text-text">{title}</h2>
-      <p className="text-sm text-text-muted">{message}</p>
-    </div>
   );
 }
 
@@ -615,6 +509,15 @@ function formatDate(value?: string | null) {
     month: "short",
     year: "numeric",
   }).format(date);
+}
+
+function EmptyState({ title, message }: { title: string; message: string }) {
+  return (
+    <div className="space-y-3 rounded-2xl border border-border bg-surface-subtle px-6 py-10 text-center shadow-soft">
+      <h2 className="text-lg font-semibold text-text">{title}</h2>
+      <p className="text-sm text-text-muted">{message}</p>
+    </div>
+  );
 }
 
 function buildBlogSchema({
@@ -650,3 +553,5 @@ function buildBlogSchema({
     })),
   };
 }
+
+

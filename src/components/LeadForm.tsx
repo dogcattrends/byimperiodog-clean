@@ -69,11 +69,35 @@ export default function LeadForm() {
 
       if (!response.ok) {
         const payloadError = await response.json().catch(() => ({}));
-        throw new Error(payloadError?.error || "Não foi possível enviar agora. Tente novamente em instantes.");
+        const errorMsg = payloadError?.error || "Não foi possível enviar agora. Tente novamente em instantes.";
+        
+        // Track erro
+        if (typeof window !== "undefined") {
+          const win = window as unknown as { gtag?: (...args: unknown[]) => void };
+          if (typeof win.gtag === "function") {
+            win.gtag("event", "lead_form_error", {
+              form_location: "lead-form-main",
+              error_message: errorMsg,
+            });
+          }
+        }
+        
+        throw new Error(errorMsg);
       }
 
-      // Tracking
+      // Tracking sucesso
       trackLeadFormSubmit("lead-form-main");
+      if (typeof window !== "undefined") {
+        const win = window as unknown as { gtag?: (...args: unknown[]) => void };
+        if (typeof win.gtag === "function") {
+          win.gtag("event", "lead_form_submit", {
+            form_location: "lead-form-main",
+            interest: data.sexo_preferido || "not_specified",
+            prazo: data.prazo_aquisicao || "not_specified",
+            phone_valid: data.telefone.length >= 10,
+          });
+        }
+      }
 
       // Sucesso: resetar form
       setStatus("success");
@@ -83,7 +107,12 @@ export default function LeadForm() {
       setTimeout(() => {
         const mensagemWhatsApp = `Olá! Acabei de preencher o formulário no site. Meu nome é *${data.nome}* e estou interessado(a) em conhecer os filhotes disponíveis. ${data.mensagem ? `\n\nMinhas observações: ${data.mensagem}` : ""}`;
         
-        const whatsappURL = buildWhatsAppLink(mensagemWhatsApp);
+        const whatsappURL = buildWhatsAppLink({
+          message: mensagemWhatsApp,
+          utmSource: "lead_form",
+          utmMedium: "form_main",
+          utmCampaign: "conversao",
+        });
         window.open(whatsappURL, "_blank");
       }, 2000);
 
@@ -108,10 +137,11 @@ export default function LeadForm() {
             {...register("nome")}
             aria-invalid={errors.nome ? "true" : "false"}
             aria-required="true"
+            aria-describedby={errors.nome ? "erro-nome" : undefined}
             className="w-full rounded-xl border border-[var(--border)] bg-white/90 px-3 py-2 text-sm text-[var(--text)] shadow-sm placeholder:text-[var(--text-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]/40"
             placeholder="Ex: Ana Souza"
           />
-          {errors.nome && <p className="text-sm text-rose-600">{errors.nome.message}</p>}
+          {errors.nome && <p id="erro-nome" className="text-sm text-rose-600">{errors.nome.message}</p>}
         </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="contato-telefone" className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">
@@ -125,11 +155,12 @@ export default function LeadForm() {
             {...register("telefone")}
             aria-invalid={errors.telefone ? "true" : "false"}
             aria-required="true"
+            aria-describedby={errors.telefone ? "erro-telefone" : undefined}
             className="w-full rounded-xl border border-[var(--border)] bg-white/90 px-3 py-2 text-sm text-[var(--text)] shadow-sm placeholder:text-[var(--text-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]/40"
             placeholder="11999887766"
             maxLength={11}
           />
-          {errors.telefone && <p className="text-sm text-rose-600">{errors.telefone.message}</p>}
+          {errors.telefone && <p id="erro-telefone" className="text-sm text-rose-600">{errors.telefone.message}</p>}
         </div>
       </div>
 

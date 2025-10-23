@@ -1,8 +1,10 @@
 ﻿import { CheckCircle, Heart, PawPrint, Shield } from "lucide-react";
 import type { Metadata } from "next";
+import Script from "next/script";
  
 import { WhatsAppIcon as WAIcon } from "@/components/icons/WhatsAppIcon";
 import PuppiesGrid from "@/components/PuppiesGrid";
+import StickyCTA from "@/components/StickyCTA";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 
@@ -292,13 +294,22 @@ export default function FilhotesPage() {
         </div>
       </section>
 
-      <script
+      <Script
+        id="faq-ld"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
-      <script
+      <Script
+        id="breadcrumb-ld"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+      />
+      
+      {/* Sticky CTA mobile para conversão */}
+      <StickyCTA
+        href={`${waHref}?text=${encodeURIComponent("Olá! Gostaria de conhecer os filhotes disponíveis.")}&utm_source=filhotes&utm_medium=sticky_cta&utm_campaign=conversao`}
+        label="Falar com a criadora"
+        scrollThreshold={300}
       />
     </main>
   );
