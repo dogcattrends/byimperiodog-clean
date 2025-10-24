@@ -42,7 +42,7 @@ export default function Header() {
 
   return (
     <header
-      className="sticky top-0 z-50 border-b border-emerald-100/60 bg-white/95 text-zinc-900 backdrop-blur-lg"
+      className="sticky top-0 z-50 border-b border-emerald-100 bg-white text-zinc-900 shadow-sm"
       role="banner"
     >
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-6 px-5 py-3 sm:px-8 lg:px-10">
@@ -97,7 +97,7 @@ export default function Header() {
             </button>
           </Dialog.Trigger>
           <Dialog.Portal>
-            <Dialog.Overlay className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" />
+            <Dialog.Overlay className="fixed inset-0 z-40 bg-black/60" />
             <Dialog.Content className="fixed inset-x-0 top-0 z-50 rounded-b-3xl border-b border-emerald-100 bg-white px-6 pb-6 pt-4 shadow-2xl">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-semibold text-zinc-700">Menu</span>

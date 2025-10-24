@@ -197,14 +197,14 @@ export function FloatingPuppiesCTA({ disabled, persistentDismissKey = "cta_puppi
           role="dialog"
           aria-label="Filhotes disponíveis"
         >
-          <div className="relative rounded-2xl bg-emerald-800 text-white shadow-xl ring-1 ring-emerald-300/30 backdrop-blur-md p-4 pr-10">
+          <div className="relative rounded-2xl bg-emerald-800 text-white shadow-xl ring-1 ring-emerald-300/30 p-4 pr-10">
             <div className="flex items-start gap-2">
               <FlameIcon className="text-amber-300 flex-shrink-0" />
               <p className="text-sm leading-snug font-medium">
                 {copy.title}<br />
                 <Link
                   href={routes.filhotes}
-                  className="mt-1 inline-block rounded-full bg-white/15 hover:bg-white/25 px-3 py-1 text-[11px] font-semibold tracking-wide uppercase backdrop-blur transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-white"
+                  className="mt-1 inline-block rounded-full bg-white/20 hover:bg-white/30 px-3 py-1 text-[11px] font-semibold tracking-wide uppercase transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-white"
                   data-variant={variant}
                 >
                   {copy.cta}

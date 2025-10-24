@@ -57,7 +57,7 @@ export default function Navbar() {
   return (
     <header
       data-site-shell="navbar"
-      className="fixed inset-x-0 top-0 z-50 w-full border-b border-zinc-200/50 bg-white/95 text-zinc-900 backdrop-blur-md shadow-sm"
+      className="fixed inset-x-0 top-0 z-50 w-full border-b border-zinc-200 bg-white text-zinc-900 shadow-sm"
       role="banner"
     >
       <nav

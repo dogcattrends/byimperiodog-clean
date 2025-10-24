@@ -3,19 +3,23 @@
 @tailwind utilities;
 
 :root {
-  /* Base neutrals */
+  /* Base neutrals — sólidos sem transparência */
   --bg: #faf5ef;
   --bg-2: #f2e8de;
   --background: #fffdf8;
-  --surface: #fffdf8;
+  --surface: #ffffff; /* Sólido para Header/Footer */
+  --surface-dark: #0c1e1a; /* Verde escuro sólido para rodapé */
+  --surface-dark-2: #102722;
   --surface-2: #f5ebdf;
   --border: #e2d6c7;
   --foreground: #201a16;
   --text: #2a231f;
+  --text-light: #f6f7f7; /* Texto sobre fundos escuros */
   --text-muted: #7a6a5f;
 
   /* Brand palette */
   --brand: #1f4d3a;
+  --brand-teal: #0ea5a3; /* Turquesa sólido */
   --brand-foreground: #ffffff;
   --brand-contrast: #ffffff;
 
@@ -55,7 +59,7 @@ body.admin-shell [data-site-shell="cta"] {
   .btn { @apply btn-base px-4 py-2 bg-[var(--surface-2)] text-[var(--text)] shadow-sm hover:shadow focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-opacity-40 focus-visible:ring-offset-2; }
   .btn-brand { @apply btn-base px-4 py-2 bg-brand text-[var(--brand-foreground)] shadow-sm hover:brightness-110 focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-opacity-40 focus-visible:ring-offset-2; }
   .btn-accent { @apply btn-base px-4 py-2 bg-accent text-[var(--accent-foreground)] shadow-sm hover:brightness-110 focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-opacity-40 focus-visible:ring-offset-2; }
-  .btn-outline { @apply btn-base px-4 py-2 border border-[var(--border)] text-[var(--text)] bg-white/40 hover:bg-white/70 focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-opacity-40 focus-visible:ring-offset-2; }
+  .btn-outline { @apply btn-base px-4 py-2 border border-[var(--border)] text-[var(--text)] bg-white hover:bg-[var(--surface-2)] focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-opacity-40 focus-visible:ring-offset-2; }
   .btn-whatsapp { @apply btn-base px-4 py-2 bg-whatsapp text-[var(--whatsapp-contrast)] shadow-sm hover:brightness-105 focus-visible:ring-2 focus-visible:ring-[var(--whatsapp)] focus-visible:ring-opacity-40 focus-visible:ring-offset-2; }
 
   .badge { @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold tracking-wide; }

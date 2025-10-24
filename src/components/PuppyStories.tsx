@@ -198,7 +198,17 @@ export default function PuppyStories(props: PuppyStoriesProps) {
     return () => document.removeEventListener('visibilitychange', vis);
   }, [open]);
 
-  // Anunciar mudanÃ§a para tecnologias assistivas
+  // ESC para fechar
+  useEffect(()=>{
+    if (!open) return;
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleEsc);
+    return () => document.removeEventListener('keydown', handleEsc);
+  }, [open, onClose]);
+
+  // Anunciar mudança para tecnologias assistivas
   const liveRef = useRef<HTMLDivElement | null>(null);
   useEffect(()=>{
     if (!liveRef.current) return;
@@ -214,10 +224,16 @@ export default function PuppyStories(props: PuppyStoriesProps) {
       className="fixed inset-0 z-[200] flex flex-col bg-black/95 text-white"
       aria-modal="true"
       role="dialog"
+      onClick={(e) => {
+        // Clique fora do container fecha o viewer
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
     >
-      <div className="absolute inset-0 flex items-center justify-center px-4 select-none">
+      <div className="absolute inset-0 flex items-center justify-center px-4 sm:px-8 select-none">
         <div
-          className="relative w-full max-w-[480px] aspect-[9/16] bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden flex items-center justify-center"
+          className="relative w-full max-w-[90vw] sm:max-w-[480px] aspect-square bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden flex items-center justify-center"
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
@@ -228,8 +244,8 @@ export default function PuppyStories(props: PuppyStoriesProps) {
               alt={current.nome || current.name || 'Filhote'}
               fill
               priority
-              sizes="(max-width: 640px) 100vw, (max-width:1024px) 50vw, 480px"
-              className="object-cover"
+              sizes="(max-width: 640px) 90vw, 480px"
+              className="object-contain"
             />
           ) : (
             <div className="text-zinc-400 text-sm">Sem imagem</div>
@@ -261,9 +277,10 @@ export default function PuppyStories(props: PuppyStoriesProps) {
               </p>
             </div>
             <button
+              type="button"
               onClick={onClose}
-              aria-label="Fechar"
-              className="min-h-[48px] min-w-[48px] flex items-center justify-center rounded-full bg-black/50 backdrop-blur hover:bg-black/70 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+              aria-label="Fechar stories"
+              className="min-h-[48px] min-w-[48px] flex items-center justify-center rounded-full bg-black/90 hover:bg-black transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
             >
               <X className="h-5 w-5" />
             </button>
@@ -274,17 +291,19 @@ export default function PuppyStories(props: PuppyStoriesProps) {
             <div className={clsx("absolute bottom-4 left-0 right-0 z-20 flex flex-col items-center gap-3 px-3 transition-opacity", uiVisible ? 'opacity-100' : 'opacity-0')}>
               <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-center sm:gap-3">
                 <button
+                  type="button"
                   onClick={() => toggleLike(current.id)}
                   aria-label="Curtir"
-                  className={clsx('flex items-center justify-center gap-1 rounded-full px-4 py-3 text-xs sm:text-sm font-medium backdrop-blur transition min-h-[48px] min-w-[120px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2', likedSet.has(current.id) ? 'bg-rose-600 text-white focus-visible:ring-offset-rose-600' : 'bg-white/15 text-white hover:bg-white/25 focus-visible:ring-offset-black')}
+                  className={clsx('flex items-center justify-center gap-1 rounded-full px-4 py-3 text-xs sm:text-sm font-medium transition min-h-[48px] min-w-[120px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2', likedSet.has(current.id) ? 'bg-rose-600 text-white focus-visible:ring-offset-rose-600' : 'bg-black/30 text-white hover:bg-black/50 focus-visible:ring-offset-black')}
                 >
                   <Heart className={clsx('h-4 w-4 sm:h-5 sm:w-5', likedSet.has(current.id) && 'fill-current')} />
                   {likedSet.has(current.id) ? 'Curtido' : 'Curtir'}
                 </button>
                 <button
+                  type="button"
                   onClick={() => handleShare(current)}
                   aria-label="Compartilhar"
-                  className="flex items-center justify-center gap-1 rounded-full bg-white/15 px-4 py-3 text-xs sm:text-sm font-medium text-white backdrop-blur hover:bg-white/25 transition min-h-[48px] min-w-[120px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                  className="flex items-center justify-center gap-1 rounded-full bg-black/30 px-4 py-3 text-xs sm:text-sm font-medium text-white hover:bg-black/50 transition min-h-[48px] min-w-[120px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                 >
                   <Share2 className="h-4 w-4 sm:h-5 sm:w-5" /> Compartilhar
                 </button>
@@ -298,9 +317,10 @@ export default function PuppyStories(props: PuppyStoriesProps) {
                   <Phone className="h-4 w-4 sm:h-5 sm:w-5" /> WhatsApp
                 </a>
                 <button
+                  type="button"
                   onClick={()=> setPaused(p => !p)}
                   aria-label={paused ? 'Reproduzir stories' : 'Pausar stories'}
-                  className="flex items-center justify-center gap-1 rounded-full bg-white/15 px-4 py-3 text-xs sm:text-sm font-medium text-white backdrop-blur hover:bg-white/25 transition min-h-[48px] min-w-[120px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                  className="flex items-center justify-center gap-1 rounded-full bg-black/30 px-4 py-3 text-xs sm:text-sm font-medium text-white hover:bg-black/50 transition min-h-[48px] min-w-[120px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                 >
                   {paused ? 'Play' : 'Pause'}
                 </button>
@@ -330,16 +350,18 @@ export default function PuppyStories(props: PuppyStoriesProps) {
             />
           </div>
           <button
-            aria-label="Anterior"
+            type="button"
+            aria-label="Story anterior"
             onClick={prev}
-            className={clsx("absolute left-3 top-1/2 -translate-y-1/2 min-h-[48px] min-w-[48px] flex items-center justify-center rounded-full bg-black/40 backdrop-blur transition hover:bg-black/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black", uiVisible ? 'opacity-100' : 'opacity-0')}
+            className={clsx("absolute left-3 top-1/2 -translate-y-1/2 min-h-[48px] min-w-[48px] flex items-center justify-center rounded-full bg-black/90 transition hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black", uiVisible ? 'opacity-100' : 'opacity-0')}
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
           <button
-            aria-label="Próximo"
+            type="button"
+            aria-label="Próximo story"
             onClick={next}
-            className={clsx("absolute right-3 top-1/2 -translate-y-1/2 min-h-[48px] min-w-[48px] flex items-center justify-center rounded-full bg-black/40 backdrop-blur transition hover:bg-black/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black", uiVisible ? 'opacity-100' : 'opacity-0')}
+            className={clsx("absolute right-3 top-1/2 -translate-y-1/2 min-h-[48px] min-w-[48px] flex items-center justify-center rounded-full bg-black/90 transition hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black", uiVisible ? 'opacity-100' : 'opacity-0')}
           >
             <ChevronRight className="h-5 w-5" />
           </button>

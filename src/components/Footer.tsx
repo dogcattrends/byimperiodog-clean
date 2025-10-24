@@ -152,7 +152,7 @@ export default function FooterFixed() {
         </div>
 
         <div className="sm:col-span-2 lg:col-span-1">
-          <div className="h-full rounded-xl border border-zinc-700 bg-zinc-800/50 backdrop-blur-sm p-5 flex flex-col">
+          <div className="h-full rounded-xl border border-zinc-700 bg-zinc-800 p-5 flex flex-col shadow-sm">
             <h3 className="text-base font-semibold text-white tracking-tight">
               Assine nossa newsletter
             </h3>

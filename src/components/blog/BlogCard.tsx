@@ -1,9 +1,10 @@
 "use client";
 
-import { ArrowRight, MessageCircle } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { BLOG_CARD_SIZES } from "@/lib/image-sizes";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 
@@ -54,7 +55,7 @@ export default function BlogCard({ post }: BlogCardProps) {
   });
 
   return (
-    <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-soft transition hover:-translate-y-1">
+    <article className="grid h-full grid-rows-[auto,1fr] overflow-hidden rounded-2xl border border-border bg-surface shadow-soft transition hover:-translate-y-1">
       <figure className="relative aspect-[4/3] w-full overflow-hidden bg-surface-subtle">
         {post.cover_url ? (
           <Image
@@ -100,10 +101,11 @@ export default function BlogCard({ post }: BlogCardProps) {
               href={whatsappLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-semibold text-brand transition hover:border-brand hover:text-brand"
+              className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+              title="Tirar dúvidas sobre este artigo no WhatsApp"
             >
-              <MessageCircle className="h-4 w-4" aria-hidden />
-              Tirar dúvidas
+              <WhatsAppIcon className="h-4 w-4" aria-hidden />
+              WhatsApp
             </a>
           </div>
         </div>

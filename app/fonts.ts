@@ -6,7 +6,7 @@ import { DM_Sans, Inter } from "next/font/google";
  * @see https://fonts.google.com/specimen/DM+Sans
  */
 export const dmSans = DM_Sans({
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"], // PT-BR support
   weight: ["400", "500", "600", "700"],
   display: "swap", // Evita FOIT (Flash of Invisible Text)
   variable: "--font-dm-sans",
@@ -20,7 +20,7 @@ export const dmSans = DM_Sans({
  * @see https://fonts.google.com/specimen/Inter
  */
 export const inter = Inter({
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"], // PT-BR support
   weight: ["400", "600", "700"],
   display: "swap",
   variable: "--font-inter",

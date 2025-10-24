@@ -69,7 +69,7 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
   const [liked, setLiked] = useState(false);
 
   return (
-    <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-emerald-100/60 bg-white/98 shadow-sm ring-1 ring-transparent transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:ring-emerald-200">
+    <article className="group relative grid h-full grid-rows-[auto,1fr] overflow-hidden rounded-2xl border border-emerald-100/60 bg-white shadow-sm ring-1 ring-transparent transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:ring-emerald-200">
       {/* ================================================================ */}
       {/* IMAGEM 4:3 Otimizada (aspect-[4/3] maior e centralizada) */}
       {/* ================================================================ */}
@@ -107,12 +107,12 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
 
           {/* Badges - Melhor contraste */}
           <span
-            className={`absolute left-3 top-3 rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm ring-1 backdrop-blur-sm transition-all duration-200 ${statusClass[p.status || "disponivel"]}`}
+            className={`absolute left-3 top-3 rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm ring-1 transition-all duration-200 ${statusClass[p.status || "disponivel"]}`}
           >
             {label}
           </span>
 
-          <span className="absolute right-3 top-3 rounded-full bg-white/95 px-3 py-1.5 text-xs font-semibold text-zinc-900 shadow-md ring-1 ring-black/5 backdrop-blur-sm transition-all duration-200">
+          <span className="absolute right-3 top-3 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-zinc-900 shadow-md ring-1 ring-black/5 transition-all duration-200">
             {price}
           </span>
 
@@ -125,7 +125,7 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
               track.event?.("puppy_like_toggle", { puppy_id: p.id, liked: !liked, placement: "grid" });
             }}
             aria-label={liked ? "Remover dos favoritos" : "Adicionar aos favoritos"}
-            className="absolute bottom-3 right-3 z-10 flex min-h-[48px] min-w-[48px] items-center justify-center rounded-full bg-white/95 p-2 text-rose-500 shadow-md ring-1 ring-black/5 backdrop-blur-sm transition-all duration-200 hover:scale-110 hover:bg-white hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2"
+            className="absolute bottom-3 right-3 z-10 flex min-h-[48px] min-w-[48px] items-center justify-center rounded-full bg-white p-2 text-rose-500 shadow-md ring-1 ring-black/5 transition-all duration-200 hover:scale-110 hover:bg-white hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2"
           >
             <Heart className={`h-5 w-5 ${liked ? "fill-rose-500" : "fill-none"}`} aria-hidden="true" />
           </button>

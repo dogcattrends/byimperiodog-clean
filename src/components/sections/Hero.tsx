@@ -77,12 +77,10 @@ export default function HeroSection() {
       className="relative isolate overflow-hidden bg-gradient-to-br from-[#fbefe3] via-[#fdf7ee] to-[#ffffff] text-zinc-900"
       aria-labelledby="hero-heading"
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(31,134,114,0.16),transparent_60%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-white/70 via-transparent to-transparent" />
 
       <div className="mx-auto grid w-full max-w-7xl gap-12 px-5 py-16 sm:px-8 lg:grid-cols-[1.1fr,1fr] lg:items-center lg:gap-16 lg:py-20">
         <div className="space-y-7">
-          <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white/90 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-700">
+          <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-700 shadow-sm">
             Spitz Alemão Anão com mentoria premium
           </span>
 
@@ -148,7 +146,7 @@ export default function HeroSection() {
             {STATS.map((stat) => (
               <div
                 key={stat.label}
-                className="rounded-2xl border border-emerald-200 bg-white/95 p-4 shadow-sm"
+                className="rounded-2xl border border-emerald-200 bg-white p-4 shadow-sm"
               >
                 <dt className="text-xs uppercase tracking-[0.24em] text-zinc-500">{stat.label}</dt>
                 <dd className="mt-2 text-2xl font-semibold text-zinc-900">{stat.value}</dd>
@@ -170,7 +168,7 @@ export default function HeroSection() {
               placeholder="blur"
               blurDataURL={HERO_BLUR}
             />
-            <figcaption className="absolute bottom-3 left-3 rounded-full bg-white/95 px-4 py-1 text-xs font-semibold text-emerald-700 shadow">
+            <figcaption className="absolute bottom-3 left-3 rounded-full bg-white px-4 py-1 text-xs font-semibold text-emerald-700 shadow">
               Socialização guiada com vídeos semanais
             </figcaption>
           </figure>

@@ -39,7 +39,7 @@ export default function PuppiesFilterBar({ q, setQ, gender, setGender, status, s
   const resetAll = () => { setQ(""); setQLocal(""); setGender(""); setStatus(""); setColor(""); onReset?.(); };
 
   return (
-    <section className="sticky top-0 z-40 border-b bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 transition-all duration-200" aria-label="Filtros de filhotes" role="region">
+    <section className="sticky top-0 z-40 border-b bg-white shadow-sm transition-all duration-200" aria-label="Filtros de filhotes" role="region">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-2 text-xs text-zinc-600 sm:px-6 lg:px-8">
         <span>
           Mostrando <b className="text-zinc-900">{showing}</b> de <b className="text-zinc-900">{total}</b> filhote(s)

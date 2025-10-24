@@ -30,7 +30,7 @@ const StoriesBar = forwardRef<HTMLDivElement, StoriesBarProps>(function StoriesB
     <div
       ref={ref}
       className={cn(
-        "stories-bar flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-2 pt-1",
+        "stories-bar flex snap-x snap-mandatory gap-5 overflow-x-auto px-6 pb-3 pt-2 -mx-2",
         "scrollbar-thin scrollbar-track-transparent scrollbar-thumb-zinc-300 hover:scrollbar-thumb-zinc-400",
         className,
       )}
@@ -44,14 +44,14 @@ const StoriesBar = forwardRef<HTMLDivElement, StoriesBarProps>(function StoriesB
             key={item.id}
             type="button"
             onClick={() => onSelect(item.originalIndex ?? index)}
-            className="group flex min-h-[80px] min-w-[80px] shrink-0 snap-start flex-col items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2"
-            aria-label={`Abrir story de ${item.name || "filhote"}`}
+            className="group flex min-h-[96px] min-w-[88px] shrink-0 snap-start flex-col items-center gap-2 p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2 rounded-2xl"
+            aria-label={`Ver story de ${item.name || "filhote"}`}
           >
-            <span className="relative aspect-square h-20 w-20 overflow-hidden rounded-full ring-2 ring-[var(--brand)] ring-offset-2 ring-offset-white transition-transform group-hover:scale-105 group-focus-visible:ring-[var(--brand)] group-focus-visible:ring-offset-2">
+            <span className="relative aspect-square h-20 w-20 overflow-hidden rounded-full ring-2 ring-[var(--brand)] ring-offset-2 ring-offset-white transition-transform group-hover:scale-105 group-focus-visible:ring-[var(--brand)] group-focus-visible:ring-offset-4 shadow-sm">
               {item.cover ? (
                 <Image
                   src={item.cover}
-                  alt={`Prévia do filhote ${item.name || "Filhote"}`}
+                  alt={`Prévia de ${item.name || "Filhote"}`}
                   fill
                   className="object-cover"
                   sizes={STORY_AVATAR_SIZES}
