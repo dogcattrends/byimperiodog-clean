@@ -30,6 +30,7 @@
     "test:e2e:chromium": "playwright test --project=chromium",
     "check:all": "npm run typecheck && npm run lint && npm run test && npm run check:encoding && npm run check:banned-words",
     "check:encoding": "node scripts/check-encoding.mjs",
+    "psi:validate": "node scripts/psi-validation.mjs",
     "postinstall": "echo \"Ready.\"",
     "vercel-build": "npm install && node scripts/contentlayer-build-wrapper.mjs && next build --no-lint"
   },
