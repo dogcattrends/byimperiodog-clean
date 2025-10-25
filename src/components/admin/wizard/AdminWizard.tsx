@@ -39,12 +39,21 @@ export default function AdminWizard({ initialValues }: { initialValues?: Partial
     interval: 1200,
     values: methods.watch(),
     onSave: async (values) => {
-      await fetch("/admin/api/cadastros/autosave", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      });
-      showAdminToast({ title: "Progresso salvo automaticamente", variant: "info" });
+      try {
+        const response = await fetch("/admin/api/cadastros/autosave", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(values),
+        });
+        if (!response.ok) throw new Error("autosave_failed");
+        showAdminToast({ title: "Progresso salvo automaticamente", variant: "info" });
+      } catch (error) {
+        showAdminToast({
+          title: "Nao foi possivel salvar o rascunho",
+          description: error instanceof Error ? error.message : undefined,
+          variant: "error",
+        });
+      }
     },
   });
 
@@ -57,16 +66,25 @@ export default function AdminWizard({ initialValues }: { initialValues?: Partial
   }
 
   async function onSubmit(values: WizardValues) {
-    await fetch("/admin/api/cadastros", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values),
-    });
+    try {
+      const response = await fetch("/admin/api/cadastros", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
+      if (!response.ok) throw new Error("cadastro_failed");
 
-    showAdminToast({ title: "Cadastro concluido!", variant: "success" });
+      showAdminToast({ title: "Cadastro concluido!", variant: "success" });
 
-    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      confetti({ particleCount: 80, spread: 70, origin: { y: 0.65 } });
+      if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        confetti({ particleCount: 80, spread: 70, origin: { y: 0.65 } });
+      }
+    } catch (error) {
+      showAdminToast({
+        title: "Erro ao concluir cadastro",
+        description: error instanceof Error ? error.message : undefined,
+        variant: "error",
+      });
     }
   }
 

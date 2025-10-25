@@ -1,5 +1,7 @@
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
+import { requireAdminApi } from "@/lib/adminAuth";
 import { respondWithError } from "@/lib/errors";
 import { rateLimit } from "@/lib/limiter";
 import { createLogger } from "@/lib/logger";
@@ -20,7 +22,10 @@ const execute = safeAction({
   logger,
 });
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  const guard = requireAdminApi(req, { permission: "cadastros:write" });
+  if (guard) return guard;
+
   try {
     const result = await execute(req);
     return NextResponse.json({ ok: true, ...result });
