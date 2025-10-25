@@ -7,6 +7,7 @@ import { useState } from "react";
 
 import { PUPPY_CARD_SIZES } from "@/lib/image-sizes";
 import { optimizePuppyCardImage } from "@/lib/optimize-image";
+import passthroughImageLoader from "@/lib/passthrough-image-loader";
 import track from "@/lib/track";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 
@@ -93,6 +94,7 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
           {optimizedCover ? (
             <>
               <Image
+                loader={passthroughImageLoader}
                 src={optimizedCover}
                 alt={`Filhote de Spitz Alemao Anao ate 22 cm: ${name} em ${color}, ${gender}, status ${label.toLowerCase()}`}
                 fill
