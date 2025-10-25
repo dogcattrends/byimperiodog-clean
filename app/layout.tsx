@@ -19,6 +19,7 @@ import { baseSiteMetadata } from "@/lib/seo.core";
 import { resolveTracking, buildOrganizationLD, buildWebsiteLD, type CustomPixelConfig } from "@/lib/tracking";
 
 import { ThemeProvider } from "../design-system/theme-provider";
+
 import { dmSans, inter } from "./fonts";
 
 // Lazy load componentes não-críticos para reduzir TBT
