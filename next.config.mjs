@@ -2,8 +2,16 @@
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // ============================================================================
+  // PERFORMANCE: Bundle optimization & code splitting
+  // ============================================================================
+  compress: true,
+  poweredByHeader: false,
+  productionBrowserSourceMaps: false,
+  
   experimental: {
     typedRoutes: false,
+    optimizePackageImports: ['lucide-react', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
   },
   
   // ============================================================================

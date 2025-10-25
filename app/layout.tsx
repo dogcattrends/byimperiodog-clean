@@ -11,9 +11,7 @@ import "../design-system/tokens.css";
 import Footer from "@/components/common/Footer";
 import Header from "@/components/common/Header";
 import SkipLink from "@/components/common/SkipLink";
-import ConsentBanner from "@/components/ConsentBanner";
 import ToastContainer from "@/components/Toast";
-import TrackingScripts from "@/components/TrackingScripts";
 
 import { getSiteSettings } from "@/lib/getSettings";
 import { resolveRobots, baseMetaOverrides } from "@/lib/seo";
@@ -23,8 +21,10 @@ import { resolveTracking, buildOrganizationLD, buildWebsiteLD, type CustomPixelC
 import { ThemeProvider } from "../design-system/theme-provider";
 import { dmSans, inter } from "./fonts";
 
-// Deferir carregamento de componentes nÃ£o-crÃ­ticos para reduzir JS inicial
+// Lazy load componentes não-críticos para reduzir TBT
 const FloatingPuppiesCTA = NextDynamic(() => import("@/components/FloatingPuppiesCTA"), { ssr: false });
+const ConsentBanner = NextDynamic(() => import("@/components/ConsentBanner"), { ssr: false });
+const TrackingScripts = NextDynamic(() => import("@/components/TrackingScripts"), { ssr: false });
 
 export const metadata: Metadata = baseSiteMetadata({
   // Garantir template consistente; se jï¿½ definido em baseSiteMetadata mantï¿½m.
@@ -119,8 +119,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="pt-BR" className={`scroll-smooth ${dmSans.variable} ${inter.variable}`}>
       <head>
   {/* ================================================================ */}
-  {/* PERFORMANCE: Resource hints essenciais (sem preconnect de fonts porque usamos next/font) */}
+  {/* PERFORMANCE: Resource hints essenciais */}
   {/* ================================================================ */}
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
         <link
