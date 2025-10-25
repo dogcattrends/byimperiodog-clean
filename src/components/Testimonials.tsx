@@ -220,8 +220,13 @@ export default function Testimonials({
                       aria-label={`Mostrar foto ${i + 1}`}
                       aria-pressed={active}
                       onClick={() => goTo(i)}
-                      className={cn('h-2.5 rounded-full transition-colors', active ? 'w-6 bg-emerald-500' : 'w-2.5 bg-[var(--border)] hover:bg-emerald-400/70')}
-                    />
+                      className={cn(
+                        'min-h-[48px] min-w-[48px] rounded-full transition-colors flex items-center justify-center',
+                        active ? 'bg-emerald-500' : 'bg-[var(--border)] hover:bg-emerald-400/70'
+                      )}
+                    >
+                      <span className={cn('h-2.5 w-2.5 rounded-full', active ? 'h-3 w-6 bg-white' : 'bg-current')} aria-hidden="true" />
+                    </button>
                   );
                 })}
               </div>

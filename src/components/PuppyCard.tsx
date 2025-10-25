@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { PUPPY_CARD_SIZES } from "@/lib/image-sizes";
+import { optimizePuppyCardImage } from "@/lib/optimize-image";
 import track from "@/lib/track";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 
@@ -65,6 +66,9 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
   const waVideo = buildWaLink("video", name, color, gender);
   const waVisit = buildWaLink("visit", name, color, gender);
 
+  // Otimizar imagem do Supabase (GIF → WebP, resize 640px, quality 85)
+  const optimizedCover = optimizePuppyCardImage(cover);
+
   const [imgLoaded, setImgLoaded] = useState(false);
   const [liked, setLiked] = useState(false);
 
@@ -85,11 +89,11 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
         aria-label={`Ver detalhes de ${name}`}
       >
         <div className="relative aspect-[4/3] w-full overflow-hidden bg-zinc-100">
-          {!imgLoaded && cover ? <div className="absolute inset-0 animate-pulse bg-zinc-200" /> : null}
-          {cover ? (
+          {!imgLoaded && optimizedCover ? <div className="absolute inset-0 animate-pulse bg-zinc-200" /> : null}
+          {optimizedCover ? (
             <>
               <Image
-                src={cover}
+                src={optimizedCover}
                 alt={`Filhote de Spitz Alemao Anao ate 22 cm: ${name} em ${color}, ${gender}, status ${label.toLowerCase()}`}
                 fill
                 sizes={PUPPY_CARD_SIZES}
