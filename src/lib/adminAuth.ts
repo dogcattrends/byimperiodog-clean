@@ -2,7 +2,6 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { NextRequest, NextResponse } from "next/server";
 
-import { AppError } from "@/lib/errors";
 import {
   DEFAULT_ROLE,
   getRoleFromCookies,
@@ -12,6 +11,7 @@ import {
   type AdminRole,
 } from "@/lib/rbac";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { createLogger } from "@/lib/logger";
 
 type LayoutGuardOptions = {
   permission?: AdminPermission;
@@ -117,10 +117,10 @@ export async function logAdminAction(params: {
       },
     ]);
   } catch (error) {
-    throw new AppError({
-      code: "UNKNOWN",
-      message: "Falha ao registrar ação administrativa.",
-      cause: error,
+    createLogger("admin:actions").warn("Falha ao registrar acao administrativa", {
+      route: params.route,
+      method: params.method,
+      error: String(error),
     });
   }
 }
@@ -129,4 +129,3 @@ export function resolveAdminContext(req: Request | NextRequest) {
   const role = resolveRoleFromRequest(req) ?? DEFAULT_ROLE;
   return { role };
 }
-

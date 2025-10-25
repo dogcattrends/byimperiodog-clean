@@ -38,7 +38,7 @@ const STATS = [
   { value: "24h", label: "suporte humano dedicado" },
 ] as const;
 
-const HERO_IMAGE_SRC = "/spitz-hero-desktop.webp";
+// Hero image blur placeholder
 const HERO_BLUR =
   "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzAwIiBoZWlnaHQ9IjQ3NSIgdmlld0JveD0iMCAwIDcwMCA0NzUiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjcwMCIgaGVpZ2h0PSI0NzUiIGZpbGw9IiNmNWVjZWYiLz48cmVjdCB4PSIyOTYiIHdpZHRoPSIyMDQiIGhlaWdodD0iNDc1IiBmaWxsPSIjZjFmOGY1IiBvcGFjaXR5PSIwLjMyIi8+PHJlY3QgeD0iNTMyIiB3aWR0aD0iMTY4IiBoZWlnaHQ9IjQ3NSIgZmlsbD0iI2Y3ZjJmMSIgb3BhY2l0eT0iMC4yIi8+PC9zdmc+";
 
@@ -157,17 +157,29 @@ export default function HeroSection() {
 
         <div className="space-y-6">
           <figure className="relative aspect-[4/3] overflow-hidden rounded-3xl border border-emerald-200/70 bg-white shadow-2xl">
-            <Image
-              src={HERO_IMAGE_SRC}
-              alt="Filhotes de Spitz Alemão Anão saudáveis em ambiente acolhedor"
-              fill
-              priority
-              fetchPriority="high"
-              sizes={HERO_IMAGE_SIZES}
-              className="object-cover"
-              placeholder="blur"
-              blurDataURL={HERO_BLUR}
-            />
+            <picture>
+              <source
+                media="(max-width: 640px)"
+                srcSet="/spitz-hero-mobile.webp"
+                type="image/webp"
+              />
+              <source
+                media="(max-width: 1024px)"
+                srcSet="/spitz-hero-tablet.webp"
+                type="image/webp"
+              />
+              <Image
+                src="/spitz-hero-desktop.webp"
+                alt="Filhotes de Spitz Alemão Anão saudáveis em ambiente acolhedor"
+                fill
+                priority
+                fetchPriority="high"
+                sizes={HERO_IMAGE_SIZES}
+                className="object-cover"
+                placeholder="blur"
+                blurDataURL={HERO_BLUR}
+              />
+            </picture>
             <figcaption className="absolute bottom-3 left-3 rounded-full bg-white px-4 py-1 text-xs font-semibold text-emerald-700 shadow">
               Socialização guiada com vídeos semanais
             </figcaption>

@@ -1,33 +1,56 @@
 "use client";
 
-import { Home, FileText, Users, MessageSquare, Sparkles } from "lucide-react";
+import { FileText, Home, MessageSquare, Sparkles, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
-const NAV = [
-  { label: "Dashboard", href: "/admin", icon: Home },
-  { label: "Posts", href: "/admin/posts", icon: FileText },
-  { label: "Comentários", href: "/admin/comentarios", icon: MessageSquare },
-  { label: "Autores", href: "/admin/autores", icon: Users },
-  { label: "Wizard", href: "/admin/cadastros/wizard", icon: Sparkles },
+import {
+  getClientAdminRole,
+  hasPermission,
+  type AdminPermission,
+  type AdminRole,
+} from "@/lib/rbac";
+
+type NavItem = {
+  label: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  permission?: AdminPermission;
+};
+
+const NAV_ITEMS: NavItem[] = [
+  { label: "Dashboard", href: "/admin", icon: Home, permission: "dashboard:read" },
+  { label: "Posts", href: "/admin/posts", icon: FileText, permission: "blog:read" },
+  { label: "Comentarios", href: "/admin/comentarios", icon: MessageSquare, permission: "blog:write" },
+  { label: "Autores", href: "/admin/autores", icon: Users, permission: "blog:write" },
+  { label: "Wizard", href: "/admin/cadastros/wizard", icon: Sparkles, permission: "cadastros:write" },
 ];
 
 export default function AdminSidebar() {
   const pathname = usePathname() || "/admin";
+  const [role, setRole] = useState<AdminRole>(getClientAdminRole);
+
+  useEffect(() => {
+    setRole(getClientAdminRole());
+  }, []);
+
+  const items = NAV_ITEMS.filter((item) => !item.permission || hasPermission(role, item.permission));
+
   return (
-    <nav className="sticky top-0 h-[100dvh] overflow-auto p-4" aria-label="Seções do admin">
+    <nav className="sticky top-0 h-[100dvh] overflow-auto p-4" aria-label="Secoes do admin">
       <div className="mb-6">
         <Link
           href="/admin"
           className="inline-flex h-10 items-center rounded-full border border-emerald-200 bg-white px-3 text-sm font-semibold text-emerald-900 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2"
         >
-          Admin • By Império Dog
+          Admin - By Imperio Dog
         </Link>
       </div>
       <ul className="space-y-1">
-        {NAV.map((item) => {
+        {items.map((item) => {
           const ActiveIcon = item.icon;
-          const active = pathname === item.href || pathname.startsWith(item.href + "/");
+          const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
           return (
             <li key={item.href}>
               <Link
