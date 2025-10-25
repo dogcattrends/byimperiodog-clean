@@ -136,9 +136,9 @@ export default function HeroSection() {
 
           <ul className="flex flex-wrap items-center gap-3 text-xs font-medium uppercase tracking-[0.3em] text-emerald-700">
             <li>Entrega humanizada</li>
-            <li className="text-zinc-400">•</li>
+            <li className="text-zinc-600" aria-hidden="true">•</li>
             <li>Mentoria vitalícia</li>
-            <li className="text-zinc-400">•</li>
+            <li className="text-zinc-600" aria-hidden="true">•</li>
             <li>Planejamento financeiro claro</li>
           </ul>
 
