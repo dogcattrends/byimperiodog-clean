@@ -1,3 +1,5 @@
+import { AppError } from "@/lib/errors";
+
 export type AdminRole = "owner" | "editor" | "viewer";
 
 export type AdminPermission =
