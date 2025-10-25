@@ -1,6 +1,8 @@
 import type { MetadataRoute } from "next";
 
-const PUBLIC_ROUTES = ["/", "/filhotes", "/sobre", "/blog", "/contato", "/faq"];
+const PUBLIC_ROUTES = ["/", "/filhotes", "/sobre", "/blog", "/contato", "/faq"].filter(
+  (path) => !path.startsWith("/admin"),
+);
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.byimperiodog.com.br";
