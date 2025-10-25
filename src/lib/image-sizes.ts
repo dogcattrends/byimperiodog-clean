@@ -17,9 +17,12 @@ export const BREAKPOINTS = {
 } as const;
 
 /**
- * Sizes para imagem HERO (full-width em mobile, 50vw em desktop)
+ * Sizes para imagem HERO (otimizado para LCP <2.5s)
+ * - Mobile (≤640px): 640px image (22KB)
+ * - Tablet (641-1024px): 1024px image (53KB)
+ * - Desktop (>1024px): 1400px image (109KB)
  */
-export const HERO_IMAGE_SIZES = "(max-width: 768px) 100vw, 50vw";
+export const HERO_IMAGE_SIZES = "(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 1400px";
 
 /**
  * Sizes para grid de filhotes (1 col mobile, 2 tablet, 3 desktop)
