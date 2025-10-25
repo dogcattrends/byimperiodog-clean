@@ -69,7 +69,7 @@ export default function BlogCTAs({ postTitle, category }: BlogCTAsProps) {
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-pill bg-brand px-6 py-3 text-sm font-semibold text-brand-foreground shadow-soft transition hover:bg-brand-600 focus-ring"
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-pill bg-brand px-6 py-3 text-sm font-semibold text-brand-foreground shadow-soft transition hover:bg-brand-600 focus-ring min-h-[48px]"
             data-track-event="blog_whatsapp_cta"
           >
             <Phone className="h-5 w-5" aria-hidden />

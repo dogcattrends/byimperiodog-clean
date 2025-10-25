@@ -1,23 +1,42 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/adminAuth';
-import { supabaseAdmin, hasServiceRoleKey } from '@/lib/supabaseAdmin';
-import { randomUUID } from 'crypto';
+// import { randomUUID } from 'crypto';
+
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import sharp from 'sharp';
+import { z } from 'zod';
+
+import { requireAdmin } from '@/lib/adminAuth';
+import { rateLimit } from '@/lib/limiter';
+import { safeAction } from '@/lib/safeAction';
+import { supabaseAdmin, hasServiceRoleKey } from '@/lib/supabaseAdmin';
+import { ALLOWED_IMAGE_MIME, MAX_IMAGE_BYTES, inferExtFromMime, sanitizeFilename } from '@/lib/uploadValidation';
 
 // Upload simples (base64 ou multipart futura). Por hora aceita JSON { filename, dataBase64 }
-export async function POST(req: NextRequest){
-  const auth = requireAdmin(req); if(auth) return auth;
-  try {
-    const body = await req.json();
+const bodySchema = z.object({
+  dataBase64: z.string().min(1, 'dataBase64 requerido'),
+  filename: z.string().min(1).optional(),
+  upsert: z.boolean().optional(),
+});
+
+const execute = safeAction({
+  schema: bodySchema,
+  handler: async (body, { req }) => {
     const urlObj = new URL(req.url);
     const wantUpsert = urlObj.searchParams.get('upsert') === '1' || body.upsert === true;
-    const b64:string|undefined = body.dataBase64;
-    if(!b64) return NextResponse.json({ error:'dataBase64 requerido' },{ status:400 });
-    const match = /^data:(.*?);base64,(.*)$/.exec(b64) || [null,null,b64];
-    const mime = match[1]||'image/png';
-  const buf = Buffer.from(match[2], 'base64');
-    const ext = mime.split('/')[1]||'bin';
-  const original = body.filename?.replace(/[^a-z0-9._-]/gi,'_') || `${randomUUID()}.${ext}`;
+    const b64 = body.dataBase64;
+    const match = /^data:(.*?);base64,(.*)$/.exec(b64) || [null, null, b64];
+    const mime = match[1] || 'image/png';
+    const buf = Buffer.from(match[2]!, 'base64');
+    // Basic security validation
+    if (!ALLOWED_IMAGE_MIME.has(mime)) {
+      return NextResponse.json({ error: 'mime-nao-suportado' }, { status: 415 });
+    }
+    if (buf.byteLength <= 0 || buf.byteLength > MAX_IMAGE_BYTES) {
+      return NextResponse.json({ error: 'arquivo-muito-grande', maxBytes: MAX_IMAGE_BYTES }, { status: 413 });
+    }
+    const ext = inferExtFromMime(mime);
+    const originalBase = sanitizeFilename(body.filename || 'upload');
+    const original = originalBase.includes('.') ? originalBase : `${originalBase}.${ext}`;
     let fileName: string;
     if(wantUpsert){
       // mantém nome original para overwrite explícito
@@ -32,8 +51,8 @@ export async function POST(req: NextRequest){
     const folder = new Date().toISOString().slice(0,10);
     const path = `${folder}/${fileName}`;
     // Preparar thumbnail (largura máxima 480 px) em WebP
-    let thumbBuf: Buffer | null = null;
-    let thumbName = fileName.replace(/\.[^.]+$/, '') + '-thumb.webp';
+  let thumbBuf: Buffer | null = null;
+  const thumbName = fileName.replace(/\.[^.]+$/, '') + '-thumb.webp';
     const thumbPath = `${folder}/thumbs/${thumbName}`;
     try {
       thumbBuf = await sharp(buf).resize({ width: 480, withoutEnlargement: true }).webp({ quality: 75 }).toBuffer();
@@ -50,8 +69,7 @@ export async function POST(req: NextRequest){
       }
       return NextResponse.json({ ok:true, url: b64, thumb: thumbDataUrl, offline:true, upsert: wantUpsert });
     }
-    const s = supabaseAdmin();
-    // @ts-ignore bucket assumed existing
+  const s = supabaseAdmin();
     const { error } = await s.storage.from('puppies').upload(path, buf, { contentType: mime, upsert: wantUpsert });
     if(error){
       const msg = (error.message||'').toLowerCase();
@@ -71,7 +89,14 @@ export async function POST(req: NextRequest){
     }
     const { data:pub } = s.storage.from('puppies').getPublicUrl(path);
     return NextResponse.json({ ok:true, url: pub.publicUrl, thumb: thumbUrl, upsert: wantUpsert });
-  } catch(e:any){
-    return NextResponse.json({ error: e?.message||'erro' },{ status:500 });
+  },
+});
+
+export async function POST(req: NextRequest){
+  const auth = requireAdmin(req); if(auth) return auth;
+  // Limit uploads to prevent abuse: 6/min per IP
+  try { await rateLimit(req as unknown as Request, { identifier: 'admin-puppies-upload', limit: 6, windowMs: 60_000 }); } catch {
+    return NextResponse.json({ error:'rate-limit' },{ status:429 });
   }
+  return execute(req as unknown as Request);
 }

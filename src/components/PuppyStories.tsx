@@ -5,6 +5,8 @@ import Image from 'next/image';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import { optimizePuppyGalleryImage } from '@/lib/optimize-image';
+import passthroughImageLoader from '@/lib/passthrough-image-loader';
 import track from '@/lib/track';
 import { buildWhatsAppLink } from '@/lib/whatsapp';
 
@@ -224,14 +226,16 @@ export default function PuppyStories(props: PuppyStoriesProps) {
       className="fixed inset-0 z-[200] flex flex-col bg-black/95 text-white"
       aria-modal="true"
       role="dialog"
-      onClick={(e) => {
-        // Clique fora do container fecha o viewer
-        if (e.target === e.currentTarget) {
-          onClose();
-        }
-      }}
     >
-      <div className="absolute inset-0 flex items-center justify-center px-4 sm:px-8 select-none">
+      {/* Backdrop click to close */}
+      <button
+        aria-label="Fechar stories"
+        onClick={onClose}
+        className="absolute inset-0 z-10 cursor-default"
+        tabIndex={-1}
+      />
+
+      <div className="absolute inset-0 z-20 flex items-center justify-center px-4 sm:px-8 select-none">
         <div
           className="relative w-full max-w-[90vw] sm:max-w-[480px] aspect-square bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden flex items-center justify-center"
           onTouchStart={onTouchStart}
@@ -240,7 +244,8 @@ export default function PuppyStories(props: PuppyStoriesProps) {
         >
           {current?.cover ? (
             <Image
-              src={current.cover}
+              loader={passthroughImageLoader}
+              src={optimizePuppyGalleryImage(current.cover) || current.cover}
               alt={current.nome || current.name || 'Filhote'}
               fill
               priority
@@ -370,13 +375,7 @@ export default function PuppyStories(props: PuppyStoriesProps) {
 
       <div ref={liveRef} className="sr-only" aria-live="polite" />
 
-      {/* Backdrop click to close (fora da moldura) */}
-      <button
-        aria-label="Fechar stories"
-        onClick={onClose}
-        className="absolute inset-0 -z-10 cursor-default"
-        tabIndex={-1}
-      />
+      {/* Backdrop button is rendered above, before the content wrapper */}
       <style jsx global>{`
         @keyframes pf-story-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
         /* Evita seleÃ§Ã£o acidental de texto durante taps rÃ¡pidos */

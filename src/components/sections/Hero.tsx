@@ -154,6 +154,16 @@ export default function HeroSection() {
             <picture className="absolute inset-0 h-full w-full">
               <source
                 media="(max-width: 640px)"
+                srcSet="/spitz-hero-mobile.avif"
+                type="image/avif"
+              />
+              <source
+                media="(max-width: 1024px)"
+                srcSet="/spitz-hero-tablet.avif"
+                type="image/avif"
+              />
+              <source
+                media="(max-width: 640px)"
                 srcSet="/spitz-hero-mobile.webp"
                 type="image/webp"
               />
@@ -192,7 +202,7 @@ export default function HeroSection() {
               </div>
               <a
                 href={secondaryWhatsApp}
-                className="inline-flex min-h-[44px] items-center gap-2 text-sm font-semibold text-emerald-700 transition-colors hover:text-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2"
+                className="inline-flex min-h-[48px] items-center gap-2 text-sm font-semibold text-emerald-800 transition-colors hover:text-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
               >
                 <WhatsAppIcon className="h-4 w-4" aria-hidden />
                 Falar agora

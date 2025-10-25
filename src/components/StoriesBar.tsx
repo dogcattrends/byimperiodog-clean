@@ -5,6 +5,8 @@ import { forwardRef } from "react";
 
 import { cn } from "@/lib/cn";
 import { STORY_AVATAR_SIZES } from "@/lib/image-sizes";
+import { optimizePuppyThumb } from "@/lib/optimize-image";
+import passthroughImageLoader from "@/lib/passthrough-image-loader";
 
 export type StoriesBarItem = {
   id: string;
@@ -50,7 +52,8 @@ const StoriesBar = forwardRef<HTMLDivElement, StoriesBarProps>(function StoriesB
             <span className="relative aspect-square h-20 w-20 overflow-hidden rounded-full ring-2 ring-[var(--brand)] ring-offset-2 ring-offset-white transition-transform group-hover:scale-105 group-focus-visible:ring-[var(--brand)] group-focus-visible:ring-offset-4 shadow-sm">
               {item.cover ? (
                 <Image
-                  src={item.cover}
+                  loader={passthroughImageLoader}
+                  src={optimizePuppyThumb(item.cover) || item.cover}
                   alt={`Prévia de ${item.name || "Filhote"}`}
                   fill
                   className="object-cover"
