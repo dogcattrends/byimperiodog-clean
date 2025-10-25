@@ -3,43 +3,25 @@
 import confetti from "canvas-confetti";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { AdminButton } from "@/components/admin/ui/button";
 import Stepper from "@/components/admin/ui/stepper";
 import { showAdminToast } from "@/components/admin/ui/toast";
 import useAutosave from "@/hooks/useAutosave";
+import { adminCadastroSchema, type AdminCadastroInput } from "@/lib/schemas/adminCadastros";
 
-const wizardSchema = z.object({
-  perfil: z.object({
-    nome: z.string().min(3, "Informe o nome completo"),
-    email: z.string().email("Informe um e-mail válido"),
-    telefone: z.string().min(10, "Telefone inválido"),
-  }),
-  preferencia: z.object({
-    genero: z.enum(["macho", "femea", "indiferente"]),
-    cor: z.string().min(3, "Descreva a cor desejada"),
-    entrega: z.enum(["presencial", "concierge"]),
-  }),
-  checklist: z.object({
-    casaPreparada: z.boolean(),
-    veterinarioReferencia: z.string().optional(),
-    observacoes: z.string().max(600).optional(),
-  }),
-});
-
-type WizardValues = z.infer<typeof wizardSchema>;
+type WizardValues = AdminCadastroInput;
 
 const steps = [
   { id: "perfil", title: "Perfil" },
-  { id: "preferencia", title: "Preferência" },
+  { id: "preferencia", title: "Preferencia" },
   { id: "checklist", title: "Checklist" },
 ] as const;
 
 export default function AdminWizard({ initialValues }: { initialValues?: Partial<WizardValues> }) {
   const methods = useForm<WizardValues>({
-    resolver: zodResolver(wizardSchema),
+    resolver: zodResolver(adminCadastroSchema),
     mode: "onChange",
     defaultValues: initialValues ?? {
       perfil: { nome: "", email: "", telefone: "" },
@@ -81,7 +63,7 @@ export default function AdminWizard({ initialValues }: { initialValues?: Partial
       body: JSON.stringify(values),
     });
 
-    showAdminToast({ title: "Cadastro concluído!", variant: "success" });
+    showAdminToast({ title: "Cadastro concluido!", variant: "success" });
 
     if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       confetti({ particleCount: 80, spread: 70, origin: { y: 0.65 } });
@@ -97,17 +79,23 @@ export default function AdminWizard({ initialValues }: { initialValues?: Partial
           {currentStepId === "perfil" && (
             <>
               <fieldset>
-                <label className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Nome</label>
+                <label className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                  Nome
+                </label>
                 <input {...methods.register("perfil.nome")} className="admin-input" autoFocus />
                 <FormError message={methods.formState.errors.perfil?.nome?.message} />
               </fieldset>
               <fieldset>
-                <label className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">E-mail</label>
+                <label className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                  E-mail
+                </label>
                 <input {...methods.register("perfil.email")} className="admin-input" />
                 <FormError message={methods.formState.errors.perfil?.email?.message} />
               </fieldset>
               <fieldset>
-                <label className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Telefone</label>
+                <label className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                  Telefone
+                </label>
                 <input {...methods.register("perfil.telefone")} className="admin-input" />
                 <FormError message={methods.formState.errors.perfil?.telefone?.message} />
               </fieldset>
@@ -117,20 +105,26 @@ export default function AdminWizard({ initialValues }: { initialValues?: Partial
           {currentStepId === "preferencia" && (
             <>
               <fieldset>
-                <label className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Gênero preferido</label>
+                <label className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                  Genero preferido
+                </label>
                 <select {...methods.register("preferencia.genero")} className="admin-input">
                   <option value="macho">Macho</option>
-                  <option value="femea">Fêmea</option>
+                  <option value="femea">Femea</option>
                   <option value="indiferente">Indiferente</option>
                 </select>
               </fieldset>
               <fieldset>
-                <label className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Cor desejada</label>
+                <label className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                  Cor desejada
+                </label>
                 <input {...methods.register("preferencia.cor")} className="admin-input" />
                 <FormError message={methods.formState.errors.preferencia?.cor?.message} />
               </fieldset>
               <fieldset>
-                <label className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Entrega</label>
+                <label className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                  Entrega
+                </label>
                 <select {...methods.register("preferencia.entrega")} className="admin-input">
                   <option value="presencial">Presencial</option>
                   <option value="concierge">Concierge</option>
@@ -143,16 +137,18 @@ export default function AdminWizard({ initialValues }: { initialValues?: Partial
             <>
               <label className="inline-flex items-center gap-2 text-sm text-slate-700">
                 <input type="checkbox" {...methods.register("checklist.casaPreparada")} />
-                Casa já está preparada para o filhote
+                Casa ja esta preparada para o filhote
               </label>
               <fieldset>
                 <label className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
-                  Veterinário de referência
+                  Veterinario de referencia
                 </label>
                 <input {...methods.register("checklist.veterinarioReferencia")} className="admin-input" />
               </fieldset>
               <fieldset>
-                <label className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Observações</label>
+                <label className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                  Observacoes
+                </label>
                 <textarea {...methods.register("checklist.observacoes")} rows={4} className="admin-input" />
               </fieldset>
             </>
@@ -165,7 +161,7 @@ export default function AdminWizard({ initialValues }: { initialValues?: Partial
           </AdminButton>
           {currentStep < steps.length - 1 ? (
             <AdminButton type="button" onClick={next}>
-              Próximo
+              Proximo
             </AdminButton>
           ) : (
             <AdminButton type="submit" disabled={!isValid}>
