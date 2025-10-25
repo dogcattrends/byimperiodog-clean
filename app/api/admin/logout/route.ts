@@ -4,5 +4,6 @@ export async function GET() {
   const res = NextResponse.json({ ok: true }, { headers: { "Cache-Control": "no-store" } });
   res.cookies.set("adm", "", { path: "/", maxAge: 0 });
   res.cookies.set("admin_auth", "", { path: "/", maxAge: 0 });
+  res.cookies.set("admin_role", "", { path: "/", maxAge: 0 });
   return res;
 }
