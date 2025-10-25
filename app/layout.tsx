@@ -12,7 +12,6 @@ import Footer from "@/components/common/Footer";
 import Header from "@/components/common/Header";
 import SkipLink from "@/components/common/SkipLink";
 import ToastContainer from "@/components/Toast";
-
 import { getSiteSettings } from "@/lib/getSettings";
 import { resolveRobots, baseMetaOverrides } from "@/lib/seo";
 import { baseSiteMetadata } from "@/lib/seo.core";
