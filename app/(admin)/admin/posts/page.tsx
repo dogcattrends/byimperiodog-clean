@@ -1,28 +1,17 @@
 "use client";
 
-import type { ColumnDef } from "@tanstack/react-table";
-import Link from "next/link";
 import * as React from "react";
 
 import BlogPostsTable from "@/components/admin/blog/BlogPostsTable";
 import { blogRepo } from "@/lib/db";
 import type { Post } from "@/lib/db/types";
 
-interface PostRow {
-  id: string;
-  title: string | null;
-  slug: string;
-  status: string;
-  created_at?: string | null;
-  published_at?: string | null;
-}
-
 export default function AdminPostsPage() {
-  const [initial, setInitial] = React.useState<{ items: Post[]; total: number } | null>(null);
+  const [initial, setInitial] = React.useState<{ items: Post[]; total: number; page: number; perPage: number } | null>(null);
   React.useEffect(() => {
     let abort = false;
     void blogRepo.listPosts({ limit: 50, offset: 0 }).then((result) => {
-      if (!abort) setInitial(result);
+      if (!abort) setInitial({ ...result, page: 1, perPage: 50 });
     });
     return () => {
       abort = true;

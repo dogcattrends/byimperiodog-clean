@@ -1,18 +1,17 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { CalendarClock, CalendarDays, Check, Clock, Download, Loader2, MoreHorizontal, RefreshCcw, Search, Trash2, Trophy, X } from "lucide-react";
+import { CalendarClock, CalendarDays, Check, Clock, Download, Loader2, MoreHorizontal, Plus, RefreshCcw, Search, Trash2, Trophy, X } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useMemo, useRef, useState } from "react";
 
-import { adminFetch } from "@/lib/adminFetch";
-import { toCsv } from "@/lib/csv";
-import type { BlogBulkResult, Post, PostMetrics, ScheduleEvent } from "@/lib/db";
-import { iso } from "@/lib/csv";
-
-import { Dialog, DialogActions, DialogContent } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogActions, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { adminFetch } from "@/lib/adminFetch";
+import { iso, toCsv } from "@/lib/csv";
+import type { BlogBulkResult, Post, PostMetrics, ScheduleEvent } from "@/lib/db";
 
 type PostRow = Post & {
   metrics?: PostMetrics | null;
@@ -181,7 +180,10 @@ export default function BlogPostsTable({ initialData }: BlogPostsTableProps) {
         body: JSON.stringify({
           action,
           postIds: Array.from(selectedIds),
-          scheduleAt: action === "schedule" ? scheduleDate : undefined,
+          scheduleAt:
+            action === "schedule"
+              ? new Date(scheduleDate).toISOString()
+              : undefined,
         }),
       });
       const json = (await response.json()) as BlogBulkResult & { error?: string };
@@ -332,11 +334,12 @@ export default function BlogPostsTable({ initialData }: BlogPostsTableProps) {
           <Button type="button" variant="outline" onClick={handleExportCsv}>
             <Download className="mr-2 h-4 w-4" aria-hidden /> Exportar CSV
           </Button>
-          <Button type="button" asChild>
-            <a href="/admin/blog/editor">
-              <PlusIcon aria-hidden className="mr-2 h-4 w-4" /> Novo post
-            </a>
-          </Button>
+          <Link
+            href="/admin/blog/editor"
+            className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+          >
+            <Plus aria-hidden className="mr-2 h-4 w-4" /> Novo post
+          </Link>
         </div>
       </div>
 
@@ -575,13 +578,5 @@ export default function BlogPostsTable({ initialData }: BlogPostsTableProps) {
         </DialogContent>
       </Dialog>
     </section>
-  );
-}
-
-function PlusIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 16 16" fill="none" {...props}>
-      <path d="M8 3.333v9.334M3.333 8h9.334" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
   );
 }

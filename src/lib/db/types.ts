@@ -1,4 +1,4 @@
-export type PostStatus = "draft" | "scheduled" | "published" | "archived";
+export type PostStatus = "draft" | "review" | "scheduled" | "published" | "archived";
 
 export interface Tag {
   id: string;
