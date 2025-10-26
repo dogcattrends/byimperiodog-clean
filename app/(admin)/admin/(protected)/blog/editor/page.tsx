@@ -1,88 +1,40 @@
-"use client";
-import { useSearchParams } from "next/navigation";
-import React, { useEffect, useState } from "react";
 
-import EditorShell, { type FormState } from "@/app/admin/blog/editor/EditorShell";
+import Link from "next/link";
+
 import { BlogSubnav } from "@/components/admin/BlogSubnav";
-import { adminFetch } from "@/lib/adminFetch";
+import EditorShell from "@/components/admin/blog/editor/EditorShell";
+import { blogRepo } from "@/lib/db";
 
-async function fetchPost(id: string) {
-  const res = await adminFetch(`/api/admin/blog?id=${encodeURIComponent(id)}`);
-  if (!res.ok) return null;
-  return res.json();
-}
-
-async function persist(form: FormState) {
-  const payload: Record<string, unknown> = {
-    id: form.id,
-    title: form.title,
-    subtitle: form.subtitle,
-    slug: form.slug,
-    excerpt: form.excerpt,
-    content_mdx: form.content,
-    cover_url: form.coverUrl,
-    cover_alt: form.coverAlt,
-    tags: form.tags,
-    category: form.category,
-    status: form.status,
-    scheduled_at: form.publishAt,
-    og_image_url: form.ogImageUrl,
-    seo_title: form.metaTitle,
-    seo_description: form.metaDescription,
+interface PageProps {
+  searchParams: {
+    id?: string;
   };
-  const res = await adminFetch("/api/admin/blog", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) {
-    const j = await res.json().catch(() => null);
-    throw new Error(j?.error || "Falha ao salvar");
-  }
-  // Retorna dados básicos para que o EditorShell possa sincronizar o ID/slug após o primeiro save
-  const data = await res.json().catch(() => null);
-  return (data || undefined) as { id?: string; slug?: string; status?: string } | void;
 }
 
-export default function BlogEditorPage() {
-  const search = useSearchParams();
-  const [initial, setInitial] = useState<Partial<FormState> | null>(null);
-  const id = search.get("id");
+export const dynamic = "force-dynamic";
 
-  useEffect(() => {
-    if (!id) return;
-    fetchPost(id).then((post) => {
-      if (!post) return;
-      setInitial({
-        id: post.id,
-        title: post.title || "",
-        subtitle: post.subtitle || "",
-        slug: post.slug || "",
-        excerpt: post.excerpt || "",
-        content: post.content_mdx || "",
-        coverUrl: post.cover_url || null,
-        coverAlt: post.cover_alt || null,
-        tags: Array.isArray(post.tags) ? post.tags : [],
-        category: post.category || null,
-        status: post.status || "draft",
-        publishAt: post.scheduled_at || null,
-        ogImageUrl: post.og_image_url || null,
-        metaTitle: post.seo_title || null,
-        metaDescription: post.seo_description || null,
-      });
-    });
-  }, [id]);
+export default async function BlogEditorPage({ searchParams }: PageProps) {
+  const postId = searchParams.id;
+  const post = postId ? await blogRepo.getPostById(postId) : null;
 
   return (
-    <>
-      <div className="mx-auto max-w-7xl space-y-6 p-6">
-        <BlogSubnav />
-        <header className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-          <h1 className="text-2xl font-bold tracking-tight">Editor de Post</h1>
-          {id && <span className="rounded-full bg-[var(--surface-2)] px-3 py-1 text-xs text-[var(--text-muted)]">ID: {id}</span>}
-        </header>
-        <EditorShell initial={initial || undefined} onSave={persist} />
-      </div>
-    </>
+    <div className="mx-auto flex max-w-6xl flex-col gap-6 p-6">
+      <BlogSubnav />
+      <header className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-emerald-900">Editor de Post</h1>
+          <p className="text-sm text-emerald-700">
+            Preencha título, conteúdo, SEO e agendamento com validações em tempo real.
+          </p>
+        </div>
+        <Link
+          href="/admin/blog"
+          className="inline-flex min-h-[36px] items-center rounded-full border border-emerald-200 px-4 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2"
+        >
+          Voltar para lista
+        </Link>
+      </header>
+      <EditorShell initial={post ?? undefined} />
+    </div>
   );
 }

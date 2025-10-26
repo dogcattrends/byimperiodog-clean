@@ -1,20 +1,35 @@
 "use client";
 
+import { 
+  BarChart3, 
+  Dog,
+  Eye,
+  FileText,
+  ImageIcon,
+  MessageSquare,
+  Search,
+  Settings, 
+  Sparkles, 
+  TrendingUp
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Sparkles, Users, BarChart3, Settings, FileSpreadsheet, ShieldCheck } from "lucide-react";
 
 import { AdminBadge } from "@/components/admin/ui/badge";
-import { buildWhatsAppLink } from "@/lib/whatsapp";
 import { cn } from "@/lib/cn";
+import { buildWhatsAppLink } from "@/lib/whatsapp";
 
 const NAV_ITEMS = [
-  { label: "Dashboard", href: "/admin", icon: BarChart3 },
-  { label: "Cadastros", href: "/admin/cadastros", icon: Users },
-  { label: "Wizards", href: "/admin/wizards", icon: Sparkles },
-  { label: "Relatórios", href: "/admin/relatorios", icon: FileSpreadsheet },
-  { label: "Configurações", href: "/admin/configuracoes", icon: Settings },
-  { label: "RBAC & Auditoria", href: "/admin/seguranca", icon: ShieldCheck },
+  { label: "Dashboard", href: "/admin/dashboard", icon: BarChart3 },
+  { label: "Blog", href: "/admin/blog", icon: FileText },
+  { label: "Filhotes", href: "/admin/puppies", icon: Dog },
+  { label: "Mídia", href: "/admin/media", icon: ImageIcon },
+  { label: "Comentários", href: "/admin/blog/comments", icon: MessageSquare },
+  { label: "Analytics", href: "/admin/analytics", icon: TrendingUp },
+  { label: "SEO", href: "/admin/seo", icon: Search },
+  { label: "Pixels", href: "/admin/pixels", icon: Eye },
+  { label: "Experimentos", href: "/admin/experiments", icon: Sparkles },
+  { label: "Configurações", href: "/admin/settings", icon: Settings },
 ];
 
 export default function AdminSidebar() {

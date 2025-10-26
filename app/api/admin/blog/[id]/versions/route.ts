@@ -1,19 +1,33 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { requireAdmin } from '@/lib/adminAuth';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { NextResponse } from "next/server";
 
-// GET /api/admin/blog/:id/versions?limit=20
-export async function GET(req: NextRequest, ctx: { params:{ id:string } }){
-  const auth = requireAdmin(req); if(auth) return auth;
-  const url = new URL(req.url);
-  const limit = Math.min(Math.max(Number(url.searchParams.get('limit')||20),1),100);
-  const sb = supabaseAdmin();
-  const { data, error } = await sb.from('blog_post_versions')
-    .select('id, created_at, reason')
-    .eq('post_id', ctx.params.id)
-    .order('created_at', { ascending:false })
-    .limit(limit);
-  if(error) return NextResponse.json({ error: error.message }, { status:500 });
-  return NextResponse.json({ versions: data||[] });
+import { requireAdmin } from "@/lib/adminAuth";
+import { blogRepo } from "@/lib/db";
+
+export async function GET(
+  req: Request,
+  context: { params: { id: string } },
+) {
+  const auth = requireAdmin(req);
+  if (auth) return auth;
+
+  const postId = context.params.id;
+  if (!postId) {
+    return NextResponse.json({ error: "missing_post_id" }, { status: 400 });
+  }
+
+  try {
+    const url = new URL(req.url);
+    const limit = Math.max(1, Math.min(50, parseInt(url.searchParams.get("limit") || "20", 10)));
+    const versions = await blogRepo.listRevisions(postId, limit);
+    return NextResponse.json({
+      versions: versions.map((revision) => ({
+        id: revision.id,
+        createdAt: revision.createdAt,
+        reason: revision.reason,
+      })),
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: message || "internal_error" }, { status: 500 });
+  }
 }
