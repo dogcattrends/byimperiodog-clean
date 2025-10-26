@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
-import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import SkipLink from "@/components/common/SkipLink";
+import { Sidebar } from "@/components/dashboard/Sidebar";
 
 export const metadata: Metadata = {
   title: {
@@ -35,7 +35,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           className="border-r border-emerald-100 bg-emerald-50/40"
           aria-label="Navegacao do painel administrativo"
         >
-          <AdminSidebar />
+          <Sidebar />
         </aside>
         <div className="flex min-h-screen flex-col" role="presentation">
           <AdminTopbar />
