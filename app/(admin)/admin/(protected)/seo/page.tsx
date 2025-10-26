@@ -9,6 +9,9 @@ export default function SeoHub() {
   const [activeTab, setActiveTab] = useState<"audit" | "sitemap" | "robots" | "redirects">("audit");
   const [redirects, setRedirects] = useState<RedirectItem[]>([]);
   const [loadingRedirects, setLoadingRedirects] = useState(false);
+  const [robotsTxt, setRobotsTxt] = useState<string>("");
+  const [loadingRobots, setLoadingRobots] = useState(false);
+  const [savingRobots, setSavingRobots] = useState(false);
 
   const seoMetrics = {
     score: 87,
@@ -35,7 +38,6 @@ export default function SeoHub() {
         const items = json.items || [];
         type Raw = Record<string, unknown>;
         const mapped: RedirectItem[] = (items as Raw[]).map((r) => ({
-          id: r["id"] as string | undefined,
           from_path: (r["from_path"] as string) || (r["from"] as string),
           to_url: (r["to_url"] as string) || (r["to"] as string),
           code: (r["code"] as number) || (r["status"] as number) || 301,
@@ -49,6 +51,23 @@ export default function SeoHub() {
       }
     };
     load();
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (activeTab !== "robots") return;
+    const loadRobots = async () => {
+      setLoadingRobots(true);
+      try {
+        const res = await fetch("/api/admin/seo/robots", { cache: "no-store" });
+        const json = await res.json();
+        setRobotsTxt(json.robotsTxt || "");
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoadingRobots(false);
+      }
+    };
+    loadRobots();
   }, [activeTab]);
 
   const createRedirect = async () => {
@@ -214,13 +233,37 @@ export default function SeoHub() {
           {activeTab === "robots" && (
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-emerald-900">Robots.txt</h3>
-              <textarea
-                className="min-h-[300px] w-full rounded-lg border border-emerald-200 bg-emerald-50/50 p-4 font-mono text-sm text-emerald-900 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400"
-                defaultValue={`User-agent: *\nAllow: /\n\nSitemap: https://byimperiodog.com.br/sitemap.xml`}
-              />
-              <button className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700">
-                Salvar Alterações
-              </button>
+              {loadingRobots ? (
+                <div className="p-4 text-sm text-emerald-700">Carregando…</div>
+              ) : (
+                <>
+                  <textarea
+                    className="min-h-[300px] w-full rounded-lg border border-emerald-200 bg-emerald-50/50 p-4 font-mono text-sm text-emerald-900 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                    value={robotsTxt}
+                    onChange={(e) => setRobotsTxt(e.target.value)}
+                  />
+                  <button
+                    disabled={savingRobots}
+                    onClick={async () => {
+                      setSavingRobots(true);
+                      try {
+                        await fetch("/api/admin/seo/robots", {
+                          method: "PUT",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ robotsTxt }),
+                        });
+                      } catch (e) {
+                        console.error(e);
+                      } finally {
+                        setSavingRobots(false);
+                      }
+                    }}
+                    className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60"
+                  >
+                    {savingRobots ? "Salvando…" : "Salvar Alterações"}
+                  </button>
+                </>
+              )}
             </div>
           )}
 
