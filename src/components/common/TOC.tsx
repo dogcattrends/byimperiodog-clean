@@ -14,7 +14,7 @@ interface TOCProps {
   title?: string;
 }
 
-export function TOC({ items, className, title = "Sumário" }: TOCProps) {
+export function TOC({ items, className, title = "Sumario" }: TOCProps) {
   if (!items.length) return null;
 
   return (
@@ -37,4 +37,5 @@ export function TOC({ items, className, title = "Sumário" }: TOCProps) {
 }
 
 export default TOC;
+
 

@@ -52,4 +52,4 @@ if (violations.length) {
   process.exit(1);
 }
 
-console.log("✅ Content guard aprovado.");
+process.stdout.write("✅ Content guard aprovado.\n");

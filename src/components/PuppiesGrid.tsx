@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 
-// import StoriesBar, { type Story } from "@/components/StoriesBar";
+import StoriesBar, { type Story } from "@/components/StoriesBar";
 import { supabasePublic } from "@/lib/supabasePublic";
 import track from "@/lib/track";
 

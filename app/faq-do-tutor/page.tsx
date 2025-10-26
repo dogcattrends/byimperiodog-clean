@@ -53,10 +53,12 @@ export function generateMetadata(): Metadata {
     description:
       "Perguntas frequentes para tutores do Spitz Alemão Lulu da Pomerânia: preparo, socialização, entrega segura e suporte vitalício.",
     path,
-    image: {
-      url: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.byimperiodog.com.br"}/og/faq-tutor.jpg`,
-      alt: "Tutora com um Spitz Alemão Lulu da Pomerânia saudável",
-    },
+    images: [
+      {
+        url: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.byimperiodog.com.br"}/og/faq-tutor.jpg`,
+        alt: "Tutora com um Spitz Alemão Lulu da Pomerânia saudável",
+      },
+    ],
   });
 }
 
