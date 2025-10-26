@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 
-import StoriesBar, { type Story } from "@/components/StoriesBar";
 import { supabasePublic } from "@/lib/supabasePublic";
 import track from "@/lib/track";
 
@@ -241,16 +240,6 @@ export default function PuppiesGrid() {
         </p>
       )}
 
-      {/* Stories carousel - TODO: Implement stories integration */}
-      {/* {storyItems.length > 0 && (
-        <StoriesBar
-          items={storyItems}
-          onSelect={openStory}
-          className="-mx-4 mt-6 max-w-full sm:-mx-6 lg:-mx-8"
-          ariaLabel="Pré-visualização em stories dos filhotes"
-        />
-      )} */}
-
       {/* ================================================================ */}
       {/* GRID OTIMIZADO: auto-rows-fr para equalizar alturas */}
       {/* ================================================================ */}
@@ -286,6 +275,8 @@ export default function PuppiesGrid() {
     </section>
   );
 }
+
+
 
 
 
