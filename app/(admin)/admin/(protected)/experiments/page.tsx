@@ -1,7 +1,7 @@
 "use client";
 
+import { Beaker, Play, Pause, TrendingUp, Target, CheckCircle } from "lucide-react";
 import { useState } from "react";
-import { Beaker, Play, Pause, TrendingUp, Users, Target, CheckCircle, XCircle } from "lucide-react";
 
 interface Experiment {
   id: string;

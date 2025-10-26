@@ -1,10 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { Search, FileText, Bot, ArrowRight, CheckCircle, AlertCircle, TrendingUp } from "lucide-react";
+import { Search, FileText, Bot, ArrowRight, AlertCircle, TrendingUp } from "lucide-react";
+import { useEffect, useState } from "react";
+
+type RedirectItem = { id?: string; from_path: string; to_url: string; code?: number; hits?: number };
 
 export default function SeoHub() {
   const [activeTab, setActiveTab] = useState<"audit" | "sitemap" | "robots" | "redirects">("audit");
+  const [redirects, setRedirects] = useState<RedirectItem[]>([]);
+  const [loadingRedirects, setLoadingRedirects] = useState(false);
 
   const seoMetrics = {
     score: 87,
@@ -21,10 +25,51 @@ export default function SeoHub() {
     { type: "warning", page: "/blog", issue: "Meta description muito curta", priority: "Baixa" },
   ];
 
-  const redirects = [
-    { from: "/old-page", to: "/new-page", status: 301, hits: 450 },
-    { from: "/blog/archived", to: "/blog", status: 302, hits: 120 },
-  ];
+  useEffect(() => {
+    if (activeTab !== "redirects") return;
+    const load = async () => {
+      setLoadingRedirects(true);
+      try {
+        const res = await fetch("/api/admin/seo/redirects", { cache: "no-store" });
+        const json = await res.json();
+        const items = json.items || [];
+        type Raw = Record<string, unknown>;
+        const mapped: RedirectItem[] = (items as Raw[]).map((r) => ({
+          id: r["id"] as string | undefined,
+          from_path: (r["from_path"] as string) || (r["from"] as string),
+          to_url: (r["to_url"] as string) || (r["to"] as string),
+          code: (r["code"] as number) || (r["status"] as number) || 301,
+          hits: (r["hits"] as number) || 0,
+        }));
+        setRedirects(mapped);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoadingRedirects(false);
+      }
+    };
+    load();
+  }, [activeTab]);
+
+  const createRedirect = async () => {
+    const from = prompt("De (ex.: /old-page)")?.trim();
+    if (!from) return;
+    const to = prompt("Para (URL ou path ex.: /new-page)")?.trim();
+    if (!to) return;
+    const code = Number(prompt("Status (301 ou 302)") || 301);
+    try {
+      const res = await fetch("/api/admin/seo/redirects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ from_path: from, to_url: to, code }),
+      });
+      const json = await res.json();
+      const r = json.item;
+      if (r) setRedirects((prev) => [{ id: r.id, from_path: r.from_path, to_url: r.to_url, code: r.code, hits: r.hits || 0 }, ...prev]);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   return (
     <div className="mx-auto max-w-7xl space-y-8 p-6">
@@ -89,7 +134,7 @@ export default function SeoHub() {
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
+                  onClick={() => setActiveTab(tab.id as "audit" | "sitemap" | "robots" | "redirects")}
                   className={`flex items-center gap-2 border-b-2 px-4 py-4 text-sm font-medium transition ${
                     activeTab === tab.id
                       ? "border-emerald-600 text-emerald-900"
@@ -183,29 +228,31 @@ export default function SeoHub() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-emerald-900">Redirects (301/302)</h3>
-                <button className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700">
+                <button onClick={createRedirect} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700">
                   Novo Redirect
                 </button>
               </div>
               <div className="space-y-2">
-                {redirects.map((redirect, index) => (
+                {loadingRedirects ? (
+                  <div className="p-4 text-sm text-emerald-700">Carregando…</div>
+                ) : redirects.length === 0 ? (
+                  <div className="p-4 text-sm text-emerald-700">Nenhum redirect</div>
+                ) : (
+                  redirects.map((redirect, index) => (
                   <div
                     key={index}
                     className="flex items-center gap-4 rounded-lg border border-emerald-100 bg-white p-4"
                   >
-                    <code className="flex-1 text-sm font-mono text-emerald-900">
-                      {redirect.from}
-                    </code>
+                    <code className="flex-1 text-sm font-mono text-emerald-900">{redirect.from_path}</code>
                     <ArrowRight className="h-4 w-4 text-emerald-600" />
-                    <code className="flex-1 text-sm font-mono text-emerald-900">
-                      {redirect.to}
-                    </code>
+                    <code className="flex-1 text-sm font-mono text-emerald-900">{redirect.to_url}</code>
                     <span className="rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700">
-                      {redirect.status}
+                      {redirect.code}
                     </span>
-                    <span className="text-sm text-emerald-600">{redirect.hits} hits</span>
+                    <span className="text-sm text-emerald-600">{redirect.hits ?? 0} hits</span>
                   </div>
-                ))}
+                ))
+                )}
               </div>
             </div>
           )}
