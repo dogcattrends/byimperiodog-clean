@@ -100,7 +100,7 @@ export async function POST(req: Request) {
     }
 
     if (existing) {
-      await blogRepo.recordRevision(existing.id, existing as Record<string, unknown>, "manual-update");
+      await blogRepo.recordRevision(existing.id, existing as unknown as Record<string, unknown>, "manual-update");
     }
 
     const saved = await blogRepo.upsertPost({

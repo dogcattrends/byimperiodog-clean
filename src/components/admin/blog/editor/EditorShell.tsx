@@ -14,7 +14,6 @@ import { cn } from "@/lib/cn";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { VersionsPanel } from "@/components/admin/blog/VersionsPanel";
 
 interface EditorShellProps {
   initial?: Post | null;
@@ -108,7 +107,7 @@ export default function EditorShell({ initial }: EditorShellProps) {
   const [saveMessage, setSaveMessage] = useState<string>("Nenhuma alteração.");
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(initial?.updatedAt ?? null);
   const [autosaveError, setAutosaveError] = useState<string | null>(null);
-  const [tagInput, setTagInput] = useState<string>(defaultValues.tags.join(", "));
+  const [tagInput, setTagInput] = useState<string>((defaultValues.tags || []).join(", "));
   const slugManuallyEdited = useRef<boolean>(false);
   const autosaveTimer = useRef<NodeJS.Timeout | null>(null);
 
@@ -132,7 +131,7 @@ export default function EditorShell({ initial }: EditorShellProps) {
 
   useEffect(() => {
     reset(defaultValues, { keepDirty: false, keepErrors: false });
-    setTagInput(defaultValues.tags.join(", "));
+    setTagInput((defaultValues.tags || []).join(", "));
     slugManuallyEdited.current = Boolean(defaultValues.slug);
     setLastSavedAt(initial?.updatedAt ?? null);
     setSaveState("idle");
@@ -483,8 +482,6 @@ export default function EditorShell({ initial }: EditorShellProps) {
             </div>
           </dl>
         </div>
-
-        <VersionsPanel postId={watchedId} />
 
         <div className="rounded-2xl border border-emerald-100 bg-white p-5 text-sm text-emerald-700 shadow-sm">
           <Wand2 className="mb-2 h-4 w-4" aria-hidden />
