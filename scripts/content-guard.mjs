@@ -14,42 +14,83 @@ const files =
         .map((line) => line.trim())
         .filter(Boolean);
 
-const bannedPattern = /\b(ado[cç]ão|doa[cç]ão|boutique)\b/i;
-const breedPattern = /Spitz\s+Alem[aã]o(?:\s+An[aã]o)?/gi;
-const requiredPhrase = /Lulu (?:da )?Pomer[aâ]nia/i;
+const EXTENSIONS = /\.(mdx?|tsx?)$/;
+const SKIP_PATTERNS = [
+  /^app\/\(admin\)/,
+  /^app\/api/,
+  /^archive_routes\//,
+  /^docs\//,
+  /^node_modules\//,
+  /^tests\//,
+  /^\.contentlayer\//,
+  /^src\//,
+  /^README.*\.md$/i,
+];
+
+const PUBLIC_APP_ALLOWLIST =
+  /^app\/(blog|page\.tsx|sobre|contato|filhotes|faq-do-tutor|politica-de-privacidade|termos-de-uso)/;
+
+const BANNED_TERMS = ["adocao", "doacao", "boutique"];
+const BREED_PATTERN = /spitz\s+alem[ãa]o(?:\s+an[ãa]o)?/gi;
+const LULU_PATTERN = /lulu\s+da\s+pomer[ãa]nia/gi;
+const CERNELHA_PATTERN = /cernelha/gi;
 
 const violations = [];
 
 for (const file of files) {
-  // Ignorar arquivos não relevantes
-  if (!file.match(/\.(ts|tsx|md|mdx)$/)) continue;
-  
-  // Ignorar pastas: admin, api, tests, docs, archive_routes, src/ (código interno)
-  if (file.match(/^(app\/\(admin\)|app\/api|tests|docs|archive_routes|src\/|\.contentlayer|node_modules|README.*\.md$)/)) continue;
-  
-  // Apenas scanear: app/blog/*, app/page.tsx, app/sobre, app/contato, app/filhotes, content/*
-  if (!file.match(/^(app\/(blog|page\.tsx|sobre|contato|filhotes|faq-do-tutor|politica-de-privacidade|termos-de-uso)|content\/)/)) continue;
+  if (!EXTENSIONS.test(file)) continue;
+  if (SKIP_PATTERNS.some((pattern) => pattern.test(file))) continue;
+  if (file.startsWith("app/") && !PUBLIC_APP_ALLOWLIST.test(file)) continue;
+  if (!file.startsWith("app/") && !file.startsWith("content/")) continue;
 
-  const content = readFileSync(resolve(process.cwd(), file), "utf8");
+  const absolutePath = resolve(process.cwd(), file);
+  const raw = readFileSync(absolutePath, "utf8");
+  const normalized = normalize(raw);
 
-  if (bannedPattern.test(content)) {
-    violations.push(`${file}: contém termos proibidos (adoção/doação/boutique).`);
+  for (const term of BANNED_TERMS) {
+    if (new RegExp(`\\b${term}\\b`, "i").test(normalized)) {
+      violations.push(`${file}: contém termo proibido "${term}".`);
+    }
   }
 
-  const matches = [...content.matchAll(breedPattern)];
-  for (const match of matches) {
-    const start = Math.max(0, (match.index ?? 0) - 100);
-    const end = (match.index ?? 0) + match[0].length + 100;
-    const window = content.slice(start, end);
-    if (!requiredPhrase.test(window)) {
-      violations.push(`${file}: menciona "${match[0]}" sem "Lulu da Pomerânia" no mesmo contexto.`);
+  for (const match of raw.matchAll(BREED_PATTERN)) {
+    const index = match.index ?? 0;
+    const context = raw.slice(
+      Math.max(0, index - 140),
+      index + match[0].length + 140
+    );
+    const contextNormalized = normalize(context);
+    if (!/lulu\s+da\s+pomerania/i.test(contextNormalized)) {
+      violations.push(
+        `${file}: "${match[0]}" precisa incluir "Lulu da Pomerânia" no mesmo trecho.`
+      );
+    }
+  }
+
+  for (const match of raw.matchAll(CERNELHA_PATTERN)) {
+    const index = match.index ?? 0;
+    const slice = raw.slice(index, index + match[0].length + 20);
+    if (!/cernelha\s*\(altura\)/i.test(slice)) {
+      violations.push(`${file}: use "cernelha (altura)" exatamente nessa forma.`);
     }
   }
 }
 
 if (violations.length) {
-  console.error("❌ Content guard falhou:\n" + violations.map((v) => ` - ${v}`).join("\n"));
+  console.error(
+    [
+      "❌ Content guard falhou:",
+      ...violations.map((entry) => ` - ${entry}`),
+    ].join("\n")
+  );
   process.exit(1);
 }
 
 process.stdout.write("✅ Content guard aprovado.\n");
+
+function normalize(text) {
+  return text
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase();
+}

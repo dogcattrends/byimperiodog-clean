@@ -184,7 +184,7 @@ export default function PuppiesGrid() {
       const cSel = color.toLowerCase();
       arr = arr.filter(p => String(p.cor || p.color || '').toLowerCase() === cSel);
     }
-  return arr;
+    return arr;
   }, [items, q, gender, status, color]);
 
   // Handlers que usam transicao para evitar travar digitacao
@@ -233,24 +233,16 @@ export default function PuppiesGrid() {
         </div>
       )}
 
-      {stories.length > 0 && (
-        <StoriesBar
-          stories={stories}
-          className="-mx-4 mt-6 max-w-full sm:-mx-6 lg:-mx-8"
-          ariaLabel="Pre-visualizacao em stories dos filhotes"
-          onStoryOpen={(story, index) => {
-            track.event?.("stories_open", { puppy_id: story.id, index });
-          }}
-        />
-      )}
-
+      {/* Carregando */}
       {loading && (
         <p className="py-4 text-center text-sm text-[var(--text-muted)] animate-pulse">
           Procurando os filhotes mais fofos...
         </p>
       )}
 
-      <div className="grid auto-rows-fr grid-cols-1 gap-6 py-6 sm:grid-cols-2 xl:grid-cols-3" aria-busy={loading || undefined} aria-live="polite">
+      {/* ================================================================ */}
+      {/* GRID OTIMIZADO: auto-rows-fr para equalizar alturas */}
+      {/* ================================================================ */}
       <div className="grid auto-rows-fr grid-cols-1 gap-6 py-6 sm:grid-cols-2 xl:grid-cols-3" aria-busy={loading || undefined} aria-live="polite">
         {loading
           ? Array.from({ length: 6 }).map((_, i) => (
@@ -277,9 +269,6 @@ export default function PuppiesGrid() {
       {openId && (
         <PuppyDetailsModal id={openId} onClose={() => setOpenId(null)} />
       )}
-
-      {/* Stories fullscreen */}
-
     </section>
   );
 }

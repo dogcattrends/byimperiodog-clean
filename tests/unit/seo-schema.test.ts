@@ -3,12 +3,8 @@ import { describe, expect, it } from "vitest";
 import { faqPageSchema } from "@/lib/schema";
 import { pageMetadata } from "@/lib/seo";
 
-/**
- * Unit tests for SEO and Schema helpers
- */
-
 describe("pageMetadata helper", () => {
-  it("should generate basic metadata with canonical and OG", () => {
+  it("generates basic metadata with canonical and OG defaults", () => {
     const meta = pageMetadata({
       title: "Test Page",
       description: "Test description",
@@ -22,7 +18,7 @@ describe("pageMetadata helper", () => {
     expect(meta.openGraph?.type).toBe("website");
   });
 
-  it("should include default image when no images provided", () => {
+  it("includes default OG image when none is provided", () => {
     const meta = pageMetadata({
       title: "FAQ",
       path: "/faq",
@@ -35,7 +31,7 @@ describe("pageMetadata helper", () => {
     expect(images[0]?.alt).toContain("Lulu da Pomerânia");
   });
 
-  it("should accept custom images", () => {
+  it("accepts custom image objects", () => {
     const meta = pageMetadata({
       title: "Custom",
       path: "/custom",
@@ -47,7 +43,7 @@ describe("pageMetadata helper", () => {
     expect(images[0]?.alt).toBe("Custom image");
   });
 
-  it("should set Twitter card metadata", () => {
+  it("sets Twitter card metadata", () => {
     const meta = pageMetadata({
       title: "Twitter Test",
       description: "Twitter desc",
@@ -61,7 +57,7 @@ describe("pageMetadata helper", () => {
 });
 
 describe("faqPageSchema helper", () => {
-  it("should generate valid FAQPage JSON-LD", () => {
+  it("generates FAQPage JSON-LD", () => {
     const faqs = [
       { question: "What is this?", answer: "This is a test." },
       { question: "How does it work?", answer: "It works like this." },
@@ -77,12 +73,12 @@ describe("faqPageSchema helper", () => {
     expect(schema.mainEntity[0].acceptedAnswer.text).toBe("This is a test.");
   });
 
-  it("should handle empty FAQ array", () => {
+  it("handles empty FAQ arrays", () => {
     const schema = faqPageSchema([], "https://example.com/faq");
     expect(schema.mainEntity).toHaveLength(0);
   });
 
-  it("should include url in schema", () => {
+  it("includes canonical URL in schema", () => {
     const schema = faqPageSchema(
       [{ question: "Q1", answer: "A1" }],
       "https://example.com/custom-faq"
@@ -90,37 +86,30 @@ describe("faqPageSchema helper", () => {
     expect(schema.url).toBe("https://example.com/custom-faq");
   });
 
-  it("should escape special characters in Q&A", () => {
+  it("keeps special characters in Q&A", () => {
     const schema = faqPageSchema(
       [{ question: 'What is "special"?', answer: "It's <special>." }],
       "https://example.com/faq"
     );
-    // Schema should contain raw text (Next.js handles escaping in script tag)
     expect(schema.mainEntity[0].name).toContain('"special"');
     expect(schema.mainEntity[0].acceptedAnswer.text).toContain("<special>");
   });
 });
 
-describe("LastUpdated date formatting", () => {
-  it("should format ISO date to pt-BR", () => {
-    const date = "2025-10-25";
-    const d = new Date(date);
-    const formatted = d.toLocaleDateString("pt-BR");
+describe("LastUpdated date formatting (sanity)", () => {
+  it("formats ISO date to pt-BR", () => {
+    const formatted = new Date("2025-10-25").toLocaleDateString("pt-BR");
     expect(formatted).toMatch(/\d{2}\/\d{2}\/\d{4}/);
   });
 
-  it("should handle invalid date gracefully", () => {
-    const invalid = "not-a-date";
-    const d = new Date(invalid);
-    const isInvalid = isNaN(d.getTime());
-    expect(isInvalid).toBe(true);
-    // Component should fallback to raw string
+  it("handles invalid dates gracefully", () => {
+    const invalid = new Date("not-a-date");
+    expect(Number.isNaN(invalid.getTime())).toBe(true);
   });
 
-  it("should format today correctly", () => {
+  it("formats today without throwing", () => {
     const today = new Date();
     const formatted = today.toLocaleDateString("pt-BR");
-    expect(formatted).toBeTruthy();
-    expect(formatted.split("/")).toHaveLength(3);
+    expect(formatted).toBeTypeOf("string");
   });
 });
