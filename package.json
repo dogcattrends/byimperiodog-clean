@@ -22,6 +22,8 @@
     "build:search-index": "tsx scripts/build-search-index.ts",
     "fix:encoding:dry": "node scripts/fix-encoding.mjs --dry",
     "fix:encoding": "node scripts/fix-encoding.mjs --write",
+    "db:fix-mojibake": "tsx scripts/fix-mojibake.ts",
+    "db:fix-mojibake:write": "tsx scripts/fix-mojibake.ts --write",
     "a11y:contrast": "node scripts/a11y-contrast.mjs",
     "check:banned-words": "node scripts/check-banned-words.mjs",
     "test": "vitest --run",
