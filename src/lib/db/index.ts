@@ -3,6 +3,7 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 import type {
   AnalyticsEvent,
+  BlogBulkResult,
   Comment,
   Experiment,
   ListParams,
@@ -610,8 +611,8 @@ export const blogRepo = {
     }
     const ids = base.items.map((post) => post.id).filter(Boolean);
     const [metricsMap, commentsMap] = await Promise.all([
-      params?.includeMetrics ? fetchPostMetrics(client, ids) : Promise.resolve({}),
-      params?.includePendingComments ? fetchPendingComments(client, ids) : Promise.resolve({}),
+      params?.includeMetrics ? fetchPostMetrics(client, ids) : Promise.resolve({} as Record<string, PostMetrics>),
+      params?.includePendingComments ? fetchPendingComments(client, ids) : Promise.resolve({} as Record<string, number>),
     ]);
     const items = base.items.map((post) => ({
       ...post,

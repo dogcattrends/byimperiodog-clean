@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
+import { VersionsPanel } from "@/components/admin/blog/VersionsPanel";
 import CoverUploader from "@/components/media/CoverUploader";
 import InlineImagePicker, { type InlineImage } from "@/components/media/InlineImagePicker";
 import { Button } from "@/components/ui/button";
@@ -518,6 +519,8 @@ export default function EditorShell({ initial, onSave, aiEndpoint = "/api/admin/
       </section>
 
       <aside className="space-y-4">
+        <VersionsPanel postId={getValues("id")} />
+
         <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
           <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold">
             <Sparkles className="h-4 w-4 text-[var(--accent)]" aria-hidden /> Ferramentas IA
