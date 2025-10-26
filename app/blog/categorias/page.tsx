@@ -45,7 +45,7 @@ export default async function BlogCategoriasPage() {
       <SeoJsonLd data={jsonLd} />
       <header className="mb-8">
         <h1 className="text-3xl font-extrabold leading-tight">Categorias do Blog</h1>
-        <p className="mt-1 text-zinc-600 max-w-2xl">Agrupamentos temáticos para você explorar conteúdos sobre saúde, nutrição, cuidados, temperamento e mais do Spitz Alemão.</p>
+        <p className="mt-1 text-zinc-600 max-w-2xl">Agrupamentos temáticos para você explorar conteúdos sobre saúde, nutrição, cuidados, temperamento e mais do Spitz Alemão Anão (Lulu da Pomerânia).</p>
       </header>
       {categories.length === 0 ? (
         <p className="text-zinc-600">Nenhuma categoria cadastrada.</p>

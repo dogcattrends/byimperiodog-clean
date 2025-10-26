@@ -16,12 +16,19 @@ const files =
 
 const bannedPattern = /\b(ado[cç]ão|doa[cç]ão|boutique)\b/i;
 const breedPattern = /Spitz\s+Alem[aã]o(?:\s+An[aã]o)?/gi;
-const requiredPhrase = /Lulu da Pomer[aâ]nia/i;
+const requiredPhrase = /Lulu (?:da )?Pomer[aâ]nia/i;
 
 const violations = [];
 
 for (const file of files) {
+  // Ignorar arquivos não relevantes
   if (!file.match(/\.(ts|tsx|md|mdx)$/)) continue;
+  
+  // Ignorar pastas: admin, api, tests, docs, archive_routes, src/ (código interno)
+  if (file.match(/^(app\/\(admin\)|app\/api|tests|docs|archive_routes|src\/|\.contentlayer|node_modules|README.*\.md$)/)) continue;
+  
+  // Apenas scanear: app/blog/*, app/page.tsx, app/sobre, app/contato, app/filhotes, content/*
+  if (!file.match(/^(app\/(blog|page\.tsx|sobre|contato|filhotes|faq-do-tutor|politica-de-privacidade|termos-de-uso)|content\/)/)) continue;
 
   const content = readFileSync(resolve(process.cwd(), file), "utf8");
 

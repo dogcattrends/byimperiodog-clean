@@ -188,10 +188,9 @@ export default function Testimonials({
                     alt={altFor(current, index)}
                     fill
                     className={cn('will-change-transform', fit === 'contain' ? 'object-contain p-2' : 'object-cover')}
-                    sizes="(max-width: 768px) 90vw, 640px"
+                    sizes="(max-width: 768px) 90vw, (max-width: 1280px) 50vw, 640px"
                     placeholder="blur"
                     blurDataURL={BLUR}
-                    unoptimized
                   />
                   <figcaption className="pointer-events-none absolute bottom-2 left-2 rounded-md bg-black/55 text-white text-[11px] px-2 py-1 backdrop-blur-sm shadow-sm">
                     {city}

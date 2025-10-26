@@ -20,7 +20,7 @@ const nextConfig = {
   },
   
   // ============================================================================
-  // PERFORMANCE: Images optimization (AVIF/WebP automático)
+  // PERFORMANCE: Images optimization (AVIF/WebP automï¿½tico)
   // ============================================================================
   images: {
     formats: ["image/avif", "image/webp"],
@@ -36,7 +36,7 @@ const nextConfig = {
   },
   
   // ============================================================================
-  // PERFORMANCE: Headers (Cache-Control para assets estáticos)
+  // PERFORMANCE: Headers (Cache-Control para assets estï¿½ticos)
   // ============================================================================
   async headers() {
     return [
@@ -55,6 +55,15 @@ const nextConfig = {
           {
             key: "Cache-Control",
             value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      {
+        source: "/_next/image:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=604800, stale-while-revalidate=86400",
           },
         ],
       },

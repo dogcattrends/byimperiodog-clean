@@ -1,7 +1,6 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
 type TocItem = {
   id: string;
@@ -10,37 +9,12 @@ type TocItem = {
 };
 
 interface TOCProps {
-  items?: TocItem[];
-  containerId?: string;
+  items: TocItem[];
   className?: string;
   title?: string;
 }
 
-export function TOC({ items: propItems, containerId, className, title = "Sumário" }: TOCProps) {
-  const [extractedItems, setExtractedItems] = useState<TocItem[]>([]);
-
-  useEffect(() => {
-    if (!containerId) return;
-
-    const container = document.getElementById(containerId);
-    if (!container) return;
-
-    const headings = container.querySelectorAll("h2, h3");
-    const items: TocItem[] = Array.from(headings).map((h) => {
-      const id = h.id || h.textContent?.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || "";
-      if (!h.id) h.id = id;
-      return {
-        id,
-        label: h.textContent || "",
-        level: h.tagName === "H3" ? 2 : 1,
-      };
-    });
-
-    setExtractedItems(items);
-  }, [containerId]);
-
-  const items = propItems || extractedItems;
-
+export function TOC({ items, className, title = "Sumário" }: TOCProps) {
   if (!items.length) return null;
 
   return (
@@ -63,3 +37,4 @@ export function TOC({ items: propItems, containerId, className, title = "Sumári
 }
 
 export default TOC;
+
