@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 
@@ -104,7 +104,7 @@ export default function PuppiesGrid() {
   //           {
   //             id: `${puppy.id}-cover`,
   //             title,
-  //             description: `${title}: Spitz Alemão Lulu da Pomerânia com até 22 cm de altura, acompanhado pela By Império Dog.`,
+  //             description: `${title}: Spitz AlemÃ£o Lulu da PomerÃ¢nia com atÃ© 22 cm de altura, acompanhado pela By ImpÃ©rio Dog.`,
   //             imageUrl: cover,
   //           },
   //         ],
@@ -233,16 +233,24 @@ export default function PuppiesGrid() {
         </div>
       )}
 
-      {/* Carregando */}
+      {stories.length > 0 && (
+        <StoriesBar
+          stories={stories}
+          className="-mx-4 mt-6 max-w-full sm:-mx-6 lg:-mx-8"
+          ariaLabel="Pre-visualizacao em stories dos filhotes"
+          onStoryOpen={(story, index) => {
+            track.event?.("stories_open", { puppy_id: story.id, index });
+          }}
+        />
+      )}
+
       {loading && (
         <p className="py-4 text-center text-sm text-[var(--text-muted)] animate-pulse">
           Procurando os filhotes mais fofos...
         </p>
       )}
 
-      {/* ================================================================ */}
-      {/* GRID OTIMIZADO: auto-rows-fr para equalizar alturas */}
-      {/* ================================================================ */}
+      <div className="grid auto-rows-fr grid-cols-1 gap-6 py-6 sm:grid-cols-2 xl:grid-cols-3" aria-busy={loading || undefined} aria-live="polite">
       <div className="grid auto-rows-fr grid-cols-1 gap-6 py-6 sm:grid-cols-2 xl:grid-cols-3" aria-busy={loading || undefined} aria-live="polite">
         {loading
           ? Array.from({ length: 6 }).map((_, i) => (
@@ -275,6 +283,7 @@ export default function PuppiesGrid() {
     </section>
   );
 }
+
 
 
 
