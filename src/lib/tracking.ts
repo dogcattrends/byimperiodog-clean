@@ -23,7 +23,10 @@ export interface TrackingIDs {
 
 function norm(v: unknown): string {
   if (!v) return "";
-  return String(v).trim();
+  const str = String(v).trim();
+  // Rejeita placeholders comuns
+  if (/^(GTM-X+|G-X+|UA-X+|X+|xxx+|NaN|undefined|null)$/i.test(str)) return "";
+  return str;
 }
 
 export function resolveTracking(settings: Record<string, unknown> | null | undefined, env = process.env): TrackingIDs {

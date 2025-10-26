@@ -1,90 +1,48 @@
 #!/usr/bin/env node
-import fs from 'fs';
-import path from 'path';
 
-const ROOT = process.cwd();
-// Scope guard to public-facing content only for now
-// We intentionally exclude admin, api and docs to avoid false positives in code and documentation.
-const GLOB_DIRS = [
-  'app', 'content'
-];
-const EXTS = ['.ts', '.tsx', '.md', '.mdx', '.js', '.jsx', '.html', '.txt'];
+import { execSync } from "node:child_process";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 
-const banned = /(\badoç[aã]o\b|\bdoaç[aã]o\b|\bboutique\b)/i;
-// Spitz rule (phase 1): when mentioning "Spitz Alemão Anão", require "Lulu da Pomerânia" in same or next line
-// This avoids flagging generic mentions like just "Spitz Alemão" and focuses on the specific variant we use in site copy.
-const spitzPattern = /(spitz\s+alem[aã]o\s+an[aã]o)/i;
-const luluPattern = /(lulu\s+da\s+pomer[aâ]nia)/i;
+const targets = process.argv.slice(2);
 
-let violations = [];
+const files =
+  targets.length > 0
+    ? targets
+    : execSync("git ls-files", { encoding: "utf8" })
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean);
 
-function isIgnoredPath(p) {
-  const normalized = p.replace(/\\/g, '/');
-  // Ignore admin and API routes and documentation
-  if (/\/\(admin\)\//.test(normalized)) return true;
-  if (/\/api\//.test(normalized)) return true;
-  if (/\/docs\//.test(normalized)) return true;
-  if (/\/tests?\//.test(normalized)) return true;
-  if (/\/test-results\//.test(normalized)) return true;
-  if (/\/archive_routes\//.test(normalized)) return true;
-  return false;
-}
+const bannedPattern = /\b(ado[cç]ão|doa[cç]ão|boutique)\b/i;
+const breedPattern = /Spitz\s+Alem[aã]o(?:\s+An[aã]o)?/gi;
+const requiredPhrase = /Lulu da Pomer[aâ]nia/i;
 
-function scanFile(file) {
-  const content = fs.readFileSync(file, 'utf8');
-  const lines = content.split(/\r?\n/);
-  // Detect and mark YAML frontmatter boundaries for md/mdx to avoid flagging tags/metadata
-  let inFrontmatter = false;
-  lines.forEach((line, idx) => {
-    const ext = path.extname(file).toLowerCase();
-    if ((ext === '.md' || ext === '.mdx') && line.trim() === '---') {
-      inFrontmatter = !inFrontmatter;
-    }
+const violations = [];
 
-    if (banned.test(line)) {
-      violations.push({ file, line: idx + 1, msg: 'Termo proibido encontrado (adoção|doação|boutique).', excerpt: line.trim() });
-    }
-    // Skip pairing checks within frontmatter blocks to avoid flagging tag arrays/metadata
-    if (inFrontmatter) return;
+for (const file of files) {
+  if (!file.match(/\.(ts|tsx|md|mdx)$/)) continue;
 
-    const hasSpitz = spitzPattern.test(line);
-    if (hasSpitz) {
-      if (!luluPattern.test(line)) {
-        // try a small window (same paragraph) by joining next 1 line
-        const next = lines[idx + 1] || '';
-        if (!luluPattern.test(next)) {
-          violations.push({ file, line: idx + 1, msg: 'Uso de "Spitz Alemão" deve acompanhar "Lulu da Pomerânia" no mesmo bloco.', excerpt: line.trim() });
-        }
-      }
-    }
-  });
-}
+  const content = readFileSync(resolve(process.cwd(), file), "utf8");
 
-function walk(dir) {
-  const abs = path.join(ROOT, dir);
-  if (!fs.existsSync(abs)) return;
-  for (const entry of fs.readdirSync(abs, { withFileTypes: true })) {
-    const p = path.join(abs, entry.name);
-    if (entry.isDirectory()) {
-      walk(path.join(dir, entry.name));
-    } else if (EXTS.includes(path.extname(entry.name).toLowerCase())) {
-      if (!isIgnoredPath(p)) scanFile(p);
+  if (bannedPattern.test(content)) {
+    violations.push(`${file}: contém termos proibidos (adoção/doação/boutique).`);
+  }
+
+  const matches = [...content.matchAll(breedPattern)];
+  for (const match of matches) {
+    const start = Math.max(0, (match.index ?? 0) - 100);
+    const end = (match.index ?? 0) + match[0].length + 100;
+    const window = content.slice(start, end);
+    if (!requiredPhrase.test(window)) {
+      violations.push(`${file}: menciona "${match[0]}" sem "Lulu da Pomerânia" no mesmo contexto.`);
     }
   }
 }
-
-for (const d of GLOB_DIRS) walk(d);
 
 if (violations.length) {
-  // eslint-disable-next-line no-console
-  console.error('\
-[content-guard] Violations found:');
-  for (const v of violations) {
-    // eslint-disable-next-line no-console
-    console.error(`- ${v.file}:${v.line} — ${v.msg}\n  ${v.excerpt}`);
-  }
+  console.error("❌ Content guard falhou:\n" + violations.map((v) => ` - ${v}`).join("\n"));
   process.exit(1);
-} else {
-  // eslint-disable-next-line no-console
-  console.log('[content-guard] OK');
 }
+
+console.log("✅ Content guard aprovado.");

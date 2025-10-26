@@ -1,4 +1,5 @@
 import Script from "next/script";
+
 import type { SiteSettings } from "@/lib/getSettings";
 
 type Props = { settings: SiteSettings };
@@ -126,7 +127,7 @@ export default function MarketingPixels({ settings }: Props) {
       )}
 
       {/* ================= Hotjar ========================================== */}
-      {HJ_ID && (
+      {HJ_ID && !isNaN(Number(HJ_ID)) && (
         <Script id="hotjar" strategy="afterInteractive">
           {`
             (function(h,o,t,j,a,r){

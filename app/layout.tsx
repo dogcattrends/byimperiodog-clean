@@ -235,7 +235,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         )}
 
         {/* Hotjar */}
-        {!isAdminRoute && HOTJAR_ID && (
+        {!isAdminRoute && HOTJAR_ID && !isNaN(Number(HOTJAR_ID)) && (
           <Script id="hotjar" strategy="afterInteractive">{`
             (function(h,o,t,j,a,r){ h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
             h._hjSettings={hjid:${Number(HOTJAR_ID)},hjsv:6}; a=o.getElementsByTagName('head')[0];

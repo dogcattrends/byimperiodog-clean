@@ -1,62 +1,75 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
-import LastUpdated from "@/components/common/LastUpdated";
-import TOC from "@/components/common/TOC";
+import { LastUpdated } from "@/components/common/LastUpdated";
+import { TOC } from "@/components/common/TOC";
 import { pageMetadata } from "@/lib/seo";
 
-const UPDATED_AT = "2025-10-25";
+const path = "/termos-de-uso";
+const lastUpdated = "2025-10-18T09:00:00.000Z";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Termos de Uso | By Império Dog",
-  description: "Condições de uso do site, responsabilidades e limitações.",
-  path: "/termos-de-uso",
-});
+const tocItems = [
+  { id: "escopo", label: "Escopo dos serviços" },
+  { id: "limitacoes", label: "Limitações e responsabilidades" },
+  { id: "garantias", label: "Garantias e isenções" },
+  { id: "foro", label: "Foro aplicável" },
+];
+
+export function generateMetadata(): Metadata {
+  return pageMetadata({
+    title: "Termos de Uso | By Império Dog",
+    description:
+      "Condições de uso dos conteúdos e serviços consultivos da By Império Dog para tutores do Spitz Alemão Lulu da Pomerânia.",
+    path,
+  });
+}
 
 export default function TermosDeUsoPage() {
   return (
-    <main className="mx-auto max-w-3xl px-6 py-10 text-text">
-      <header className="mb-8">
-        <h1 className="text-3xl font-extrabold leading-tight">Termos de Uso</h1>
-        <LastUpdated date={UPDATED_AT} className="mt-1 text-textMuted" />
+    <main className="mx-auto max-w-4xl space-y-10 px-6 py-16 text-zinc-800">
+      <header className="space-y-3">
+        <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-600">Condições legais</p>
+        <h1 className="text-4xl font-bold text-zinc-900">Termos de Uso</h1>
+        <p className="text-lg text-zinc-600">
+          Estes termos regulam o acesso aos materiais, orientações personalizadas e serviços de suporte prestados pela By Império
+          Dog aos tutores do Spitz Alemão Lulu da Pomerânia.
+        </p>
       </header>
 
-      <div className="mb-8">
-        <TOC containerId="conteudo-termos" />
-      </div>
+      <TOC items={tocItems} />
 
-      <div id="conteudo-termos" className="prose prose-zinc max-w-none">
-        <section id="uso" className="mb-8">
-          <h2 className="text-xl font-semibold">1. Uso do site</h2>
-          <p className="mt-2">Este site tem caráter informativo e institucional. Ao navegar, você concorda em utilizar os recursos de boa-fé, sem práticas que possam comprometer sua segurança ou disponibilidade.</p>
-        </section>
+      <section id="escopo" className="space-y-2">
+        <h2 className="text-2xl font-semibold text-zinc-900">Escopo dos serviços</h2>
+        <p className="text-zinc-600">
+          Prestamos consultoria individual, materiais educativos, cronogramas de socialização e suporte remoto contínuo relacionados
+          ao Spitz Alemão Anão Lulu da Pomerânia. Nenhum conteúdo substitui avaliação presencial de profissionais habilitados.
+        </p>
+      </section>
 
-        <section id="conteudo" className="mb-8">
-          <h2 className="text-xl font-semibold">2. Conteúdo e direitos autorais</h2>
-          <p className="mt-2">Textos, imagens, logotipos e demais conteúdos publicados pertencem à By Império Dog ou a seus respectivos autores e são protegidos por direitos autorais. É proibida a reprodução não autorizada.</p>
-        </section>
+      <section id="limitacoes" className="space-y-2">
+        <h2 className="text-2xl font-semibold text-zinc-900">Limitações e responsabilidades</h2>
+        <p className="text-zinc-600">
+          O tutor é responsável por seguir protocolos veterinários, legislação local e orientações de segurança. A By Império Dog
+          não responde por danos decorrentes do uso indevido das informações disponibilizadas.
+        </p>
+      </section>
 
-        <section id="responsabilidades" className="mb-8">
-          <h2 className="text-xl font-semibold">3. Responsabilidades do usuário</h2>
-          <p className="mt-2">O usuário compromete-se a fornecer informações verdadeiras quando entrar em contato e a não utilizar o site para atividades ilegais, ofensivas ou que infrinjam direitos de terceiros.</p>
-        </section>
+      <section id="garantias" className="space-y-2">
+        <h2 className="text-2xl font-semibold text-zinc-900">Garantias e isenções</h2>
+        <p className="text-zinc-600">
+          Garantimos transparência documental, histórico de saúde, suporte técnico e acompanhamento em etapas críticas. Serviços
+          adicionais exigem aceite específico e podem ser ajustados conforme disponibilidade.
+        </p>
+      </section>
 
-        <section id="limitacoes" className="mb-8">
-          <h2 className="text-xl font-semibold">4. Limitações de responsabilidade</h2>
-          <p className="mt-2">Empregamos esforços razoáveis para manter o site disponível e atualizado, porém não garantimos funcionamento ininterrupto. O uso das informações aqui presentes é de responsabilidade do usuário.</p>
-        </section>
+      <section id="foro" className="space-y-2">
+        <h2 className="text-2xl font-semibold text-zinc-900">Foro aplicável</h2>
+        <p className="text-zinc-600">
+          Fica eleito o foro da comarca de Atibaia/SP para dirimir conflitos relacionados a estes Termos, com renúncia a qualquer
+          outro, por mais privilegiado que seja.
+        </p>
+      </section>
 
-        <section id="contato" className="mb-8">
-          <h2 className="text-xl font-semibold">5. Contato</h2>
-          <p className="mt-2">Para dúvidas sobre estes termos, fale conosco:</p>
-          <ul className="mt-2 list-disc pl-5">
-            <li>E‑mail: <a className="underline decoration-brand underline-offset-4 focus-visible:outline-none focus-ring" href="mailto:byimperiodog@gmail.com">byimperiodog@gmail.com</a></li>
-            <li>WhatsApp: <a className="underline decoration-brand underline-offset-4 focus-visible:outline-none focus-ring" href={(process.env.NEXT_PUBLIC_WA_LINK || "https://wa.me/5511999999999")} target="_blank" rel="noopener noreferrer">abrir conversa</a></li>
-          </ul>
-          <p className="mt-4 text-sm text-textMuted">Estes termos poderão ser atualizados para refletir alterações legais ou melhorias nos serviços.</p>
-          <p className="mt-1 text-sm"><Link href="/" className="underline decoration-brand underline-offset-4 focus-visible:outline-none focus-ring">Voltar para a página inicial</Link></p>
-        </section>
-      </div>
+      <LastUpdated buildTime={process.env.NEXT_PUBLIC_BUILD_TIME} contentTime={lastUpdated} />
     </main>
   );
 }

@@ -1,80 +1,85 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
-import LastUpdated from "@/components/common/LastUpdated";
-import TOC from "@/components/common/TOC";
+import { LastUpdated } from "@/components/common/LastUpdated";
+import { TOC } from "@/components/common/TOC";
 import { pageMetadata } from "@/lib/seo";
 
-const UPDATED_AT = "2025-10-25";
+const path = "/politica-de-privacidade";
+const lastUpdated = "2025-10-18T09:00:00.000Z";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Política de Privacidade | By Império Dog",
-  description: "Como tratamos dados pessoais de visitantes, leads e clientes (LGPD).",
-  path: "/politica-de-privacidade",
-});
+const tocItems = [
+  { id: "dados-coletados", label: "Dados coletados" },
+  { id: "finalidades", label: "Finalidades e base legal" },
+  { id: "retencao", label: "Retenção e segurança" },
+  { id: "direitos", label: "Direitos do titular" },
+  { id: "contato", label: "Contato do controlador" },
+];
+
+export function generateMetadata(): Metadata {
+  return pageMetadata({
+    title: "Política de Privacidade | By Império Dog",
+    description:
+      "Entenda como a By Império Dog trata os dados de tutores interessados no Spitz Alemão Lulu da Pomerânia: coleta, finalidade, retenção e direitos garantidos pela LGPD.",
+    path,
+  });
+}
 
 export default function PoliticaDePrivacidadePage() {
   return (
-    <main className="mx-auto max-w-3xl px-6 py-10 text-text">
-      <header className="mb-8">
-        <h1 className="text-3xl font-extrabold leading-tight">Política de Privacidade</h1>
-        <LastUpdated date={UPDATED_AT} className="mt-1 text-textMuted" />
+    <main className="mx-auto max-w-4xl space-y-10 px-6 py-16 text-zinc-800">
+      <header className="space-y-3">
+        <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-600">LGPD</p>
+        <h1 className="text-4xl font-bold text-zinc-900">Política de Privacidade</h1>
+        <p className="text-lg text-zinc-600">
+          A By Império Dog respeita sua privacidade e explica a seguir como tratamos dados pessoais durante o processo seletivo e
+          o suporte vitalício aos tutores do Spitz Alemão Lulu da Pomerânia.
+        </p>
       </header>
 
-      <div className="mb-8">
-        <TOC containerId="conteudo-legal" />
-      </div>
+      <TOC items={tocItems} />
 
-      <div id="conteudo-legal" className="prose prose-zinc max-w-none">
-        <section id="coleta" className="mb-8">
-          <h2 className="text-xl font-semibold">1. Dados que coletamos</h2>
-          <ul className="mt-2 list-disc space-y-1 pl-5">
-            <li>Identificação e contato: nome, e‑mail, WhatsApp/telefone e cidade/UF.</li>
-            <li>Preferências enviadas por você (ex.: interesse por filhote, sexo, cor).</li>
-            <li>Dados técnicos mínimos de navegação (ex.: IP encurtado, páginas acessadas), quando aplicável.</li>
-          </ul>
-        </section>
+      <section id="dados-coletados" className="space-y-2">
+        <h2 className="text-2xl font-semibold text-zinc-900">Dados coletados</h2>
+        <p className="text-zinc-600">
+          Coletamos nome, e-mail, telefone, preferências sobre o Spitz Alemão Anão Lulu da Pomerânia, endereço para logística,
+          histórico familiar relevante e informações fornecidas em formulários, videochamadas ou mensagens.
+        </p>
+      </section>
 
-        <section id="uso" className="mb-8">
-          <h2 className="text-xl font-semibold">2. Como usamos os dados</h2>
-          <ul className="mt-2 list-disc space-y-1 pl-5">
-            <li>Responder mensagens e solicitações enviadas por você.</li>
-            <li>Enviar propostas e informações sobre filhotes e disponibilidade.</li>
-            <li>Melhorar o conteúdo do site e a experiência de atendimento.</li>
-          </ul>
-        </section>
+      <section id="finalidades" className="space-y-2">
+        <h2 className="text-2xl font-semibold text-zinc-900">Finalidades e base legal</h2>
+        <p className="text-zinc-600">
+          Usamos os dados para avaliar compatibilidade, organizar visitas, enviar materiais educativos, cumprir obrigações
+          contratuais e oferecer suporte pós-entrega. As bases legais incluem execução de contrato (art. 7º, V) e legítimo
+          interesse, sempre com transparência e opção de revogação quando aplicável.
+        </p>
+      </section>
 
-        <section id="compartilhamento" className="mb-8">
-          <h2 className="text-xl font-semibold">3. Compartilhamento</h2>
-          <p className="mt-2">Não vendemos seus dados. Compartilhamos apenas com provedores essenciais (ex.: hospedagem, e‑mail, analytics), quando necessário para operar o site e prestar atendimento.</p>
-        </section>
+      <section id="retencao" className="space-y-2">
+        <h2 className="text-2xl font-semibold text-zinc-900">Retenção e segurança</h2>
+        <p className="text-zinc-600">
+          Mantemos registros apenas enquanto necessários ao relacionamento ativo ou conforme exigido por lei. Aplicamos controle
+          de acesso, criptografia em repouso, monitoração de logs e revisão periódica dos sistemas utilizados.
+        </p>
+      </section>
 
-        <section id="direitos" className="mb-8">
-          <h2 className="text-xl font-semibold">4. Seus direitos (LGPD)</h2>
-          <p className="mt-2">Você pode solicitar acesso, correção, exclusão, portabilidade e informações sobre compartilhamento dos seus dados, além de revogar consentimentos quando aplicável.</p>
-        </section>
+      <section id="direitos" className="space-y-2">
+        <h2 className="text-2xl font-semibold text-zinc-900">Direitos do titular</h2>
+        <p className="text-zinc-600">
+          Você pode solicitar confirmação de tratamento, acesso, correção, anonimização, portabilidade, revogação de consentimento
+          e eliminação. Respondemos gratuitamente em até 15 dias corridos, conforme a LGPD.
+        </p>
+      </section>
 
-        <section id="seguranca" className="mb-8">
-          <h2 className="text-xl font-semibold">5. Retenção e segurança</h2>
-          <p className="mt-2">Mantemos dados pelo tempo necessário ao atendimento e às obrigações legais. Adotamos medidas técnicas e organizacionais compatíveis com o porte do site.</p>
-        </section>
+      <section id="contato" className="space-y-2">
+        <h2 className="text-2xl font-semibold text-zinc-900">Contato do controlador</h2>
+        <p className="text-zinc-600">
+          Envie solicitações para <strong>privacidade@byimperiodog.com.br</strong> ou escreva para Rua Atibaia, 200 – Atibaia/SP,
+          CEP 12940-000. Ao contatar, informe seu nome completo e meio de comunicação utilizado.
+        </p>
+      </section>
 
-        <section id="cookies" className="mb-8">
-          <h2 className="text-xl font-semibold">6. Cookies e analytics</h2>
-          <p className="mt-2">Podemos usar cookies para lembrar preferências e mensurar audiência. Você pode gerenciar cookies nas configurações do seu navegador.</p>
-        </section>
-
-        <section id="contato" className="mb-8">
-          <h2 className="text-xl font-semibold">7. Contato do controlador</h2>
-          <ul className="mt-2 list-disc pl-5">
-            <li>E‑mail: <a className="underline decoration-brand underline-offset-4 focus-visible:outline-none focus-ring" href="mailto:byimperiodog@gmail.com">byimperiodog@gmail.com</a></li>
-            <li>WhatsApp: <a className="underline decoration-brand underline-offset-4 focus-visible:outline-none focus-ring" href={(process.env.NEXT_PUBLIC_WA_LINK || "https://wa.me/5511999999999") + `?text=${encodeURIComponent("Olá! Quero falar sobre dados pessoais (LGPD).")}`} target="_blank" rel="noopener noreferrer">abrir conversa</a></li>
-            <li>Endereço de atendimento: Bragança Paulista - SP</li>
-          </ul>
-          <p className="mt-4 text-sm text-textMuted">Esta política poderá ser atualizada para refletir melhorias de processos ou exigências legais.</p>
-          <p className="mt-1 text-sm"><Link href="/" className="underline decoration-brand underline-offset-4 focus-visible:outline-none focus-ring">Voltar para a página inicial</Link></p>
-        </section>
-      </div>
+      <LastUpdated buildTime={process.env.NEXT_PUBLIC_BUILD_TIME} contentTime={lastUpdated} />
     </main>
   );
 }

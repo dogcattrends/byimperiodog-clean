@@ -1,9 +1,10 @@
-﻿"use client";
+"use client";
 
 import { motion } from "framer-motion";
 import Link from "next/link";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
+import { LastUpdated } from "@/components/common/LastUpdated";
 import { ChartCard } from "@/components/dashboard/ChartCard";
 import { DataTable } from "@/components/dashboard/DataTable";
 import { FiltersBar, type DashboardFilters } from "@/components/dashboard/FiltersBar";
@@ -277,6 +278,21 @@ export default function AdminDashboard() {
   const [timeframe, setTimeframe] = useState<(typeof ranges)[number]>(30);
   const [streak, setStreak] = useState<AdminStreak>({ count: 0, lastLogin: null });
 
+  const buildTime = process.env.NEXT_PUBLIC_BUILD_TIME ?? null;
+  const lastContentUpdate = useMemo(() => {
+    const dates: string[] = [];
+    metrics?.latestPosts?.forEach((post) => {
+      if (post.published_at) dates.push(post.published_at);
+    });
+    metrics?.recentRevisions?.forEach((revision) => {
+      if (revision.created_at) dates.push(revision.created_at);
+    });
+    return dates.reduce<string | null>((acc, date) => {
+      if (!acc) return date;
+      return new Date(date) > new Date(acc) ? date : acc;
+    }, null);
+  }, [metrics?.latestPosts, metrics?.recentRevisions]);
+
   const load = useCallback(async (range: number) => {
     try {
       setLoading(true);
@@ -474,6 +490,14 @@ export default function AdminDashboard() {
                 </ul>
               </div>
             </div>
+          </motion.section>
+
+          <motion.section variants={childVariant} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <LastUpdated
+              className="lg:col-span-1 border-[var(--border)] bg-[var(--surface)] text-[var(--text)]"
+              buildTime={buildTime}
+              contentTime={lastContentUpdate}
+            />
           </motion.section>
 
           <motion.section variants={childVariant} className="grid gap-4 xl:grid-cols-4">
@@ -818,3 +842,5 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
+

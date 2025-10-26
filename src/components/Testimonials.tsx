@@ -225,7 +225,7 @@ export default function Testimonials({
                         active ? 'bg-emerald-500' : 'bg-[var(--border)] hover:bg-emerald-400/70'
                       )}
                     >
-                      <span className={cn('h-2.5 w-2.5 rounded-full', active ? 'h-3 w-6 bg-white' : 'bg-current')} aria-hidden="true" />
+                      <span className={cn('h-3 w-3 rounded-full', active ? 'h-4 w-8 bg-white' : 'bg-current')} aria-hidden="true" />
                     </button>
                   );
                 })}

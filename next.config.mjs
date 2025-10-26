@@ -1,7 +1,12 @@
-Ôªøimport { join } from "path";
+import { join } from "path";
+
+const buildTimestamp = process.env.NEXT_PUBLIC_BUILD_TIME || new Date().toISOString();
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  env: {
+    NEXT_PUBLIC_BUILD_TIME: buildTimestamp,
+  },
   // ============================================================================
   // PERFORMANCE: Bundle optimization & code splitting
   // ============================================================================
@@ -15,7 +20,7 @@ const nextConfig = {
   },
   
   // ============================================================================
-  // PERFORMANCE: Images optimization (AVIF/WebP autom√°tico)
+  // PERFORMANCE: Images optimization (AVIF/WebP autom·tico)
   // ============================================================================
   images: {
     formats: ["image/avif", "image/webp"],
@@ -31,7 +36,7 @@ const nextConfig = {
   },
   
   // ============================================================================
-  // PERFORMANCE: Headers (Cache-Control para assets est√°ticos)
+  // PERFORMANCE: Headers (Cache-Control para assets est·ticos)
   // ============================================================================
   async headers() {
     return [
@@ -65,3 +70,4 @@ const nextConfig = {
 };
 
 export default nextConfig;
+

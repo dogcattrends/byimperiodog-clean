@@ -29,14 +29,16 @@ export async function GET() {
       <link>${site}</link>
     </image>
     ${items
-      .map((p: any) => {
+      .map((p: Record<string, unknown>) => {
         const url = `${site}/blog/${p.slug}`;
-        const cats = (p.blog_post_categories||[]).map((c:any)=> c.blog_categories?.name).filter(Boolean) as string[];
-        const author = p.blog_authors?.name || 'By Imperio Dog';
+        const cats = ((p.blog_post_categories as Array<Record<string, unknown>>) || [])
+          .map((c: Record<string, unknown>) => (c.blog_categories as Record<string, unknown> | undefined)?.name)
+          .filter(Boolean) as string[];
+        const author = ((p.blog_authors as Record<string, unknown> | undefined)?.name as string | undefined) || 'By Imperio Dog';
         const cover = p.cover_url ? `<enclosure url="${p.cover_url}" length="0" type="image/jpeg" />` : '';
   // Prévia segura: usa excerpt; se quiser enriquecer, converter MDX->HTML em pipeline offline
-  const html = (p.excerpt || '').slice(0, 4000);
-        return `<item>\n  <title>${escapeXml(p.title || "Post")}</title>\n  <link>${url}</link>\n  <guid isPermaLink="true">${url}</guid>\n  <pubDate>${new Date(p.published_at || updated).toUTCString()}</pubDate>\n  <author>${escapeXml(author)} &lt;no-reply@byimperiodog.com.br&gt;</author>\n  ${cats.map(c=>`<category>${escapeXml(c)}</category>`).join('')}\n  ${cover}\n  <description>${escapeXml(p.excerpt || "")}</description>\n  <content:encoded><![CDATA[${html}]]></content:encoded>\n</item>`;
+  const html = ((p.excerpt as string | undefined) || '').slice(0, 4000);
+        return `<item>\n  <title>${escapeXml((p.title as string | undefined) || "Post")}</title>\n  <link>${url}</link>\n  <guid isPermaLink="true">${url}</guid>\n  <pubDate>${new Date((p.published_at as string | undefined) || updated).toUTCString()}</pubDate>\n  <author>${escapeXml(author)} &lt;no-reply@byimperiodog.com.br&gt;</author>\n  ${cats.map(c=>`<category>${escapeXml(c)}</category>`).join('')}\n  ${cover}\n  <description>${escapeXml((p.excerpt as string | undefined) || "")}</description>\n  <content:encoded><![CDATA[${html}]]></content:encoded>\n</item>`;
       })
       .join("\n")}
   </channel>

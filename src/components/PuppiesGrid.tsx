@@ -1,9 +1,8 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 
-import StoriesBar, { type StoriesBarItem } from "@/components/StoriesBar";
+// import StoriesBar, { type Story } from "@/components/StoriesBar";
 import { supabasePublic } from "@/lib/supabasePublic";
 import track from "@/lib/track";
 
@@ -11,7 +10,6 @@ import PuppiesFilterBar from "./PuppiesFilterBar";
 import PuppyCard from "./PuppyCard";
 import PuppyCardSkeleton from "./PuppyCardSkeleton";
 import PuppyDetailsModal from "./PuppyDetailsModal";
-const PuppyStories = dynamic(() => import("./PuppyStories"), { ssr: false });
 
 // Tipagem permissiva, mas consolidada para reduzir o uso de any espalhado
 type Puppy = {
@@ -92,28 +90,30 @@ export default function PuppiesGrid() {
 
   // modal de detalhes
   const [openId, setOpenId] = useState<string | null>(null);
-  // stories
-  const [storiesOpen, setStoriesOpen] = useState(false);
-  const [storyIndex, setStoryIndex] = useState(0);
-  const storyItems = useMemo<StoriesBarItem[]>(() => {
-    return items.slice(0, 12).map((puppy, index) => ({
-      id: puppy.id,
-      name: puppy.nome || puppy.name,
-      cover: pickCover(puppy) || undefined,
-      originalIndex: index,
-    }));
-  }, [items]);
-
-  const openStory = (targetIndex: number) => {
-    if (!Number.isFinite(targetIndex) || !items.length) return;
-    const safeIndex = Math.min(Math.max(0, targetIndex), items.length - 1);
-    setStoryIndex(safeIndex);
-    setStoriesOpen(true);
-    const puppy = items[safeIndex];
-    if (puppy) {
-      track.event?.("stories_open", { puppy_id: puppy.id, index: safeIndex });
-    }
-  };
+  
+  // TODO: Implement stories integration
+  // const stories = useMemo<Story[]>(() => {
+  //   return items
+  //     .map((puppy) => {
+  //       const cover = pickCover(puppy);
+  //       if (!cover) return null;
+  //       const title = puppy.nome || puppy.name || "Filhote";
+  //       return {
+  //         id: puppy.id,
+  //         title,
+  //         slides: [
+  //           {
+  //             id: `${puppy.id}-cover`,
+  //             title,
+  //             description: `${title}: Spitz Alemão Lulu da Pomerânia com até 22 cm de altura, acompanhado pela By Império Dog.`,
+  //             imageUrl: cover,
+  //           },
+  //         ],
+  //       } as Story;
+  //     })
+  //     .filter((story): story is Story => Boolean(story))
+  //     .slice(0, 12);
+  // }, [items]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -241,15 +241,15 @@ export default function PuppiesGrid() {
         </p>
       )}
 
-      {/* Stories carousel */}
-      {storyItems.length > 0 && (
+      {/* Stories carousel - TODO: Implement stories integration */}
+      {/* {storyItems.length > 0 && (
         <StoriesBar
           items={storyItems}
           onSelect={openStory}
           className="-mx-4 mt-6 max-w-full sm:-mx-6 lg:-mx-8"
           ariaLabel="Pré-visualização em stories dos filhotes"
         />
-      )}
+      )} */}
 
       {/* ================================================================ */}
       {/* GRID OTIMIZADO: auto-rows-fr para equalizar alturas */}
@@ -282,16 +282,11 @@ export default function PuppiesGrid() {
       )}
 
       {/* Stories fullscreen */}
-      {storiesOpen && (
-        <PuppyStories
-          items={items.map(p=>({ id: p.id, name: p.nome || p.name, cover: pickCover(p) || null, color: p.cor || p.color, gender: p.gender }))}
-          initialIndex={storyIndex}
-          open={storiesOpen}
-          onClose={()=> setStoriesOpen(false)}
-        />
-      )}
+
     </section>
   );
 }
+
+
 
 

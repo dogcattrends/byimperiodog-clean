@@ -1,57 +1,65 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
-type TOCItem = { id: string; text: string; level: number };
+type TocItem = {
+  id: string;
+  label: string;
+  level?: number;
+};
 
-function slugify(text: string) {
-  return text
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9\s-]/g, "")
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
+interface TOCProps {
+  items?: TocItem[];
+  containerId?: string;
+  className?: string;
+  title?: string;
 }
 
-export default function TOC({ containerId = "toc-container", label = "Índice" }: { containerId?: string; label?: string }) {
-  const [items, setItems] = useState<TOCItem[]>([]);
+export function TOC({ items: propItems, containerId, className, title = "Sumário" }: TOCProps) {
+  const [extractedItems, setExtractedItems] = useState<TocItem[]>([]);
 
   useEffect(() => {
-    const root = document.getElementById(containerId);
-    if (!root) return;
-    const headings = Array.from(root.querySelectorAll<HTMLHeadingElement>("h2, h3"));
-    const mapped: TOCItem[] = headings.map((h) => {
-      if (!h.id) {
-        const id = slugify(h.textContent || "");
-        if (id) h.id = id;
-      }
-      return { id: h.id, text: h.textContent || "", level: h.tagName === "H3" ? 3 : 2 };
+    if (!containerId) return;
+
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    const headings = container.querySelectorAll("h2, h3");
+    const items: TocItem[] = Array.from(headings).map((h) => {
+      const id = h.id || h.textContent?.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") || "";
+      if (!h.id) h.id = id;
+      return {
+        id,
+        label: h.textContent || "",
+        level: h.tagName === "H3" ? 2 : 1,
+      };
     });
-    setItems(mapped.filter((i) => i.id && i.text));
+
+    setExtractedItems(items);
   }, [containerId]);
 
-  const hasItems = items.length > 0;
-  const grouped = useMemo(() => items, [items]);
+  const items = propItems || extractedItems;
 
-  if (!hasItems) return null;
+  if (!items.length) return null;
 
   return (
-    <nav aria-label={label} className="rounded-xl border border-slate-200 bg-white p-4 text-sm">
-      <p className="mb-2 font-semibold text-slate-700">{label}</p>
-      <ul className="space-y-2">
-        {grouped.map((item) => (
-          <li key={item.id} className={item.level === 3 ? "ml-4" : undefined}>
-            <a
+    <nav aria-label={title} className={`rounded-3xl border border-emerald-100 bg-emerald-50/60 p-6 ${className ?? ""}`}>
+      <h2 className="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-700">{title}</h2>
+      <ul className="mt-4 space-y-2 text-sm text-zinc-700">
+        {items.map((item) => (
+          <li key={item.id} className={item.level && item.level > 1 ? "ml-4" : undefined}>
+            <Link
               href={`#${item.id}`}
-              className="focus-visible:focus-ring inline-flex rounded px-1 py-0.5 text-slate-700 underline-offset-4 hover:underline"
+              className="inline-flex min-h-[32px] items-center rounded-xl px-3 transition hover:text-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
             >
-              {item.text}
-            </a>
+              {item.label}
+            </Link>
           </li>
         ))}
       </ul>
     </nav>
   );
 }
+
+export default TOC;

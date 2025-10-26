@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import Breadcrumbs from "@/components/Breadcrumbs";
 import PostCard from "@/components/blog/PostCard";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import SeoJsonLd from "@/components/SeoJsonLd";
 import { getBreadcrumbJsonLd } from "@/lib/jsonld";
 import { baseBlogMetadata, canonical } from '@/lib/seo.core';
