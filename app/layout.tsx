@@ -1,4 +1,5 @@
-﻿import type { Metadata } from "next";
+﻿import { SpeedInsights } from "@vercel/speed-insights/next";
+import type { Metadata } from "next";
 import NextDynamic from "next/dynamic";
 import { headers } from "next/headers";
 import { Fragment } from "react";
@@ -240,6 +241,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 					</Fragment>
 				))}
 
+		<SpeedInsights />
 		<ToastContainer />
 		</body>
     </html>

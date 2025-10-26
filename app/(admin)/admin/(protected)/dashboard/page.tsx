@@ -281,17 +281,48 @@ export default function AdminDashboard() {
   const buildTime = process.env.NEXT_PUBLIC_BUILD_TIME ?? null;
   const lastContentUpdate = useMemo(() => {
     const dates: string[] = [];
+
+    const pushDate = (value?: string | null) => {
+      if (value) dates.push(value);
+    };
+
     metrics?.latestPosts?.forEach((post) => {
-      if (post.published_at) dates.push(post.published_at);
+      pushDate(post.published_at);
+      // Caso recebamos posts com revisão mais recente que a publicação
+      // (mantém compatibilidade com APIs futuras).
+      // @ts-expect-error legacy field
+      pushDate(post.updated_at);
     });
+
     metrics?.recentRevisions?.forEach((revision) => {
-      if (revision.created_at) dates.push(revision.created_at);
+      pushDate(revision.created_at);
     });
+
+    metrics?.aiTasks?.recent?.forEach((task) => {
+      pushDate(task.finished_at || task.created_at);
+    });
+
+    metrics?.pendingComments?.forEach((comment) => {
+      pushDate(comment.created_at);
+    });
+
+    metrics?.upcomingEvents?.forEach((event) => {
+      pushDate(event.run_at);
+    });
+
+    if (!dates.length) return null;
+
     return dates.reduce<string | null>((acc, date) => {
       if (!acc) return date;
       return new Date(date) > new Date(acc) ? date : acc;
     }, null);
-  }, [metrics?.latestPosts, metrics?.recentRevisions]);
+  }, [
+    metrics?.aiTasks?.recent,
+    metrics?.latestPosts,
+    metrics?.pendingComments,
+    metrics?.recentRevisions,
+    metrics?.upcomingEvents,
+  ]);
 
   const load = useCallback(async (range: number) => {
     try {

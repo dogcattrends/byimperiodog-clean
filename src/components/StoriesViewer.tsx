@@ -2,7 +2,7 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { cn } from "@/lib/cn";
 import passthroughImageLoader from "@/lib/passthrough-image-loader";
@@ -28,17 +28,47 @@ interface StoriesViewerProps {
 }
 
 export function StoriesViewer({ stories, open, initialIndex, onOpenChange }: StoriesViewerProps) {
-  const [index, setIndex] = useState(initialIndex);
+  const totalStories = stories.length;
+  const safeInitial = useMemo(() => {
+    if (totalStories === 0) return 0;
+    return initialIndex % totalStories;
+  }, [initialIndex, totalStories]);
+
+  const [index, setIndex] = useState(safeInitial);
 
   useEffect(() => {
-    if (open) setIndex(initialIndex);
-  }, [initialIndex, open]);
+    if (open) setIndex(safeInitial);
+  }, [open, safeInitial]);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "ArrowRight" && totalStories > 1) {
+        event.preventDefault();
+        setIndex((prev) => (prev + 1) % totalStories);
+      }
+      if (event.key === "ArrowLeft" && totalStories > 1) {
+        event.preventDefault();
+        setIndex((prev) => (prev - 1 + totalStories) % totalStories);
+      }
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [open, totalStories]);
 
   const story = stories[index];
   const slide = story?.slides?.[0];
+  const hasMultiple = totalStories > 1;
 
-  const next = () => setIndex((prev) => (prev + 1) % stories.length);
-  const prev = () => setIndex((prev) => (prev - 1 + stories.length) % stories.length);
+  const next = () => {
+    if (!hasMultiple) return;
+    setIndex((prev) => (prev + 1) % totalStories);
+  };
+
+  const prev = () => {
+    if (!hasMultiple) return;
+    setIndex((prev) => (prev - 1 + totalStories) % totalStories);
+  };
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -46,13 +76,19 @@ export function StoriesViewer({ stories, open, initialIndex, onOpenChange }: Sto
         <Dialog.Overlay className="fixed inset-0 z-[9998] bg-black/70 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in data-[state=closed]:fade-out" />
         <Dialog.Content
           className={cn(
-            "fixed inset-0 z-[9999] flex flex-col items-center justify-center px-4 py-10 outline-none",
-            "sm:px-8",
+            "fixed inset-0 z-[9999] flex flex-col items-center justify-center px-4 py-10 outline-none sm:px-8",
           )}
         >
+          <Dialog.Title className="sr-only">
+            {story ? `Story de ${story.title}` : "Stories dos filhotes"}
+          </Dialog.Title>
+          <Dialog.Description className="sr-only">
+            {totalStories > 0 ? `Story ${index + 1} de ${totalStories}` : "Nenhum story disponível"}
+          </Dialog.Description>
+
           <Dialog.Close
             aria-label="Fechar stories"
-            className="fixed top-4 right-4 md:top-6 md:right-6 z-[10000] inline-flex h-12 w-12 items-center justify-center rounded-full bg-black/80 text-white text-xl font-bold shadow-lg transition hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+            className="fixed right-4 top-4 z-[10000] inline-flex h-12 w-12 items-center justify-center rounded-full bg-black/80 text-xl font-semibold text-white shadow-lg transition hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black md:right-6 md:top-6"
           >
             ×
           </Dialog.Close>
@@ -62,18 +98,20 @@ export function StoriesViewer({ stories, open, initialIndex, onOpenChange }: Sto
               <button
                 type="button"
                 onClick={prev}
-                className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-black/40 px-3 text-xs transition hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                disabled={!hasMultiple}
+                className="inline-flex min-h-[48px] min-w-[48px] items-center justify-center rounded-full bg-black/40 px-3 text-xs transition hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:cursor-not-allowed disabled:opacity-40"
                 aria-label="Story anterior"
               >
                 Anterior
               </button>
               <span className="pointer-events-none text-zinc-100">
-                {index + 1} de {stories.length}
+                {totalStories > 0 ? `${index + 1} de ${totalStories}` : "0 de 0"}
               </span>
               <button
                 type="button"
                 onClick={next}
-                className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-black/40 px-3 text-xs transition hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                disabled={!hasMultiple}
+                className="inline-flex min-h-[48px] min-w-[48px] items-center justify-center rounded-full bg-black/40 px-3 text-xs transition hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:cursor-not-allowed disabled:opacity-40"
                 aria-label="Próximo story"
               >
                 Próximo
