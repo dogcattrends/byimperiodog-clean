@@ -2,8 +2,9 @@
 import Link from "next/link";
 
 import { BlogSubnav } from "@/components/admin/BlogSubnav";
-import EditorShell from "@/components/admin/blog/editor/EditorShell";
 import { blogRepo } from "@/lib/db";
+
+import EditorWrapper from "./EditorWrapper";
 
 interface PageProps {
   searchParams: {
@@ -34,7 +35,7 @@ export default async function BlogEditorPage({ searchParams }: PageProps) {
           Voltar para lista
         </Link>
       </header>
-      <EditorShell initial={post ?? undefined} />
+      <EditorWrapper post={post} />
     </div>
   );
 }
