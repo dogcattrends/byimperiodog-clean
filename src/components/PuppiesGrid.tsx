@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 
@@ -90,29 +90,6 @@ export default function PuppiesGrid() {
   // modal de detalhes
   const [openId, setOpenId] = useState<string | null>(null);
   
-  // TODO: Implement stories integration
-  // const stories = useMemo<Story[]>(() => {
-  //   return items
-  //     .map((puppy) => {
-  //       const cover = pickCover(puppy);
-  //       if (!cover) return null;
-  //       const title = puppy.nome || puppy.name || "Filhote";
-  //       return {
-  //         id: puppy.id,
-  //         title,
-  //         slides: [
-  //           {
-  //             id: `${puppy.id}-cover`,
-  //             title,
-  //             description: `${title}: Spitz AlemÃ£o Lulu da PomerÃ¢nia com atÃ© 22 cm de altura, acompanhado pela By ImpÃ©rio Dog.`,
-  //             imageUrl: cover,
-  //           },
-  //         ],
-  //       } as Story;
-  //     })
-  //     .filter((story): story is Story => Boolean(story))
-  //     .slice(0, 12);
-  // }, [items]);
 
   useEffect(() => {
     mountedRef.current = true;
