@@ -1,7 +1,9 @@
 "use client";
-import * as React from 'react';
 import Link from 'next/link';
+import * as React from 'react';
+
 import { adminFetch } from '@/lib/adminFetch';
+
 import type { DashboardFilters } from './FiltersBar';
 
 type Item = { id:string; title:string; slug:string; status:string; created_at?:string|null; published_at?:string|null };
@@ -30,7 +32,10 @@ export function DataTable({ filters }:{ filters:DashboardFilters }){
       const list = (j?.items||[]) as Item[];
       setItems(list);
       setTotal(j?.total||0);
-    }catch(e:any){ setError(e?.message||String(e)); }
+    }catch(e: unknown){
+      const msg = e instanceof Error ? e.message : String(e);
+      setError(msg);
+    }
     finally{ setLoading(false); }
   }, [filters.q, filters.status, filters.date, page, perPage]);
 
@@ -48,7 +53,13 @@ export function DataTable({ filters }:{ filters:DashboardFilters }){
         <div aria-live="polite">{loading? 'Carregando...' : error? `Erro: ${error}` : `${total} itens`}</div>
         <div className="flex items-center gap-2">
           <span>Ordenar:</span>
-          <button aria-label="Ordenar título" onClick={()=> setSort(s=> s==='asc'?'desc':'asc')} className="rounded border border-[var(--border)] px-2 py-0.5 text-[11px] hover:bg-[var(--surface-2)] focus-visible:ring-2 focus-visible:ring-[var(--accent)]">{sort==='asc'? 'A→Z':'Z→A'}</button>
+          <button
+            aria-label="Ordenar título"
+            onClick={()=> setSort(s=> s==='asc'?'desc':'asc')}
+            className="inline-flex h-12 items-center justify-center rounded border border-[var(--border)] px-3 text-[12px] hover:bg-[var(--surface-2)] focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+          >
+            {sort==='asc'? 'A→Z':'Z→A'}
+          </button>
         </div>
       </div>
       {/* Tabela (>= md) */}
@@ -79,7 +90,13 @@ export function DataTable({ filters }:{ filters:DashboardFilters }){
                 <td className="px-3 py-2 tabular-nums">{row.created_at? new Date(row.created_at).toLocaleDateString('pt-BR') : '-'}</td>
                 <td className="px-3 py-2 tabular-nums">{row.published_at? new Date(row.published_at).toLocaleDateString('pt-BR') : '-'}</td>
                 <td className="px-3 py-2 text-right">
-                  <Link href={`/admin/blog/editor?id=${row.id}`} className="rounded border border-[var(--border)] px-2 py-1 text-[12px] hover:bg-[var(--surface-2)] focus-visible:ring-2 focus-visible:ring-[var(--accent)]">Editar</Link>
+                  <Link
+                    href={`/admin/blog/editor?id=${row.id}`}
+                    className="inline-flex h-10 items-center justify-center rounded border border-[var(--border)] px-3 text-[12px] hover:bg-[var(--surface-2)] focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                    aria-label="Editar conteúdo"
+                  >
+                    Editar
+                  </Link>
                 </td>
               </tr>
             ))}
@@ -107,7 +124,13 @@ export function DataTable({ filters }:{ filters:DashboardFilters }){
                   <span>Publicado: {row.published_at? new Date(row.published_at).toLocaleDateString('pt-BR') : '-'}</span>
                 </div>
               </div>
-              <Link href={`/admin/blog/editor?id=${row.id}`} className="shrink-0 rounded border border-[var(--border)] px-2 py-1 text-[12px] hover:bg-[var(--surface-2)] focus-visible:ring-2 focus-visible:ring-[var(--accent)]">Editar</Link>
+              <Link
+                href={`/admin/blog/editor?id=${row.id}`}
+                className="shrink-0 inline-flex h-10 items-center justify-center rounded border border-[var(--border)] px-3 text-[12px] hover:bg-[var(--surface-2)] focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                aria-label="Editar conteúdo"
+              >
+                Editar
+              </Link>
             </div>
           </div>
         ))}
@@ -115,8 +138,22 @@ export function DataTable({ filters }:{ filters:DashboardFilters }){
       <div className="flex items-center justify-between gap-2 px-3 py-2 text-[12px]">
         <div>Página {page}</div>
         <div className="flex items-center gap-2">
-          <button disabled={page<=1 || loading} onClick={()=> setPage(p=> Math.max(1,p-1))} className="rounded border border-[var(--border)] px-2 py-1 disabled:opacity-50">Anterior</button>
-          <button disabled={(page*perPage)>=total || loading} onClick={()=> setPage(p=> p+1)} className="rounded border border-[var(--border)] px-2 py-1 disabled:opacity-50">Próxima</button>
+          <button
+            disabled={page<=1 || loading}
+            onClick={()=> setPage(p=> Math.max(1,p-1))}
+            className="inline-flex h-12 min-w-12 items-center justify-center rounded border border-[var(--border)] px-4 disabled:opacity-50"
+            aria-label="Página anterior"
+          >
+            Anterior
+          </button>
+          <button
+            disabled={(page*perPage)>=total || loading}
+            onClick={()=> setPage(p=> p+1)}
+            className="inline-flex h-12 min-w-12 items-center justify-center rounded border border-[var(--border)] px-4 disabled:opacity-50"
+            aria-label="Próxima página"
+          >
+            Próxima
+          </button>
         </div>
       </div>
     </div>

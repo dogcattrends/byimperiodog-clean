@@ -117,8 +117,8 @@ export default function Testimonials({
           </div>
           {variant === 'carousel' && total > 1 && (
             <div className="flex items-center gap-2">
-              <button type="button" onClick={prev} aria-label="Anterior" className="btn-outline px-2 py-1 text-xs">←</button>
-              <button type="button" onClick={next} aria-label="Próximo" className="btn-outline px-2 py-1 text-xs">→</button>
+              <button type="button" onClick={prev} aria-label="Anterior" className="btn-outline inline-flex h-12 min-w-12 items-center justify-center px-3 text-sm">←</button>
+              <button type="button" onClick={next} aria-label="Próximo" className="btn-outline inline-flex h-12 min-w-12 items-center justify-center px-3 text-sm">→</button>
             </div>
           )}
         </header>

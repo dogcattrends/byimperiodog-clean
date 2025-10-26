@@ -118,6 +118,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="pt-BR" className={`scroll-smooth ${dmSans.variable} ${inter.variable}`}>
       <head>
+        <meta charSet="utf-8" />
   {/* ================================================================ */}
   {/* PERFORMANCE: Resource hints essenciais */}
   {/* ================================================================ */}

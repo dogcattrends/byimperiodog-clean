@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
-import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useState, useMemo } from "react";
+
 import track from "@/lib/track";
 
 export type Slide = { type: "image" | "video"; url: string };
@@ -47,7 +48,9 @@ export default function PuppyGallery({
       </div>
 
       {s.type === "video" ? (
-        <video controls className="aspect-[4/3] w-full object-cover" src={s.url} />
+        <video controls className="aspect-[4/3] w-full object-cover" src={s.url}>
+          <track kind="captions" />
+        </video>
       ) : (
         <div className="relative aspect-[4/3] w-full">
           <Image
@@ -66,17 +69,17 @@ export default function PuppyGallery({
         <>
           <button
             onClick={prev}
-            className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-2 shadow ring-1 ring-black/10 hover:bg-white"
+            className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-3 shadow ring-1 ring-black/10 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
             aria-label="Anterior"
           >
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronLeft className="h-6 w-6" />
           </button>
           <button
             onClick={next}
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-2 shadow ring-1 ring-black/10 hover:bg-white"
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-3 shadow ring-1 ring-black/10 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
             aria-label="Próxima"
           >
-            <ChevronRight className="h-5 w-5" />
+            <ChevronRight className="h-6 w-6" />
           </button>
         </>
       )}

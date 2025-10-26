@@ -29,20 +29,26 @@ export function AdminDataTable<TData, TValue>({ columns, data, bulkActions = [] 
       {
         id: "__select",
         header: ({ table }) => (
-          <input
-            type="checkbox"
-            aria-label="Selecionar todas as linhas"
-            checked={table.getIsAllPageRowsSelected()}
-            onChange={(event) => table.toggleAllPageRowsSelected(event.target.checked)}
-          />
+          <label className="inline-flex h-12 w-12 items-center justify-center" aria-label="Selecionar todas as linhas">
+            <input
+              type="checkbox"
+              aria-label="Selecionar todas as linhas"
+              checked={table.getIsAllPageRowsSelected()}
+              onChange={(event) => table.toggleAllPageRowsSelected(event.target.checked)}
+              className="h-5 w-5"
+            />
+          </label>
         ),
         cell: ({ row }) => (
-          <input
-            type="checkbox"
-            aria-label="Selecionar linha"
-            checked={row.getIsSelected()}
-            onChange={(event) => row.toggleSelected(event.target.checked)}
-          />
+          <label className="inline-flex h-12 w-12 items-center justify-center" aria-label="Selecionar linha">
+            <input
+              type="checkbox"
+              aria-label="Selecionar linha"
+              checked={row.getIsSelected()}
+              onChange={(event) => row.toggleSelected(event.target.checked)}
+              className="h-5 w-5"
+            />
+          </label>
         ),
         size: 48,
       } as ColumnDef<TData, TValue>,
@@ -124,7 +130,7 @@ export function AdminDataTable<TData, TValue>({ columns, data, bulkActions = [] 
                     {header.isPlaceholder ? null : (
                       <button
                         type="button"
-                        className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-widest text-slate-600"
+                        className="inline-flex h-12 items-center gap-1 text-xs font-semibold uppercase tracking-widest text-slate-600"
                         onClick={header.column.getToggleSortingHandler()}
                         aria-label={`Ordenar por ${header.column.columnDef.header}`}
                       >
@@ -172,10 +178,22 @@ export function AdminDataTable<TData, TValue>({ columns, data, bulkActions = [] 
           {table.getRowModel().rows.length} registros • {selectedRows.length} selecionados
         </span>
         <div className="flex items-center gap-2">
-          <AdminButton variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
+          <AdminButton
+            variant="outline"
+            size="lg"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+            aria-label="Página anterior"
+          >
             Anterior
           </AdminButton>
-          <AdminButton variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
+          <AdminButton
+            variant="outline"
+            size="lg"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+            aria-label="Próxima página"
+          >
             Próxima
           </AdminButton>
         </div>

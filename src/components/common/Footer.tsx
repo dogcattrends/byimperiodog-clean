@@ -15,9 +15,9 @@ const NAV_ITEMS = [
 ];
 
 const SUPPORT_ITEMS = [
-  { label: "FAQ do tutor", href: "/faq" },
+  { label: "FAQ do tutor", href: "/faq-do-tutor" },
   { label: "Política de privacidade", href: "/politica-de-privacidade" },
-  { label: "Termos de uso", href: "/termos" },
+  { label: "Termos de uso", href: "/termos-de-uso" },
 ];
 
 export default function Footer() {
@@ -60,7 +60,7 @@ export default function Footer() {
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className="inline-flex min-h-[40px] items-center text-emerald-100/80 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200 focus-visible:ring-offset-2 focus-visible:ring-offset-emerald-950"
+                  className="inline-flex min-h-[48px] items-center text-emerald-100/80 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200 focus-visible:ring-offset-2 focus-visible:ring-offset-emerald-950"
                 >
                   {item.label}
                 </Link>
@@ -78,7 +78,7 @@ export default function Footer() {
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className="inline-flex min-h-[40px] items-center text-emerald-100/80 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200 focus-visible:ring-offset-2 focus-visible:ring-offset-emerald-950"
+                  className="inline-flex min-h-[48px] items-center text-emerald-100/80 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200 focus-visible:ring-offset-2 focus-visible:ring-offset-emerald-950"
                 >
                   {item.label}
                 </Link>

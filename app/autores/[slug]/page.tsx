@@ -1,10 +1,11 @@
-import { supabasePublic } from '@/lib/supabasePublic';
-import Link from 'next/link';
-import Image from 'next/image';
-import Head from 'next/head';
 import type { Metadata } from 'next';
+import Head from 'next/head';
+import Image from 'next/image';
+import Link from 'next/link';
+
 import SeoJsonLd from '@/components/SeoJsonLd';
 import { buildAuthorJsonLd } from '@/lib/seo.core';
+import { supabasePublic } from '@/lib/supabasePublic';
 
 export const revalidate = 120;
 
@@ -33,7 +34,7 @@ export default async function AutorPage({ params, searchParams }: { params:{ slu
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.byimperiodog.com.br';
   const jsonLdBreadcrumb = { '@context':'https://schema.org', '@type':'BreadcrumbList', itemListElement:[ { '@type':'ListItem', position:1, name:'Blog', item: `${siteUrl}/blog` }, { '@type':'ListItem', position:2, name:`Autor: ${author.name}`, item: `${siteUrl}/autores/${encodeURIComponent(author.slug)}` } ] };
   const jsonLdAuthor = buildAuthorJsonLd({ name: author.name, slug: author.slug, avatar_url: author.avatar_url, bio: author.bio||undefined });
-  const itemList = { '@context':'https://schema.org', '@type':'ItemList', itemListElement: (posts||[]).map((p: any, i: number)=> ({ '@type':'ListItem', position:i+1, url:`${siteUrl}/blog/${p.slug}`, name:p.title })) };
+  const itemList = { '@context':'https://schema.org', '@type':'ItemList', itemListElement: (posts||[]).map((p: { slug: string; title: string }, i: number)=> ({ '@type':'ListItem', position:i+1, url:`${siteUrl}/blog/${p.slug}`, name:p.title })) };
   const prevHref = page>1? `/autores/${encodeURIComponent(author.slug)}?page=${page-1}`: undefined;
   const nextHref = typeof count==='number' && page*pageSize < (count||0)? `/autores/${encodeURIComponent(author.slug)}?page=${page+1}`: undefined;
   return <main className="mx-auto max-w-6xl px-6 py-10 text-[var(--text)]">
@@ -51,7 +52,7 @@ export default async function AutorPage({ params, searchParams }: { params:{ slu
   <SeoJsonLd data={jsonLdBreadcrumb} />
   <SeoJsonLd data={jsonLdAuthor} />
     <SeoJsonLd data={itemList} />
-  {posts && posts.length? <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{posts.map((p: any)=> <li key={p.id} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-sm p-4"><Link href={`/blog/${p.slug}`} className="font-semibold line-clamp-2 hover:underline focus-visible:focus-ring">{p.title}</Link><p className="mt-1 text-sm text-[var(--text-muted)] line-clamp-3">{p.excerpt||''}</p><p className="mt-2 text-[11px] text-[var(--text-muted)]">{p.published_at? new Date(p.published_at).toLocaleDateString('pt-BR'):''}</p></li>)}</ul>: <p className="text-[var(--text-muted)]">Nenhum post publicado ainda.</p>}
-    <div className="mt-8 flex justify-between">{page>1? <Link href={`/autores/${encodeURIComponent(author.slug)}?page=${page-1}`} className="btn-outline text-sm px-3 py-1">← Anterior</Link>: <span/>}{page*pageSize < (count||0)? <Link href={`/autores/${encodeURIComponent(author.slug)}?page=${page+1}`} className="btn-outline text-sm px-3 py-1">Próxima →</Link>: <span/>}</div>
+  {posts && posts.length? <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{posts.map((p: { id: string; slug: string; title: string; excerpt?: string|null; published_at?: string|null })=> <li key={p.id} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-sm p-4"><Link href={`/blog/${p.slug}`} className="font-semibold line-clamp-2 hover:underline focus-visible:focus-ring">{p.title}</Link><p className="mt-1 text-sm text-[var(--text-muted)] line-clamp-3">{p.excerpt||''}</p><p className="mt-2 text-[11px] text-[var(--text-muted)]">{p.published_at? new Date(p.published_at).toLocaleDateString('pt-BR'):''}</p></li>)}</ul>: <p className="text-[var(--text-muted)]">Nenhum post publicado ainda.</p>}
+    <div className="mt-8 flex justify-between">{page>1? <Link href={`/autores/${encodeURIComponent(author.slug)}?page=${page-1}`} className="btn-outline inline-flex h-12 min-w-12 items-center justify-center px-4 text-sm" aria-label="Página anterior">← Anterior</Link>: <span/>}{page*pageSize < (count||0)? <Link href={`/autores/${encodeURIComponent(author.slug)}?page=${page+1}`} className="btn-outline inline-flex h-12 min-w-12 items-center justify-center px-4 text-sm" aria-label="Próxima página">Próxima →</Link>: <span/>}</div>
   </main>;
 }

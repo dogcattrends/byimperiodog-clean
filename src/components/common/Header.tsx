@@ -10,10 +10,11 @@ import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { routes, type AppRoutes } from "@/lib/route";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 
-const NAV_LINKS: { label: string; href: AppRoutes }[] = [
+const NAV_LINKS: { label: string; href: AppRoutes | string }[] = [
   { label: "Início", href: routes.home },
   { label: "Filhotes", href: routes.filhotes },
   { label: "Processo", href: routes.sobre },
+  { label: "FAQ", href: "/faq-do-tutor" },
   { label: "Blog", href: routes.blog },
   { label: "Contato", href: routes.contato },
 ];

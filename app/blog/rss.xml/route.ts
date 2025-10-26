@@ -21,7 +21,7 @@ export async function GET() {
     <title>Blog | By Império Dog</title>
     <link>${site}/blog</link>
     <atom:link href="${selfUrl}" rel="self" type="application/rss+xml" />
-    <description>Novidades e conteúdos sobre Spitz Alemão Anão</description>
+  <description>Novidades e conteúdos sobre Spitz Alemão Anão (Lulu da Pomerânia)</description>
     <lastBuildDate>${new Date(updated).toUTCString()}</lastBuildDate>
     <image>
       <url>${site}/byimperiologo.png</url>

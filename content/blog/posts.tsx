@@ -1,22 +1,23 @@
-import type { BlogPost } from "@/lib/blog";
 import Link from "next/link";
+
+import type { BlogPost } from "@/lib/blog";
 
 export const posts: BlogPost[] = [
   {
     slug: "guia-tutor-spitz-alemao-anao",
-    title: "Guia definitivo para escolher um Spitz Alemao Anao",
+  title: "Guia definitivo para escolher um Spitz Alemão Anão (Lulu da Pomerânia)",
     subtitle: "Planejamento financeiro, perfil da familia e acompanhamento vitalicio",
     category: "Guia do Tutor",
     excerpt:
-      "Entenda os criterios que usamos para conectar Spitz Alemao Anao ate 22 cm com familias que buscam responsabilidade e suporte continuo.",
+  "Entenda os criterios que usamos para conectar Spitz Alemão Anão (Lulu da Pomerânia) ate 22 cm com familias que buscam responsabilidade e suporte continuo.",
     coverUrl: "/blog/guia-tutor-spitz.webp",
     publishedAt: "2024-09-01T08:00:00.000Z",
     author: { name: "Equipe By Imperio Dog" },
     tags: ["guia", "planejamento", "tutor"],
     seo: {
-      title: "Guia do tutor: como escolher um Spitz Alemao Anao com responsabilidade",
+  title: "Guia do tutor: como escolher um Spitz Alemão Anão (Lulu da Pomerânia) com responsabilidade",
       description:
-        "Checklist completo de selecao, entrevistas e acompanhamento para tutores que buscam Spitz Alemao Anao com suporte premium.",
+  "Checklist completo de selecao, entrevistas e acompanhamento para tutores que buscam Spitz Alemão Anão (Lulu da Pomerânia) com suporte premium.",
       ogImage: "/blog/guia-tutor-spitz.webp",
     },
     Content: function Content() {
@@ -60,9 +61,9 @@ export const posts: BlogPost[] = [
     author: { name: "Equipe By Imperio Dog" },
     tags: ["cuidados", "rotina", "higiene"],
     seo: {
-      title: "Cuidados essenciais com Spitz Alemao Anao: checklist completo",
+  title: "Cuidados essenciais com Spitz Alemão Anão (Lulu da Pomerânia): checklist completo",
       description:
-        "Agenda planejada para saude, higiene e equilibrio emocional do Spitz Alemao Anao premium.",
+  "Agenda planejada para saude, higiene e equilibrio emocional do Spitz Alemão Anão (Lulu da Pomerânia) premium.",
       ogImage: "/blog/cuidados-rotina-spitz.webp",
     },
     Content: function Content() {
@@ -107,16 +108,16 @@ export const posts: BlogPost[] = [
     author: { name: "Equipe By Imperio Dog" },
     tags: ["adestramento", "comportamento", "socializacao"],
     seo: {
-      title: "Adestramento gentil para Spitz Alemao Anao",
+  title: "Adestramento gentil para Spitz Alemão Anão (Lulu da Pomerânia)",
       description:
-        "Protocolos positivos, jogos de odor e cronograma de socializacao para Spitz Alemao Anao em apartamentos.",
+  "Protocolos positivos, jogos de odor e cronograma de socializacao para Spitz Alemão Anão (Lulu da Pomerânia) em apartamentos.",
       ogImage: "/blog/adestramento-spitz.webp",
     },
     Content: function Content() {
       return (
         <article className="max-w-none space-y-6 text-zinc-800">
           <p>
-            Spitz Alemao Anao e atento e expressivo. Com reforco positivo estruturado, a comunicacao fica previsivel e o tutor evita conflitos.
+            Spitz Alemão Anão (Lulu da Pomerânia) e atento e expressivo. Com reforco positivo estruturado, a comunicacao fica previsivel e o tutor evita conflitos.
             Comece com sessoes de 5 minutos, duas vezes ao dia, priorizando comandos de autocontrole.
           </p>
           <h3 className="text-lg font-semibold text-zinc-900">Trilogia de exercicios fundamentais</h3>
@@ -158,9 +159,9 @@ export const posts: BlogPost[] = [
     author: { name: "Equipe By Imperio Dog" },
     tags: ["saude", "exames", "preventivo"],
     seo: {
-      title: "Saude do Spitz Alemao Anao: exames e vacinas recomendadas",
+  title: "Saude do Spitz Alemão Anão (Lulu da Pomerânia): exames e vacinas recomendadas",
       description:
-        "Protocolos preventivos, calendario vacinal e monitoramento de sinais de alerta para Spitz Alemao Anao premium.",
+  "Protocolos preventivos, calendario vacinal e monitoramento de sinais de alerta para Spitz Alemão Anão (Lulu da Pomerânia) premium.",
       ogImage: "/blog/saude-protocolos-spitz.webp",
     },
     Content: function Content() {
@@ -215,15 +216,15 @@ export const posts: BlogPost[] = [
     subtitle: "Transparencia financeira, logistica e suporte continuo",
     category: "Perguntas",
     excerpt:
-      "Lista de perguntas que todo tutor deveria fazer ao selecionar um criador especializado em Spitz Alemao Anao premium.",
+  "Lista de perguntas que todo tutor deveria fazer ao selecionar um criador especializado em Spitz Alemão Anão (Lulu da Pomerânia) premium.",
     coverUrl: "/blog/perguntas-spitz.webp",
     publishedAt: "2024-09-25T08:00:00.000Z",
     author: { name: "Equipe By Imperio Dog" },
     tags: ["faq", "investimento", "logistica"],
     seo: {
-      title: "Perguntas que garantem transparencia ao reservar um Spitz Alemao Anao",
+  title: "Perguntas que garantem transparencia ao reservar um Spitz Alemão Anão (Lulu da Pomerânia)",
       description:
-        "Use este roteiro para confirmar suporte, transparencia financeira e logistica antes de reservar seu Spitz Alemao Anao.",
+  "Use este roteiro para confirmar suporte, transparencia financeira e logistica antes de reservar seu Spitz Alemão Anão (Lulu da Pomerânia).",
       ogImage: "/blog/perguntas-spitz.webp",
     },
     Content: function Content() {

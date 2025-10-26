@@ -93,10 +93,10 @@ export default async function BlogCategoriaPage({ params, searchParams }: { para
       )}
       <div className="mt-8 flex items-center justify-between">
         {page > 1 ? (
-          <Link href={`/blog/categoria/${encodeURIComponent(category.slug)}?page=${page-1}`} className="rounded border px-3 py-1 text-sm">Anterior</Link>
+          <Link href={`/blog/categoria/${encodeURIComponent(category.slug)}?page=${page-1}`} className="inline-flex h-12 min-w-12 items-center justify-center rounded border px-4 text-sm hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400" aria-label="Página anterior">Anterior</Link>
         ) : <span />}
         {typeof count === 'number' && page * pageSize < count ? (
-          <Link href={`/blog/categoria/${encodeURIComponent(category.slug)}?page=${page+1}`} className="rounded border px-3 py-1 text-sm">Próxima</Link>
+          <Link href={`/blog/categoria/${encodeURIComponent(category.slug)}?page=${page+1}`} className="inline-flex h-12 min-w-12 items-center justify-center rounded border px-4 text-sm hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400" aria-label="Próxima página">Próxima</Link>
         ) : <span />}
       </div>
     </main>

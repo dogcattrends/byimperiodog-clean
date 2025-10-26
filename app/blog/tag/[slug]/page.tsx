@@ -1,11 +1,12 @@
-import Link from "next/link";
-import { supabasePublic } from "@/lib/supabasePublic";
 import type { Metadata } from "next";
-import { baseBlogMetadata, canonical } from '@/lib/seo.core';
+import Link from "next/link";
+
+import Breadcrumbs from "@/components/Breadcrumbs";
 import PostCard from "@/components/blog/PostCard";
 import SeoJsonLd from "@/components/SeoJsonLd";
 import { getBreadcrumbJsonLd } from "@/lib/jsonld";
-import Breadcrumbs from "@/components/Breadcrumbs";
+import { baseBlogMetadata, canonical } from '@/lib/seo.core';
+import { supabasePublic } from "@/lib/supabasePublic";
 
 type PostListItem = {
   id: string;
@@ -70,7 +71,7 @@ export default async function BlogTagPage({ params, searchParams }: { params: { 
     .select("post_id")
     .eq("tag_id", tagId)
     .limit(1000);
-  const ids = (links || []).map((l: any) => l.post_id);
+  const ids = (links || []).map((l: { post_id: string }) => l.post_id);
 
   let posts: PostListItem[] = [];
   let count: number | null = 0;
@@ -134,10 +135,10 @@ export default async function BlogTagPage({ params, searchParams }: { params: { 
 
       <div className="mt-8 flex items-center justify-between">
         {page > 1 ? (
-          <Link href={`/blog/tag/${encodeURIComponent(tag)}?page=${page - 1}`} className="rounded border px-3 py-1 text-sm">Anterior</Link>
+          <Link href={`/blog/tag/${encodeURIComponent(tag)}?page=${page - 1}`} className="inline-flex h-12 min-w-12 items-center justify-center rounded border px-4 text-sm hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400" aria-label="Página anterior">Anterior</Link>
         ) : <span />}
         {typeof count === "number" && page * pageSize < count ? (
-          <Link href={`/blog/tag/${encodeURIComponent(tag)}?page=${page + 1}`} className="rounded border px-3 py-1 text-sm">Próxima</Link>
+          <Link href={`/blog/tag/${encodeURIComponent(tag)}?page=${page + 1}`} className="inline-flex h-12 min-w-12 items-center justify-center rounded border px-4 text-sm hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400" aria-label="Próxima página">Próxima</Link>
         ) : <span />}
       </div>
     </main>

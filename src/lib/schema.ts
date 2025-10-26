@@ -52,7 +52,7 @@ export function productSchema(siteUrl: string, puppy: { id: string; name: string
     "@type": "Product",
     "@id": `${base}/filhotes/${puppy.id}#product`,
     name: puppy.name,
-    description: `Spitz Alemao Anao com ate 22 cm, acompanhamento vitalicio e suporte personalizado.`,
+    description: `Spitz Alemão Anão (Lulu da Pomerânia) com até 22 cm de altura, acompanhamento vitalício e suporte personalizado.`,
     brand: {
       "@type": "Brand",
       name: "By Imperio Dog",
@@ -97,6 +97,21 @@ export function faqSchema(siteUrl: string, faqs: Array<{ question: string; answe
         text: faq.answer,
       },
     })),
+  };
+}
+
+/** Versão simples baseada em URL absoluto (canonical) já resolvido */
+export function faqPageSchema(faqs: Array<{ question: string; answer: string }>, url: string): SchemaBase {
+  const canonical = normalizeSiteUrl(url);
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: { "@type": "Answer", text: faq.answer },
+    })),
+    url: canonical,
   };
 }
 

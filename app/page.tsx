@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: "/",
-    title: "By Império Dog | Spitz Alemão Anão",
+    title: "By Império Dog | Spitz Alemão Anão (Lulu da Pomerânia)",
     description:
       "Criação especializada com poucas ninhadas ao ano, transparência e suporte direto com a criadora.",
   },
