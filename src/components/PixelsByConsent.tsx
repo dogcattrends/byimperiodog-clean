@@ -15,6 +15,10 @@ export interface PixelsProps {
   PIN_ID?: string;
   HOTJAR_ID?: string;
   CLARITY_ID?: string;
+  ADS_ID?: string;
+  ADS_LABEL?: string;
+  analyticsConsentRequired?: boolean;
+  marketingConsentRequired?: boolean;
 }
 
 /**
@@ -24,20 +28,28 @@ export interface PixelsProps {
  * Evita carregar scripts desnecessários antes do consentimento → melhora TTI/TBT.
  */
 export default function PixelsByConsent(props: PixelsProps) {
-  const { isAdminRoute } = props;
+  const {
+    isAdminRoute,
+    analyticsConsentRequired = true,
+    marketingConsentRequired = true,
+  } = props;
   const [ready, setReady] = useState(false);
   const [consent, setConsent] = useState(() => (typeof window !== 'undefined' ? getCurrentConsent() : { necessary: true, analytics: false, marketing: false, functional: true }));
 
   // Flags para prevenir injeções duplicadas por re-render
-  const flags = useMemo(() => ({
-    gtm: false,
-    ga: false,
-    fb: false,
-    tt: false,
-    pin: false,
-    hj: false,
-    cl: false,
-  }), []);
+  const flags = useMemo(
+    () => ({
+      gtm: false,
+      ga: false,
+      ads: false,
+      fb: false,
+      tt: false,
+      pin: false,
+      hj: false,
+      cl: false,
+    }),
+    []
+  );
 
   useEffect(() => {
     if (isAdminRoute) return;
@@ -63,12 +75,14 @@ export default function PixelsByConsent(props: PixelsProps) {
   if (!ready) return null;
 
   const { analytics, marketing } = consent;
-  const { useGTM, GTM_ID, GA4_ID, FB_ID, TT_ID, PIN_ID, HOTJAR_ID, CLARITY_ID } = props;
+  const allowAnalytics = analyticsConsentRequired ? analytics : true;
+  const allowMarketing = marketingConsentRequired ? marketing : true;
+  const { useGTM, GTM_ID, GA4_ID, FB_ID, TT_ID, PIN_ID, HOTJAR_ID, CLARITY_ID, ADS_ID, ADS_LABEL } = props;
 
   return (
     <>
       {/* Analytics: GTM (preferencial) ou GA4 direto, somente com consent.analytics */}
-      {analytics && useGTM && GTM_ID && !flags.gtm && (
+      {allowAnalytics && useGTM && GTM_ID && !flags.gtm && (
         <Script id="gtm-consent" strategy="afterInteractive" onLoad={() => { flags.gtm = true; }}>
           {`
             (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -80,7 +94,7 @@ export default function PixelsByConsent(props: PixelsProps) {
         </Script>
       )}
 
-      {analytics && !useGTM && GA4_ID && !flags.ga && (
+      {allowAnalytics && !useGTM && GA4_ID && !flags.ga && (
         <>
           <Script id="ga4-src-consent" src={`https://www.googletagmanager.com/gtag/js?id=${GA4_ID}`} strategy="afterInteractive" onLoad={() => { /* noop */ }} />
           <Script id="ga4-init-consent" strategy="afterInteractive" onLoad={() => { flags.ga = true; }}>
@@ -94,7 +108,7 @@ export default function PixelsByConsent(props: PixelsProps) {
       )}
 
       {/* Analytics auxiliares: Hotjar e Clarity */}
-      {analytics && HOTJAR_ID && !isNaN(Number(HOTJAR_ID)) && !flags.hj && (
+      {allowAnalytics && HOTJAR_ID && !isNaN(Number(HOTJAR_ID)) && !flags.hj && (
         <Script id="hotjar-consent" strategy="afterInteractive" onLoad={() => { flags.hj = true; }}>
           {`
             (function(h,o,t,j,a,r){ h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
@@ -105,7 +119,7 @@ export default function PixelsByConsent(props: PixelsProps) {
         </Script>
       )}
 
-      {analytics && CLARITY_ID && !flags.cl && (
+      {allowAnalytics && CLARITY_ID && !flags.cl && (
         <Script id="clarity-consent" strategy="afterInteractive" onLoad={() => { flags.cl = true; }}>
           {`
             (function(c,l,a,r,i,t,y){ c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
@@ -116,7 +130,37 @@ export default function PixelsByConsent(props: PixelsProps) {
       )}
 
       {/* Marketing: Facebook, TikTok, Pinterest */}
-      {marketing && FB_ID && !flags.fb && (
+      {allowMarketing && ADS_ID && (
+        <>
+          {!useGTM && !flags.ga && !flags.ads && (
+            <Script
+              id="google-ads-src"
+              src={`https://www.googletagmanager.com/gtag/js?id=${ADS_ID}`}
+              strategy="afterInteractive"
+              onLoad={() => {
+                flags.ads = true;
+              }}
+            />
+          )}
+          <Script
+            id="google-ads-init"
+            strategy="afterInteractive"
+            onLoad={() => {
+              flags.ads = true;
+            }}
+          >
+            {`
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);} window.gtag = window.gtag || gtag;
+              gtag('js', new Date());
+              gtag('config', '${ADS_ID}');
+              ${ADS_LABEL ? `gtag('event','conversion',{'send_to':'${ADS_ID}/${ADS_LABEL}'});` : ""}
+            `}
+          </Script>
+        </>
+      )}
+
+      {allowMarketing && FB_ID && !flags.fb && (
         <>
           <Script id="fb-pixel-consent" strategy="afterInteractive" onLoad={() => { flags.fb = true; }}>
             {`
@@ -131,7 +175,7 @@ export default function PixelsByConsent(props: PixelsProps) {
         </>
       )}
 
-      {marketing && TT_ID && !flags.tt && (
+      {allowMarketing && TT_ID && !flags.tt && (
         <Script id="tiktok-consent" strategy="afterInteractive" onLoad={() => { flags.tt = true; }}>
           {`
             !function (w, d, t) {w.TiktokAnalyticsObject = t; var ttq = w[t] = w[t] || [];
@@ -151,7 +195,7 @@ export default function PixelsByConsent(props: PixelsProps) {
         </Script>
       )}
 
-      {marketing && PIN_ID && !flags.pin && (
+      {allowMarketing && PIN_ID && !flags.pin && (
         <Script id="pinterest-consent" strategy="afterInteractive" onLoad={() => { flags.pin = true; }}>
           {`
             !function(e){if(!window.pintrk){window.pintrk=function(){window.pintrk.queue.push(Array.prototype.slice.call(arguments))};var n=window.pintrk;n.queue=[],n.version="3.0";var t=document.createElement("script");t.async=!0,t.src=e;var r=document.getElementsByTagName("script")[0];r.parentNode.insertBefore(t,r)}}("https://s.pinimg.com/ct/core.js");

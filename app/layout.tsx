@@ -11,12 +11,12 @@ import "../design-system/tokens.css";
 import Footer from "@/components/common/Footer";
 import Header from "@/components/common/Header";
 import SkipLink from "@/components/common/SkipLink";
-import PixelsByConsent from "@/components/PixelsByConsent";
+import Pixels from "@/components/Pixels";
 import ToastContainer from "@/components/Toast";
 import { getSiteSettings } from "@/lib/getSettings";
 import { resolveRobots, baseMetaOverrides } from "@/lib/seo";
 import { baseSiteMetadata } from "@/lib/seo.core";
-import { resolveTracking, buildOrganizationLD, buildWebsiteLD, type CustomPixelConfig } from "@/lib/tracking";
+import { resolveTracking, buildOrganizationLD, buildWebsiteLD } from "@/lib/tracking";
 
 import { ThemeProvider } from "../design-system/theme-provider";
 
@@ -85,15 +85,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   let GTM_ID: string | undefined;
   let GA4_ID: string | undefined;
-  let FB_ID: string | undefined;
-  let TT_ID: string | undefined;
-  let PIN_ID: string | undefined;
-  let HOTJAR_ID: string | undefined;
-  let CLARITY_ID: string | undefined;
   let META_VERIFY: string | undefined;
   let organizationLd: Record<string, unknown> | null = null;
   let websiteLd: Record<string, unknown> | null = null;
-  let customPixels: CustomPixelConfig[] = [];
   let useGTM = false;
 
   if (!isAdminRoute) {
@@ -101,13 +95,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     const ids = resolveTracking(settings);
     GTM_ID = ids.gtm;
     GA4_ID = ids.ga4;
-    FB_ID = ids.fb;
-    TT_ID = ids.tiktok;
-    PIN_ID = ids.pinterest;
-    HOTJAR_ID = ids.hotjar;
-    CLARITY_ID = ids.clarity;
     META_VERIFY = ids.metaVerify;
-    customPixels = ids.custom;
     useGTM = Boolean(GTM_ID);
 
     if (ids.siteUrl) {
@@ -180,18 +168,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         )}
 
 
-
-
-
-
-
-
-        {!isAdminRoute &&
-          customPixels
-            .filter((pixel) => pixel.enabled && pixel.slot === 'head')
-            .map((pixel) => (
-              <script key={`custom-head-${pixel.id}`} dangerouslySetInnerHTML={{ __html: pixel.code }} />
-            ))}
+        {/** Pixels custom HTML removidos por segurança. Apenas modelos oficiais via <Pixels />. */}
       </head>
 
       <body
@@ -200,19 +177,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         }`}
       >
         {!isAdminRoute && <SkipLink />}
-        {!isAdminRoute && (
-          <PixelsByConsent
-            isAdminRoute={isAdminRoute}
-            useGTM={useGTM}
-            GTM_ID={GTM_ID}
-            GA4_ID={GA4_ID}
-            FB_ID={FB_ID}
-            TT_ID={TT_ID}
-            PIN_ID={PIN_ID}
-            HOTJAR_ID={HOTJAR_ID}
-            CLARITY_ID={CLARITY_ID}
-          />
-        )}
+        {!isAdminRoute && <Pixels isAdminRoute={isAdminRoute} />}
 
         {/* Dispara page_view em navegações SPA (só envia quando os pixels existirem) */}
         {!isAdminRoute && <TrackingScripts />}
@@ -229,18 +194,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             {!isAdminRoute && <ConsentBanner />}
           </div>
         </ThemeProvider>
-		{!isAdminRoute &&
-			customPixels
-				.filter((pixel) => pixel.enabled && pixel.slot === 'body')
-				.map((pixel) => (
-					<Fragment key={`custom-body-${pixel.id}`}>
-						<script dangerouslySetInnerHTML={{ __html: pixel.code }} />
-						{pixel.noscript ? (
-							<noscript dangerouslySetInnerHTML={{ __html: pixel.noscript }} />
-						) : null}
-					</Fragment>
-				))}
-
 		<SpeedInsights />
 		<ToastContainer />
 		</body>
