@@ -12,21 +12,27 @@ export default function SeoHub() {
   const [robotsTxt, setRobotsTxt] = useState<string>("");
   const [loadingRobots, setLoadingRobots] = useState(false);
   const [savingRobots, setSavingRobots] = useState(false);
+  const [seoMetrics, setSeoMetrics] = useState({ score: 0, indexed: 0, errors: 0, warnings: 0 });
+  const [auditIssues, setAuditIssues] = useState<Array<{ type: "error" | "warning"; page: string; issue: string; priority: string }>>([]);
+  const [loadingAudit, setLoadingAudit] = useState(false);
 
-  const seoMetrics = {
-    score: 87,
-    indexed: 142,
-    errors: 3,
-    warnings: 12,
-  };
-
-  const issues = [
-    { type: "error", page: "/blog/post-antigo", issue: "Meta description faltando", priority: "Alta" },
-    { type: "error", page: "/filhotes/golden", issue: "Title tag duplicado", priority: "Alta" },
-    { type: "error", page: "/contato", issue: "Heading H1 faltando", priority: "Média" },
-    { type: "warning", page: "/sobre", issue: "Alt text em imagem faltando", priority: "Baixa" },
-    { type: "warning", page: "/blog", issue: "Meta description muito curta", priority: "Baixa" },
-  ];
+  useEffect(() => {
+    if (activeTab !== "audit") return;
+    const run = async () => {
+      setLoadingAudit(true);
+      try {
+        const res = await fetch("/api/admin/seo/audit", { cache: "no-store" });
+        const json = await res.json();
+        setSeoMetrics(json.metrics || { score: 0, indexed: 0, errors: 0, warnings: 0 });
+        setAuditIssues(Array.isArray(json.issues) ? json.issues : []);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoadingAudit(false);
+      }
+    };
+    run();
+  }, [activeTab]);
 
   useEffect(() => {
     if (activeTab !== "redirects") return;
@@ -172,42 +178,50 @@ export default function SeoHub() {
           {activeTab === "audit" && (
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-emerald-900">Problemas Encontrados</h3>
-              <div className="space-y-2">
-                {issues.map((issue, index) => (
-                  <div
-                    key={index}
-                    className="flex items-start gap-3 rounded-lg border border-emerald-100 bg-emerald-50/50 p-4"
-                  >
-                    {issue.type === "error" ? (
-                      <AlertCircle className="h-5 w-5 shrink-0 text-red-500" />
-                    ) : (
-                      <AlertCircle className="h-5 w-5 shrink-0 text-yellow-500" />
-                    )}
-                    <div className="flex-1 space-y-1">
-                      <div className="flex items-center gap-2">
-                        <code className="rounded bg-emerald-100 px-2 py-0.5 text-xs font-mono text-emerald-900">
-                          {issue.page}
-                        </code>
-                        <span
-                          className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                            issue.priority === "Alta"
-                              ? "bg-red-100 text-red-700"
-                              : issue.priority === "Média"
-                              ? "bg-yellow-100 text-yellow-700"
-                              : "bg-blue-100 text-blue-700"
-                          }`}
-                        >
-                          {issue.priority}
-                        </span>
+              {loadingAudit ? (
+                <div className="p-4 text-sm text-emerald-700">Carregando…</div>
+              ) : (
+                <div className="space-y-2">
+                  {auditIssues.length === 0 ? (
+                    <div className="p-4 text-sm text-emerald-700">Sem problemas no momento.</div>
+                  ) : (
+                    auditIssues.map((issue, index) => (
+                      <div
+                        key={index}
+                        className="flex items-start gap-3 rounded-lg border border-emerald-100 bg-emerald-50/50 p-4"
+                      >
+                        {issue.type === "error" ? (
+                          <AlertCircle className="h-5 w-5 shrink-0 text-red-500" />
+                        ) : (
+                          <AlertCircle className="h-5 w-5 shrink-0 text-yellow-500" />
+                        )}
+                        <div className="flex-1 space-y-1">
+                          <div className="flex items-center gap-2">
+                            <code className="rounded bg-emerald-100 px-2 py-0.5 text-xs font-mono text-emerald-900">
+                              {issue.page}
+                            </code>
+                            <span
+                              className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                                issue.priority === "Alta"
+                                  ? "bg-red-100 text-red-700"
+                                  : issue.priority === "Média"
+                                  ? "bg-yellow-100 text-yellow-700"
+                                  : "bg-blue-100 text-blue-700"
+                              }`}
+                            >
+                              {issue.priority}
+                            </span>
+                          </div>
+                          <p className="text-sm text-emerald-900">{issue.issue}</p>
+                        </div>
+                        <button className="rounded-lg bg-emerald-600 px-3 py-1 text-sm font-medium text-white transition hover:bg-emerald-700">
+                          Corrigir
+                        </button>
                       </div>
-                      <p className="text-sm text-emerald-900">{issue.issue}</p>
-                    </div>
-                    <button className="rounded-lg bg-emerald-600 px-3 py-1 text-sm font-medium text-white transition hover:bg-emerald-700">
-                      Corrigir
-                    </button>
-                  </div>
-                ))}
-              </div>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
           )}
 
