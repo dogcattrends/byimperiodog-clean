@@ -11,10 +11,25 @@ import type {
   Post,
   PostStatus,
   Schedule,
+  PostRevision,
+  PostMetrics,
+  PixelEnvironment,
+  ScheduleEvent,
   SeoSettings,
   SiteSettings,
   Tag,
+  PixelSettings,
 } from "./types";
+import {
+  bulkActionSchema,
+  commentModerationSchema,
+  postContentSchema,
+  scheduleInputSchema,
+  type BulkActionInput,
+  type CommentModerationInput,
+  type PostContentInput,
+  type ScheduleInput,
+} from "./schemas/blog";
 
 type SupabaseClient = ReturnType<typeof supabaseAdmin> | null;
 
@@ -125,6 +140,30 @@ function mapSchedule(row: any): Schedule {
   };
 }
 
+function mapScheduleEvent(row: any): ScheduleEvent {
+  return {
+    id: row?.id ?? "",
+    postId: row?.post_id ?? "",
+    status: (row?.status as ScheduleEvent["status"]) ?? "pending",
+    runAt: normalizeDate(row?.run_at),
+    finishedAt: normalizeDate(row?.finished_at),
+    attempts: typeof row?.attempts === "number" ? row.attempts : 0,
+    createdAt: normalizeDate(row?.created_at),
+    updatedAt: normalizeDate(row?.updated_at),
+  };
+}
+
+function mapRevision(row: any): PostRevision {
+  return {
+    id: row?.id ?? "",
+    postId: row?.post_id ?? "",
+    snapshot: (row?.snapshot as Record<string, unknown>) ?? {},
+    reason: row?.reason ?? null,
+    createdBy: row?.created_by ?? null,
+    createdAt: normalizeDate(row?.created_at),
+  };
+}
+
 function mapSeoSettings(row: any): SeoSettings {
   return {
     defaultTitle: row?.default_title ?? null,
@@ -170,6 +209,17 @@ function mapEvent(row: any): AnalyticsEvent {
   };
 }
 
+function mapPostMetrics(row: any): PostMetrics {
+  return {
+    postId: row?.post_id ?? "",
+    views: typeof row?.views === "number" ? row.views : 0,
+    leads: typeof row?.leads === "number" ? row.leads : 0,
+    ctr: typeof row?.ctr === "number" ? row.ctr : null,
+    conversions: typeof row?.conversions === "number" ? row.conversions : null,
+    lastEventAt: normalizeDate(row?.last_event_at),
+  };
+}
+
 function mapSiteSettings(row: any): SiteSettings {
   return {
     id: row?.id ?? "",
@@ -180,6 +230,32 @@ function mapSiteSettings(row: any): SiteSettings {
     privacyContactEmail: row?.privacy_contact_email ?? null,
     createdAt: normalizeDate(row?.created_at),
     updatedAt: normalizeDate(row?.updated_at),
+  };
+}
+
+function mapPixelEnvironment(value: any): PixelEnvironment {
+  return {
+    gtmId: value?.gtmId ?? value?.gtm_id ?? null,
+    ga4Id: value?.ga4Id ?? value?.ga4_id ?? null,
+    metaPixelId: value?.metaPixelId ?? value?.meta_pixel_id ?? null,
+    tiktokPixelId: value?.tiktokPixelId ?? value?.tiktok_pixel_id ?? null,
+    googleAdsId: value?.googleAdsId ?? value?.google_ads_id ?? null,
+    googleAdsConversionLabel: value?.googleAdsConversionLabel ?? value?.google_ads_label ?? null,
+    pinterestId: value?.pinterestId ?? value?.pinterest_tag_id ?? null,
+    hotjarId: value?.hotjarId ?? value?.hotjar_id ?? null,
+    clarityId: value?.clarityId ?? value?.clarity_id ?? null,
+    metaDomainVerification: value?.metaDomainVerification ?? value?.meta_domain_verify ?? null,
+    analyticsConsent: value?.analyticsConsent ?? value?.analytics_consent ?? true,
+    marketingConsent: value?.marketingConsent ?? value?.marketing_consent ?? true,
+  };
+}
+
+function mapPixelSettings(row: any): PixelSettings {
+  return {
+    id: row?.id ?? "pixels",
+    updatedAt: normalizeDate(row?.updated_at),
+    production: mapPixelEnvironment(row?.production ?? {}),
+    staging: mapPixelEnvironment(row?.staging ?? {}),
   };
 }
 
@@ -204,6 +280,41 @@ function applyPagination(query: any, params?: ListParams) {
   const limit = Math.min(100, Math.max(1, params?.limit ?? 20));
   const offset = Math.max(0, params?.offset ?? 0);
   return query.range(offset, offset + limit - 1);
+}
+
+async function fetchPostMetrics(client: SupabaseClient, postIds: string[]): Promise<Record<string, PostMetrics>> {
+  if (!client || postIds.length === 0) return {};
+  try {
+    const { data, error } = await (client as any).rpc?.("blog_post_metrics", { post_ids: postIds });
+    if (error || !Array.isArray(data)) return {};
+    return data.reduce((acc: Record<string, PostMetrics>, row: any) => {
+      const metrics = mapPostMetrics(row);
+      if (metrics.postId) acc[metrics.postId] = metrics;
+      return acc;
+    }, {});
+  } catch {
+    return {};
+  }
+}
+
+async function fetchPendingComments(client: SupabaseClient, postIds: string[]): Promise<Record<string, number>> {
+  if (!client || postIds.length === 0) return {};
+  try {
+    const { data, error } = await client
+      .from("blog_comments")
+      .select("post_id", { count: "exact" })
+      .eq("status", "pending")
+      .in("post_id", postIds);
+    if (error || !Array.isArray(data)) return {};
+    return data.reduce((acc: Record<string, number>, row: any) => {
+      const key = row?.post_id ?? "";
+      if (!key) return acc;
+      acc[key] = (acc[key] ?? 0) + 1;
+      return acc;
+    }, {});
+  } catch {
+    return {};
+  }
 }
 
 async function execList<T>(
@@ -308,27 +419,63 @@ export const blogRepo = {
   async upsertPost(payload: Partial<Post> & { id?: string }): Promise<Post | null> {
     const client = getClient();
     if (!client) return null;
-    const base = {
+    const parsed = postContentSchema.safeParse({
       id: payload.id,
-      slug: payload.slug,
-      title: payload.title,
-      subtitle: payload.subtitle,
-      excerpt: payload.excerpt,
-      content_mdx: payload.content,
+      title: payload.title ?? "",
+      subtitle: payload.subtitle ?? null,
+      slug: payload.slug ?? "",
+      excerpt: payload.excerpt ?? null,
+      content: payload.content ?? "",
       status: payload.status ?? "draft",
-      cover_url: payload.coverUrl,
-      cover_alt: payload.coverAlt,
-      tags: payload.tags?.map((tag) => tag.slug) ?? null,
       category: payload.category?.slug ?? null,
-      seo_title: payload.seo?.title ?? null,
-      seo_description: payload.seo?.description ?? null,
-      og_image_url: payload.seo?.ogImageUrl ?? null,
-      seo_score: payload.seo?.score ?? null,
-      scheduled_at: payload.scheduledAt,
-      published_at: payload.publishedAt,
-    };
-    const operation = client.from("blog_posts").upsert(base, { onConflict: "id" }).select().limit(1);
-    return execWrite(operation, mapPost);
+      tags: payload.tags?.map((tag) => tag.slug) ?? [],
+      coverUrl: payload.coverUrl ?? null,
+      coverAlt: payload.coverAlt ?? null,
+      seoTitle: payload.seo?.title ?? null,
+      seoDescription: payload.seo?.description ?? null,
+      ogImageUrl: payload.seo?.ogImageUrl ?? null,
+      scheduledAt: payload.scheduledAt ?? null,
+      publishedAt: payload.publishedAt ?? null,
+    });
+    if (!parsed.success) {
+      logger.warn("upsertPost validation failed", { issues: parsed.error.flatten() });
+      return null;
+    }
+    const base = parsed.data;
+    const operation = client
+      .from("blog_posts")
+      .upsert(
+        {
+          id: base.id,
+          slug: base.slug,
+          title: base.title,
+          subtitle: base.subtitle ?? null,
+          excerpt: base.excerpt ?? null,
+          content_mdx: base.content,
+          status: base.status,
+          cover_url: base.coverUrl ?? null,
+          cover_alt: base.coverAlt ?? null,
+          tags: base.tags ?? [],
+          category: base.category ?? null,
+          seo_title: base.seoTitle ?? null,
+          seo_description: base.seoDescription ?? null,
+          og_image_url: base.ogImageUrl ?? null,
+          scheduled_at: base.scheduledAt ?? null,
+          published_at: base.publishedAt ?? null,
+        },
+        { onConflict: "id" },
+      )
+      .select()
+      .limit(1);
+    const saved = await execWrite(operation, mapPost);
+    if (saved && base.status === "published" && !saved.publishedAt) {
+      // ensure published_at persisted
+      const now = new Date().toISOString();
+      await client.from("blog_posts").update({ published_at: now, status: "published" }).eq("id", saved.id);
+      saved.publishedAt = now;
+      saved.status = "published";
+    }
+    return saved;
   },
 
   async deletePost(id: string): Promise<boolean> {
@@ -345,6 +492,133 @@ export const blogRepo = {
       logger.warn("deletePost exception", { error: String(error) });
       return false;
     }
+  },
+
+  async bulkAction(raw: BulkActionInput): Promise<BlogBulkResult> {
+    const parsed = bulkActionSchema.safeParse(raw);
+    if (!parsed.success) {
+      const failed = raw.postIds?.map((id) => ({
+        id,
+        reason: parsed.error.issues.map((issue) => issue.message).join("; "),
+      })) ?? [];
+      return { processed: [], failed };
+    }
+    const client = getClient();
+    if (!client) return { processed: [], failed: parsed.data.postIds.map((id) => ({ id, reason: "Supabase indisponível" })) };
+
+    const { action, postIds, scheduleAt } = parsed.data;
+    const processed: string[] = [];
+    const failed: Array<{ id: string; reason: string }> = [];
+
+    const run = async (id: string) => {
+      try {
+        if (action === "delete") {
+          const { error } = await client.from("blog_posts").delete().eq("id", id);
+          if (error) throw new Error(error.message);
+        } else if (action === "publish") {
+          const now = new Date().toISOString();
+          const { error } = await client
+            .from("blog_posts")
+            .update({ status: "published", published_at: now, scheduled_at: null })
+            .eq("id", id);
+          if (error) throw new Error(error.message);
+        } else if (action === "archive") {
+          const { error } = await client.from("blog_posts").update({ status: "archived" }).eq("id", id);
+          if (error) throw new Error(error.message);
+        } else if (action === "schedule") {
+          if (!scheduleAt) throw new Error("Data de agendamento obrigatória.");
+          const payload = {
+            post_id: id,
+            run_at: scheduleAt,
+            status: "pending",
+          };
+          const { error } = await client.from("blog_post_schedule_events").insert(payload);
+          if (error) throw new Error(error.message);
+          await client.from("blog_posts").update({ status: "scheduled", scheduled_at: scheduleAt }).eq("id", id);
+        }
+        processed.push(id);
+      } catch (error) {
+        failed.push({ id, reason: error instanceof Error ? error.message : String(error) });
+      }
+    };
+
+    await Promise.all(postIds.map(run));
+    return { processed, failed };
+  },
+
+  async duplicatePost(id: string): Promise<Post | null> {
+    const original = await this.getPostById(id);
+    if (!original) return null;
+    const suffix = `copy-${Date.now().toString(36)}`;
+    const clone: Partial<Post> = {
+      title: original.title ? `${original.title} (Cópia)` : "Post copiado",
+      subtitle: original.subtitle,
+      slug: `${original.slug}-${suffix}`,
+      excerpt: original.excerpt,
+      content: original.content,
+      status: "draft",
+      coverUrl: original.coverUrl,
+      coverAlt: original.coverAlt,
+      category: original.category,
+      tags: original.tags,
+      seo: original.seo,
+    };
+    return this.upsertPost(clone);
+  },
+
+  async recordRevision(postId: string, snapshot: Record<string, unknown>, reason?: string, createdBy?: string | null): Promise<boolean> {
+    const client = getClient();
+    if (!client) return false;
+    try {
+      const { error } = await client.from("blog_post_revisions").insert({
+        post_id: postId,
+        snapshot,
+        reason: reason ?? null,
+        created_by: createdBy ?? null,
+      });
+      if (error) throw new Error(error.message);
+      return true;
+    } catch (error) {
+      logger.warn("recordRevision error", { error: String(error), postId });
+      return false;
+    }
+  },
+
+  async listRevisions(postId: string, limit = 20): Promise<PostRevision[]> {
+    const client = getClient();
+    if (!client) return [];
+    try {
+      const { data, error } = await client
+        .from("blog_post_revisions")
+        .select("id,post_id,snapshot,reason,created_by,created_at")
+        .eq("post_id", postId)
+        .order("created_at", { ascending: false })
+        .limit(limit);
+      if (error || !Array.isArray(data)) return [];
+      return data.map(mapRevision);
+    } catch (error) {
+      logger.warn("listRevisions error", { error: String(error), postId });
+      return [];
+    }
+  },
+
+  async listSummaries(params?: ListPostsParams & { includeMetrics?: boolean; includePendingComments?: boolean }): Promise<ListResult<Post & { metrics?: PostMetrics | null; pendingComments?: number }>> {
+    const base = await this.listPosts(params);
+    const client = getClient();
+    if (!client || base.items.length === 0 || (!params?.includeMetrics && !params?.includePendingComments)) {
+      return base;
+    }
+    const ids = base.items.map((post) => post.id).filter(Boolean);
+    const [metricsMap, commentsMap] = await Promise.all([
+      params?.includeMetrics ? fetchPostMetrics(client, ids) : Promise.resolve({}),
+      params?.includePendingComments ? fetchPendingComments(client, ids) : Promise.resolve({}),
+    ]);
+    const items = base.items.map((post) => ({
+      ...post,
+      metrics: params?.includeMetrics ? metricsMap[post.id] ?? null : undefined,
+      pendingComments: params?.includePendingComments ? commentsMap[post.id] ?? 0 : undefined,
+    }));
+    return { items, total: base.total };
   },
 };
 
@@ -393,6 +667,105 @@ export const commentRepo = {
       return true;
     } catch (error) {
       logger.warn("delete comment exception", { error: String(error) });
+      return false;
+    }
+  },
+
+  async moderateMany(raw: CommentModerationInput): Promise<boolean> {
+    const parsed = commentModerationSchema.safeParse(raw);
+    if (!parsed.success) {
+      logger.warn("moderateMany validation failed", { issues: parsed.error.flatten() });
+      return false;
+    }
+    const client = getClient();
+    if (!client) return false;
+    try {
+      const { error } = await client
+        .from("blog_comments")
+        .update({ status: parsed.data.status, approved: parsed.data.status === "approved" })
+        .in("id", parsed.data.commentIds);
+      if (error) throw new Error(error.message);
+      return true;
+    } catch (error) {
+      logger.warn("moderateMany error", { error: String(error) });
+      return false;
+    }
+  },
+};
+
+export const scheduleRepo = {
+  async listEvents(params?: { postId?: string; limit?: number }): Promise<ScheduleEvent[]> {
+    const client = getClient();
+    if (!client) return [];
+    try {
+      let query = client
+        .from("blog_post_schedule_events")
+        .select("id,post_id,status,run_at,finished_at,attempts,created_at,updated_at")
+        .order("run_at", { ascending: true });
+      if (params?.postId) query = query.eq("post_id", params.postId);
+      if (typeof params?.limit === "number") query = query.limit(params.limit);
+      const { data, error } = await query;
+      if (error || !Array.isArray(data)) return [];
+      return data.map(mapScheduleEvent);
+    } catch (error) {
+      logger.warn("schedule list error", { error: String(error) });
+      return [];
+    }
+  },
+
+  async createEvent(raw: ScheduleInput): Promise<ScheduleEvent | null> {
+    const parsed = scheduleInputSchema.safeParse(raw);
+    if (!parsed.success) {
+      logger.warn("createEvent validation failed", { issues: parsed.error.flatten() });
+      return null;
+    }
+    const client = getClient();
+    if (!client) return null;
+    const { postId, runAt, repeatInterval } = parsed.data;
+    try {
+      const { data, error } = await client
+        .from("blog_post_schedule_events")
+        .insert({
+          post_id: postId,
+          run_at: runAt,
+          repeat_interval: repeatInterval ?? null,
+          status: "pending",
+        })
+        .select()
+        .limit(1);
+      if (error || !Array.isArray(data) || !data[0]) return null;
+      return mapScheduleEvent(data[0]);
+    } catch (error) {
+      logger.warn("createEvent error", { error: String(error) });
+      return null;
+    }
+  },
+
+  async deleteEvent(id: string): Promise<boolean> {
+    const client = getClient();
+    if (!client) return false;
+    try {
+      const { error } = await client.from("blog_post_schedule_events").delete().eq("id", id);
+      if (error) throw new Error(error.message);
+      return true;
+    } catch (error) {
+      logger.warn("deleteEvent error", { error: String(error) });
+      return false;
+    }
+  },
+
+  async updateStatus(id: string, status: ScheduleEvent["status"], finishedAt?: string | null): Promise<boolean> {
+    const client = getClient();
+    if (!client) return false;
+    try {
+      const { error } = await client
+        .from("blog_post_schedule_events")
+        .update({ status, finished_at: finishedAt ?? null })
+        .eq("id", id);
+      if (error) throw new Error(error.message);
+      return true;
+    } catch (error) {
+      logger.warn("update schedule status error", { error: String(error) });
       return false;
     }
   },
@@ -574,8 +947,81 @@ export const settingsRepo = {
   },
 };
 
+export const pixelsRepo = {
+  async getSettings(): Promise<PixelSettings> {
+    const client = getClient();
+    if (!client) {
+      return {
+        id: "pixels",
+        updatedAt: null,
+        production: mapPixelEnvironment({}),
+        staging: mapPixelEnvironment({}),
+      };
+    }
+    try {
+      const { data, error } = await client.from("pixels_settings").select("*").eq("id", "pixels").maybeSingle();
+      if (error || !data) {
+        return {
+          id: "pixels",
+          updatedAt: null,
+          production: mapPixelEnvironment({}),
+          staging: mapPixelEnvironment({}),
+        };
+      }
+      return mapPixelSettings(data);
+    } catch (error) {
+      logger.warn("pixels getSettings error", { error: String(error) });
+      return {
+        id: "pixels",
+        updatedAt: null,
+        production: mapPixelEnvironment({}),
+        staging: mapPixelEnvironment({}),
+      };
+    }
+  },
+
+  async saveSettings(settings: PixelSettings): Promise<PixelSettings | null> {
+    const client = getClient();
+    if (!client) return null;
+    try {
+      const { data, error } = await client
+        .from("pixels_settings")
+        .upsert(
+          {
+            id: "pixels",
+            production: settings.production,
+            staging: settings.staging,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "id" },
+        )
+        .select()
+        .limit(1);
+      if (error || !Array.isArray(data) || !data[0]) return null;
+      return mapPixelSettings(data[0]);
+    } catch (error) {
+      logger.warn("pixels saveSettings error", { error: String(error) });
+      return null;
+    }
+  },
+
+  async restoreDefaults(): Promise<boolean> {
+    const client = getClient();
+    if (!client) return false;
+    try {
+      const { error } = await client.from("pixels_settings").delete().eq("id", "pixels");
+      if (error) throw new Error(error.message);
+      return true;
+    } catch (error) {
+      logger.warn("pixels restore error", { error: String(error) });
+      return false;
+    }
+  },
+};
+
 export type {
   AnalyticsEvent,
+  BlogBulkResult,
   Comment,
   Experiment,
   ListParams,
@@ -584,8 +1030,26 @@ export type {
   Post,
   PostStatus,
   Schedule,
+  ScheduleEvent,
+  PostRevision,
+  PostMetrics,
   SeoSettings,
   SiteSettings,
   Tag,
+  PixelSettings,
+  PixelEnvironment,
 } from "./types";
 
+export {
+  postContentSchema,
+  bulkActionSchema,
+  scheduleInputSchema,
+  commentModerationSchema,
+} from "./schemas/blog";
+
+export type {
+  PostContentInput,
+  BulkActionInput,
+  ScheduleInput,
+  CommentModerationInput,
+} from "./schemas/blog";

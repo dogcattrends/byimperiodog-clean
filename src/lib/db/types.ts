@@ -68,6 +68,35 @@ export interface Schedule {
   updatedAt: string | null;
 }
 
+export interface ScheduleEvent {
+  id: string;
+  postId: string;
+  status: ScheduleStatus;
+  runAt: string | null;
+  finishedAt: string | null;
+  attempts: number;
+  createdAt: string | null;
+  updatedAt: string | null;
+}
+
+export interface PostRevision {
+  id: string;
+  postId: string;
+  snapshot: Record<string, unknown>;
+  reason: string | null;
+  createdBy: string | null;
+  createdAt: string | null;
+}
+
+export interface PostMetrics {
+  postId: string;
+  views: number;
+  leads: number;
+  ctr: number | null;
+  conversions: number | null;
+  lastEventAt: string | null;
+}
+
 export interface MediaAsset {
   id: string;
   filePath: string;
@@ -148,3 +177,31 @@ export interface ListResult<T> {
   total: number;
 }
 
+export interface PixelEnvironment {
+  gtmId: string | null;
+  ga4Id: string | null;
+  metaPixelId: string | null;
+  tiktokPixelId: string | null;
+  googleAdsId: string | null;
+  googleAdsConversionLabel: string | null;
+  pinterestId: string | null;
+  hotjarId: string | null;
+  clarityId: string | null;
+  metaDomainVerification: string | null;
+  analyticsConsent: boolean;
+  marketingConsent: boolean;
+}
+
+export interface PixelSettings {
+  id: string;
+  updatedAt: string | null;
+  production: PixelEnvironment;
+  staging: PixelEnvironment;
+}
+
+export type BlogBulkAction = "publish" | "archive" | "delete" | "schedule";
+
+export interface BlogBulkResult {
+  processed: string[];
+  failed: Array<{ id: string; reason: string }>;
+}

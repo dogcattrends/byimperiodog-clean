@@ -1,8 +1,9 @@
 "use client";
-import React, { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { BlogSubnav } from "@/components/admin/BlogSubnav";
+import React, { useEffect, useState } from "react";
+
 import EditorShell, { type FormState } from "@/app/admin/blog/editor/EditorShell";
+import { BlogSubnav } from "@/components/admin/BlogSubnav";
 import { adminFetch } from "@/lib/adminFetch";
 
 async function fetchPost(id: string) {
@@ -38,6 +39,9 @@ async function persist(form: FormState) {
     const j = await res.json().catch(() => null);
     throw new Error(j?.error || "Falha ao salvar");
   }
+  // Retorna dados básicos para que o EditorShell possa sincronizar o ID/slug após o primeiro save
+  const data = await res.json().catch(() => null);
+  return (data || undefined) as { id?: string; slug?: string; status?: string } | void;
 }
 
 export default function BlogEditorPage() {

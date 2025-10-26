@@ -1,17 +1,19 @@
 ﻿// PATH: src/app/admin/blog/editor/EditorShell.tsx
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
-import { useForm } from "react-hook-form";
 import { Sparkles, Wand2, Check, Copy, ListOrdered, Tag as TagIcon } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+
 import CoverUploader from "@/components/media/CoverUploader";
 import InlineImagePicker, { type InlineImage } from "@/components/media/InlineImagePicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
+import useAutosave from "@/hooks/useAutosave";
 import { estimateReadingTime } from "@/lib/blog/reading-time";
-import { EditorAIRequest, EditorAIResponse } from "@/lib/blog/types";
+import type { EditorAIRequest, EditorAIResponse } from "@/lib/blog/types";
 
 export interface FormState {
   id?: string;
@@ -34,7 +36,7 @@ export interface FormState {
 
 interface EditorShellProps {
   initial?: Partial<FormState>;
-  onSave: (data: FormState) => Promise<void>;
+  onSave: (data: FormState) => Promise<{ id?: string; slug?: string; status?: string } | void>;
   aiEndpoint?: string;
 }
 
@@ -101,6 +103,7 @@ export default function EditorShell({ initial, onSave, aiEndpoint = "/api/admin/
   const [aiOutputs, setAiOutputs] = useState<AiOutputs>({ titles: [], subtitles: [], outline: [], tags: [] });
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+  const [savingSilently, setSavingSilently] = useState<boolean>(false);
 
   useEffect(() => {
     if (!initial) return;
@@ -205,7 +208,7 @@ export default function EditorShell({ initial, onSave, aiEndpoint = "/api/admin/
       await navigator.clipboard.writeText(value);
       setCopiedKey(key);
       setTimeout(() => setCopiedKey(null), 2000);
-    } catch (error) {
+    } catch (err) {
       pushToast({ message: "Nao foi possivel copiar agora.", type: "error" });
     }
   }
@@ -256,8 +259,8 @@ export default function EditorShell({ initial, onSave, aiEndpoint = "/api/admin/
       if (data.mode === "full") {
         pushToast({ message: "Conteudo base adicionado pelo assistente IA.", type: "success" });
       }
-    } catch (error: any) {
-      const message = error?.message || "Nao foi possivel usar a IA agora.";
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Nao foi possivel usar a IA agora.";
       pushToast({ message, type: "error" });
       setAiState({ loading: false, lastMode: request.mode, error: message });
       return;
@@ -278,15 +281,58 @@ export default function EditorShell({ initial, onSave, aiEndpoint = "/api/admin/
       readingTime,
     };
     try {
-      await onSave(payload);
+      const result = await onSave(payload);
+      if (result && typeof result === "object" && result.id && !getValues("id")) {
+        setValue("id", result.id as string, { shouldDirty: false });
+      }
       setLastSavedAt(new Date());
       pushToast({ message: "Post salvo com sucesso.", type: "success" });
-    } catch (error: any) {
-      pushToast({ message: error?.message || "Revise os campos e tente novamente.", type: "error" });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Revise os campos e tente novamente.";
+      pushToast({ message: msg, type: "error" });
     }
   });
 
   const publishAtValue = useMemo(() => (publishAtIso ? publishAtIso.slice(0, 16) : ""), [publishAtIso]);
+
+  // Autosave com debounce: salva rascunho silenciosamente quando houver alterações
+  useAutosave<FormState | null>({
+    interval: 800,
+    enabled: !!(formState.isDirty && !formState.isSubmitting && (title?.trim().length || 0) >= 3 && (slug?.trim().length || 0) >= 3),
+    values: {
+      id: getValues("id"),
+      title: title || "",
+      subtitle: watch("subtitle") ?? null,
+      slug: slug || "",
+      excerpt: watch("excerpt") ?? null,
+      content: content || "",
+      category: watch("category") ?? null,
+      tags: tags || [],
+      status,
+      publishAt: publishAtIso || null,
+      coverUrl: coverUrl || null,
+      coverAlt: coverAlt || null,
+      ogImageUrl: watch("ogImageUrl") || null,
+      metaTitle: watch("metaTitle") || null,
+      metaDescription: watch("metaDescription") || null,
+      readingTime,
+    },
+    onSave: async (vals) => {
+      if (!vals) return;
+      try {
+        setSavingSilently(true);
+        const result = await onSave(vals);
+        if (result && typeof result === "object" && result.id && !getValues("id")) {
+          setValue("id", result.id as string, { shouldDirty: false });
+        }
+        setLastSavedAt(new Date());
+      } catch {
+        // autosave silencioso: não exibir toast de erro
+      } finally {
+        setSavingSilently(false);
+      }
+    },
+  });
 
   return (
     <form onSubmit={onSubmit} className="grid gap-6 md:grid-cols-[minmax(0,300px)_minmax(0,1fr)_minmax(0,320px)]">
@@ -310,26 +356,27 @@ export default function EditorShell({ initial, onSave, aiEndpoint = "/api/admin/
             )}
           </header>
           <div className="mt-4 space-y-3">
-            <label className="flex flex-col gap-1 text-xs font-medium">
+            <label htmlFor="title" className="flex flex-col gap-1 text-xs font-medium">
               Titulo*
-              <Input {...register("title", { required: true })} placeholder="Titulo do post" aria-required />
+              <Input id="title" {...register("title", { required: true })} placeholder="Titulo do post" aria-required />
             </label>
-            <label className="flex flex-col gap-1 text-xs font-medium">
+            <label htmlFor="subtitle" className="flex flex-col gap-1 text-xs font-medium">
               Subtitulo
-              <Input value={watch("subtitle") ?? ""} onChange={(event) => setValue("subtitle", event.target.value || null, { shouldDirty: true })} placeholder="Resumo curto" />
+              <Input id="subtitle" value={watch("subtitle") ?? ""} onChange={(event) => setValue("subtitle", event.target.value || null, { shouldDirty: true })} placeholder="Resumo curto" />
             </label>
-            <label className="flex flex-col gap-1 text-xs font-medium">
+            <label htmlFor="slug" className="flex flex-col gap-1 text-xs font-medium">
               Slug
               <Input
+                id="slug"
                 value={slug}
                 onChange={(event) => handleSlugChange(event.target.value.replace(SLUG_REGEX, ""))}
                 onBlur={() => setSlugEdited(true)}
                 placeholder="meu-post-incrivel"
               />
             </label>
-            <label className="flex flex-col gap-1 text-xs font-medium">
+            <label htmlFor="category" className="flex flex-col gap-1 text-xs font-medium">
               Categoria
-              <Input value={watch("category") ?? ""} onChange={(event) => setValue("category", event.target.value || null, { shouldDirty: true })} placeholder="Ex: cuidados" />
+              <Input id="category" value={watch("category") ?? ""} onChange={(event) => setValue("category", event.target.value || null, { shouldDirty: true })} placeholder="Ex: cuidados" />
             </label>
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs font-medium">
@@ -348,13 +395,14 @@ export default function EditorShell({ initial, onSave, aiEndpoint = "/api/admin/
               </div>
               <Input placeholder="Digite e pressione Enter" onKeyDown={addTagFromInput} aria-label="Adicionar tag" />
             </div>
-            <label className="flex flex-col gap-1 text-xs font-medium">
+            <label htmlFor="publishAt" className="flex flex-col gap-1 text-xs font-medium">
               Publish At
-              <Input type="datetime-local" value={publishAtValue} onChange={(event) => setPublishAt(event.target.value)} />
+              <Input id="publishAt" type="datetime-local" value={publishAtValue} onChange={(event) => setPublishAt(event.target.value)} />
             </label>
-            <label className="flex flex-col gap-1 text-xs font-medium">
+            <label htmlFor="status" className="flex flex-col gap-1 text-xs font-medium">
               Status
               <select
+                id="status"
                 value={status}
                 onChange={(event) => setValue("status", event.target.value as FormState["status"], { shouldDirty: true })}
                 className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]"
@@ -369,9 +417,10 @@ export default function EditorShell({ initial, onSave, aiEndpoint = "/api/admin/
 
         <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm space-y-3">
           <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Resumo & SEO</p>
-          <label className="flex flex-col gap-1 text-xs font-medium">
+          <label htmlFor="excerpt" className="flex flex-col gap-1 text-xs font-medium">
             Resumo (excerpt)
             <textarea
+              id="excerpt"
               value={watch("excerpt") ?? ""}
               onChange={(event) => setValue("excerpt", event.target.value || null, { shouldDirty: true })}
               rows={3}
@@ -379,13 +428,14 @@ export default function EditorShell({ initial, onSave, aiEndpoint = "/api/admin/
               placeholder="Resumo curto para listagens"
             />
           </label>
-          <label className="flex flex-col gap-1 text-xs font-medium">
+          <label htmlFor="metaTitle" className="flex flex-col gap-1 text-xs font-medium">
             Meta Title
-            <Input value={watch("metaTitle") ?? ""} onChange={(event) => setValue("metaTitle", event.target.value || null, { shouldDirty: true })} placeholder="Titulo SEO (opcional)" />
+            <Input id="metaTitle" value={watch("metaTitle") ?? ""} onChange={(event) => setValue("metaTitle", event.target.value || null, { shouldDirty: true })} placeholder="Titulo SEO (opcional)" />
           </label>
-          <label className="flex flex-col gap-1 text-xs font-medium">
+          <label htmlFor="metaDescription" className="flex flex-col gap-1 text-xs font-medium">
             Meta Description
             <textarea
+              id="metaDescription"
               value={watch("metaDescription") ?? ""}
               onChange={(event) => setValue("metaDescription", event.target.value || null, { shouldDirty: true })}
               rows={2}
@@ -425,6 +475,7 @@ export default function EditorShell({ initial, onSave, aiEndpoint = "/api/admin/
             </Button>
           </div>
           <div className="flex items-center gap-2 text-[11px] text-[var(--text-muted)]">
+            {savingSilently && <span>Salvando…</span>}
             {lastSavedAt && <span>Salvo {lastSavedAt.toLocaleTimeString("pt-BR")}</span>}
             <span>{formState.isDirty ? "Alteracoes nao salvas" : "Tudo sincronizado"}</span>
           </div>
