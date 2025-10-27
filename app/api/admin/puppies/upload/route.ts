@@ -9,7 +9,14 @@ import { requireAdmin } from '@/lib/adminAuth';
 import { rateLimit } from '@/lib/limiter';
 import { safeAction } from '@/lib/safeAction';
 import { supabaseAdmin, hasServiceRoleKey } from '@/lib/supabaseAdmin';
-import { ALLOWED_IMAGE_MIME, MAX_IMAGE_BYTES, inferExtFromMime, sanitizeFilename } from '@/lib/uploadValidation';
+import { 
+  ALLOWED_IMAGE_MIME, 
+  ALLOWED_VIDEO_MIME,
+  MAX_IMAGE_BYTES,
+  MAX_VIDEO_BYTES,
+  inferExtFromMime, 
+  sanitizeFilename 
+} from '@/lib/uploadValidation';
 
 // Upload simples (base64 ou multipart futura). Por hora aceita JSON { filename, dataBase64 }
 const bodySchema = z.object({
@@ -27,12 +34,18 @@ const execute = safeAction({
     const match = /^data:(.*?);base64,(.*)$/.exec(b64) || [null, null, b64];
     const mime = match[1] || 'image/png';
     const buf = Buffer.from(match[2]!, 'base64');
+    
+    // Determinar se é imagem ou vídeo
+    const isVideo = ALLOWED_VIDEO_MIME.has(mime);
+    const isImage = ALLOWED_IMAGE_MIME.has(mime);
+    const maxBytes = isVideo ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES;
+    
     // Basic security validation
-    if (!ALLOWED_IMAGE_MIME.has(mime)) {
-      return NextResponse.json({ error: 'mime-nao-suportado' }, { status: 415 });
+    if (!isImage && !isVideo) {
+      return NextResponse.json({ error: 'mime-nao-suportado', supported: 'images (jpg,png,webp,avif,gif) e videos (mp4,webm,mov)' }, { status: 415 });
     }
-    if (buf.byteLength <= 0 || buf.byteLength > MAX_IMAGE_BYTES) {
-      return NextResponse.json({ error: 'arquivo-muito-grande', maxBytes: MAX_IMAGE_BYTES }, { status: 413 });
+    if (buf.byteLength <= 0 || buf.byteLength > maxBytes) {
+      return NextResponse.json({ error: 'arquivo-muito-grande', maxBytes, tipo: isVideo ? 'video' : 'imagem' }, { status: 413 });
     }
     const ext = inferExtFromMime(mime);
     const originalBase = sanitizeFilename(body.filename || 'upload');
@@ -50,15 +63,20 @@ const execute = safeAction({
     }
     const folder = new Date().toISOString().slice(0,10);
     const path = `${folder}/${fileName}`;
-    // Preparar thumbnail (largura máxima 480 px) em WebP
-  let thumbBuf: Buffer | null = null;
-  const thumbName = fileName.replace(/\.[^.]+$/, '') + '-thumb.webp';
+    
+    // Preparar thumbnail apenas para imagens (não para vídeos)
+    let thumbBuf: Buffer | null = null;
+    const thumbName = fileName.replace(/\.[^.]+$/, '') + '-thumb.webp';
     const thumbPath = `${folder}/thumbs/${thumbName}`;
-    try {
-      thumbBuf = await sharp(buf).resize({ width: 480, withoutEnlargement: true }).webp({ quality: 75 }).toBuffer();
-    } catch(err){
-      // se falhar, ignora thumbnail
-      thumbBuf = null;
+    
+    if (isImage && !mime.includes('gif')) {
+      // Gerar thumbnail apenas para imagens estáticas (não GIF animado)
+      try {
+        thumbBuf = await sharp(buf).resize({ width: 480, withoutEnlargement: true }).webp({ quality: 75 }).toBuffer();
+      } catch(err){
+        // se falhar, ignora thumbnail
+        thumbBuf = null;
+      }
     }
     if(!hasServiceRoleKey()){
       // modo offline: devolve a própria data URL (aceitável em dev)

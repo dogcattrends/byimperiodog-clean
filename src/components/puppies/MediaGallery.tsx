@@ -28,10 +28,26 @@ export default function MediaGallery({ media, cover, onChange, onSelectCover, ma
         const b64 = `data:${f.type};base64,${Buffer.from(buf).toString('base64')}`;
         setProgress(p=>({...p,[f.name]:10}));
         const r = await adminFetch('/api/admin/puppies/upload',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ filename:f.name, dataBase64:b64 })});
-        const j = await r.json(); if(!r.ok) throw new Error(j?.error||'upload falhou');
+        
+        // Tentar parsear JSON com tratamento de erro
+        let j;
+        try {
+          j = await r.json();
+        } catch (parseError) {
+          throw new Error(`Resposta inválida do servidor (${r.status})`);
+        }
+        
+        if(!r.ok) {
+          const errorMsg = j?.error || `Upload falhou (${r.status})`;
+          const details = j?.supported ? ` - Suportado: ${j.supported}` : '';
+          throw new Error(errorMsg + details);
+        }
+        
         setProgress(p=>({...p,[f.name]:100}));
         newUrls.push(j.url);
-      } catch(err:any){ push({ type:'error', message: err?.message||'Erro upload'}); }
+      } catch(err:any){ 
+        push({ type:'error', message: err?.message||'Erro upload'}); 
+      }
     }
     if(newUrls.length){
       let next = [...media, ...newUrls];
@@ -62,7 +78,14 @@ export default function MediaGallery({ media, cover, onChange, onSelectCover, ma
     <div className={`grid gap-2 ${className}`}>
       <div className="flex items-center justify-between">
         <label className="font-medium" id="media-gallery-label">{label}</label>
-        <input aria-labelledby="media-gallery-label" type="file" accept="image/*" multiple onChange={handleFile} className="text-[11px]" />
+        <input 
+          aria-labelledby="media-gallery-label" 
+          type="file" 
+          accept="image/*,video/mp4,video/webm,video/quicktime" 
+          multiple 
+          onChange={handleFile} 
+          className="text-[11px]" 
+        />
       </div>
       <div ref={liveRef} aria-live="polite" className="sr-only" />
       {Object.keys(progress).length>0 && (
