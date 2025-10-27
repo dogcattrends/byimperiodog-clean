@@ -153,21 +153,24 @@ export default function HeroSection() {
         </div>
 
         <div className="space-y-6">
-          <figure className="relative aspect-[4/3] overflow-hidden rounded-3xl border border-emerald-200/70 bg-white shadow-2xl">
-            <Image
+          <figure className="relative overflow-hidden rounded-3xl border border-emerald-200/70 bg-white shadow-2xl">
+            <div className="relative aspect-[4/3]">
+              <Image
               src="/spitz-hero-desktop.webp"
               alt="Filhotes de Spitz Alemão Anão saudáveis em ambiente acolhedor"
               fill
               priority
-              quality={90}
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 50vw"
+              fetchPriority="high"
+              sizes={HERO_IMAGE_SIZES}
               className="object-cover"
               placeholder="blur"
-              blurDataURL="data:image/webp;base64,UklGRkQAAABXRUJQVlA4IDgAAAAQAgCdASoQAAwAPzmEuVOvKKWisAgB4CcJZQAAcrz3qV/kAP78fZ/+WH3z9v/xgk1AAAAAA"
+              blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAuMBgX0xiysAAAAASUVORK5CYII="
+              style={{ contentVisibility: "auto" }}
             />
             <figcaption className="absolute bottom-3 left-3 rounded-full bg-white px-4 py-1 text-xs font-semibold text-emerald-700 shadow">
               Socialização guiada com vídeos semanais
             </figcaption>
+            </div>
           </figure>
 
           <div className="rounded-2xl border border-emerald-200 bg-white p-6 shadow-lg">
@@ -195,3 +198,4 @@ export default function HeroSection() {
     </section>
   );
 }
+

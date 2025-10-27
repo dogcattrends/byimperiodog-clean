@@ -42,10 +42,20 @@ export default function TrackingScripts() {
       }
     };
 
-    // fire for initial load
-    sendPageView();
-    // init Web Vitals (LCP/INP/CLS)
-    initWebVitals();
+    // Defer tracking para não bloquear main thread
+    // RequestIdleCallback para melhor TBT/INP
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(() => {
+        sendPageView();
+        initWebVitals();
+      }, { timeout: 2000 });
+    } else {
+      // Fallback para navegadores sem suporte
+      setTimeout(() => {
+        sendPageView();
+        initWebVitals();
+      }, 1);
+    }
 
     // Delegated clicks for CTR (cards, toc, share)
     const onClick = (e: MouseEvent) => {

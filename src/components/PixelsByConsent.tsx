@@ -82,8 +82,9 @@ export default function PixelsByConsent(props: PixelsProps) {
   return (
     <>
       {/* Analytics: GTM (preferencial) ou GA4 direto, somente com consent.analytics */}
+      {/* strategy="lazyOnload" para evitar bloqueio de TBT/TTI (carrega após onLoad) */}
       {allowAnalytics && useGTM && GTM_ID && !flags.gtm && (
-        <Script id="gtm-consent" strategy="afterInteractive" onLoad={() => { flags.gtm = true; }}>
+        <Script id="gtm-consent" strategy="lazyOnload" onLoad={() => { flags.gtm = true; }}>
           {`
             (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
             new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -96,8 +97,8 @@ export default function PixelsByConsent(props: PixelsProps) {
 
       {allowAnalytics && !useGTM && GA4_ID && !flags.ga && (
         <>
-          <Script id="ga4-src-consent" src={`https://www.googletagmanager.com/gtag/js?id=${GA4_ID}`} strategy="afterInteractive" onLoad={() => { /* noop */ }} />
-          <Script id="ga4-init-consent" strategy="afterInteractive" onLoad={() => { flags.ga = true; }}>
+          <Script id="ga4-src-consent" src={`https://www.googletagmanager.com/gtag/js?id=${GA4_ID}`} strategy="lazyOnload" onLoad={() => { /* noop */ }} />
+          <Script id="ga4-init-consent" strategy="lazyOnload" onLoad={() => { flags.ga = true; }}>
             {`
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);} window.gtag = gtag;
@@ -109,7 +110,7 @@ export default function PixelsByConsent(props: PixelsProps) {
 
       {/* Analytics auxiliares: Hotjar e Clarity */}
       {allowAnalytics && HOTJAR_ID && !isNaN(Number(HOTJAR_ID)) && !flags.hj && (
-        <Script id="hotjar-consent" strategy="afterInteractive" onLoad={() => { flags.hj = true; }}>
+        <Script id="hotjar-consent" strategy="lazyOnload" onLoad={() => { flags.hj = true; }}>
           {`
             (function(h,o,t,j,a,r){ h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
             h._hjSettings={hjid:${Number(HOTJAR_ID)},hjsv:6}; a=o.getElementsByTagName('head')[0];
@@ -120,7 +121,7 @@ export default function PixelsByConsent(props: PixelsProps) {
       )}
 
       {allowAnalytics && CLARITY_ID && !flags.cl && (
-        <Script id="clarity-consent" strategy="afterInteractive" onLoad={() => { flags.cl = true; }}>
+        <Script id="clarity-consent" strategy="lazyOnload" onLoad={() => { flags.cl = true; }}>
           {`
             (function(c,l,a,r,i,t,y){ c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
             t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i; y=l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t,y);
@@ -130,13 +131,14 @@ export default function PixelsByConsent(props: PixelsProps) {
       )}
 
       {/* Marketing: Facebook, TikTok, Pinterest */}
+      {/* strategy="lazyOnload" para minimizar impacto no TBT */}
       {allowMarketing && ADS_ID && (
         <>
           {!useGTM && !flags.ga && !flags.ads && (
             <Script
               id="google-ads-src"
               src={`https://www.googletagmanager.com/gtag/js?id=${ADS_ID}`}
-              strategy="afterInteractive"
+              strategy="lazyOnload"
               onLoad={() => {
                 flags.ads = true;
               }}
@@ -144,7 +146,7 @@ export default function PixelsByConsent(props: PixelsProps) {
           )}
           <Script
             id="google-ads-init"
-            strategy="afterInteractive"
+            strategy="lazyOnload"
             onLoad={() => {
               flags.ads = true;
             }}
@@ -162,7 +164,7 @@ export default function PixelsByConsent(props: PixelsProps) {
 
       {allowMarketing && FB_ID && !flags.fb && (
         <>
-          <Script id="fb-pixel-consent" strategy="afterInteractive" onLoad={() => { flags.fb = true; }}>
+          <Script id="fb-pixel-consent" strategy="lazyOnload" onLoad={() => { flags.fb = true; }}>
             {`
               !(function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
               n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
@@ -176,7 +178,7 @@ export default function PixelsByConsent(props: PixelsProps) {
       )}
 
       {allowMarketing && TT_ID && !flags.tt && (
-        <Script id="tiktok-consent" strategy="afterInteractive" onLoad={() => { flags.tt = true; }}>
+        <Script id="tiktok-consent" strategy="lazyOnload" onLoad={() => { flags.tt = true; }}>
           {`
             !function (w, d, t) {w.TiktokAnalyticsObject = t; var ttq = w[t] = w[t] || [];
             ttq.methods = ["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"],
@@ -196,7 +198,7 @@ export default function PixelsByConsent(props: PixelsProps) {
       )}
 
       {allowMarketing && PIN_ID && !flags.pin && (
-        <Script id="pinterest-consent" strategy="afterInteractive" onLoad={() => { flags.pin = true; }}>
+        <Script id="pinterest-consent" strategy="lazyOnload" onLoad={() => { flags.pin = true; }}>
           {`
             !function(e){if(!window.pintrk){window.pintrk=function(){window.pintrk.queue.push(Array.prototype.slice.call(arguments))};var n=window.pintrk;n.queue=[],n.version="3.0";var t=document.createElement("script");t.async=!0,t.src=e;var r=document.getElementsByTagName("script")[0];r.parentNode.insertBefore(t,r)}}("https://s.pinimg.com/ct/core.js");
             pintrk('load', '${PIN_ID}'); pintrk('page');
