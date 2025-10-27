@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 
 import { cn } from "@/lib/cn";
 import passthroughImageLoader from "@/lib/passthrough-image-loader";
+import { BLUR_DATA_URL } from "@/lib/placeholders";
 
 import { StoriesViewer, type Story } from "./StoriesViewer";
 
@@ -62,6 +63,8 @@ export default function StoriesBar({ stories, className, ariaLabel = "Stories do
                   alt={item.cover.description ?? item.title}
                   fill
                   className="object-cover"
+                  placeholder="blur"
+                  blurDataURL={BLUR_DATA_URL}
                   sizes="80px"
                   priority={index < 4}
                 />
@@ -80,4 +83,7 @@ export default function StoriesBar({ stories, className, ariaLabel = "Stories do
     </>
   );
 }
+
+
+
 

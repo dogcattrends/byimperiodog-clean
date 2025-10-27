@@ -20,6 +20,7 @@
     "seed": "tsx scripts/seed-demo.ts",
     "embeddings:index": "tsx scripts/embeddings-index.ts",
     "seo:audit": "tsx scripts/seo-audit.ts",
+  "cache:verify": "node scripts/verify-cache-headers.mjs",
     "build:search-index": "tsx scripts/build-search-index.ts",
     "fix:encoding:dry": "node scripts/fix-encoding.mjs --dry",
     "fix:encoding": "node scripts/fix-encoding.mjs --write",

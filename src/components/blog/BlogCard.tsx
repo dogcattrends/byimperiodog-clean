@@ -6,6 +6,7 @@ import Link from "next/link";
 
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { BLOG_CARD_SIZES } from "@/lib/image-sizes";
+import { BLUR_DATA_URL } from "@/lib/placeholders";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 
 type BlogCardPost = {
@@ -64,6 +65,11 @@ export default function BlogCard({ post }: BlogCardProps) {
             fill
             sizes={BLOG_CARD_SIZES}
             className="object-cover transition duration-500 group-hover:scale-[1.03]"
+            placeholder="blur"
+            blurDataURL={BLUR_DATA_URL}
+            loading="lazy"
+            decoding="async"
+            draggable={false}
           />
         ) : (
           <div className="grid h-full w-full place-items-center text-xs font-semibold uppercase tracking-[0.3em] text-text-soft">

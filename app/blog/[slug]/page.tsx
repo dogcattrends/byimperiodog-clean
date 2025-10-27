@@ -1,4 +1,4 @@
-import Image from "next/image";
+﻿import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
@@ -21,6 +21,7 @@ import { compileBlogMdx } from "@/lib/blog/mdx/compile";
 import { estimateReadingTime } from "@/lib/blog/reading-time";
 import { getRelatedUnified } from "@/lib/blog/related";
 import { buildBlogMetadata, buildArticleJsonLd } from "@/lib/blog/seo";
+import { BLUR_DATA_URL } from "@/lib/placeholders";
 import { blogPostingSchema } from "@/lib/schema";
 import { supabaseAnon } from "@/lib/supabaseAnon";
 
@@ -154,17 +155,17 @@ export default async function BlogPostPage({
   const interlinks = [
     {
       title: "Filhotes sob consulta",
-      description: "Entenda como selecionamos cada família e garanta prioridade na próxima ninhada.",
+      description: "Entenda como selecionamos cada famÃ­lia e garanta prioridade na prÃ³xima ninhada.",
       href: "/filhotes",
     },
     {
       title: "Processo completo",
-      description: "Veja as etapas: entrevista, socialização, entrega humanizada e mentoria vitalícia.",
+      description: "Veja as etapas: entrevista, socializaÃ§Ã£o, entrega humanizada e mentoria vitalÃ­cia.",
       href: "/sobre#processo",
     },
     {
       title: "FAQ do tutor",
-      description: "Respostas claras sobre investimento, suporte, logística e rotina diária.",
+      description: "Respostas claras sobre investimento, suporte, logÃ­stica e rotina diÃ¡ria.",
       href: "/faq",
     },
   ];
@@ -176,7 +177,7 @@ export default async function BlogPostPage({
 
       {preview && post.status !== "published" ? (
         <div className="mb-6 flex flex-wrap items-center gap-3 rounded-md border border-amber-400 bg-amber-50 p-3 text-sm text-amber-800">
-          <span className="font-medium">Pré-visualização</span>
+          <span className="font-medium">PrÃ©-visualizaÃ§Ã£o</span>
           <span>
             Status atual: <strong>{post.status}</strong>
           </span>
@@ -190,7 +191,7 @@ export default async function BlogPostPage({
       <Breadcrumbs
         className="mb-6"
         items={[
-          { label: "Início", href: "/" },
+          { label: "InÃ­cio", href: "/" },
           { label: "Blog", href: "/blog" },
           { label: post.title, href: `/blog/${post.slug}` },
         ]}
@@ -200,7 +201,7 @@ export default async function BlogPostPage({
         <div className="w-full flex-1 space-y-10">
           <header className="space-y-4">
             <span className="inline-flex items-center gap-2 rounded-pill bg-brand/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-brand">
-              {post.category || "Conteúdo premium"}
+              {post.category || "ConteÃºdo premium"}
             </span>
             <h1 className="text-3xl font-serif text-text sm:text-4xl">{post.title}</h1>
             {post.subtitle ? <p className="text-base text-text-muted">{post.subtitle}</p> : null}
@@ -222,8 +223,13 @@ export default async function BlogPostPage({
                 width={1280}
                 height={720}
                 priority
+                fetchPriority="high"
                 className="h-full w-full object-cover"
                 sizes="(max-width: 1024px) 100vw, 65vw"
+                placeholder="blur"
+                blurDataURL={BLUR_DATA_URL}
+                decoding="async"
+                draggable={false}
               />
               {post.cover_alt ? (
                 <figcaption className="px-5 py-3 text-xs text-text-soft">{post.cover_alt}</figcaption>
@@ -234,7 +240,7 @@ export default async function BlogPostPage({
           <div className="flex flex-col gap-4 rounded-2xl border-y border-border py-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-1">
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand">Compartilhe</p>
-              <p className="text-sm text-text-muted">Leve conhecimento premium para outros tutores responsáveis.</p>
+              <p className="text-sm text-text-muted">Leve conhecimento premium para outros tutores responsÃ¡veis.</p>
             </div>
             <ShareButtons title={post.title} url={`${siteUrl.replace(/\/$/, "")}/blog/${post.slug}`} />
           </div>
@@ -247,7 +253,7 @@ export default async function BlogPostPage({
                 options={{ mdxOptions: { remarkPlugins: [remarkGfm], rehypePlugins: [rehypeSlug, rehypeAutolinkHeadings] } }}
               />
             ) : (
-              <p className="italic text-text-muted">Conteúdo em atualização.</p>
+              <p className="italic text-text-muted">ConteÃºdo em atualizaÃ§Ã£o.</p>
             )}
           </Prose>
 
@@ -258,7 +264,7 @@ export default async function BlogPostPage({
                 href={item.href}
                 className="group flex flex-col gap-2 rounded-2xl border border-border/60 bg-surface p-4 transition hover:-translate-y-1 hover:border-brand/70"
               >
-                <span className="text-xs font-semibold uppercase tracking-[0.3em] text-brand">Leia também</span>
+                <span className="text-xs font-semibold uppercase tracking-[0.3em] text-brand">Leia tambÃ©m</span>
                 <h3 className="text-sm font-semibold text-text group-hover:text-brand">{item.title}</h3>
                 <p className="text-xs text-text-muted">{item.description}</p>
               </Link>

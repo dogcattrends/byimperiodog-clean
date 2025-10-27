@@ -22,7 +22,13 @@ export const BREAKPOINTS = {
  * - Tablet (641-1024px): 1024px image (53KB)
  * - Desktop (>1024px): 1400px image (109KB)
  */
-export const HERO_IMAGE_SIZES = "(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 1400px";
+/**
+ * Sizes para imagem HERO (grid 1.1fr/1fr em desktop)
+ * - Mobile (≤640px): 100vw (imagem ~640px)
+ * - Tablet (641-1024px): ~48vw (coluna principal)
+ * - Desktop (>1024px): largura fixa ~560px
+ */
+export const HERO_IMAGE_SIZES = "(max-width: 640px) 100vw, (max-width: 1024px) 48vw, 560px";
 
 /**
  * Sizes para grid de filhotes (1 col mobile, 2 tablet, 3 desktop)

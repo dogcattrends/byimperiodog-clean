@@ -1,10 +1,11 @@
-"use client";
+﻿"use client";
 
 import Image from 'next/image';
 import Script from 'next/script';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { cn } from '@/lib/cn';
+import { BLUR_DATA_URL } from '@/lib/placeholders';
 
 import CLIENT_PHOTOS from './clientPhotos';
 
@@ -21,12 +22,11 @@ interface TestimonialsProps {
   debug?: boolean;
   variant?: Variant;
   showCount?: number; // usado no grid
-  navigationStyle?: 'dots' | 'counter' | 'progress'; // estilo de navegação
+  navigationStyle?: 'dots' | 'counter' | 'progress'; // estilo de navegaÃ§Ã£o
 }
 
-const BLUR = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
-const DEFAULT_CITY_POOL = [
-  'Bragança Paulista','Atibaia','Itatiba','Valinhos','Vinhedo','Campinas','Indaiatuba','Jundiaí','Louveira','Barueri - Alphaville','Santana de Parnaíba','São Paulo - Jardins','São Paulo - Vila Olímpia','São Paulo - Morumbi','Holambra','Jaguariúna','Joanópolis','Socorro','Morungaba','Extrema (MG)'
+  const DEFAULT_CITY_POOL = [
+  'BraganÃ§a Paulista','Atibaia','Itatiba','Valinhos','Vinhedo','Campinas','Indaiatuba','JundiaÃ­','Louveira','Barueri - Alphaville','Santana de ParnaÃ­ba','SÃ£o Paulo - Jardins','SÃ£o Paulo - Vila OlÃ­mpia','SÃ£o Paulo - Morumbi','Holambra','JaguariÃºna','JoanÃ³polis','Socorro','Morungaba','Extrema (MG)'
 ];
 
 export default function Testimonials({
@@ -42,7 +42,7 @@ export default function Testimonials({
   showCount = 6,
   navigationStyle = 'progress'
 }: TestimonialsProps) {
-  // Detectar preferência por movimento reduzido (CSS já trata via motion-reduce:*)
+  // Detectar preferÃªncia por movimento reduzido (CSS jÃ¡ trata via motion-reduce:*)
   const [reduceMotion, setReduceMotion] = useState(false);
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -68,11 +68,11 @@ export default function Testimonials({
   const altFor = useCallback((p: string, i: number) => {
     const base = p.split('/').pop() || '';
     const c = CITY_POOL[i % CITY_POOL.length];
-    if (/^cliente/i.test(base)) return `Cliente By Império Dog em ${c}`;
-    return `Spitz Alemão - Cliente By Império Dog em ${c}`;
+    if (/^cliente/i.test(base)) return `Cliente By ImpÃ©rio Dog em ${c}`;
+    return `Spitz AlemÃ£o - Cliente By ImpÃ©rio Dog em ${c}`;
   }, [CITY_POOL]);
 
-  // autoplay avançado com pausa em hover/focus
+  // autoplay avanÃ§ado com pausa em hover/focus
   useEffect(() => {
     if (variant !== 'carousel') return;
     if (reduceMotion || isPaused || total < 2) return;
@@ -89,14 +89,14 @@ export default function Testimonials({
   const reviewsLd = jsonLd ? {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'By Império Dog',
+    name: 'By ImpÃ©rio Dog',
     review: list.slice(0, 12).map(() => ({
       '@type': 'Review',
       reviewBody: 'Cliente verificado',
       author: { '@type': 'Person', name: 'Cliente verificado' }
     }))
   } : null;
-  // Prefetch próxima imagem para transição suave (sempre declara hook antes de early return)
+  // Prefetch prÃ³xima imagem para transiÃ§Ã£o suave (sempre declara hook antes de early return)
   useEffect(() => {
     if (!total || variant !== 'carousel') return;
     const nextIdx = (index + 1) % total;
@@ -115,12 +115,12 @@ export default function Testimonials({
         <header className="mb-8 flex items-center justify-between gap-4 flex-wrap">
           <div>
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text)]">{title}</h2>
-            {variant === 'carousel' && <p className="mt-1 text-sm text-[var(--text-muted)]">Histórias reais de famílias e seus Spitz.</p>}
+            {variant === 'carousel' && <p className="mt-1 text-sm text-[var(--text-muted)]">HistÃ³rias reais de famÃ­lias e seus Spitz.</p>}
           </div>
           {variant === 'carousel' && total > 1 && (
             <div className="flex items-center gap-2">
-              <button type="button" onClick={prev} aria-label="Anterior" className="btn-outline inline-flex h-12 min-w-12 items-center justify-center px-3 text-sm">←</button>
-              <button type="button" onClick={next} aria-label="Próximo" className="btn-outline inline-flex h-12 min-w-12 items-center justify-center px-3 text-sm">→</button>
+              <button type="button" onClick={prev} aria-label="Anterior" className="btn-outline inline-flex h-12 min-w-12 items-center justify-center px-3 text-sm">â†</button>
+              <button type="button" onClick={next} aria-label="PrÃ³ximo" className="btn-outline inline-flex h-12 min-w-12 items-center justify-center px-3 text-sm">â†’</button>
             </div>
           )}
         </header>
@@ -136,7 +136,7 @@ export default function Testimonials({
                   className={cn('object-cover', fit === 'contain' && 'object-contain p-1')}
                   sizes="(max-width:640px) 50vw, (max-width:1024px) 25vw, 15vw"
                   placeholder="blur"
-                  blurDataURL={BLUR}
+                  blurDataURL={BLUR_DATA_URL}
                   unoptimized
                 />
               </li>
@@ -192,7 +192,7 @@ export default function Testimonials({
                     className={cn('will-change-transform', fit === 'contain' ? 'object-contain p-2' : 'object-cover')}
                     sizes="(max-width: 768px) 90vw, (max-width: 1280px) 50vw, 640px"
                     placeholder="blur"
-                    blurDataURL={BLUR}
+                    blurDataURL={BLUR_DATA_URL}
                   />
                   <figcaption className="pointer-events-none absolute bottom-2 left-2 rounded-md bg-black/55 text-white text-[11px] px-2 py-1 backdrop-blur-sm shadow-sm">
                     {city}
@@ -219,7 +219,7 @@ export default function Testimonials({
                   </button>
                   <button 
                     type="button" 
-                    aria-label="Próxima foto" 
+                    aria-label="PrÃ³xima foto" 
                     onClick={next} 
                     className={cn(
                       'focus-visible:focus-ring absolute right-2 top-1/2 -translate-y-1/2',
@@ -237,7 +237,7 @@ export default function Testimonials({
               )}
             </div>
             {total > 1 && navigationStyle === 'progress' && (
-              <div className="mt-4 space-y-3" aria-label="Navegação do carrossel">
+              <div className="mt-4 space-y-3" aria-label="NavegaÃ§Ã£o do carrossel">
                 {/* Progress Bar */}
                 <div 
                   className="relative w-full max-w-md mx-auto h-1.5 bg-[var(--border)] rounded-full overflow-hidden"
@@ -260,7 +260,7 @@ export default function Testimonials({
                     aria-label="Foto anterior"
                     className="btn-outline h-10 px-4 text-sm font-medium hover:bg-emerald-50 transition-colors"
                   >
-                    ← Anterior
+                    â† Anterior
                   </button>
                   <span className="text-sm font-medium text-[var(--text)] min-w-[4rem] text-center">
                     {index + 1} de {total}
@@ -268,23 +268,23 @@ export default function Testimonials({
                   <button 
                     type="button"
                     onClick={next} 
-                    aria-label="Próxima foto"
+                    aria-label="PrÃ³xima foto"
                     className="btn-outline h-10 px-4 text-sm font-medium hover:bg-emerald-50 transition-colors"
                   >
-                    Próxima →
+                    PrÃ³xima â†’
                   </button>
                 </div>
               </div>
             )}
             {total > 1 && navigationStyle === 'counter' && (
-              <div className="mt-4 flex items-center justify-center gap-4" aria-label="Navegação do carrossel">
+              <div className="mt-4 flex items-center justify-center gap-4" aria-label="NavegaÃ§Ã£o do carrossel">
                 <button 
                   type="button"
                   onClick={prev} 
                   aria-label="Foto anterior"
                   className="btn-outline h-12 px-5 text-sm font-medium"
                 >
-                  ← Anterior
+                  â† Anterior
                 </button>
                 <span className="text-base font-semibold text-[var(--text)] min-w-[5rem] text-center">
                   {index + 1} / {total}
@@ -292,15 +292,15 @@ export default function Testimonials({
                 <button 
                   type="button"
                   onClick={next} 
-                  aria-label="Próxima foto"
+                  aria-label="PrÃ³xima foto"
                   className="btn-outline h-12 px-5 text-sm font-medium"
                 >
-                  Próxima →
+                  PrÃ³xima â†’
                 </button>
               </div>
             )}
             {total > 1 && navigationStyle === 'dots' && (
-              <div className="mt-4 flex justify-center gap-2 flex-wrap max-w-2xl mx-auto" aria-label="Seleção de foto">
+              <div className="mt-4 flex justify-center gap-2 flex-wrap max-w-2xl mx-auto" aria-label="SeleÃ§Ã£o de foto">
                 {list.slice(0, 10).map((p, i) => {
                   const active = i === (index % total);
                   return (
@@ -335,3 +335,4 @@ export default function Testimonials({
     </section>
   );
 }
+

@@ -8,7 +8,9 @@ import { useMemo } from "react";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
+import { HERO_IMAGE_SIZES } from "@/lib/image-sizes";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
+import heroDesktop from "@/public/spitz-hero-desktop.webp";
 
 const SELLING_POINTS = [
   {
@@ -54,8 +56,6 @@ const secondaryWhatsApp = buildWhatsAppLink({
   utmCampaign: "hero_secondary_cta",
   utmContent: "whatsapp_link",
 });
-
-const HERO_IMAGE_SIZES = "(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 640px";
 
 export default function HeroSection() {
   const greeting = useMemo(() => {
@@ -156,7 +156,7 @@ export default function HeroSection() {
           <figure className="relative overflow-hidden rounded-3xl border border-emerald-200/70 bg-white shadow-2xl">
             <div className="relative aspect-[4/3]">
               <Image
-                src="/spitz-hero-desktop.webp"
+                src={heroDesktop}
                 alt="Filhotes de Spitz Alemão Anão saudáveis em ambiente acolhedor"
                 fill
                 priority
@@ -164,7 +164,6 @@ export default function HeroSection() {
                 sizes={HERO_IMAGE_SIZES}
                 className="object-cover"
                 placeholder="blur"
-                blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAuMBgX0xiysAAAAASUVORK5CYII="
                 style={{ contentVisibility: "auto" }}
               />
             </div>
@@ -198,9 +197,4 @@ export default function HeroSection() {
     </section>
   );
 }
-
-
-
-
-
 

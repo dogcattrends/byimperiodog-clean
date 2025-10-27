@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { cn } from "@/lib/cn";
 import passthroughImageLoader from "@/lib/passthrough-image-loader";
+import { BLUR_DATA_URL } from "@/lib/placeholders";
 
 export type StorySlide = {
   id: string;
@@ -83,14 +84,14 @@ export function StoriesViewer({ stories, open, initialIndex, onOpenChange }: Sto
             {story ? `Story de ${story.title}` : "Stories dos filhotes"}
           </Dialog.Title>
           <Dialog.Description className="sr-only">
-            {totalStories > 0 ? `Story ${index + 1} de ${totalStories}` : "Nenhum story disponível"}
+            {totalStories > 0 ? `Story ${index + 1} de ${totalStories}` : "Nenhum story disponÃ­vel"}
           </Dialog.Description>
 
           <Dialog.Close
             aria-label="Fechar stories"
             className="fixed right-4 top-4 z-[10000] inline-flex h-12 w-12 items-center justify-center rounded-full bg-black/80 text-xl font-semibold text-white shadow-lg transition hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black md:right-6 md:top-6"
           >
-            ×
+            Ã—
           </Dialog.Close>
 
           <div className="flex w-full max-w-[min(90vw,520px)] flex-col items-center gap-6 text-white">
@@ -112,9 +113,9 @@ export function StoriesViewer({ stories, open, initialIndex, onOpenChange }: Sto
                 onClick={next}
                 disabled={!hasMultiple}
                 className="inline-flex min-h-[48px] min-w-[48px] items-center justify-center rounded-full bg-black/40 px-3 text-xs transition hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:cursor-not-allowed disabled:opacity-40"
-                aria-label="Próximo story"
+                aria-label="PrÃ³ximo story"
               >
-                Próximo
+                PrÃ³ximo
               </button>
             </div>
 
@@ -126,11 +127,15 @@ export function StoriesViewer({ stories, open, initialIndex, onOpenChange }: Sto
                   alt={slide.description ?? slide.title}
                   fill
                   className="object-contain"
+                  placeholder="blur"
+                  blurDataURL={BLUR_DATA_URL}
+                  decoding="async"
+                  draggable={false}
                   sizes="(max-width: 768px) 90vw, 520px"
                   priority
                 />
               ) : (
-                <span className="text-sm text-zinc-300">Imagem indisponível</span>
+                <span className="text-sm text-zinc-300">Imagem indisponÃ­vel</span>
               )}
             </div>
 
@@ -146,3 +151,6 @@ export function StoriesViewer({ stories, open, initialIndex, onOpenChange }: Sto
 }
 
 export default StoriesViewer;
+
+
+

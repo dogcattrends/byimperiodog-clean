@@ -5,6 +5,7 @@ import Link from "next/link";
 import BlogCard from "@/components/blog/BlogCard";
 import SeoJsonLd from "@/components/SeoJsonLd";
 import { estimateReadingTime } from "@/lib/blog/reading-time";
+import { BLUR_DATA_URL } from "@/lib/placeholders";
 import { supabaseAnon } from "@/lib/supabaseAnon";
 
 type SortOption = "recentes" | "antigos";
@@ -414,8 +415,13 @@ function FeaturedPost({ post }: { post: PublicPost }) {
             alt={post.cover_alt || post.title}
             fill
             priority
+            fetchPriority="high"
             sizes="(max-width: 1024px) 100vw, 45vw"
             className="h-full w-full object-cover transition duration-700 hover:scale-[1.03]"
+            placeholder="blur"
+            blurDataURL={BLUR_DATA_URL}
+            decoding="async"
+            draggable={false}
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-sm font-semibold uppercase tracking-[0.28em] text-text-soft">

@@ -1,7 +1,7 @@
 {
   "ci": {
     "collect": {
-      "staticDistDir": ".next",
+      "startServerCommand": "npm run start",
       "url": [
         "http://localhost:3000/",
         "http://localhost:3000/filhotes",
@@ -9,20 +9,20 @@
         "http://localhost:3000/filhote/teste"  
       ],
       "settings": {
-        "preset": "desktop",
-        "formFactor": "desktop"
+        "preset": "mobile",
+        "formFactor": "mobile"
       }
     },
     "assert": {
       "assertions": {
-        "categories:performance": ["warn", {"minScore": 0.90}],
-        "largest-contentful-paint": ["warn", {"maxNumericValue": 3000}],
-        "cumulative-layout-shift": ["warn", {"maxNumericValue": 0.1}],
-        "interactive": ["warn", {"maxNumericValue": 4500}],
-        "total-blocking-time": ["warn", {"maxNumericValue": 400}],
+        "categories:performance": ["warn", {"minScore": 0.95}],
+        "largest-contentful-paint": ["warn", {"maxNumericValue": 1200}],
+        "cumulative-layout-shift": ["warn", {"maxNumericValue": 0}],
+        "interactive": ["warn", {"maxNumericValue": 3800}],
+        "total-blocking-time": ["warn", {"maxNumericValue": 50}],
         "uses-long-cache-ttl": ["off"],
         "unused-javascript": ["warn", {"maxLength": 180}],
-        "total-byte-weight": ["warn", {"maxNumericValue": 350000}]
+        "total-byte-weight": ["warn", {"maxNumericValue": 180000}]
       }
     },
     "upload": { "target": "filesystem" }
@@ -31,13 +31,40 @@
     {
       "path": "/",
       "resourceSizes": [
-        { "resourceType": "script", "budget": 250 },
-        { "resourceType": "total", "budget": 600 }
+        { "resourceType": "script", "budget": 70 },
+        { "resourceType": "total", "budget": 180 }
       ],
       "timings": [
-        { "metric": "interactive", "budget": 4500 },
-        { "metric": "largest-contentful-paint", "budget": 3000 },
-        { "metric": "cumulative-layout-shift", "budget": 0.1 }
+        { "metric": "interactive", "budget": 3800 },
+        { "metric": "largest-contentful-paint", "budget": 1200 },
+        { "metric": "cumulative-layout-shift", "budget": 0 },
+        { "metric": "total-blocking-time", "budget": 50 }
+      ]
+    },
+    {
+      "path": "/blog",
+      "resourceSizes": [
+        { "resourceType": "script", "budget": 70 },
+        { "resourceType": "total", "budget": 180 }
+      ],
+      "timings": [
+        { "metric": "interactive", "budget": 3800 },
+        { "metric": "largest-contentful-paint", "budget": 1200 },
+        { "metric": "cumulative-layout-shift", "budget": 0 },
+        { "metric": "total-blocking-time", "budget": 50 }
+      ]
+    },
+    {
+      "path": "/filhotes",
+      "resourceSizes": [
+        { "resourceType": "script", "budget": 70 },
+        { "resourceType": "total", "budget": 180 }
+      ],
+      "timings": [
+        { "metric": "interactive", "budget": 3800 },
+        { "metric": "largest-contentful-paint", "budget": 1200 },
+        { "metric": "cumulative-layout-shift", "budget": 0 },
+        { "metric": "total-blocking-time", "budget": 50 }
       ]
     }
   ]

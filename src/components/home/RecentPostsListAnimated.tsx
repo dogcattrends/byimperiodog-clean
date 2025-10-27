@@ -4,6 +4,8 @@ import { motion, useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { BLUR_DATA_URL } from '@/lib/placeholders';
+
 export interface RecentPostItem {
 	id: string | number;
 	slug: string;
@@ -46,6 +48,9 @@ export default function RecentPostsListAnimated({ posts }: { posts: RecentPostIt
 										decoding={idx===0 ? 'sync':'async'}
 										sizes="(max-width:640px) 100vw, (max-width:1024px) 50vw, 33vw"
 									className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+									placeholder="blur"
+									blurDataURL={BLUR_DATA_URL}
+									draggable={false}
 								/>
 							) : (
 								<div className="absolute inset-0 flex items-center justify-center text-[10px] font-medium text-zinc-500 dark:text-zinc-400">

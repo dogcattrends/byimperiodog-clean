@@ -1,6 +1,8 @@
 ﻿import Image from "next/image";
 import Link from "next/link";
 
+import { BLUR_DATA_URL } from "@/lib/placeholders";
+
 export type PostCardProps = {
   href: string;
   title: string;
@@ -76,6 +78,9 @@ export function PostCard({
             decoding={priorityImage ? "sync" : "async"}
             sizes="(max-width:640px) 100vw, (max-width:1024px) 50vw, 25vw"
             className="h-full w-full object-cover transition-transform duration-500 will-change-transform group-hover:scale-[1.04]"
+            placeholder="blur"
+            blurDataURL={BLUR_DATA_URL}
+            draggable={false}
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-[var(--surface-2)] text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">
@@ -115,3 +120,5 @@ export function PostCard({
 }
 
 export default PostCard;
+
+

@@ -8,6 +8,7 @@ import { useState } from "react";
 import { PUPPY_CARD_SIZES } from "@/lib/image-sizes";
 import { optimizePuppyCardImage } from "@/lib/optimize-image";
 import passthroughImageLoader from "@/lib/passthrough-image-loader";
+import { BLUR_DATA_URL } from "@/lib/placeholders";
 import track from "@/lib/track";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 
@@ -103,7 +104,7 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
                 className={`object-cover transition-all duration-300 ${imgLoaded ? "opacity-100 group-hover:scale-105" : "opacity-0"}`}
                 onLoad={() => setImgLoaded(true)}
                 placeholder="blur"
-                blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjRmNGY1Ii8+PC9zdmc+"
+                blurDataURL={BLUR_DATA_URL}
               />
               <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 to-transparent" />
             </>
