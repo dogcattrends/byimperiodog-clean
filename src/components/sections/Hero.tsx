@@ -55,6 +55,8 @@ const secondaryWhatsApp = buildWhatsAppLink({
   utmContent: "whatsapp_link",
 });
 
+const HERO_IMAGE_SIZES = "(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 640px";
+
 export default function HeroSection() {
   const greeting = useMemo(() => {
     const hour = new Date().getHours();

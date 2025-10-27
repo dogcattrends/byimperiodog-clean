@@ -3,12 +3,30 @@ import "server-only";
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 
-import { RecentPostsSectionSuspense } from "@/components/home/RecentPostsSection";
-import PuppiesGrid from "@/components/PuppiesGrid";
 import HeroSection from "@/components/sections/Hero";
 
+// Lazy load below-fold components para reduzir JS inicial e TBT
+const PuppiesGrid = dynamic(() => import("@/components/PuppiesGrid"), { 
+  ssr: true, 
+  loading: () => (
+    <section className="py-16">
+      <div className="container mx-auto">
+        <div className="h-96 animate-pulse bg-gray-100 rounded-lg" />
+      </div>
+    </section>
+  )
+});
+
+const RecentPostsSectionSuspense = dynamic(
+  () => import("@/components/home/RecentPostsSection").then(mod => ({ default: mod.RecentPostsSectionSuspense })), 
+  { ssr: true }
+);
+
 // Deferir componente com framer-motion para reduzir JS inicial
-const Testimonials = dynamic(() => import("@/components/Testimonials"), { ssr: false, loading: () => null });
+const Testimonials = dynamic(() => import("@/components/Testimonials"), { 
+  ssr: false, 
+  loading: () => null 
+});
 
 export const revalidate = 60; // ISR interval in seconds
 

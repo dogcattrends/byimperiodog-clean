@@ -1,13 +1,23 @@
-import { DM_Sans, Inter } from "next/font/google";
+import localFont from "next/font/local";
 
 /**
  * DM Sans - Primary font for body text
- * Weights: 400 (regular), 500 (medium), 600 (semibold), 700 (bold)
+ * Variable axes: wght 400-700
  * @see https://fonts.google.com/specimen/DM+Sans
  */
-export const dmSans = DM_Sans({
-  subsets: ["latin", "latin-ext"], // PT-BR support
-  weight: ["400", "500", "600", "700"],
+export const dmSans = localFont({
+  src: [
+    {
+      path: "../public/fonts/dm-sans-latin.woff2",
+      weight: "400 700",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/dm-sans-latin-ext.woff2",
+      weight: "400 700",
+      style: "normal",
+    },
+  ],
   display: "swap", // Evita FOIT (Flash of Invisible Text)
   variable: "--font-dm-sans",
   preload: true,
@@ -15,15 +25,25 @@ export const dmSans = DM_Sans({
 });
 
 /**
- * Inter - Fallback/complementary font
- * Weights: 400 (regular), 600 (semibold), 700 (bold)
+ * Inter - Secondary/fallback font
+ * Variable axes: wght 400-700
  * @see https://fonts.google.com/specimen/Inter
  */
-export const inter = Inter({
-  subsets: ["latin", "latin-ext"], // PT-BR support
-  weight: ["400", "600", "700"],
+export const inter = localFont({
+  src: [
+    {
+      path: "../public/fonts/inter-latin.woff2",
+      weight: "400 700",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/inter-latin-ext.woff2",
+      weight: "400 700",
+      style: "normal",
+    },
+  ],
   display: "swap",
   variable: "--font-inter",
-  preload: false, // Não preload pois é secundária
+  preload: false, // Secondary font stays out of preload
   fallback: ["Segoe UI", "system-ui", "-apple-system", "sans-serif"],
 });

@@ -111,7 +111,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   {/* ================================================================ */}
   {/* PERFORMANCE: Resource hints essenciais */}
   {/* ================================================================ */}
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://npmnuihgydadihktglrd.supabase.co" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
