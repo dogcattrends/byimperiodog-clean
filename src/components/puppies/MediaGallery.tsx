@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 
 import { useToast } from '@/components/ui/toast';
 import { adminFetch } from '@/lib/adminFetch';
+import { supabasePublic } from '@/lib/supabasePublic';
 import { ALLOWED_IMAGE_MIME, ALLOWED_VIDEO_MIME, MAX_IMAGE_BYTES, MAX_GIF_BYTES, MAX_VIDEO_BYTES } from '@/lib/uploadValidation';
 
 export interface MediaGalleryProps {
@@ -43,13 +44,41 @@ export default function MediaGallery({ media, cover, onChange, onSelectCover, ma
         fd.append('file', f);
         fd.append('filename', f.name);
         fd.append('upsert', '0');
-        const r = await adminFetch('/api/admin/puppies/upload', { method:'POST', body: fd });
+  const r = await adminFetch('/api/admin/puppies/upload', { method:'POST', body: fd });
 
         // Garantir retorno JSON; tratar 413/HTML das camadas acima
         const ct = r.headers.get('content-type') || '';
         if(!ct.includes('application/json')){
           if(r.status === 413){
-            throw new Error(`Arquivo muito grande para envio. Tente comprimir a ${isVid? 'mídia':'imagem'} ou reduzir resolução.`);
+            // Fallback: tentar upload direto para o Supabase via URL assinada (evita 413 da plataforma)
+            try {
+              const pres = await adminFetch('/api/admin/puppies/upload/presign', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-file-size': String(f.size) },
+                body: JSON.stringify({ filename: f.name, mime: f.type, upsert: false }),
+              });
+              const presJson = await pres.json().catch(()=>null);
+              if (!pres.ok) {
+                const lim = isVid ? MAX_VIDEO_BYTES : (f.type === 'image/gif' ? MAX_GIF_BYTES : MAX_IMAGE_BYTES);
+                const mb = (lim/1_000_000).toFixed(0);
+                throw new Error(presJson?.error || `Arquivo muito grande. Limite: ${mb}MB para ${isVid? 'vídeo':'imagem'}.`);
+              }
+              const { path, token } = presJson as { path: string; token: string };
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const supa = supabasePublic() as any; // tipagem frouxa apenas neste ponto para evitar dependência de tipos
+              const { error: upErr } = await supa.storage.from('puppies').uploadToSignedUrl(path, token, f, { contentType: f.type, upsert: false });
+              if (upErr) throw new Error(upErr.message || 'Falha no upload direto');
+              const { data: pub } = supa.storage.from('puppies').getPublicUrl(path);
+              setProgress(p=>({...p,[f.name]:100}));
+              newUrls.push(pub.publicUrl);
+              continue; // próximo arquivo
+            } catch (fallbackErr: unknown) {
+              const lim = isVid ? MAX_VIDEO_BYTES : (f.type === 'image/gif' ? MAX_GIF_BYTES : MAX_IMAGE_BYTES);
+              const mb = (lim/1_000_000).toFixed(0);
+              const baseMsg = `Arquivo muito grande para envio. Limite: ${mb}MB para ${isVid? 'vídeo':'imagem'}.`;
+              const extra = fallbackErr instanceof Error ? ` Detalhe: ${fallbackErr.message}` : '';
+              throw new Error(baseMsg + extra);
+            }
           }
           throw new Error(`Erro de upload (${r.status})`);
         }
