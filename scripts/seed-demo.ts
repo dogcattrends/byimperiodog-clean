@@ -90,9 +90,51 @@ async function seedPuppies() {
 async function main() {
 	await seedContentLayer();
 	await seedPuppies();
+	await seedExperiments();
 }
 
 main().catch((e) => {
 	console.error(e);
 	process.exit(1);
 });
+
+async function seedExperiments() {
+	loadEnvLocal();
+	const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+	const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+	if (!url || !key) {
+		console.log('[seed:experiments] Skipped (missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY)');
+		return;
+	}
+	const sb = createClient(url, key, { auth: { persistSession: false } });
+	const experiment = {
+		key: 'hero-cta',
+		name: 'Hero CTA copy',
+		description: 'Teste A/B do texto do botão principal no hero',
+		status: 'running',
+		audience: null,
+		variants: [
+			{ key: 'A', label: 'Texto original', weight: 50 },
+			{ key: 'B', label: 'Texto alternativo', weight: 50 },
+		],
+		starts_at: new Date().toISOString(),
+		ends_at: null,
+	};
+
+	// Upsert by unique key
+	const { data: existing, error: findErr } = await sb.from('experiments').select('id').eq('key', experiment.key).maybeSingle();
+	if (findErr) {
+		console.warn('[seed:experiments] Lookup error:', findErr.message);
+	}
+	let res;
+	if (existing?.id) {
+		res = await sb.from('experiments').update(experiment).eq('id', existing.id);
+	} else {
+		res = await sb.from('experiments').insert(experiment);
+	}
+	if (res.error) {
+		console.error('[seed:experiments] Error:', res.error.message);
+	} else {
+		console.log('[seed:experiments] Upserted demo experiment: hero-cta');
+	}
+}
