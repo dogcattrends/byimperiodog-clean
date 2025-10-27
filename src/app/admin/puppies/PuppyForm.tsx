@@ -135,7 +135,7 @@ export default function PuppyForm({
                 onChange={(event) => set("gender", event.target.value)}
                 className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2"
               >
-                <option value="female">Femea</option>
+                <option value="female">Fêmea</option>
                 <option value="male">Macho</option>
               </select>
             </div>

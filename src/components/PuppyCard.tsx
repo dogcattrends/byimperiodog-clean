@@ -42,9 +42,9 @@ const statusClass: Record<string, string> = {
 
 function buildWaLink(action: "info" | "video" | "visit", name: string, color: string, gender: string) {
   const messageMap: Record<typeof action, string> = {
-    info: `Ola! Vi o filhote ${name} (${color}, ${gender}) e quero entender disponibilidade, valor e condicoes.`,
-    video: `Ola! Pode me enviar video atualizado do filhote ${name} (${color}, ${gender})?`,
-    visit: `Ola! Quero agendar visita para conhecer o filhote ${name} (${color}, ${gender}).`,
+    info: `Olá! Vi o filhote ${name} (${color}, ${gender}) e quero entender disponibilidade, valor e condições.`,
+    video: `Olá! Pode me enviar vídeo atualizado do filhote ${name} (${color}, ${gender})?`,
+    visit: `Olá! Quero agendar visita para conhecer o filhote ${name} (${color}, ${gender}).`,
   };
 
   return buildWhatsAppLink({
@@ -58,11 +58,11 @@ function buildWaLink(action: "info" | "video" | "visit", name: string, color: st
 
 export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: string; onOpen?: () => void }) {
   const name = p.nome || p.name || "Filhote";
-  const color = p.cor || p.color || "cor em avaliacao";
-  const gender = p.gender === "male" ? "macho" : p.gender === "female" ? "femea" : "sexo em avaliacao";
+  const color = p.cor || p.color || "cor em avaliação";
+  const gender = p.gender === "male" ? "macho" : p.gender === "female" ? "fêmea" : "sexo em avaliação";
   const price = fmtPrice(p.priceCents ?? p.price_cents);
 
-  const label = p.status === "vendido" ? "Vendido" : p.status === "reservado" ? "Reservado" : "Disponivel";
+  const label = p.status === "vendido" ? "Vendido" : p.status === "reservado" ? "Reservado" : "Disponível";
 
   const waInfo = buildWaLink("info", name, color, gender);
   const waVideo = buildWaLink("video", name, color, gender);
@@ -123,7 +123,7 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
             {price}
           </span>
 
-          {/* Botão de Favoritar - Tap target â‰¥48px */}
+          {/* Botão de Favoritar - Tap target ≥48px */}
           <button
             type="button"
             onClick={(event) => {
@@ -146,11 +146,11 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
         <div>
           <h3 className="line-clamp-2 text-lg font-semibold leading-tight text-zinc-800">{name}</h3>
           <p className="mt-1 text-sm text-zinc-500">
-            {color} â€¢ {gender}
+            {color} • {gender}
           </p>
         </div>
 
-        {/* CTA Principal - Tap target â‰¥48px */}
+        {/* CTA Principal - Tap target ≥48px */}
         <a
           href={waInfo}
           target="_blank"
@@ -164,7 +164,7 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
           Quero esse filhote
         </a>
 
-        {/* CTAs Secundários - Tap targets â‰¥48px */}
+        {/* CTAs Secundários - Tap targets ≥48px */}
         <div className="grid grid-cols-3 gap-2 text-xs font-semibold" data-evt="share_click" data-id={p.id}>
           <a
             href={waVideo}
@@ -172,9 +172,9 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
             rel="noopener noreferrer"
             onClick={() => track.event?.("whatsapp_click", { placement: "card", action: "video", puppy_id: p.id })}
             className="flex min-h-[44px] items-center justify-center rounded-lg border border-zinc-200 px-2 py-2.5 text-zinc-700 transition-all duration-200 hover:bg-zinc-50 hover:border-zinc-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-1"
-            title="Pedir vÃ­deo do filhote"
+            title="Pedir vídeo do filhote"
           >
-            VÃ­deo
+            Vídeo
           </a>
 
           <a
@@ -204,7 +204,7 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
         </div>
 
         <p className="text-xs leading-relaxed text-zinc-500">
-          Criado com acompanhamento veterinário, socialização guiada e mentoria vitalÃ­cia.
+          Criado com acompanhamento veterinário, socialização guiada e mentoria vitalícia.
         </p>
       </div>
     </article>

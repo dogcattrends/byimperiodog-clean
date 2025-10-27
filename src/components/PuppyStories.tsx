@@ -37,9 +37,9 @@ interface PuppyStoriesProps {
 
 function buildWaMessage(p: PuppyStoryItem) {
   const name = p.nome || p.name || "Filhote";
-  const color = p.cor || p.color || "cor em avaliacao";
-  const gender = p.gender === "male" ? "macho" : p.gender === "female" ? "femea" : "sexo em avaliacao";
-  return `Ola! Tenho interesse no filhote ${name} (${color}, ${gender}). Pode me enviar mais informacoes?`;
+  const color = p.cor || p.color || "cor em avaliação";
+  const gender = p.gender === "male" ? "macho" : p.gender === "female" ? "fêmea" : "sexo em avaliação";
+  return `Olá! Tenho interesse no filhote ${name} (${color}, ${gender}). Pode me enviar mais informações?`;
 }
 
 function buildWaLink(p: PuppyStoryItem) {

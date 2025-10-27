@@ -126,10 +126,10 @@ export default function AdminWizard({ initialValues }: { initialValues?: Partial
                 <label className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
                   Genero preferido
                 </label>
-                <select {...methods.register("preferencia.genero")} className="admin-input">
+                <select {...methods.register("preferencia.genero")} className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-2.5 text-sm shadow-sm outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10">
+                  <option value="">Selecione</option>
                   <option value="macho">Macho</option>
-                  <option value="femea">Femea</option>
-                  <option value="indiferente">Indiferente</option>
+                  <option value="fêmea">Fêmea</option>
                 </select>
               </fieldset>
               <fieldset>
