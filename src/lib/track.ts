@@ -87,6 +87,45 @@ export function bindClicks() {
   } catch {}
 }
 
-const tracker = { event, page, bindClicks };
+// Experiments A/B helpers: emite para pixels e persiste no backend (/api/analytics)
+type ExperimentPayload = { experiment: string; variant: string; [k: string]: unknown };
+
+function postAnalytics(name: string, meta: ExperimentPayload) {
+  try {
+    const path = typeof window !== "undefined" ? window.location.pathname : undefined;
+    const body = JSON.stringify({ name, meta, path });
+    // Usa sendBeacon quando disponível para não bloquear navegação
+    // @ts-ignore
+    const beacon = typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function";
+    if (beacon) {
+      // @ts-ignore
+      navigator.sendBeacon("/api/analytics", new Blob([body], { type: "application/json" }));
+      return;
+    }
+    // fallback fetch não bloqueante
+    fetch("/api/analytics", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body,
+      keepalive: true,
+    }).catch(() => {});
+  } catch {}
+}
+
+export function experimentView(experiment: string, variant: string) {
+  const meta: ExperimentPayload = { experiment, variant };
+  // Pixels (GA/FB/TT/PIN)
+  event("experiment_view", meta);
+  // Persistência no backend
+  postAnalytics("experiment_view", meta);
+}
+
+export function experimentConversion(experiment: string, variant: string, extra?: Record<string, unknown>) {
+  const meta: ExperimentPayload = { experiment, variant, ...(extra || {}) };
+  event("experiment_conversion", meta);
+  postAnalytics("experiment_conversion", meta);
+}
+
+const tracker = { event, page, bindClicks, experimentView, experimentConversion };
 export default tracker;
 
