@@ -84,7 +84,7 @@ export default function HeroSection() {
           <header className="space-y-5">
             <h1
               id="hero-heading"
-              className="text-4xl font-semibold leading-tight text-zinc-900 sm:text-5xl"
+                className="text-4xl font-semibold leading-tight text-zinc-900 sm:text-5xl"
             >
               Transparência e carinho para entregar o seu Spitz Alemão Anão com suporte vitalício
             </h1>
@@ -99,7 +99,7 @@ export default function HeroSection() {
             {SELLING_POINTS.map(({ icon: Icon, title, description }) => (
               <article
                 key={title}
-                className="flex items-start gap-3 rounded-2xl border border-emerald-200/60 bg-white/95 p-4 shadow-sm transition hover:shadow-md focus-within:shadow-md"
+                  className="flex items-start gap-3 rounded-2xl border border-emerald-200/60 bg-white/95 p-4 shadow-sm transition hover:shadow-md focus-within:shadow-md"
               >
                 <span className="mt-1 flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
                   <Icon className="h-4 w-4" aria-hidden />
@@ -115,7 +115,7 @@ export default function HeroSection() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <a
               href={primaryWhatsApp}
-              className={cn(
+                className={cn(
                 buttonVariants({ size: "lg" }),
                 "min-h-[52px] w-full sm:w-auto sm:px-8 bg-emerald-600 text-white shadow-lg hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2",
               )}
@@ -125,7 +125,7 @@ export default function HeroSection() {
             </a>
             <Link
               href="#filhotes"
-              className="inline-flex min-h-[52px] w-full items-center justify-center rounded-full border border-emerald-300 bg-white px-6 text-sm font-semibold text-emerald-700 transition hover:border-emerald-400 hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 sm:w-auto"
+                className="inline-flex min-h-[52px] w-full items-center justify-center rounded-full border border-emerald-300 bg-white px-6 text-sm font-semibold text-emerald-700 transition hover:border-emerald-400 hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 sm:w-auto"
             >
               Ver filhotes disponíveis
             </Link>
@@ -143,7 +143,7 @@ export default function HeroSection() {
             {STATS.map((stat) => (
               <div
                 key={stat.label}
-                className="rounded-2xl border border-emerald-200 bg-white p-4 shadow-sm"
+                  className="rounded-2xl border border-emerald-200 bg-white p-4 shadow-sm"
               >
                 <dt className="text-xs uppercase tracking-[0.24em] text-zinc-500">{stat.label}</dt>
                 <dd className="mt-2 text-2xl font-semibold text-zinc-900">{stat.value}</dd>
@@ -156,21 +156,21 @@ export default function HeroSection() {
           <figure className="relative overflow-hidden rounded-3xl border border-emerald-200/70 bg-white shadow-2xl">
             <div className="relative aspect-[4/3]">
               <Image
-              src="/spitz-hero-desktop.webp"
-              alt="Filhotes de Spitz Alemão Anão saudáveis em ambiente acolhedor"
-              fill
-              priority
-              fetchPriority="high"
-              sizes={HERO_IMAGE_SIZES}
-              className="object-cover"
-              placeholder="blur"
-              blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAuMBgX0xiysAAAAASUVORK5CYII="
-              style={{ contentVisibility: "auto" }}
-            />
+                src="/spitz-hero-desktop.webp"
+                alt="Filhotes de Spitz Alemão Anão saudáveis em ambiente acolhedor"
+                fill
+                priority
+                fetchPriority="high"
+                sizes={HERO_IMAGE_SIZES}
+                className="object-cover"
+                placeholder="blur"
+                blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAuMBgX0xiysAAAAASUVORK5CYII="
+                style={{ contentVisibility: "auto" }}
+              />
+            </div>
             <figcaption className="absolute bottom-3 left-3 rounded-full bg-white px-4 py-1 text-xs font-semibold text-emerald-700 shadow">
               Socialização guiada com vídeos semanais
             </figcaption>
-            </div>
           </figure>
 
           <div className="rounded-2xl border border-emerald-200 bg-white p-6 shadow-lg">
@@ -186,7 +186,7 @@ export default function HeroSection() {
               </div>
               <a
                 href={secondaryWhatsApp}
-                className="inline-flex min-h-[48px] items-center gap-2 text-sm font-semibold text-emerald-800 transition-colors hover:text-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+                  className="inline-flex min-h-[48px] items-center gap-2 text-sm font-semibold text-emerald-800 transition-colors hover:text-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
               >
                 <WhatsAppIcon className="h-4 w-4" aria-hidden />
                 Falar agora
@@ -198,4 +198,9 @@ export default function HeroSection() {
     </section>
   );
 }
+
+
+
+
+
 

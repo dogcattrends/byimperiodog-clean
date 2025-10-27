@@ -117,13 +117,20 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="dns-prefetch" href="https://connect.facebook.net" />
         <link rel="dns-prefetch" href="https://analytics.tiktok.com" />
         <link rel="dns-prefetch" href="https://s.pinimg.com" />
-        <link
-          rel="preload"
-          as="image"
-          href="/spitz-hero-desktop.webp"
-          type="image/webp"
-          fetchPriority="high"
-        />
+        
+        {/* Preload Hero LCP image para eliminar waterfall (-200-400ms) */}
+        {/* Responsive: mobile WebP, desktop WebP (Next.js Image já gera AVIF automaticamente) */}
+        {!isAdminRoute && pathname === "/" && (
+          <>
+            <link
+              rel="preload"
+              as="image"
+              href="/spitz-hero-desktop.webp"
+              type="image/webp"
+              fetchPriority="high"
+            />
+          </>
+        )}
         
         {/* Canonical dinï¿½mico (reforï¿½o; alternates via metadata) */}
         {metaRuntime.alternates?.canonical && (
