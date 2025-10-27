@@ -65,12 +65,12 @@ function mapPost(row: any): Post {
     coverAlt: row?.cover_alt ?? null,
     category: row?.category
       ? {
-          id: row.category_id ?? row.category ?? "",
-          slug: row.category_slug ?? row.category ?? "",
-          title: row.category_title ?? row.category ?? "",
-          description: row.category_description ?? null,
-          createdAt: normalizeDate(row.category_created_at),
-          updatedAt: normalizeDate(row.category_updated_at),
+          id: row.category ?? "",
+          slug: row.category ?? "",
+          title: row.category ?? "",
+          description: null,
+          createdAt: null,
+          updatedAt: null,
         }
       : null,
     tags: Array.isArray(row?.tags)
@@ -409,7 +409,7 @@ export const blogRepo = {
     const client = getClient();
     if (!client) return { items: [], total: 0 };
     let query = client.from("blog_posts").select(
-      "id,slug,title,subtitle,excerpt,content_mdx,status,cover_url,cover_alt,tags,category,category_id,category_slug,category_title,category_description,category_created_at,category_updated_at,seo_title,seo_description,og_image_url,seo_score,scheduled_at,published_at,created_at,updated_at",
+      "id,slug,title,subtitle,excerpt,content_mdx,status,cover_url,cover_alt,tags,category,seo_title,seo_description,og_image_url,seo_score,scheduled_at,published_at,created_at,updated_at",
       { count: "exact" },
     );
     query = applyListFilters(query, params);
@@ -424,7 +424,7 @@ export const blogRepo = {
     const query = client
       .from("blog_posts")
       .select(
-        "id,slug,title,subtitle,excerpt,content_mdx,status,cover_url,cover_alt,tags,category,category_id,category_slug,category_title,category_description,category_created_at,category_updated_at,seo_title,seo_description,og_image_url,seo_score,scheduled_at,published_at,created_at,updated_at",
+        "id,slug,title,subtitle,excerpt,content_mdx,status,cover_url,cover_alt,tags,category,seo_title,seo_description,og_image_url,seo_score,scheduled_at,published_at,created_at,updated_at",
       )
       .eq("id", id)
       .maybeSingle();
@@ -437,7 +437,7 @@ export const blogRepo = {
     const query = client
       .from("blog_posts")
       .select(
-        "id,slug,title,subtitle,excerpt,content_mdx,status,cover_url,cover_alt,tags,category,category_id,category_slug,category_title,category_description,category_created_at,category_updated_at,seo_title,seo_description,og_image_url,seo_score,scheduled_at,published_at,created_at,updated_at",
+        "id,slug,title,subtitle,excerpt,content_mdx,status,cover_url,cover_alt,tags,category,seo_title,seo_description,og_image_url,seo_score,scheduled_at,published_at,created_at,updated_at",
       )
       .eq("slug", slug)
       .maybeSingle();
