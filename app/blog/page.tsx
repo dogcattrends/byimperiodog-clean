@@ -64,7 +64,7 @@ const CATEGORY_DEFINITIONS: CategoryDefinition[] = [
     title: "Adestramento",
     description:
       "Socialização guiada, enriquecimento ambiental e reforço positivo focado em lares urbanos com agenda cheia.",
-    highlight: "Protocolos semanais com vÃ­deos e check-ins pelo WhatsApp.",
+    highlight: "Protocolos semanais com vídeos e check-ins pelo WhatsApp.",
     match: (post) => includesCategory(post, ["adestramento", "comportamento", "socializacao"]),
     cta: { label: "Conhecer nosso processo", href: "/sobre#processo" },
   },
@@ -74,14 +74,14 @@ const CATEGORY_DEFINITIONS: CategoryDefinition[] = [
     description:
       "Preventivo completo: exames genéticos, cardiológicos e protocolos veterinários para Spitz até 22 cm.",
     highlight: "Transparência total com laudos digitais e acompanhamento pós-entrega.",
-    match: (post) => includesCategory(post, ["saude", "clÃ­nico", "veterin", "check-up"]),
+    match: (post) => includesCategory(post, ["saude", "clínico", "veterin", "check-up"]),
     cta: { label: "Entender exames", href: "/faq#saude" },
   },
   {
     id: "perguntas-frequentes",
     title: "Perguntas Frequentes",
     description:
-      "Respostas diretas sobre investimento, logÃ­stica, convivência com crianças e integração com outros pets.",
+      "Respostas diretas sobre investimento, logística, convivência com crianças e integração com outros pets.",
     highlight: "Conteúdo didático produzido com base nas dúvidas reais dos tutores.",
     match: (post) => includesCategory(post, ["pergunta", "faq", "investimento", "logistica"]),
     cta: { label: "FAQ completo", href: "/faq" },
@@ -120,7 +120,7 @@ export default async function BlogListPage({ searchParams }: { searchParams?: Pa
   const heroLinks = [
     {
       title: "Filhotes disponíveis sob consulta",
-      description: "Acesso antecipado Ã s ninhadas com saúde validada e mentoria vitalÃ­cia.",
+      description: "Acesso antecipado às ninhadas com saúde validada e mentoria vitalícia.",
       href: "/filhotes",
     },
     {
@@ -130,7 +130,7 @@ export default async function BlogListPage({ searchParams }: { searchParams?: Pa
     },
     {
       title: "FAQ para tutores",
-      description: "Perguntas frequentes sobre investimento, logÃ­stica e rotina em famÃ­lia.",
+      description: "Perguntas frequentes sobre investimento, logística e rotina em família.",
       href: "/faq",
     },
   ];
@@ -152,7 +152,7 @@ export default async function BlogListPage({ searchParams }: { searchParams?: Pa
       <div className="mx-auto max-w-4xl px-4 py-16">
         <Hero searchTerm={searchTerm} links={heroLinks} />
         <EmptyState
-          title="Não foi possÃ­vel carregar os artigos"
+          title="Não foi possível carregar os artigos"
           message={fetchState.message || "Tente novamente em instantes."}
         />
       </div>
