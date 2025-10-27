@@ -1,7 +1,9 @@
 "use client";
 import React, { useState } from 'react';
-import { adminFetch } from '@/lib/adminFetch';
+
 import { useToast } from '@/components/ui/toast';
+import { adminFetch } from '@/lib/adminFetch';
+import { ALLOWED_IMAGE_MIME, ALLOWED_VIDEO_MIME, MAX_IMAGE_BYTES, MAX_VIDEO_BYTES } from '@/lib/uploadValidation';
 
 export interface MediaGalleryProps {
   media: string[];
@@ -24,29 +26,46 @@ export default function MediaGallery({ media, cover, onChange, onSelectCover, ma
     const newUrls:string[] = [];
     for(const f of list){
       try {
-        const buf = await f.arrayBuffer();
-        const b64 = `data:${f.type};base64,${Buffer.from(buf).toString('base64')}`;
-        setProgress(p=>({...p,[f.name]:10}));
-        const r = await adminFetch('/api/admin/puppies/upload',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ filename:f.name, dataBase64:b64 })});
-        
-        // Tentar parsear JSON com tratamento de erro
-        let j;
-        try {
-          j = await r.json();
-        } catch (parseError) {
-          throw new Error(`Resposta inválida do servidor (${r.status})`);
+        // Validação rápida no cliente para evitar 413 e dar feedback imediato
+        const isImg = ALLOWED_IMAGE_MIME.has(f.type);
+        const isVid = ALLOWED_VIDEO_MIME.has(f.type);
+        if(!isImg && !isVid){
+          throw new Error(`Tipo não suportado: ${f.type || 'desconhecido'}`);
         }
-        
-        if(!r.ok) {
+        const max = isVid ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES;
+        if(f.size <= 0 || f.size > max){
+          const mb = (max/1_000_000).toFixed(0);
+          throw new Error(`Arquivo muito grande (${Math.ceil(f.size/1_000_000)}MB). Limite: ${mb}MB para ${isVid? 'vídeo':'imagem'}.`);
+        }
+
+        setProgress(p=>({...p,[f.name]:10}));
+        const fd = new FormData();
+        fd.append('file', f);
+        fd.append('filename', f.name);
+        fd.append('upsert', '0');
+        const r = await adminFetch('/api/admin/puppies/upload', { method:'POST', body: fd });
+
+        // Garantir retorno JSON; tratar 413/HTML das camadas acima
+        const ct = r.headers.get('content-type') || '';
+        if(!ct.includes('application/json')){
+          if(r.status === 413){
+            throw new Error(`Arquivo muito grande para envio. Tente comprimir a ${isVid? 'mídia':'imagem'} ou reduzir resolução.`);
+          }
+          throw new Error(`Erro de upload (${r.status})`);
+        }
+
+        const j = await r.json();
+        if(!r.ok){
           const errorMsg = j?.error || `Upload falhou (${r.status})`;
           const details = j?.supported ? ` - Suportado: ${j.supported}` : '';
           throw new Error(errorMsg + details);
         }
-        
+
         setProgress(p=>({...p,[f.name]:100}));
         newUrls.push(j.url);
-      } catch(err:any){ 
-        push({ type:'error', message: err?.message||'Erro upload'}); 
+      } catch(err: unknown){ 
+        const msg = err instanceof Error ? err.message : 'Erro upload';
+        push({ type:'error', message: msg }); 
       }
     }
     if(newUrls.length){
@@ -98,11 +117,11 @@ export default function MediaGallery({ media, cover, onChange, onSelectCover, ma
           ))}
         </div>
       )}
-      {media.length>0 && <ul className="grid grid-cols-3 gap-2" aria-label="Galeria reordenável" role="list">
+      {media.length>0 && <ul className="grid grid-cols-3 gap-2" aria-label="Galeria reordenável">
         {media.map((m,i)=> {
           const isCover = cover===m;
           return (
-            <li key={m} role="listitem" draggable onDragStart={(e)=> onDragStart(e,i)} onDragOver={onDragOver} onDrop={(e)=> onDrop(e,i)} className={`relative group aspect-square overflow-hidden rounded-lg border ${isCover? 'border-[var(--accent)] ring-2 ring-[var(--accent)]':'border-[var(--border)]'}`}>
+            <li key={m} draggable onDragStart={(e)=> onDragStart(e,i)} onDragOver={onDragOver} onDrop={(e)=> onDrop(e,i)} className={`relative group aspect-square overflow-hidden rounded-lg border ${isCover? 'border-[var(--accent)] ring-2 ring-[var(--accent)]':'border-[var(--border)]'}`}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={m} alt={isCover? 'Capa (arraste para reordenar)': 'Miniatura (arraste)'} className="h-full w-full object-cover select-none pointer-events-none" />
               <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition bg-gradient-to-t from-black/50 to-black/0" />
@@ -115,6 +134,7 @@ export default function MediaGallery({ media, cover, onChange, onSelectCover, ma
       </ul>}
       {media.length===0 && <p className="text-[11px] text-[var(--text-muted)]">Nenhuma mídia enviada.</p>}
       <p className="text-[10px] text-[var(--text-muted)]">Arraste para reordenar. A primeira é usada como capa para a vitrine.</p>
+      <p className="text-[10px] text-[var(--text-muted)]">Limites: imagens até {(MAX_IMAGE_BYTES/1_000_000).toFixed(0)}MB; vídeos até {(MAX_VIDEO_BYTES/1_000_000).toFixed(0)}MB. Tipos: JPG, PNG, WEBP, AVIF, GIF, MP4, WEBM, MOV.</p>
     </div>
   );
 }
