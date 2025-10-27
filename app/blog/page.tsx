@@ -82,13 +82,16 @@ const CATEGORY_DEFINITIONS: CategoryDefinition[] = [
     title: "Perguntas Frequentes",
     description:
       "Respostas diretas sobre investimento, logÃ­stica, convivÃªncia com crianÃ§as e integraÃ§Ã£o com outros pets.",
-    highlight: "ConteÃºdo didÃ¡tico produzido com base nas dÃºvidas reais dos tutores.",
+    highlight: "Conteúdo didático produzido com base nas dúvidas reais dos tutores.",
     match: (post) => includesCategory(post, ["pergunta", "faq", "investimento", "logistica"]),
     cta: { label: "FAQ completo", href: "/faq" },
   },
 ];
 
-export const revalidate = 300;
+// Revalidate cache every 60 seconds in production, but disable cache in development
+export const revalidate = process.env.NODE_ENV === 'production' ? 60 : 0;
+// Force dynamic rendering to always show latest posts
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: "Guia completo do tutor de Spitz AlemÃ£o AnÃ£o",
