@@ -35,11 +35,11 @@ Ocorrência isolada de mojibake (UTF-8 interpretado como ISO-8859-1) encontrada 
 Substituições aplicadas:
 | Antes | Depois |
 |-------|--------|
-| Spitz AlemÃ£o AnÃ£o | Spitz Alemão Anão |
-| excelÃªncia | excelência |
-| responsÃ¡vel | responsável |
-| pÃ³s-venda | pós-venda |
-| disponÃ­veis | disponíveis |
+| Spitz Alemão Anão | Spitz Alemão Anão |
+| excelência | excelência |
+| responsável | responsável |
+| pós-venda | pós-venda |
+| disponíveis | disponíveis |
 
 Ferramentas adicionadas:
 - `scripts/fix-encoding.mjs` (varre e corrige mojibake comum)

@@ -10,7 +10,7 @@ import passthroughImageLoader from '@/lib/passthrough-image-loader';
 import track from '@/lib/track';
 import { buildWhatsAppLink } from '@/lib/whatsapp';
 
-// Tipagem bÃ¡sica (pode ser estendida conforme o backend evoluir)
+// Tipagem básica (pode ser estendida conforme o backend evoluir)
 export interface PuppyStoryItem {
   id: string;
   name?: string | null;
@@ -28,8 +28,8 @@ interface PuppyStoriesProps {
   open: boolean;
   onClose: () => void;
   /**
-   * Se true, avanÃ§a automaticamente a cada autoAdvanceMs.
-   * (Por padrÃ£o desativado; pode ser ligado depois se quiser comportamento mais parecido com IG Stories.)
+   * Se true, avança automaticamente a cada autoAdvanceMs.
+   * (Por padrão desativado; pode ser ligado depois se quiser comportamento mais parecido com IG Stories.)
    */
   autoPlay?: boolean;
   autoAdvanceMs?: number;
@@ -66,7 +66,7 @@ export default function PuppyStories(props: PuppyStoriesProps) {
   const [, force] = useState({});
   const inactivityTimer = useRef<number | null>(null);
 
-  // Preload prÃ³xima e anterior
+  // Preload próxima e anterior
   useEffect(()=>{
     const nextItem = items[(index + 1) % items.length];
     const prevItem = items[(index - 1 + items.length) % items.length];
@@ -170,7 +170,7 @@ export default function PuppyStories(props: PuppyStoriesProps) {
     touchStart.current = null; touchDiff.current = 0;
   };
 
-  // Auto-hide UI apÃ³s inatividade (apenas se nÃ£o estiver interagindo com inputs)
+  // Auto-hide UI após inatividade (apenas se não estiver interagindo com inputs)
   const bumpActivity = useCallback(() => {
     setUiVisible(true);
     if (inactivityTimer.current) window.clearTimeout(inactivityTimer.current);
@@ -278,7 +278,7 @@ export default function PuppyStories(props: PuppyStoriesProps) {
               <h3 className="text-base font-semibold leading-tight drop-shadow">{current?.nome || current?.name}</h3>
               <p className="text-xs text-zinc-200/90 leading-snug line-clamp-2">
                 {(current?.cor || current?.color) && <><span>{current.cor || current.color}</span> â€¢ </>}
-                {current?.gender === 'male' ? 'Macho' : current?.gender === 'female' ? 'FÃªmea' : 'Sexo indef.'}
+                {current?.gender === 'male' ? 'Macho' : current?.gender === 'female' ? 'Fêmea' : 'Sexo indef.'}
               </p>
             </div>
             <button
@@ -349,7 +349,7 @@ export default function PuppyStories(props: PuppyStoriesProps) {
             <button
               type="button"
               tabIndex={-1}
-              aria-label="PrÃ³ximo story"
+              aria-label="Próximo story"
               onClick={next}
               className="pointer-events-auto h-full w-full bg-transparent"
             />
@@ -378,7 +378,7 @@ export default function PuppyStories(props: PuppyStoriesProps) {
       {/* Backdrop button is rendered above, before the content wrapper */}
       <style jsx global>{`
         @keyframes pf-story-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-        /* Evita seleÃ§Ã£o acidental de texto durante taps rÃ¡pidos */
+        /* Evita seleção acidental de texto durante taps rápidos */
         body.user-select-none * { user-select: none; }
       `}</style>
     </div>,
@@ -389,7 +389,7 @@ export default function PuppyStories(props: PuppyStoriesProps) {
 /*
 Como integrar:
 -----------------
-1. Em um componente pai que jÃ¡ lista os filhotes:
+1. Em um componente pai que já lista os filhotes:
 
   const [open, setOpen] = useState(false);
   const [storyIndex, setStoryIndex] = useState(0);
@@ -400,7 +400,7 @@ Como integrar:
                 open={open}
                 onClose={() => setOpen(false)} />
 
-2. Ajustar fonte da imagem para garantir proporÃ§Ã£o 9:16 quando disponÃ­vel.
+2. Ajustar fonte da imagem para garantir proporção 9:16 quando disponÃ­vel.
 */
 
 

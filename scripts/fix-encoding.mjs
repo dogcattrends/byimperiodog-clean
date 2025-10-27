@@ -3,7 +3,7 @@
 /**
  * fix-encoding.mjs
  * Varre arquivos texto e corrige mojibake comum (UTF-8 tratado como ISO-8859-1) como:
- *  - Ã£ -> ã, Ã¡ -> á, Ã¢ -> â, Ãª -> ê, Ã© -> é, Ã³ -> ó, Ã´ -> ô, Ãº -> ú, Ã§ -> ç, Ã• -> Õ etc.
+ *  - ã -> ã, á -> á, â -> â, ê -> ê, é -> é, ó -> ó, ô -> ô, ú -> ú, ç -> ç, Õ -> Õ etc.
  * Executa em dry-run por padrão mostrando diff inline simples.
  * Uso:
  *   node scripts/fix-encoding.mjs --dry   (default)
@@ -18,14 +18,14 @@ const argWrite = process.argv.includes('--write');
 
 // Mapeamento de sequências quebradas → correto
 const MAP = Object.entries({
-  'AlemÃ£o':'Alemão',
-  'AnÃ£o':'Anão',
-  'excelÃªncia':'excelência',
-  'responsÃ¡vel':'responsável',
-  'pÃ³s-venda':'pós-venda',
-  'disponÃ­veis':'disponíveis',
-  'Ã¡':'á','Ã¢':'â','Ã£':'ã','Ãª':'ê','Ã©':'é','Ã³':'ó','Ã´':'ô','Ãº':'ú','Ã§':'ç',
-  'Ã‰':'É','Ã•':'Õ','Ã“':'Ó','Ãš':'Ú','Ã‡':'Ç'
+  'Alemão':'Alemão',
+  'Anão':'Anão',
+  'excelência':'excelência',
+  'responsável':'responsável',
+  'pós-venda':'pós-venda',
+  'disponíveis':'disponíveis',
+  'á':'á','â':'â','ã':'ã','ê':'ê','é':'é','ó':'ó','ô':'ô','ú':'ú','ç':'ç',
+  'É':'É','Õ':'Õ','Ó':'Ó','Ú':'Ú','Ç':'Ç'
 });
 
 /** Recursivamente lista arquivos */

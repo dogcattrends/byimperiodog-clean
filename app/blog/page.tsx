@@ -46,7 +46,7 @@ const CATEGORY_DEFINITIONS: CategoryDefinition[] = [
     title: "Guia do Tutor",
     description:
       "Rotinas, enxoval, planejamento financeiro e a jornada completa para receber um Spitz equilibrado em casa.",
-    highlight: "Checklist premium e mentoria vitalÃ­cia para famÃ­lias exigentes.",
+    highlight: "Checklist premium e mentoria vitalícia para famílias exigentes.",
     match: (post) => includesCategory(post, ["guia", "tutor", "planejamento"]),
     cta: { label: "Planejar rotina", href: "/sobre" },
   },
@@ -54,8 +54,8 @@ const CATEGORY_DEFINITIONS: CategoryDefinition[] = [
     id: "cuidados",
     title: "Cuidados",
     description:
-      "NutriÃ§Ã£o personalizada, higiene estratÃ©gica e protocolos preventivos para manter o Spitz saudÃ¡vel e confiante.",
-    highlight: "OrientaÃ§Ãµes da neonatologia ao primeiro ano com suporte contÃ­nuo.",
+      "Nutrição personalizada, higiene estratégica e protocolos preventivos para manter o Spitz saudável e confiante.",
+    highlight: "Orientações da neonatologia ao primeiro ano com suporte contínuo.",
     match: (post) => includesCategory(post, ["cuidado", "rotina", "nutri", "higiene"]),
     cta: { label: "Ver dicas de cuidados", href: "/faq#cuidados" },
   },
@@ -63,17 +63,17 @@ const CATEGORY_DEFINITIONS: CategoryDefinition[] = [
     id: "adestramento",
     title: "Adestramento",
     description:
-      "SocializaÃ§Ã£o guiada, enriquecimento ambiental e reforÃ§o positivo focado em lares urbanos com agenda cheia.",
+      "Socialização guiada, enriquecimento ambiental e reforço positivo focado em lares urbanos com agenda cheia.",
     highlight: "Protocolos semanais com vÃ­deos e check-ins pelo WhatsApp.",
     match: (post) => includesCategory(post, ["adestramento", "comportamento", "socializacao"]),
     cta: { label: "Conhecer nosso processo", href: "/sobre#processo" },
   },
   {
     id: "saude",
-    title: "SaÃºde",
+    title: "Saúde",
     description:
-      "Preventivo completo: exames genÃ©ticos, cardiolÃ³gicos e protocolos veterinÃ¡rios para Spitz atÃ© 22 cm.",
-    highlight: "TransparÃªncia total com laudos digitais e acompanhamento pÃ³s-entrega.",
+      "Preventivo completo: exames genéticos, cardiológicos e protocolos veterinários para Spitz até 22 cm.",
+    highlight: "Transparência total com laudos digitais e acompanhamento pós-entrega.",
     match: (post) => includesCategory(post, ["saude", "clÃ­nico", "veterin", "check-up"]),
     cta: { label: "Entender exames", href: "/faq#saude" },
   },
@@ -81,7 +81,7 @@ const CATEGORY_DEFINITIONS: CategoryDefinition[] = [
     id: "perguntas-frequentes",
     title: "Perguntas Frequentes",
     description:
-      "Respostas diretas sobre investimento, logÃ­stica, convivÃªncia com crianÃ§as e integraÃ§Ã£o com outros pets.",
+      "Respostas diretas sobre investimento, logÃ­stica, convivência com crianças e integração com outros pets.",
     highlight: "Conteúdo didático produzido com base nas dúvidas reais dos tutores.",
     match: (post) => includesCategory(post, ["pergunta", "faq", "investimento", "logistica"]),
     cta: { label: "FAQ completo", href: "/faq" },
@@ -94,16 +94,16 @@ export const revalidate = process.env.NODE_ENV === 'production' ? 60 : 0;
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: "Guia completo do tutor de Spitz AlemÃ£o AnÃ£o",
+  title: "Guia completo do tutor de Spitz Alemão Anão",
   description:
-    "ConteÃºdo evergreen para quem busca Spitz AlemÃ£o AnÃ£o com responsabilidade: cuidados, rotina, comportamento, saÃºde preventiva e respostas das principais dÃºvidas.",
+    "Conteúdo evergreen para quem busca Spitz Alemão Anão com responsabilidade: cuidados, rotina, comportamento, saúde preventiva e respostas das principais dúvidas.",
   alternates: { canonical: "/blog" },
   openGraph: {
     type: "website",
     url: "/blog",
-    title: "Blog | By ImpÃ©rio Dog",
+    title: "Blog | By Império Dog",
     description:
-      "Pilares evergreen sobre saÃºde, rotina e comportamento do Spitz AlemÃ£o AnÃ£o para uma decisÃ£o responsÃ¡vel.",
+      "Pilares evergreen sobre saúde, rotina e comportamento do Spitz Alemão Anão para uma decisão responsável.",
   },
 };
 
@@ -119,13 +119,13 @@ export default async function BlogListPage({ searchParams }: { searchParams?: Pa
 
   const heroLinks = [
     {
-      title: "Filhotes disponÃ­veis sob consulta",
-      description: "Acesso antecipado Ã s ninhadas com saÃºde validada e mentoria vitalÃ­cia.",
+      title: "Filhotes disponíveis sob consulta",
+      description: "Acesso antecipado Ã s ninhadas com saúde validada e mentoria vitalÃ­cia.",
       href: "/filhotes",
     },
     {
       title: "Processo By Imperio Dog",
-      description: "Entenda cada etapa: entrevista, socializaÃ§Ã£o, entrega humanizada e suporte 24h.",
+      description: "Entenda cada etapa: entrevista, socialização, entrega humanizada e suporte 24h.",
       href: "/sobre#processo",
     },
     {
@@ -140,7 +140,7 @@ export default async function BlogListPage({ searchParams }: { searchParams?: Pa
       <div className="mx-auto max-w-4xl px-4 py-16">
         <Hero searchTerm={searchTerm} links={heroLinks} />
         <EmptyState
-          title="ConfiguraÃ§Ã£o necessÃ¡ria"
+          title="Configuração necessária"
           message="Defina NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY para carregar o blog."
         />
       </div>
@@ -152,7 +152,7 @@ export default async function BlogListPage({ searchParams }: { searchParams?: Pa
       <div className="mx-auto max-w-4xl px-4 py-16">
         <Hero searchTerm={searchTerm} links={heroLinks} />
         <EmptyState
-          title="NÃ£o foi possÃ­vel carregar os artigos"
+          title="Não foi possÃ­vel carregar os artigos"
           message={fetchState.message || "Tente novamente em instantes."}
         />
       </div>
@@ -165,7 +165,7 @@ export default async function BlogListPage({ searchParams }: { searchParams?: Pa
         <Hero searchTerm={searchTerm} links={heroLinks} />
         <EmptyState
           title="Nenhum artigo publicado ainda"
-          message="Assim que novos conteÃºdos estiverem prontos, vocÃª serÃ¡ notificado nas redes sociais."
+          message="Assim que novos conteúdos estiverem prontos, você será notificado nas redes sociais."
         />
       </div>
     );
@@ -181,8 +181,8 @@ export default async function BlogListPage({ searchParams }: { searchParams?: Pa
   const featured = filtered[0] ?? fetchState.posts[0];
   const collections = buildCollections(filtered);
 
-  const metaTitleStr = typeof metadata.title === "string" ? metadata.title : "Blog | By ImpÃ©rio Dog";
-  const metaDescStr = metadata.description ?? "ConteÃºdo evergreen sobre saÃºde, rotina e comportamento do Spitz AlemÃ£o AnÃ£o.";
+  const metaTitleStr = typeof metadata.title === "string" ? metadata.title : "Blog | By Império Dog";
+  const metaDescStr = metadata.description ?? "Conteúdo evergreen sobre saúde, rotina e comportamento do Spitz Alemão Anão.";
   const blogSchema = buildBlogSchema({
     url: process.env.NEXT_PUBLIC_SITE_URL || "https://www.byimperiodog.com.br",
     headline: metaTitleStr,
@@ -200,7 +200,7 @@ export default async function BlogListPage({ searchParams }: { searchParams?: Pa
       <Hero searchTerm={searchTerm} links={heroLinks} />
       {featured ? <FeaturedPost post={featured} /> : null}
 
-      {/* AnÃºncio de resultados para leitores de tela */}
+      {/* Anúncio de resultados para leitores de tela */}
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         {searchTerm && filtered.length > 0 && `${filtered.length} artigo${filtered.length > 1 ? 's' : ''} encontrado${filtered.length > 1 ? 's' : ''} para "${searchTerm}"`}
         {searchTerm && filtered.length === 0 && `Nenhum artigo encontrado para "${searchTerm}"`}
@@ -209,7 +209,7 @@ export default async function BlogListPage({ searchParams }: { searchParams?: Pa
       {searchTerm && filtered.length === 0 ? (
         <EmptyState
           title="Nenhum artigo corresponde ao termo pesquisado"
-          message="Use palavras-chave como saÃºde, rotina, comportamento ou investimento."
+          message="Use palavras-chave como saúde, rotina, comportamento ou investimento."
         />
       ) : null}
 
@@ -234,7 +234,7 @@ export default async function BlogListPage({ searchParams }: { searchParams?: Pa
             <h3 className="text-base font-semibold text-text group-hover:text-brand">{link.title}</h3>
             <p className="text-sm text-text-muted">{link.description}</p>
             <span className="text-xs font-semibold uppercase tracking-[0.3em] text-brand">
-              Leia tambÃ©m
+              Leia também
             </span>
           </Link>
         ))}
@@ -320,14 +320,14 @@ function Hero({ searchTerm, links }: { searchTerm: string; links: Array<{ title:
     <header className="flex flex-col gap-8 rounded-3xl border border-border bg-surface p-8 shadow-soft sm:p-10 lg:flex-row lg:items-center">
       <div className="flex-1 space-y-4">
         <span className="inline-flex items-center gap-2 rounded-pill bg-brand/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.32em] text-brand">
-          ConteÃºdo premium para tutores
+          Conteúdo premium para tutores
         </span>
         <h1 className="text-3xl font-serif text-text sm:text-4xl">
-          Blog By Imperio Dog: decisÃ£o com responsabilidade comeÃ§a pelo conhecimento.
+          Blog By Imperio Dog: decisão com responsabilidade começa pelo conhecimento.
         </h1>
         <p className="text-sm text-text-muted">
-          Damos transparÃªncia total sobre rotina, saÃºde e comportamento do Spitz AlemÃ£o AnÃ£o.
-          Leia os pilares evergreen e avance para o formulÃ¡rio sob consulta quando estiver pronto.
+          Damos transparência total sobre rotina, saúde e comportamento do Spitz Alemão Anão.
+          Leia os pilares evergreen e avance para o formulário sob consulta quando estiver pronto.
         </p>
         <form className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
           <label htmlFor="blog-search" className="sr-only">
@@ -337,7 +337,7 @@ function Hero({ searchTerm, links }: { searchTerm: string; links: Array<{ title:
             id="blog-search"
             name="q"
             defaultValue={searchTerm}
-            placeholder="Buscar por saÃºde, rotina, comportamento..."
+            placeholder="Buscar por saúde, rotina, comportamento..."
             className="flex-1 rounded-pill border border-border bg-surface-subtle px-5 py-3 text-sm text-text focus:ring-2 focus:ring-brand/30"
           />
           <button
@@ -355,7 +355,7 @@ function Hero({ searchTerm, links }: { searchTerm: string; links: Array<{ title:
             href={link.href}
             className="group flex flex-col gap-2 rounded-2xl border border-border/60 bg-surface-subtle p-5 transition hover:-translate-y-1 hover:border-brand/70"
           >
-            <span className="text-xs font-semibold uppercase tracking-[0.3em] text-brand">Leia tambÃ©m</span>
+            <span className="text-xs font-semibold uppercase tracking-[0.3em] text-brand">Leia também</span>
             <h3 className="text-base font-semibold text-text group-hover:text-brand">{link.title}</h3>
             <p className="text-sm text-text-muted">{link.description}</p>
           </Link>
@@ -419,7 +419,7 @@ function FeaturedPost({ post }: { post: PublicPost }) {
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-sm font-semibold uppercase tracking-[0.28em] text-text-soft">
-            ConteÃºdo exclusivo
+            Conteúdo exclusivo
           </div>
         )}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/35 via-black/0" />

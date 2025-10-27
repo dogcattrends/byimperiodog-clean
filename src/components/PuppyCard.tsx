@@ -122,7 +122,7 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
             {price}
           </span>
 
-          {/* BotÃ£o de Favoritar - Tap target â‰¥48px */}
+          {/* Botão de Favoritar - Tap target â‰¥48px */}
           <button
             type="button"
             onClick={(event) => {
@@ -139,7 +139,7 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
       </button>
 
       {/* ================================================================ */}
-      {/* CONTEÃšDO - line-clamp e espaÃ§amento */}
+      {/* CONTEÚDO - line-clamp e espaçamento */}
       {/* ================================================================ */}
       <div className="flex flex-1 flex-col gap-4 p-5">
         <div>
@@ -163,7 +163,7 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
           Quero esse filhote
         </a>
 
-        {/* CTAs SecundÃ¡rios - Tap targets â‰¥48px */}
+        {/* CTAs Secundários - Tap targets â‰¥48px */}
         <div className="grid grid-cols-3 gap-2 text-xs font-semibold" data-evt="share_click" data-id={p.id}>
           <a
             href={waVideo}
@@ -203,7 +203,7 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
         </div>
 
         <p className="text-xs leading-relaxed text-zinc-500">
-          Criado com acompanhamento veterinÃ¡rio, socializaÃ§Ã£o guiada e mentoria vitalÃ­cia.
+          Criado com acompanhamento veterinário, socialização guiada e mentoria vitalÃ­cia.
         </p>
       </div>
     </article>

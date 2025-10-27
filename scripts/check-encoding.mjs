@@ -10,7 +10,7 @@ import { join } from 'node:path';
 const exts = new Set(['.ts','.tsx','.md','.mdx','.sql','.js','.mjs','.cjs']);
 const root = process.cwd();
 const BAD_PATTERNS = [
-  'AlemÃ£o','AnÃ£o','excelÃªn','responsÃ','pÃ³s-','disponÃ','Ã¡','Ã£','Ã§','Ã©','Ãº','Ã³','Ãª'
+  'Alemão','Anão','excelên','responsÃ','pós-','disponÃ','á','ã','ç','é','ú','ó','ê'
 ];
 
 function walk(dir){
