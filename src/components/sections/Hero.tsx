@@ -1,6 +1,7 @@
 "use client";
 
 import { CheckCircle2, HeartHandshake, ShieldCheck } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useMemo } from "react";
 
@@ -151,39 +152,17 @@ export default function HeroSection() {
 
         <div className="space-y-6">
           <figure className="relative aspect-[4/3] overflow-hidden rounded-3xl border border-emerald-200/70 bg-white shadow-2xl">
-            <picture className="absolute inset-0 h-full w-full">
-              <source
-                media="(max-width: 640px)"
-                srcSet="/spitz-hero-mobile.avif"
-                type="image/avif"
-              />
-              <source
-                media="(max-width: 1024px)"
-                srcSet="/spitz-hero-tablet.avif"
-                type="image/avif"
-              />
-              <source
-                media="(max-width: 640px)"
-                srcSet="/spitz-hero-mobile.webp"
-                type="image/webp"
-              />
-              <source
-                media="(max-width: 1024px)"
-                srcSet="/spitz-hero-tablet.webp"
-                type="image/webp"
-              />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/spitz-hero-desktop.webp"
-                alt="Filhotes de Spitz Alemão Anão saudáveis em ambiente acolhedor"
-                // @ts-expect-error fetchpriority is valid HTML but not in React types yet
-                fetchpriority="high"
-                loading="eager"
-                decoding="async"
-                className="h-full w-full object-cover"
-                style={{ contentVisibility: 'auto' }}
-              />
-            </picture>
+            <Image
+              src="/spitz-hero-desktop.webp"
+              alt="Filhotes de Spitz Alemão Anão saudáveis em ambiente acolhedor"
+              fill
+              priority
+              quality={90}
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 50vw"
+              className="object-cover"
+              placeholder="blur"
+              blurDataURL="data:image/webp;base64,UklGRkQAAABXRUJQVlA4IDgAAAAQAgCdASoQAAwAPzmEuVOvKKWisAgB4CcJZQAAcrz3qV/kAP78fZ/+WH3z9v/xgk1AAAAAA"
+            />
             <figcaption className="absolute bottom-3 left-3 rounded-full bg-white px-4 py-1 text-xs font-semibold text-emerald-700 shadow">
               Socialização guiada com vídeos semanais
             </figcaption>

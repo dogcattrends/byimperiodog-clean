@@ -94,16 +94,16 @@ export const revalidate = process.env.NODE_ENV === 'production' ? 60 : 0;
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: "Guia completo do tutor de Spitz Alemão Anão",
+  title: "Guia completo do tutor de Spitz Alemão Anão (Lulu da Pomerânia)",
   description:
-    "Conteúdo evergreen para quem busca Spitz Alemão Anão com responsabilidade: cuidados, rotina, comportamento, saúde preventiva e respostas das principais dúvidas.",
+    "Conteúdo evergreen para quem busca Spitz Alemão Anão (Lulu da Pomerânia) com responsabilidade: cuidados, rotina, comportamento, saúde preventiva e respostas das principais dúvidas.",
   alternates: { canonical: "/blog" },
   openGraph: {
     type: "website",
     url: "/blog",
     title: "Blog | By Império Dog",
     description:
-      "Pilares evergreen sobre saúde, rotina e comportamento do Spitz Alemão Anão para uma decisão responsável.",
+      "Pilares evergreen sobre saúde, rotina e comportamento do Spitz Alemão Anão (Lulu da Pomerânia) para uma decisão responsável.",
   },
 };
 
@@ -182,7 +182,7 @@ export default async function BlogListPage({ searchParams }: { searchParams?: Pa
   const collections = buildCollections(filtered);
 
   const metaTitleStr = typeof metadata.title === "string" ? metadata.title : "Blog | By Império Dog";
-  const metaDescStr = metadata.description ?? "Conteúdo evergreen sobre saúde, rotina e comportamento do Spitz Alemão Anão.";
+  const metaDescStr = metadata.description ?? "Conteúdo evergreen sobre saúde, rotina e comportamento do Spitz Alemão Anão (Lulu da Pomerânia).";
   const blogSchema = buildBlogSchema({
     url: process.env.NEXT_PUBLIC_SITE_URL || "https://www.byimperiodog.com.br",
     headline: metaTitleStr,
@@ -326,7 +326,7 @@ function Hero({ searchTerm, links }: { searchTerm: string; links: Array<{ title:
           Blog By Imperio Dog: decisão com responsabilidade começa pelo conhecimento.
         </h1>
         <p className="text-sm text-text-muted">
-          Damos transparência total sobre rotina, saúde e comportamento do Spitz Alemão Anão.
+          Damos transparência total sobre rotina, saúde e comportamento do Spitz Alemão Anão (Lulu da Pomerânia).
           Leia os pilares evergreen e avance para o formulário sob consulta quando estiver pronto.
         </p>
         <form className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
