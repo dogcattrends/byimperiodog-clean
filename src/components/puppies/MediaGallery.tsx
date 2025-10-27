@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 
 import { useToast } from '@/components/ui/toast';
 import { adminFetch } from '@/lib/adminFetch';
-import { ALLOWED_IMAGE_MIME, ALLOWED_VIDEO_MIME, MAX_IMAGE_BYTES, MAX_VIDEO_BYTES } from '@/lib/uploadValidation';
+import { ALLOWED_IMAGE_MIME, ALLOWED_VIDEO_MIME, MAX_IMAGE_BYTES, MAX_GIF_BYTES, MAX_VIDEO_BYTES } from '@/lib/uploadValidation';
 
 export interface MediaGalleryProps {
   media: string[];
@@ -32,7 +32,7 @@ export default function MediaGallery({ media, cover, onChange, onSelectCover, ma
         if(!isImg && !isVid){
           throw new Error(`Tipo não suportado: ${f.type || 'desconhecido'}`);
         }
-        const max = isVid ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES;
+  const max = isVid ? MAX_VIDEO_BYTES : (f.type === 'image/gif' ? MAX_GIF_BYTES : MAX_IMAGE_BYTES);
         if(f.size <= 0 || f.size > max){
           const mb = (max/1_000_000).toFixed(0);
           throw new Error(`Arquivo muito grande (${Math.ceil(f.size/1_000_000)}MB). Limite: ${mb}MB para ${isVid? 'vídeo':'imagem'}.`);
@@ -134,7 +134,7 @@ export default function MediaGallery({ media, cover, onChange, onSelectCover, ma
       </ul>}
       {media.length===0 && <p className="text-[11px] text-[var(--text-muted)]">Nenhuma mídia enviada.</p>}
       <p className="text-[10px] text-[var(--text-muted)]">Arraste para reordenar. A primeira é usada como capa para a vitrine.</p>
-      <p className="text-[10px] text-[var(--text-muted)]">Limites: imagens até {(MAX_IMAGE_BYTES/1_000_000).toFixed(0)}MB; vídeos até {(MAX_VIDEO_BYTES/1_000_000).toFixed(0)}MB. Tipos: JPG, PNG, WEBP, AVIF, GIF, MP4, WEBM, MOV.</p>
+      <p className="text-[10px] text-[var(--text-muted)]">Limites: imagens estáticas até {(MAX_IMAGE_BYTES/1_000_000).toFixed(0)}MB; GIFs até {(MAX_GIF_BYTES/1_000_000).toFixed(0)}MB; vídeos até {(MAX_VIDEO_BYTES/1_000_000).toFixed(0)}MB. Tipos: JPG, PNG, WEBP, AVIF, GIF, MP4, WEBM, MOV.</p>
     </div>
   );
 }

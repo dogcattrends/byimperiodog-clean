@@ -13,6 +13,7 @@ import {
   ALLOWED_IMAGE_MIME, 
   ALLOWED_VIDEO_MIME,
   MAX_IMAGE_BYTES,
+  MAX_GIF_BYTES,
   MAX_VIDEO_BYTES,
   inferExtFromMime, 
   sanitizeFilename 
@@ -29,7 +30,7 @@ async function processUpload({ buf, mime, filename, wantUpsert, b64Fallback }:{ 
   // Determinar se é imagem ou vídeo
   const isVideo = ALLOWED_VIDEO_MIME.has(mime);
   const isImage = ALLOWED_IMAGE_MIME.has(mime);
-  const maxBytes = isVideo ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES;
+  const maxBytes = isVideo ? MAX_VIDEO_BYTES : (mime === 'image/gif' ? MAX_GIF_BYTES : MAX_IMAGE_BYTES);
 
   // Basic security validation
   if (!isImage && !isVideo) {

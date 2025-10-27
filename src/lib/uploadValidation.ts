@@ -15,11 +15,14 @@ export const ALLOWED_VIDEO_MIME = new Set([
   'video/quicktime', // .mov
 ]);
 
-export const MAX_IMAGE_BYTES = 5_000_000; // 5 MB
+export const MAX_IMAGE_BYTES = 5_000_000; // 5 MB (imagens estáticas)
+export const MAX_GIF_BYTES = 10_000_000; // 10 MB (GIF animado)
 export const MAX_VIDEO_BYTES = 50_000_000; // 50 MB para vídeos
 
 export function isAllowedImage(mime: string, sizeBytes: number): boolean {
-  return ALLOWED_IMAGE_MIME.has(mime) && sizeBytes > 0 && sizeBytes <= MAX_IMAGE_BYTES;
+  if (!ALLOWED_IMAGE_MIME.has(mime) || sizeBytes <= 0) return false;
+  const limit = mime === 'image/gif' ? MAX_GIF_BYTES : MAX_IMAGE_BYTES;
+  return sizeBytes <= limit;
 }
 
 export function isAllowedVideo(mime: string, sizeBytes: number): boolean {
@@ -42,6 +45,7 @@ export function inferExtFromMime(mime: string): string {
     'image/png': 'png',
     'image/webp': 'webp',
     'image/avif': 'avif',
+    'image/gif': 'gif',
   };
   return map[mime] || 'bin';
 }
