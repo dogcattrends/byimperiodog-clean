@@ -21,6 +21,7 @@ interface TestimonialsProps {
   debug?: boolean;
   variant?: Variant;
   showCount?: number; // usado no grid
+  navigationStyle?: 'dots' | 'counter' | 'progress'; // estilo de navegação
 }
 
 const BLUR = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
@@ -38,7 +39,8 @@ export default function Testimonials({
   jsonLd = false,
   debug = false,
   variant = 'carousel',
-  showCount = 6
+  showCount = 6,
+  navigationStyle = 'progress'
 }: TestimonialsProps) {
   // Detectar preferência por movimento reduzido (CSS já trata via motion-reduce:*)
   const [reduceMotion, setReduceMotion] = useState(false);
@@ -199,18 +201,107 @@ export default function Testimonials({
               )}
               {total > 1 && (
                 <>
-                  <button type="button" aria-label="Anterior" onClick={prev} className="focus-visible:focus-ring absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/45 text-white px-2 py-1 text-sm backdrop-blur-sm transition-opacity opacity-0 group-hover:opacity-100">
-                    ←
+                  <button 
+                    type="button" 
+                    aria-label="Foto anterior" 
+                    onClick={prev} 
+                    className={cn(
+                      'focus-visible:focus-ring absolute left-2 top-1/2 -translate-y-1/2',
+                      'rounded-full bg-black/60 text-white p-3 backdrop-blur-sm',
+                      'transition-opacity shadow-lg',
+                      'opacity-100 md:opacity-0 md:group-hover:opacity-100',
+                      'hover:bg-black/75 active:scale-95'
+                    )}
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                    </svg>
                   </button>
-                  <button type="button" aria-label="Próximo" onClick={next} className="focus-visible:focus-ring absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/45 text-white px-2 py-1 text-sm backdrop-blur-sm transition-opacity opacity-0 group-hover:opacity-100">
-                    →
+                  <button 
+                    type="button" 
+                    aria-label="Próxima foto" 
+                    onClick={next} 
+                    className={cn(
+                      'focus-visible:focus-ring absolute right-2 top-1/2 -translate-y-1/2',
+                      'rounded-full bg-black/60 text-white p-3 backdrop-blur-sm',
+                      'transition-opacity shadow-lg',
+                      'opacity-100 md:opacity-0 md:group-hover:opacity-100',
+                      'hover:bg-black/75 active:scale-95'
+                    )}
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                    </svg>
                   </button>
                 </>
               )}
             </div>
-            {total > 1 && (
-              <div className="mt-4 flex justify-center gap-2" aria-label="Seleção de foto">
-                {list.map((p, i) => {
+            {total > 1 && navigationStyle === 'progress' && (
+              <div className="mt-4 space-y-3" aria-label="Navegação do carrossel">
+                {/* Progress Bar */}
+                <div 
+                  className="relative w-full max-w-md mx-auto h-1.5 bg-[var(--border)] rounded-full overflow-hidden"
+                  role="progressbar"
+                  aria-valuenow={index + 1}
+                  aria-valuemin={1}
+                  aria-valuemax={total}
+                  aria-label={`Foto ${index + 1} de ${total}`}
+                >
+                  <div 
+                    className="absolute top-0 left-0 h-full bg-emerald-500 transition-all duration-300 ease-out"
+                    style={{ width: `${((index + 1) / total) * 100}%` }}
+                  />
+                </div>
+                {/* Counter + Navigation Buttons */}
+                <div className="flex items-center justify-center gap-4">
+                  <button 
+                    type="button"
+                    onClick={prev} 
+                    aria-label="Foto anterior"
+                    className="btn-outline h-10 px-4 text-sm font-medium hover:bg-emerald-50 transition-colors"
+                  >
+                    ← Anterior
+                  </button>
+                  <span className="text-sm font-medium text-[var(--text)] min-w-[4rem] text-center">
+                    {index + 1} de {total}
+                  </span>
+                  <button 
+                    type="button"
+                    onClick={next} 
+                    aria-label="Próxima foto"
+                    className="btn-outline h-10 px-4 text-sm font-medium hover:bg-emerald-50 transition-colors"
+                  >
+                    Próxima →
+                  </button>
+                </div>
+              </div>
+            )}
+            {total > 1 && navigationStyle === 'counter' && (
+              <div className="mt-4 flex items-center justify-center gap-4" aria-label="Navegação do carrossel">
+                <button 
+                  type="button"
+                  onClick={prev} 
+                  aria-label="Foto anterior"
+                  className="btn-outline h-12 px-5 text-sm font-medium"
+                >
+                  ← Anterior
+                </button>
+                <span className="text-base font-semibold text-[var(--text)] min-w-[5rem] text-center">
+                  {index + 1} / {total}
+                </span>
+                <button 
+                  type="button"
+                  onClick={next} 
+                  aria-label="Próxima foto"
+                  className="btn-outline h-12 px-5 text-sm font-medium"
+                >
+                  Próxima →
+                </button>
+              </div>
+            )}
+            {total > 1 && navigationStyle === 'dots' && (
+              <div className="mt-4 flex justify-center gap-2 flex-wrap max-w-2xl mx-auto" aria-label="Seleção de foto">
+                {list.slice(0, 10).map((p, i) => {
                   const active = i === (index % total);
                   return (
                     <button
@@ -220,14 +311,19 @@ export default function Testimonials({
                       aria-pressed={active}
                       onClick={() => goTo(i)}
                       className={cn(
-                        'min-h-[48px] min-w-[48px] rounded-full transition-colors flex items-center justify-center',
+                        'min-h-[44px] min-w-[44px] rounded-full transition-all flex items-center justify-center',
                         active ? 'bg-emerald-500' : 'bg-[var(--border)] hover:bg-emerald-400/70'
                       )}
                     >
-                      <span className={cn('h-3 w-3 rounded-full', active ? 'h-4 w-8 bg-white' : 'bg-current')} aria-hidden="true" />
+                      <span className={cn('rounded-full transition-all', active ? 'h-4 w-8 bg-white' : 'h-3 w-3 bg-current')} aria-hidden="true" />
                     </button>
                   );
                 })}
+                {total > 10 && (
+                  <span className="flex items-center text-sm text-[var(--text-muted)] px-2">
+                    +{total - 10} fotos
+                  </span>
+                )}
               </div>
             )}
             {debug && (
