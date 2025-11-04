@@ -3,12 +3,14 @@ import type { MetadataRoute } from "next";
 const PUBLIC_ROUTES = [
   "/",
   "/filhotes",
+  "/reserve-seu-filhote",
   "/sobre",
   "/blog",
   "/contato",
   "/faq-do-tutor",
   "/politica-de-privacidade",
   "/termos-de-uso",
+  "/politica-editorial",
 ].filter((path) => !path.startsWith("/admin"));
 
 export default function sitemap(): MetadataRoute.Sitemap {

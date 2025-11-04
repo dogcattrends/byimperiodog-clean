@@ -59,6 +59,51 @@ export function getBreadcrumbJsonLd(opts: { siteUrl: string; items: { name: stri
   };
 }
 
-export function serializeJsonLd(obj: any) {
+export function serializeJsonLd(obj: unknown) {
   return JSON.stringify(obj, null, 0);
+}
+
+// WebPage JSON-LD helper for institutional pages
+export function getWebPageJsonLd(opts: {
+  siteUrl: string;
+  path: string; // e.g. '/sobre'
+  name: string;
+  description?: string;
+}) {
+  const base = opts.siteUrl.replace(/\/$/, "");
+  const url = `${base}${opts.path}`;
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    '@id': `${url}#webpage`,
+    url,
+    name: opts.name,
+    description: opts.description,
+    isPartOf: {
+      '@type': 'WebSite',
+      url: base,
+      name: 'By Imperio Dog',
+    },
+  };
+}
+
+// ItemList JSON-LD helper to represent ordered lists (e.g., posts on a listing page)
+export function getItemListJsonLd(opts: {
+  siteUrl: string;
+  items: Array<{ url: string; name?: string }>; // urls can be absolute or relative
+  idPath?: string; // optional path to compose a stable @id
+}) {
+  const base = opts.siteUrl.replace(/\/$/, "");
+  const toAbs = (u: string) => (u.startsWith('http') ? u : `${base}${u}`);
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    '@id': opts.idPath ? `${base}${opts.idPath}#itemlist` : undefined,
+    itemListElement: opts.items.map((it, idx) => ({
+      '@type': 'ListItem',
+      position: idx + 1,
+      url: toAbs(it.url),
+      name: it.name,
+    })),
+  };
 }

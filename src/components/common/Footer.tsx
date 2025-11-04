@@ -18,6 +18,7 @@ const SUPPORT_ITEMS = [
   { label: "FAQ do tutor", href: "/faq-do-tutor" },
   { label: "Política de privacidade", href: "/politica-de-privacidade" },
   { label: "Termos de uso", href: "/termos-de-uso" },
+  { label: "Política editorial", href: "/politica-editorial" },
 ];
 
 export default function Footer() {

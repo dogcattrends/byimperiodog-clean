@@ -93,10 +93,47 @@ const faqEntries = [
   },
 ] as const;
 
-export default function FilhotesPage() {
+type Puppy = {
+  id: string;
+  nome?: string | null;
+  name?: string | null;
+  price_cents?: number | null;
+  imageUrl?: string | null;
+  image_url?: string | null;
+  foto?: string | null;
+  cover?: string | null;
+  capa?: string | null;
+};
+
+async function fetchPuppies(): Promise<Puppy[]> {
+  try {
+    const { supabaseAnon } = await import("@/lib/supabaseAnon");
+    const sb = supabaseAnon();
+    const { data, error } = await sb
+      .from("puppies")
+      .select("id, nome, name, price_cents, imageUrl, image_url, foto, cover, capa")
+      .order("created_at", { ascending: false })
+      .limit(20);
+    if (error) throw error;
+    return (data ?? []) as Puppy[];
+  } catch {
+    return [];
+  }
+}
+
+function normalizePuppy(p: Puppy) {
+  const name = p.nome || p.name || `Filhote ${p.id.slice(0, 6)}`;
+  const image = p.imageUrl || p.image_url || p.foto || p.cover || p.capa || undefined;
+  return { id: p.id, name, priceCents: p.price_cents, image };
+}
+
+export default async function FilhotesPage() {
   const trimmedPhone = process.env.NEXT_PUBLIC_WA_PHONE?.replace(/\D/g, "") ?? "";
   const waHref = trimmedPhone ? `https://wa.me/${trimmedPhone}` : process.env.NEXT_PUBLIC_WA_LINK ?? "#";
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "https://www.byimperiodog.com.br";
+
+  const rawPuppies = await fetchPuppies();
+  const puppiesForLD = rawPuppies.map(normalizePuppy);
 
   const faqJsonLd = {
     "@context": "https://schema.org",
@@ -119,6 +156,44 @@ export default function FilhotesPage() {
       { "@type": "ListItem", position: 2, name: "Filhotes", item: `${siteUrl}/filhotes` },
     ],
   };
+  const webPageLd = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": `${siteUrl}/filhotes#webpage`,
+    url: `${siteUrl}/filhotes`,
+    name: "Filhotes de Spitz Alemão Anão (Lulu da Pomerânia)",
+    description:
+      "Conheça filhotes de Spitz Alemão Anão Lulu da Pomerânia socializados, com pedigree CBKC, laudos e suporte vitalício com a criadora.",
+    isPartOf: { "@type": "WebSite", url: siteUrl, name: "By Imperio Dog" },
+  };
+
+  const offerCatalogLd = puppiesForLD.length > 0 ? {
+    "@context": "https://schema.org",
+    "@type": "OfferCatalog",
+    "@id": `${siteUrl}/filhotes#offercatalog`,
+    name: "Filhotes de Spitz Alemão Anão disponíveis",
+    itemListElement: puppiesForLD.map((puppy, idx) => {
+      const price =
+        typeof puppy.priceCents === "number" && puppy.priceCents > 0
+          ? (puppy.priceCents / 100).toFixed(2)
+          : undefined;
+      return {
+        "@type": "Offer",
+        position: idx + 1,
+        itemOffered: {
+          "@type": "Product",
+          name: puppy.name,
+          image: puppy.image ? [puppy.image] : undefined,
+        },
+        priceCurrency: "BRL",
+        price,
+        availability: price
+          ? "https://schema.org/InStock"
+          : "https://schema.org/LimitedAvailability",
+        url: `${siteUrl}/filhotes/${puppy.id}`,
+      };
+    }),
+  } : null;
 
   return (
     <main className="space-y-20 bg-[var(--bg)] pb-24 pt-16 text-[var(--text)]">
@@ -304,6 +379,18 @@ export default function FilhotesPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
+      <Script
+        id="webpage-ld"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageLd) }}
+      />
+      {offerCatalogLd && (
+        <Script
+          id="offercatalog-ld"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(offerCatalogLd) }}
+        />
+      )}
       
       {/* Sticky CTA mobile para conversão */}
       <StickyCTA

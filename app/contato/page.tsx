@@ -1,13 +1,13 @@
-﻿import type { Metadata } from "next";
+﻿import { Clock, Instagram, Mail, MapPin, MessageCircle, Phone, Youtube } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
 
-import LeadForm from "@/components/LeadForm";
 import { WhatsAppIcon as WAIcon } from "@/components/icons/WhatsAppIcon";
+import LeadForm from "@/components/LeadForm";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { routes } from "@/lib/route";
-import { Clock, Instagram, Mail, MapPin, MessageCircle, Phone, Youtube } from "lucide-react";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.byimperiodog.com.br";
 
@@ -89,11 +89,22 @@ export default function ContatoPage() {
       { "@type": "ListItem", position: 2, name: "Contato", item: `${SITE_URL}/contato` },
     ],
   };
+  const webPageLd = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": `${SITE_URL.replace(/\/$/, "")}/contato#webpage`,
+    url: `${SITE_URL.replace(/\/$/, "")}/contato`,
+    name: "Contato | By Império Dog",
+    description:
+      "Fale com a By Império Dog por WhatsApp, e-mail ou formulário. Resposta rápida e acompanhamento direto com a criadora do Spitz Alemão Anão Lulu da Pomerânia.",
+    isPartOf: { "@type": "WebSite", url: SITE_URL.replace(/\/$/, ""), name: "By Imperio Dog" },
+  };
 
   return (
     <main className="mx-auto max-w-6xl space-y-16 px-5 pb-24 pt-16 text-[var(--text)]">
       <Script id="ld-contact" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd) }} />
       <Script id="ld-breadcrumb-contact" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
+      <Script id="ld-webpage-contact" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageLd) }} />
 
       <header className="text-center sm:text-left">
         <span className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-[var(--brand)]">

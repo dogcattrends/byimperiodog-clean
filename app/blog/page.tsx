@@ -190,6 +190,26 @@ export default async function BlogListPage({ searchParams }: { searchParams?: Pa
     description: metaDescStr,
     posts: fetchState.posts.slice(0, 12),
   });
+  const siteBase = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.byimperiodog.com.br").replace(/\/$/, "");
+  const crumbs = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Início", item: `${siteBase}/` },
+      { "@type": "ListItem", position: 2, name: "Blog", item: `${siteBase}/blog` },
+    ],
+  };
+  const itemList = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "@id": `${siteBase}/blog#itemlist`,
+    itemListElement: filtered.map((p, idx) => ({
+      "@type": "ListItem",
+      position: idx + 1,
+      url: `${siteBase}/blog/${p.slug}`,
+      name: p.title,
+    })),
+  };
 
   // Separar "Guia do Tutor" para destaque
   const guiaDoTutorCollection = collections.find(c => c.definition.id === "guia-do-tutor");
@@ -197,7 +217,7 @@ export default async function BlogListPage({ searchParams }: { searchParams?: Pa
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-16 px-4 py-16 sm:px-6 lg:px-8">
-      <SeoJsonLd data={blogSchema} />
+  <SeoJsonLd data={[blogSchema, crumbs, itemList]} />
       <Hero searchTerm={searchTerm} links={heroLinks} />
       {featured ? <FeaturedPost post={featured} /> : null}
 

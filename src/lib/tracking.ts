@@ -17,6 +17,7 @@ export interface TrackingIDs {
   hotjar: string;
   clarity: string;
   metaVerify: string;
+  googleVerify: string;
   siteUrl: string;
   custom: CustomPixelConfig[];
 }
@@ -40,9 +41,8 @@ export function resolveTracking(settings: Record<string, unknown> | null | undef
       const enabled = item.enabled === false ? false : true;
       const code = typeof item.code === 'string' ? item.code.trim() : '';
       const noscript = typeof item.noscript === 'string' ? item.noscript.trim() : undefined;
-      if (!code || !label) return undefined;
+      if (!enabled || !code || !label) return undefined;
       return { id, label, slot, enabled, code, noscript } as CustomPixelConfig;
-      return { id, label, slot, enabled, code, noscript } satisfies CustomPixelConfig;
     })
     .filter((item): item is CustomPixelConfig => item !== undefined);
 
@@ -55,6 +55,7 @@ export function resolveTracking(settings: Record<string, unknown> | null | undef
     hotjar: norm(settings?.hotjar_id ?? env.NEXT_PUBLIC_HOTJAR_ID),
     clarity: norm(settings?.clarity_id ?? env.NEXT_PUBLIC_CLARITY_ID),
     metaVerify: norm(settings?.meta_domain_verify ?? env.NEXT_PUBLIC_META_DOMAIN_VERIFY),
+    googleVerify: norm((settings as any)?.google_site_verify ?? env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION),
     siteUrl: norm(env.NEXT_PUBLIC_SITE_URL) || "https://www.byimperiodog.com.br",
     custom,
   };
@@ -70,7 +71,8 @@ export function buildOrganizationLD(siteUrl: string) {
     url: `${base}/`,
     logo: `${base}/byimperiologo.png`,
     image: `${base}/spitz-hero-desktop.webp`,
-    telephone: "+55 11 98663-3239",
+    telephone: "+55 11 96863-3239",
+    publishingPrinciples: `${base}/politica-editorial`,
     sameAs: [
       "https://instagram.com/byimperiodog",
       "https://www.youtube.com/@byimperiodog",
@@ -110,4 +112,71 @@ export function buildWebsiteLD(siteUrl: string) {
 export function shouldLoadImmediate(ids: TrackingIDs) {
   // Hoje carregamos sempre se existir ID. Poderia adicionar lógica de consent aqui.
   return ids;
+}
+
+/** SiteNavigationElement: ajuda o Google a entender os principais links do site. */
+export function buildSiteNavigationLD(siteUrl: string) {
+  const base = siteUrl.replace(/\/$/, "");
+  const items = [
+    { name: "Início", path: "/" },
+    { name: "Filhotes", path: "/filhotes" },
+    { name: "Processo", path: "/sobre" },
+    { name: "Blog", path: "/blog" },
+    { name: "FAQ do tutor", path: "/faq-do-tutor" },
+    { name: "Contato", path: "/contato" },
+  ];
+  return {
+    "@context": "https://schema.org",
+    "@type": "SiteNavigationElement",
+    name: items.map((i) => i.name),
+    url: items.map((i) => `${base}${i.path}`),
+  };
+}
+
+/** LocalBusiness: reforça presença local e área de atuação. */
+export function buildLocalBusinessLD(siteUrl: string) {
+  const base = siteUrl.replace(/\/$/, "");
+  return {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "@id": `${base}#localbusiness`,
+    name: "By Imperio Dog",
+    url: `${base}/`,
+    image: `${base}/spitz-hero-desktop.webp`,
+    logo: `${base}/byimperiologo.png`,
+    telephone: "+55 11 96863-3239",
+    email: "byimperiodog@gmail.com",
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: "Bragança Paulista",
+      addressLocality: "Bragança Paulista",
+      addressRegion: "SP",
+      postalCode: "12900-000",
+      addressCountry: "BR",
+    },
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: "-22.952258",
+      longitude: "-46.541658",
+    },
+    areaServed: [
+      { "@type": "State", name: "São Paulo" },
+      { "@type": "Country", name: "Brasil" },
+    ],
+    priceRange: "$$$$",
+    openingHoursSpecification: [
+      {
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+        opens: "09:00",
+        closes: "19:00",
+      },
+    ],
+    sameAs: [
+      "https://instagram.com/byimperiodog",
+      "https://www.youtube.com/@byimperiodog",
+      "https://www.tiktok.com/@byimperiodog",
+      "https://www.facebook.com/byimperiodog",
+    ],
+  };
 }

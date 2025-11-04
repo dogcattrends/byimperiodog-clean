@@ -16,7 +16,7 @@ import ToastContainer from "@/components/Toast";
 import { getSiteSettings } from "@/lib/getSettings";
 import { resolveRobots, baseMetaOverrides } from "@/lib/seo";
 import { baseSiteMetadata } from "@/lib/seo.core";
-import { resolveTracking, buildOrganizationLD, buildWebsiteLD } from "@/lib/tracking";
+import { resolveTracking, buildOrganizationLD, buildWebsiteLD, buildSiteNavigationLD, buildLocalBusinessLD } from "@/lib/tracking";
 
 import { ThemeProvider } from "../design-system/theme-provider";
 
@@ -86,8 +86,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   let GTM_ID: string | undefined;
   let GA4_ID: string | undefined;
   let META_VERIFY: string | undefined;
+  let GOOGLE_VERIFY: string | undefined;
   let organizationLd: Record<string, unknown> | null = null;
   let websiteLd: Record<string, unknown> | null = null;
+  let siteNavigationLd: Record<string, unknown> | null = null;
+  let localBusinessLd: Record<string, unknown> | null = null;
   let useGTM = false;
 
   if (!isAdminRoute) {
@@ -95,12 +98,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     const ids = resolveTracking(settings);
     GTM_ID = ids.gtm;
     GA4_ID = ids.ga4;
-    META_VERIFY = ids.metaVerify;
+  META_VERIFY = ids.metaVerify;
+  GOOGLE_VERIFY = ids.googleVerify;
     useGTM = Boolean(GTM_ID);
 
     if (ids.siteUrl) {
       organizationLd = buildOrganizationLD(ids.siteUrl);
       websiteLd = buildWebsiteLD(ids.siteUrl);
+      siteNavigationLd = buildSiteNavigationLD(ids.siteUrl);
+      localBusinessLd = buildLocalBusinessLD(ids.siteUrl);
     }
   }
 
@@ -140,6 +146,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {!isAdminRoute && META_VERIFY && (
           <meta name="facebook-domain-verification" content={META_VERIFY} />
         )}
+        {/* Verificação do Google Search Console (se houver) */}
+        {!isAdminRoute && GOOGLE_VERIFY && (
+          <meta name="google-site-verification" content={GOOGLE_VERIFY} />
+        )}
 
         {/* Preconnect / DNS Prefetch condicional para analytics: evita custo em pï¿½ginas sem tags */}
         {!isAdminRoute && useGTM && (
@@ -170,6 +180,20 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             type="application/ld+json"
             // eslint-disable-next-line react/no-danger
             dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteLd) }}
+          />
+        )}
+        {!isAdminRoute && siteNavigationLd && (
+          <script
+            type="application/ld+json"
+            // eslint-disable-next-line react/no-danger
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(siteNavigationLd) }}
+          />
+        )}
+        {!isAdminRoute && localBusinessLd && (
+          <script
+            type="application/ld+json"
+            // eslint-disable-next-line react/no-danger
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessLd) }}
           />
         )}
 

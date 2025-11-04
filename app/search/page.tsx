@@ -1,11 +1,13 @@
 import type { Metadata } from 'next';
-import { baseSiteMetadata, canonical } from '@/lib/seo.core';
 import { Suspense } from 'react';
+
+import { baseSiteMetadata, canonical } from '@/lib/seo.core';
 
 export const metadata: Metadata = baseSiteMetadata({
   title: 'Busca',
   description: 'Pesquise conteúdos e filhotes no site By Imperio Dog.',
-  alternates: { canonical: canonical('/search') }
+  alternates: { canonical: canonical('/search') },
+  robots: { index: false }
 });
 
 interface SearchItem { id: string|number; url: string; title?: string; name?: string; excerpt?: string }

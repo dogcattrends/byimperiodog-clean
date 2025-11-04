@@ -206,13 +206,41 @@ export default async function BlogPostPage({
             <h1 className="text-3xl font-serif text-text sm:text-4xl">{post.title}</h1>
             {post.subtitle ? <p className="text-base text-text-muted">{post.subtitle}</p> : null}
             <div className="flex flex-wrap items-center gap-3 text-xs text-text-soft">
-              {post.published_at ? <span>{formatDate(post.published_at)}</span> : null}
+              {post.published_at ? <span>Publicado em {formatDate(post.published_at)}</span> : null}
+              {post.updated_at && post.updated_at !== post.published_at ? (
+                <span className="rounded-pill bg-surface-subtle px-3 py-1 font-medium text-text">Atualizado em {formatDate(post.updated_at)}</span>
+              ) : null}
               {minutes ? (
                 <span className="rounded-pill bg-surface-subtle px-3 py-1 font-semibold text-text">
                   {minutes} min de leitura
                 </span>
               ) : null}
             </div>
+            {author ? (
+              <div className="mt-2 flex items-center gap-3 text-sm text-text">
+                {author.avatar_url ? (
+                  <Image
+                    src={author.avatar_url}
+                    alt={author.name}
+                    width={36}
+                    height={36}
+                    className="h-9 w-9 rounded-full border object-cover"
+                  />
+                ) : (
+                  <div className="h-9 w-9 rounded-full border bg-surface-subtle" aria-hidden />
+                )}
+                <div>
+                  <span className="text-text-muted">Por </span>
+                  {author.slug ? (
+                    <Link href={`/autores/${author.slug}`} className="font-medium underline-offset-2 hover:underline">
+                      {author.name}
+                    </Link>
+                  ) : (
+                    <span className="font-medium">{author.name}</span>
+                  )}
+                </div>
+              </div>
+            ) : null}
           </header>
 
           {post.cover_url ? (

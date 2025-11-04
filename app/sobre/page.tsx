@@ -109,10 +109,21 @@ export default function SobrePage() {
       { "@type": "ListItem", position: 2, name: "Sobre", item: `${siteUrl}/sobre` },
     ],
   };
+  const webPageLd = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": `${siteUrl}/sobre#webpage`,
+    url: `${siteUrl}/sobre`,
+    name: "Sobre a By Império Dog",
+    description:
+      "Conheça a história da By Império Dog, nossa estrutura familiar e a metodologia responsável de criação do Spitz Alemão Anão Lulu da Pomerânia em Bragança Paulista.",
+    isPartOf: { "@type": "WebSite", url: siteUrl, name: "By Imperio Dog" },
+  };
 
   return (
     <main className="space-y-20 bg-[var(--bg)] pb-24 pt-16 text-[var(--text)]">
       <Script id="ld-breadcrumb-sobre" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
+      <Script id="ld-webpage-sobre" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageLd) }} />
       <section className="mx-auto max-w-6xl px-5 text-center sm:text-left">
         <span className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-[var(--brand)]">
           Sobre a criadora

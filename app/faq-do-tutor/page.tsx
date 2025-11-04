@@ -65,6 +65,24 @@ export function generateMetadata(): Metadata {
 export default function FaqDoTutorPage() {
   const siteBase = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.byimperiodog.com.br").replace(/\/$/, "");
   const jsonLd = faqPageSchema(faqItems, `${siteBase}${path}`);
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Início", item: `${siteBase}/` },
+      { "@type": "ListItem", position: 2, name: "FAQ do Tutor", item: `${siteBase}${path}` },
+    ],
+  };
+  const webPageLd = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": `${siteBase}${path}#webpage`,
+    url: `${siteBase}${path}`,
+    name: "FAQ do Tutor | By Imperio Dog",
+    description:
+      "Perguntas frequentes sobre preparo, saúde, socialização e suporte vitalício para o Spitz Alemão (Lulu da Pomerânia).",
+    isPartOf: { "@type": "WebSite", url: siteBase, name: "By Imperio Dog" },
+  };
 
   return (
     <main className="mx-auto max-w-4xl space-y-12 px-6 py-16 text-zinc-800">
@@ -111,7 +129,7 @@ export default function FaqDoTutorPage() {
             ajustes de manejo.
           </li>
           <li>
-            Livre acesso à água filtrada, controle de temperatura entre 22 °C e 24 °C e passeio apenas após liberação do veterinário
+            Livre acesso à água filtrada, controle de temperatura entre 22 °C e 24 °C e passeio apenas após liberação do veterinário
             responsável.
           </li>
         </ul>
@@ -170,6 +188,8 @@ export default function FaqDoTutorPage() {
       <LastUpdated buildTime={process.env.NEXT_PUBLIC_BUILD_TIME} contentTime={lastUpdated} />
 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageLd) }} />
     </main>
   );
 }
