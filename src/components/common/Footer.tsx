@@ -7,7 +7,7 @@ import { routes } from "@/lib/route";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 
 const NAV_ITEMS = [
-  { label: "Início", href: routes.home },
+  { label: "Inicio", href: routes.home },
   { label: "Filhotes", href: routes.filhotes },
   { label: "Processo", href: routes.sobre },
   { label: "Blog", href: routes.blog },
@@ -16,16 +16,16 @@ const NAV_ITEMS = [
 
 const SUPPORT_ITEMS = [
   { label: "FAQ do tutor", href: "/faq-do-tutor" },
-  { label: "Política de privacidade", href: "/politica-de-privacidade" },
+  { label: "Politica de privacidade", href: "/politica-de-privacidade" },
   { label: "Termos de uso", href: "/termos-de-uso" },
-  { label: "Política editorial", href: "/politica-editorial" },
+  { label: "Politica editorial", href: "/politica-editorial" },
 ];
 
 export default function Footer() {
   const year = new Date().getFullYear();
   const whatsapp = buildWhatsAppLink({
     message:
-      "Olá! Quero falar com a By Império Dog sobre disponibilidade de Spitz Alemão Anão e próximos passos.",
+      "Ola! Quero falar com a By Imperio Dog sobre disponibilidade de Spitz Alemao Anao e proximos passos.",
     utmSource: "site",
     utmMedium: "footer",
     utmCampaign: "footer_whatsapp",
@@ -37,11 +37,11 @@ export default function Footer() {
       <div className="mx-auto grid w-full max-w-7xl gap-12 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4 sm:px-8">
         <div className="space-y-3">
           <span className="inline-flex items-center rounded-full bg-emerald-800 px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-emerald-100">
-            By Império Dog
+            By Imperio Dog
           </span>
           <p className="text-sm leading-relaxed text-emerald-100/80">
-            Spitz Alemão Anão até 22 cm, criado com responsabilidade, saúde validada e mentoria
-            vitalícia. Atendimento premium sob consulta para famílias que valorizam transparência.
+            Spitz Alemao Anao ate 22 cm, criado com responsabilidade, saude validada e mentoria vitalicia.
+            Atendimento premium sob consulta para familias que valorizam transparencia.
           </p>
           <a
             href={whatsapp}
@@ -52,10 +52,8 @@ export default function Footer() {
           </a>
         </div>
 
-        <nav aria-label="Navegação" className="space-y-3 text-sm">
-          <h3 className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200/80">
-            Navegação
-          </h3>
+        <nav aria-label="Navegacao" className="space-y-3 text-sm">
+          <h3 className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200/80">Navegacao</h3>
           <ul className="space-y-2">
             {NAV_ITEMS.map((item) => (
               <li key={item.href}>
@@ -71,9 +69,7 @@ export default function Footer() {
         </nav>
 
         <nav aria-label="Suporte" className="space-y-3 text-sm">
-          <h3 className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200/80">
-            Suporte
-          </h3>
+          <h3 className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200/80">Suporte</h3>
           <ul className="space-y-2">
             {SUPPORT_ITEMS.map((item) => (
               <li key={item.href}>
@@ -89,12 +85,9 @@ export default function Footer() {
         </nav>
 
         <div className="space-y-3 text-sm">
-          <h3 className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200/80">
-            Contato
-          </h3>
+          <h3 className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200/80">Contato</h3>
           <p className="text-emerald-100/80">
-            Atendimento sob consulta a partir de São Paulo – conversas individuais para alinhar
-            rotina, investimento e socialização antes da reserva.
+            Atendimento sob consulta a partir de Sao Paulo - conversas individuais para alinhar rotina, investimento e socializacao antes da reserva.
           </p>
           <address className="not-italic space-y-1 text-emerald-100/60">
             <p>E-mail: contato@byimperiodog.com.br</p>
@@ -105,8 +98,8 @@ export default function Footer() {
 
       <div className="border-t border-emerald-800 py-4">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-3 px-5 text-xs text-emerald-200/60 sm:flex-row sm:items-center sm:justify-between sm:px-8">
-          <p>© {year} By Império Dog. Todos os direitos reservados.</p>
-          <p>Spitz Alemão Anão – saúde validada, suporte premium e respeito às famílias tutoras.</p>
+          <p>&copy; {year} By Imperio Dog. Todos os direitos reservados.</p>
+          <p>Spitz Alemao Anao - saude validada, suporte premium e respeito as familias tutoras.</p>
         </div>
       </div>
     </footer>

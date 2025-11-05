@@ -1,13 +1,12 @@
 // PATH: src/components/blog/ModernEditor.tsx
 "use client";
 
-import { EditorContent, useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
+import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import Typography from "@tiptap/extension-typography";
-import { useCallback, useEffect } from "react";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
 import {
   Bold,
   Italic,
@@ -23,6 +22,7 @@ import {
   Undo,
   Redo,
 } from "lucide-react";
+import { useCallback, useEffect } from "react";
 
 interface ModernEditorProps {
   content: string;
@@ -55,6 +55,8 @@ export function ModernEditor({ content, onChange, placeholder = "Digite seu cont
       Typography,
     ],
     content,
+    // Evita renderização imediata no SSR e previne hydration mismatch no Next.js/App Router
+    immediatelyRender: false,
     editorProps: {
       attributes: {
         class:

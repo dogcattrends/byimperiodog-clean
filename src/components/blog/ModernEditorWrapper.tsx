@@ -1,16 +1,26 @@
 // PATH: src/components/blog/ModernEditorWrapper.tsx
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
 import { Save, Eye, Calendar, Tag, Image as ImageIcon, FileText, Sparkles } from "lucide-react";
+import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
 
-import type { Post } from "@/lib/db/types";
-import { ModernEditor } from "./ModernEditor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
+import type { Post } from "@/lib/db/types";
+// Import dinâmico: Tiptap NUNCA executa no SSR (previne hydration mismatch)
+// IMPORTANTE: Sempre manter ssr: false para evitar erro "SSR has been detected"
+const ModernEditor = dynamic(() => import("./ModernEditor").then(m => ({ default: m.ModernEditor })), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-[400px] items-center justify-center rounded-lg border border-border bg-surface">
+      <p className="text-sm text-text-secondary">Carregando editor...</p>
+    </div>
+  ),
+});
 
 interface FormState {
   id?: string;
@@ -61,9 +71,6 @@ export default function ModernEditorWrapper({ post }: ModernEditorWrapperProps) 
       content: post?.content || "",
       category: post?.category?.id || null,
       tags: post?.tags?.map((t) => t.id) || [],
-      status: post?.status === "draft" || post?.status === "published" || post?.status === "scheduled" 
-        ? post.status 
-        : "draft",
       coverUrl: post?.coverUrl || null,
       coverAlt: post?.coverAlt || null,
       metaTitle: post?.seo?.title || null,
@@ -75,12 +82,13 @@ export default function ModernEditorWrapper({ post }: ModernEditorWrapperProps) 
   const title = watch("title");
   const slug = watch("slug");
   const content = watch("content");
-  const status = watch("status");
 
-  // Auto-generate slug from title
-  if (!slugEdited && title && !slug) {
-    setValue("slug", slugify(title));
-  }
+  // Auto-generate slug from title (dentro de useEffect para evitar hydration mismatch)
+  useEffect(() => {
+    if (!slugEdited && title && !slug) {
+      setValue("slug", slugify(title));
+    }
+  }, [title, slug, slugEdited, setValue]);
 
   const onSubmit = async (data: FormState) => {
     setSaving(true);
@@ -205,10 +213,11 @@ export default function ModernEditorWrapper({ post }: ModernEditorWrapperProps) 
       {activeTab === "editor" && (
         <div className="space-y-4">
           <div>
-            <label className="mb-2 block text-sm font-medium text-text-primary">
+            <label htmlFor="post-title" className="mb-2 block text-sm font-medium text-text-primary">
               Título *
             </label>
             <Input
+              id="post-title"
               {...register("title", { required: true })}
               placeholder="Digite o título do post..."
               className="text-2xl font-bold"
@@ -216,11 +225,12 @@ export default function ModernEditorWrapper({ post }: ModernEditorWrapperProps) 
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-text-primary">
+            <label htmlFor="post-slug" className="mb-2 block text-sm font-medium text-text-primary">
               Slug *
             </label>
             <div className="flex gap-2">
               <Input
+                id="post-slug"
                 value={slug}
                 onChange={(e) => {
                   setSlugEdited(true);
@@ -236,9 +246,9 @@ export default function ModernEditorWrapper({ post }: ModernEditorWrapperProps) 
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-text-primary">
+            <p className="mb-2 block text-sm font-medium text-text-primary">
               Conteúdo *
-            </label>
+            </p>
             <ModernEditor
               content={content}
               onChange={(value) => setValue("content", value, { shouldDirty: true })}
@@ -252,10 +262,11 @@ export default function ModernEditorWrapper({ post }: ModernEditorWrapperProps) 
       {activeTab === "meta" && (
         <div className="space-y-4">
           <div>
-            <label className="mb-2 block text-sm font-medium text-text-primary">
+            <label htmlFor="post-excerpt" className="mb-2 block text-sm font-medium text-text-primary">
               Resumo
             </label>
             <textarea
+              id="post-excerpt"
               {...register("excerpt")}
               rows={3}
               placeholder="Breve resumo do post (exibido em listagens)"
@@ -265,20 +276,22 @@ export default function ModernEditorWrapper({ post }: ModernEditorWrapperProps) 
 
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <label className="mb-2 block text-sm font-medium text-text-primary">
+              <label htmlFor="post-cover-url" className="mb-2 block text-sm font-medium text-text-primary">
                 <ImageIcon className="mr-1 inline h-4 w-4" />
                 URL da Capa
               </label>
               <Input
+                id="post-cover-url"
                 {...register("coverUrl")}
                 placeholder="https://..."
               />
             </div>
             <div>
-              <label className="mb-2 block text-sm font-medium text-text-primary">
+              <label htmlFor="post-cover-alt" className="mb-2 block text-sm font-medium text-text-primary">
                 Texto Alternativo da Capa
               </label>
               <Input
+                id="post-cover-alt"
                 {...register("coverAlt")}
                 placeholder="Descrição da imagem"
               />
@@ -286,11 +299,12 @@ export default function ModernEditorWrapper({ post }: ModernEditorWrapperProps) 
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-text-primary">
+            <label htmlFor="post-publish-at" className="mb-2 block text-sm font-medium text-text-primary">
               <Calendar className="mr-1 inline h-4 w-4" />
               Data de Publicação Agendada
             </label>
             <Input
+              id="post-publish-at"
               type="datetime-local"
               {...register("publishAt")}
               className="max-w-xs"
@@ -298,21 +312,23 @@ export default function ModernEditorWrapper({ post }: ModernEditorWrapperProps) 
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-text-primary">
+            <label htmlFor="post-category" className="mb-2 block text-sm font-medium text-text-primary">
               Categoria
             </label>
             <Input
+              id="post-category"
               {...register("category")}
               placeholder="guia-do-tutor, saude, comportamento..."
             />
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-text-primary">
+            <label htmlFor="post-tags" className="mb-2 block text-sm font-medium text-text-primary">
               <Tag className="mr-1 inline h-4 w-4" />
               Tags (separadas por vírgula)
             </label>
             <Input
+              id="post-tags"
               {...register("tags")}
               placeholder="spitz, alimentacao, cuidados..."
             />
@@ -324,10 +340,11 @@ export default function ModernEditorWrapper({ post }: ModernEditorWrapperProps) 
       {activeTab === "seo" && (
         <div className="space-y-4">
           <div>
-            <label className="mb-2 block text-sm font-medium text-text-primary">
+            <label htmlFor="post-meta-title" className="mb-2 block text-sm font-medium text-text-primary">
               Meta Título
             </label>
             <Input
+              id="post-meta-title"
               {...register("metaTitle")}
               placeholder="Título otimizado para SEO (max 60 caracteres)"
               maxLength={60}
@@ -338,10 +355,11 @@ export default function ModernEditorWrapper({ post }: ModernEditorWrapperProps) 
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-text-primary">
+            <label htmlFor="post-meta-description" className="mb-2 block text-sm font-medium text-text-primary">
               Meta Descrição
             </label>
             <textarea
+              id="post-meta-description"
               {...register("metaDescription")}
               rows={3}
               maxLength={160}
@@ -354,11 +372,12 @@ export default function ModernEditorWrapper({ post }: ModernEditorWrapperProps) 
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-text-primary">
+            <label htmlFor="post-og-image-url" className="mb-2 block text-sm font-medium text-text-primary">
               <ImageIcon className="mr-1 inline h-4 w-4" />
               Imagem Open Graph
             </label>
             <Input
+              id="post-og-image-url"
               {...register("ogImageUrl")}
               placeholder="URL da imagem para redes sociais (1200x630px)"
             />

@@ -26,15 +26,19 @@ Próximos passos sugeridos:
 4. Adicionar testes e2e simples cobrindo fluxo de login e bloqueio de acesso direto a `/admin/dashboard` sem cookie.
 # Gate de Admin por Senha (temporário)
 
-Defina no `.env.local`:
+Defina no `.env.local` (qualquer uma das variáveis abaixo é aceita):
 ```
+# recomendada para também permitir chamadas de API com header x-admin-pass
+NEXT_PUBLIC_ADMIN_PASS=coloque-uma-senha-forte
+
+# alternativa equivalente suportada pelo backend
 ADMIN_PASS=coloque-uma-senha-forte
 ```
 
 Rotas:
 - **/admin/login** — formulário de login.
-- **POST /api/admin/login** — cria cookie `admin_auth=1` (8h).
+- **POST /api/admin/login** — cria cookies `admin_auth=1` e `adm=true` (7 dias).
 - **POST /api/admin/logout** — remove cookie.
-- **middleware.ts** — protege todas as rotas `/admin/*` (redireciona para login).
+- **middleware.ts** — protege todas as rotas `/admin/*` (redireciona para login) e aceita autenticação por cookie (`adm=true`) ou header `x-admin-pass` igual à senha definida (útil para scripts internos).
 
 > Em produção, prefira autenticação real (Supabase Auth / NextAuth).

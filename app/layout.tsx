@@ -1,8 +1,7 @@
-﻿import { SpeedInsights } from "@vercel/speed-insights/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import NextDynamic from "next/dynamic";
 import { headers } from "next/headers";
-import { Fragment } from "react";
 
 import "./globals.css";
 import "../design-system/tokens.css";
@@ -14,22 +13,29 @@ import SkipLink from "@/components/common/SkipLink";
 import Pixels from "@/components/Pixels";
 import ToastContainer from "@/components/Toast";
 import { getSiteSettings } from "@/lib/getSettings";
+import { getPixelsSettings, resolveActiveEnvironment, type PixelsSettings } from "@/lib/pixels";
 import { resolveRobots, baseMetaOverrides } from "@/lib/seo";
 import { baseSiteMetadata } from "@/lib/seo.core";
-import { resolveTracking, buildOrganizationLD, buildWebsiteLD, buildSiteNavigationLD, buildLocalBusinessLD } from "@/lib/tracking";
+import {
+  resolveTracking,
+  buildOrganizationLD,
+  buildWebsiteLD,
+  buildSiteNavigationLD,
+  buildLocalBusinessLD,
+} from "@/lib/tracking";
 
 import { ThemeProvider } from "../design-system/theme-provider";
 
 import { dmSans, inter } from "./fonts";
 
-// Lazy load componentes não-críticos para reduzir TBT
+// Lazy load componentes nao-criticos para reduzir TBT
 const FloatingPuppiesCTA = NextDynamic(() => import("@/components/FloatingPuppiesCTA"), { ssr: false });
 const ConsentBanner = NextDynamic(() => import("@/components/ConsentBanner"), { ssr: false });
 const TrackingScripts = NextDynamic(() => import("@/components/TrackingScripts"), { ssr: false });
 
 export const metadata: Metadata = baseSiteMetadata({
-  // Garantir template consistente; se jï¿½ definido em baseSiteMetadata mantï¿½m.
-  // Robots default (podem ser sobrescritos dinamicamente em headers runtime se necessï¿½rio)
+  // Garantir template consistente; se ja definido em baseSiteMetadata mantem.
+  // Robots default (podem ser sobrescritos dinamicamente em headers runtime se necessario)
   robots: resolveRobots(),
 });
 
@@ -45,6 +51,8 @@ export const revalidate = 0;
 
 function resolvePathname() {
   const reqHeaders = headers();
+
+  // Tenta primeiro os headers customizados
   const candidates = [
     "x-invoke-path",
     "x-matched-path",
@@ -56,6 +64,7 @@ function resolvePathname() {
     "x-next-url",
     "next-url",
   ];
+
   for (const key of candidates) {
     const raw = reqHeaders.get(key);
     if (!raw) continue;
@@ -71,16 +80,27 @@ function resolvePathname() {
         return `/${value}`;
       }
     } catch {
-      // ignore parsing errors and continue to next header
+      // ignora erros de parsing e tenta o proximo header
     }
   }
+
+  // Fallback: tenta pegar do referer
+  const referer = reqHeaders.get("referer");
+  if (referer) {
+    try {
+      return new URL(referer).pathname;
+    } catch {
+      // ignore
+    }
+  }
+
   return "";
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const pathname = resolvePathname();
-  const isAdminRoute = pathname.startsWith("/admin");
-  // Ajustes dinï¿½micos de canonical/OG URL (Next nï¿½o reexecuta metadata para cada navegaï¿½ï¿½o SPA, mas em SSR inicial temos path)
+  const isAdminRoute = pathname.startsWith("/admin") || pathname.includes("/admin/") || pathname === "/admin";
+  // Ajustes dinamicos de canonical/OG URL. Em SSR inicial temos path disponivel.
   const metaRuntime = baseMetaOverrides(pathname);
 
   let GTM_ID: string | undefined;
@@ -92,15 +112,21 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   let siteNavigationLd: Record<string, unknown> | null = null;
   let localBusinessLd: Record<string, unknown> | null = null;
   let useGTM = false;
+  let pixelSettings: PixelsSettings | null = null;
 
   if (!isAdminRoute) {
-    const settings = await getSiteSettings();
-    const ids = resolveTracking(settings);
+    const [siteSettings, fetchedPixelSettings] = await Promise.all([
+      getSiteSettings(),
+      getPixelsSettings(),
+    ]);
+    pixelSettings = fetchedPixelSettings;
+    const { config } = resolveActiveEnvironment(fetchedPixelSettings);
+    const ids = resolveTracking(siteSettings, config);
     GTM_ID = ids.gtm;
     GA4_ID = ids.ga4;
-  META_VERIFY = ids.metaVerify;
-  GOOGLE_VERIFY = ids.googleVerify;
-    useGTM = Boolean(GTM_ID);
+    META_VERIFY = ids.metaVerify;
+    GOOGLE_VERIFY = ids.googleVerify;
+    useGTM = Boolean(ids.gtm);
 
     if (ids.siteUrl) {
       organizationLd = buildOrganizationLD(ids.siteUrl);
@@ -114,18 +140,18 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="pt-BR" className={`scroll-smooth ${dmSans.variable} ${inter.variable}`}>
       <head>
         <meta charSet="utf-8" />
-  {/* ================================================================ */}
-  {/* PERFORMANCE: Resource hints essenciais */}
-  {/* ================================================================ */}
+        {/* ================================================================ */}
+        {/* PERFORMANCE: Resource hints essenciais */}
+        {/* ================================================================ */}
         <link rel="preconnect" href="https://npmnuihgydadihktglrd.supabase.co" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
         <link rel="dns-prefetch" href="https://connect.facebook.net" />
         <link rel="dns-prefetch" href="https://analytics.tiktok.com" />
         <link rel="dns-prefetch" href="https://s.pinimg.com" />
-        
-        {/* Preload Hero LCP image para eliminar waterfall (-200-400ms) */}
-        {/* Responsive: mobile WebP, desktop WebP (Next.js Image já gera AVIF automaticamente) */}
+
+        {/* Preload da imagem de LCP para reduzir waterfall */}
+        {/* Responsive: mobile WebP, desktop WebP (Next.js Image gera AVIF automaticamente) */}
         {!isAdminRoute && pathname === "/" && (
           <>
             <link
@@ -137,21 +163,21 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             />
           </>
         )}
-        
-        {/* Canonical dinï¿½mico (reforï¿½o; alternates via metadata) */}
+
+        {/* Canonical dinamico (reforco; alternates via metadata) */}
         {metaRuntime.alternates?.canonical && (
           <link rel="canonical" href={metaRuntime.alternates.canonical as string} />
         )}
-        {/* Verificaï¿½ï¿½o de domï¿½nio Meta (se houver) */}
+        {/* Verificacao de dominio Meta (se houver) */}
         {!isAdminRoute && META_VERIFY && (
           <meta name="facebook-domain-verification" content={META_VERIFY} />
         )}
-        {/* Verificação do Google Search Console (se houver) */}
+        {/* Verificacao do Google Search Console (se houver) */}
         {!isAdminRoute && GOOGLE_VERIFY && (
           <meta name="google-site-verification" content={GOOGLE_VERIFY} />
         )}
 
-        {/* Preconnect / DNS Prefetch condicional para analytics: evita custo em pï¿½ginas sem tags */}
+        {/* Preconnect condicional para analytics: evita custo em paginas sem tags */}
         {!isAdminRoute && useGTM && (
           <>
             <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
@@ -167,7 +193,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </>
         )}
 
-        {/* JSON-LD inline para renderizaï¿½ï¿½o imediata (melhor SEO) */}
+        {/* JSON-LD inline para renderizacao imediata (melhor SEO) */}
         {!isAdminRoute && organizationLd && (
           <script
             type="application/ld+json"
@@ -197,8 +223,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           />
         )}
 
-
-        {/** Pixels custom HTML removidos por segurança. Apenas modelos oficiais via <Pixels />. */}
+        {/** Pixels custom HTML removidos por seguranca. Apenas modelos oficiais via <Pixels />. */}
       </head>
 
       <body
@@ -207,9 +232,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         }`}
       >
         {!isAdminRoute && <SkipLink />}
-        {!isAdminRoute && <Pixels isAdminRoute={isAdminRoute} />}
+        {!isAdminRoute && (
+          <Pixels isAdminRoute={isAdminRoute} settings={pixelSettings ?? undefined} />
+        )}
 
-        {/* Dispara page_view em navegações SPA (só envia quando os pixels existirem) */}
+        {/* Dispara page_view em navegacoes SPA (somente quando os pixels existem) */}
         {!isAdminRoute && <TrackingScripts />}
 
         <ThemeProvider>
@@ -224,11 +251,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             {!isAdminRoute && <ConsentBanner />}
           </div>
         </ThemeProvider>
-		<SpeedInsights />
-		<ToastContainer />
-		</body>
+        <SpeedInsights />
+        <ToastContainer />
+      </body>
     </html>
   );
 }
-
-

@@ -1,4 +1,6 @@
 
+import type { PixelEnvironmentConfig } from "@/lib/pixels";
+
 export interface CustomPixelConfig {
   id: string;
   label: string;
@@ -30,7 +32,13 @@ function norm(v: unknown): string {
   return str;
 }
 
-export function resolveTracking(settings: Record<string, unknown> | null | undefined, env = process.env): TrackingIDs {
+export function resolveTracking(
+  settings: Record<string, unknown> | null | undefined,
+  pixelConfig: PixelEnvironmentConfig | null | undefined = null,
+  env = process.env,
+): TrackingIDs {
+  const config = pixelConfig ?? null;
+
   const rawCustom = Array.isArray(settings?.custom_pixels) ? settings?.custom_pixels : [];
   const custom: CustomPixelConfig[] = rawCustom
     .map((item: Record<string, unknown>, index: number): CustomPixelConfig | undefined => {
@@ -47,14 +55,14 @@ export function resolveTracking(settings: Record<string, unknown> | null | undef
     .filter((item): item is CustomPixelConfig => item !== undefined);
 
   return {
-    gtm: norm(settings?.gtm_id ?? env.NEXT_PUBLIC_GTM_ID),
-    ga4: norm(settings?.ga4_id ?? env.NEXT_PUBLIC_GA4_ID),
-    fb: norm(settings?.meta_pixel_id ?? env.NEXT_PUBLIC_META_PIXEL_ID),
-    tiktok: norm(settings?.tiktok_pixel_id ?? env.NEXT_PUBLIC_TIKTOK_PIXEL_ID),
-    pinterest: norm(settings?.pinterest_tag_id ?? env.NEXT_PUBLIC_PINTEREST_TAG_ID),
-    hotjar: norm(settings?.hotjar_id ?? env.NEXT_PUBLIC_HOTJAR_ID),
-    clarity: norm(settings?.clarity_id ?? env.NEXT_PUBLIC_CLARITY_ID),
-    metaVerify: norm(settings?.meta_domain_verify ?? env.NEXT_PUBLIC_META_DOMAIN_VERIFY),
+    gtm: norm(config?.gtmId ?? settings?.gtm_id ?? env.NEXT_PUBLIC_GTM_ID),
+    ga4: norm(config?.ga4Id ?? settings?.ga4_id ?? env.NEXT_PUBLIC_GA4_ID),
+    fb: norm(config?.metaPixelId ?? settings?.meta_pixel_id ?? env.NEXT_PUBLIC_META_PIXEL_ID),
+    tiktok: norm(config?.tiktokPixelId ?? settings?.tiktok_pixel_id ?? env.NEXT_PUBLIC_TIKTOK_PIXEL_ID),
+    pinterest: norm(config?.pinterestId ?? settings?.pinterest_tag_id ?? env.NEXT_PUBLIC_PINTEREST_TAG_ID),
+    hotjar: norm(config?.hotjarId ?? settings?.hotjar_id ?? env.NEXT_PUBLIC_HOTJAR_ID),
+    clarity: norm(config?.clarityId ?? settings?.clarity_id ?? env.NEXT_PUBLIC_CLARITY_ID),
+    metaVerify: norm(config?.metaDomainVerification ?? settings?.meta_domain_verify ?? env.NEXT_PUBLIC_META_DOMAIN_VERIFY),
     googleVerify: norm((settings as any)?.google_site_verify ?? env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION),
     siteUrl: norm(env.NEXT_PUBLIC_SITE_URL) || "https://www.byimperiodog.com.br",
     custom,
@@ -62,32 +70,41 @@ export function resolveTracking(settings: Record<string, unknown> | null | undef
 }
 
 export function buildOrganizationLD(siteUrl: string) {
-  const base = siteUrl.endsWith('/') ? siteUrl.slice(0,-1) : siteUrl;
+  const base = siteUrl.endsWith("/") ? siteUrl.slice(0, -1) : siteUrl;
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
     "@id": `${base}#organization`,
     name: "By Imperio Dog",
+    alternateName: "Imperio Dog",
+    description: "Criatorio especializado em Spitz Alemao Anao com suporte dedicado para tutores.",
     url: `${base}/`,
     logo: `${base}/byimperiologo.png`,
     image: `${base}/spitz-hero-desktop.webp`,
-    telephone: "+55 11 96863-3239",
+    telephone: "+55 11 98663-3239",
     publishingPrinciples: `${base}/politica-editorial`,
+    contactPoint: [
+      {
+        "@type": "ContactPoint",
+        telephone: "+55 11 98663-3239",
+        contactType: "customer service",
+        areaServed: "BR",
+        availableLanguage: ["pt-BR"],
+      },
+    ],
     sameAs: [
       "https://instagram.com/byimperiodog",
       "https://www.youtube.com/@byimperiodog",
       "https://www.tiktok.com/@byimperiodog",
-      "https://www.facebook.com/byimperiodog",
-      "https://www.linkedin.com/company/byimperiodog",
-      "https://twitter.com/byimperiodog"
+      "https://www.facebook.com/byimperiodog"
     ],
     foundingDate: "2023-01-01",
     address: {
       "@type": "PostalAddress",
       addressCountry: "BR",
       addressRegion: "SP",
-      addressLocality: "São Paulo",
-      postalCode: "01000-000"
+      addressLocality: "Sao Paulo",
+      postalCode: "01000-000",
     }
   };
 }
@@ -99,6 +116,8 @@ export function buildWebsiteLD(siteUrl: string) {
     "@type": "WebSite",
     "@id": `${clean}#website`,
     name: "By Imperio Dog",
+    alternateName: "Imperio Dog",
+    description: "Site da By Imperio Dog com conteudos e filhotes de Spitz Alemao Anao.",
     url: `${clean}/`,
     potentialAction: {
       "@type": "SearchAction",
@@ -110,15 +129,25 @@ export function buildWebsiteLD(siteUrl: string) {
 
 // (Opcional) util para decidir se deve carregar trackers antes de consentimento.
 export function shouldLoadImmediate(ids: TrackingIDs) {
-  // Hoje carregamos sempre se existir ID. Poderia adicionar lógica de consent aqui.
-  return ids;
+  const hasImmediateScript = [
+    ids.gtm,
+    ids.ga4,
+    ids.fb,
+    ids.tiktok,
+    ids.pinterest,
+    ids.hotjar,
+    ids.clarity,
+  ].some(Boolean);
+
+  const hasHeadCustom = ids.custom.some((pixel) => pixel.enabled && pixel.slot === "head");
+  return hasImmediateScript || hasHeadCustom;
 }
 
 /** SiteNavigationElement: ajuda o Google a entender os principais links do site. */
 export function buildSiteNavigationLD(siteUrl: string) {
   const base = siteUrl.replace(/\/$/, "");
   const items = [
-    { name: "Início", path: "/" },
+    { name: "Inicio", path: "/" },
     { name: "Filhotes", path: "/filhotes" },
     { name: "Processo", path: "/sobre" },
     { name: "Blog", path: "/blog" },
@@ -133,7 +162,7 @@ export function buildSiteNavigationLD(siteUrl: string) {
   };
 }
 
-/** LocalBusiness: reforça presença local e área de atuação. */
+/** LocalBusiness: reforca presenca local e area de atuacao. */
 export function buildLocalBusinessLD(siteUrl: string) {
   const base = siteUrl.replace(/\/$/, "");
   return {
@@ -144,12 +173,12 @@ export function buildLocalBusinessLD(siteUrl: string) {
     url: `${base}/`,
     image: `${base}/spitz-hero-desktop.webp`,
     logo: `${base}/byimperiologo.png`,
-    telephone: "+55 11 96863-3239",
-    email: "byimperiodog@gmail.com",
+    telephone: "+55 11 98663-3239",
+    email: "contato@byimperiodog.com.br",
     address: {
       "@type": "PostalAddress",
-      streetAddress: "Bragança Paulista",
-      addressLocality: "Bragança Paulista",
+      streetAddress: "Braganca Paulista",
+      addressLocality: "Braganca Paulista",
       addressRegion: "SP",
       postalCode: "12900-000",
       addressCountry: "BR",
@@ -160,10 +189,10 @@ export function buildLocalBusinessLD(siteUrl: string) {
       longitude: "-46.541658",
     },
     areaServed: [
-      { "@type": "State", name: "São Paulo" },
+      { "@type": "State", name: "Sao Paulo" },
       { "@type": "Country", name: "Brasil" },
     ],
-    priceRange: "$$$$",
+    priceRange: "$$$",
     openingHoursSpecification: [
       {
         "@type": "OpeningHoursSpecification",

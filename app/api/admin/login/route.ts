@@ -22,7 +22,17 @@ export async function POST(req: NextRequest) {
     await rateLimit(req, { identifier: "admin-login", limit: 6, windowMs: 60_000 });
 
     const { password } = await req.json().catch(() => ({}));
-    if (password && process.env.ADMIN_PASS && safeEqual(password, process.env.ADMIN_PASS)) {
+    const expected = (process.env.NEXT_PUBLIC_ADMIN_PASS || process.env.ADMIN_PASS || "").trim();
+
+    // Ajuda de DX: se nenhuma senha estiver configurada no ambiente, deixe claro o motivo da falha.
+    if (!expected) {
+      return NextResponse.json(
+        { ok: false, error: "Senha de admin não configurada. Defina NEXT_PUBLIC_ADMIN_PASS ou ADMIN_PASS." },
+        { status: 500 }
+      );
+    }
+
+    if (password && safeEqual(password, expected)) {
       const res = NextResponse.json({ ok: true });
       const cookieOptions = {
         httpOnly: true,
