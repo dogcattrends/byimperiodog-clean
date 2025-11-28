@@ -1,6 +1,7 @@
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import NextDynamic from "next/dynamic";
+import Script from "next/script";
 import { headers } from "next/headers";
 
 import "./globals.css";
@@ -13,6 +14,7 @@ import SkipLink from "@/components/common/SkipLink";
 import Pixels from "@/components/Pixels";
 import ToastContainer from "@/components/Toast";
 import { getSiteSettings } from "@/lib/getSettings";
+import { getTrackingSettings } from "@/lib/getTrackingSettings";
 import { getPixelsSettings, resolveActiveEnvironment, type PixelsSettings } from "@/lib/pixels";
 import { resolveRobots, baseMetaOverrides } from "@/lib/seo";
 import { baseSiteMetadata } from "@/lib/seo.core";
@@ -113,11 +115,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   let localBusinessLd: Record<string, unknown> | null = null;
   let useGTM = false;
   let pixelSettings: PixelsSettings | null = null;
+  let FACEBOOK_PIXEL_ID: string | null = null;
 
   if (!isAdminRoute) {
-    const [siteSettings, fetchedPixelSettings] = await Promise.all([
+    const [siteSettings, fetchedPixelSettings, trackingConfig] = await Promise.all([
       getSiteSettings(),
       getPixelsSettings(),
+      getTrackingSettings(),
     ]);
     pixelSettings = fetchedPixelSettings;
     const { config } = resolveActiveEnvironment(fetchedPixelSettings);
@@ -127,6 +131,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     META_VERIFY = ids.metaVerify;
     GOOGLE_VERIFY = ids.googleVerify;
     useGTM = Boolean(ids.gtm);
+    if (process.env.NODE_ENV === "production") {
+      FACEBOOK_PIXEL_ID = trackingConfig.facebookPixelId?.trim() || null;
+    }
 
     if (ids.siteUrl) {
       organizationLd = buildOrganizationLD(ids.siteUrl);
