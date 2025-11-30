@@ -19,7 +19,8 @@ function safeEqual(a: string, b: string) {
 
 export async function POST(req: NextRequest) {
   try {
-    await rateLimit(req, { identifier: "admin-login", limit: 6, windowMs: 60_000 });
+    // Aumenta limite em ambientes de desenvolvimento/teste para evitar falhas intermitentes nos E2E.
+    await rateLimit(req, { identifier: "admin-login", limit: process.env.NODE_ENV === "production" ? 6 : 50, windowMs: 60_000 });
 
     const { password } = await req.json().catch(() => ({}));
     const expected = (process.env.NEXT_PUBLIC_ADMIN_PASS || process.env.ADMIN_PASS || "").trim();

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState, useEffect } from "react";
 
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { routes } from "@/lib/route";
@@ -22,7 +23,11 @@ const SUPPORT_ITEMS = [
 ];
 
 export default function Footer() {
-  const year = new Date().getFullYear();
+  const [year, setYear] = useState<number | null>(null);
+
+  useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
   const whatsapp = buildWhatsAppLink({
     message:
       "Ola! Quero falar com a By Imperio Dog sobre disponibilidade de Spitz Alemao Anao e proximos passos.",
@@ -98,7 +103,7 @@ export default function Footer() {
 
       <div className="border-t border-emerald-800 py-4">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-3 px-5 text-xs text-emerald-200/60 sm:flex-row sm:items-center sm:justify-between sm:px-8">
-          <p>&copy; {year} By Imperio Dog. Todos os direitos reservados.</p>
+          <p>&copy; 2013-{year || new Date().getFullYear()} By Imperio Dog. Todos os direitos reservados.</p>
           <p>Spitz Alemao Anao - saude validada, suporte premium e respeito as familias tutoras.</p>
         </div>
       </div>

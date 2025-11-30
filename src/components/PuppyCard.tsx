@@ -7,7 +7,6 @@ import { useState } from "react";
 
 import { PUPPY_CARD_SIZES } from "@/lib/image-sizes";
 import { optimizePuppyCardImage } from "@/lib/optimize-image";
-import passthroughImageLoader from "@/lib/passthrough-image-loader";
 import { BLUR_DATA_URL } from "@/lib/placeholders";
 import track from "@/lib/track";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
@@ -79,11 +78,19 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
       {/* ================================================================ */}
       {/* IMAGEM 4:3 Otimizada (aspect-[4/3] maior e centralizada) */}
       {/* ================================================================ */}
-      <button
-        type="button"
+      <div
+        role="button"
+        tabIndex={0}
         onClick={() => {
           onOpen?.();
           track.event?.("open_details", { placement: "card", puppy_id: p.id });
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onOpen?.();
+            track.event?.("open_details", { placement: "card", puppy_id: p.id });
+          }
         }}
         className="relative block w-full overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2"
         data-evt="card_click"
@@ -95,12 +102,12 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
           {optimizedCover ? (
             <>
               <Image
-                loader={passthroughImageLoader}
                 src={optimizedCover}
                 alt={`Filhote de Spitz Alemao Anao ate 22 cm: ${name} em ${color}, ${gender}, status ${label.toLowerCase()}`}
                 fill
                 sizes={PUPPY_CARD_SIZES}
                 loading="lazy"
+                unoptimized
                 className={`object-cover transition-all duration-300 ${imgLoaded ? "opacity-100 group-hover:scale-105" : "opacity-0"}`}
                 onLoad={() => setImgLoaded(true)}
                 placeholder="blur"
@@ -137,7 +144,7 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
             <Heart className={`h-5 w-5 ${liked ? "fill-rose-500" : "fill-none"}`} aria-hidden="true" />
           </button>
         </div>
-      </button>
+      </div>
 
       {/* ================================================================ */}
       {/* CONTEÚDO - line-clamp e espaçamento */}
@@ -210,6 +217,5 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
     </article>
   );
 }
-
 
 

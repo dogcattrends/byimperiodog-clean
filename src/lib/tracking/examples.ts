@@ -321,15 +321,15 @@ export function ExampleAdminForm() {
 
 /**
  * Dispara um evento de teste no Facebook Pixel
- * Usado no botÃ£o "Testar Pixel" do painel admin
+ * Usado no botão "Testar Pixel" do painel admin
  */
-export function testFacebookPixel(pixelId: string) {
+export function testFacebookPixel(_pixelId: string) {
   if (typeof window === 'undefined') return;
 
-  // Verifica se o fbq estÃ¡ disponÃ­vel
-  if (typeof (window as any).fbq === 'function') {
-    console.log('[TEST] Disparando evento de teste no Facebook Pixel:', pixelId);
-    (window as any).fbq('track', 'Lead', {
+  // Verifica se o fbq está disponível
+  const win = window as unknown as { fbq?: (...args: unknown[]) => void };
+  if (typeof win.fbq === 'function') {
+    win.fbq('track', 'Lead', {
       content_name: 'Teste de Pixel - Admin',
       source: 'admin_test_button',
       test_event: true,
@@ -343,13 +343,13 @@ export function testFacebookPixel(pixelId: string) {
 /**
  * Dispara um evento de teste no Google Analytics
  */
-export function testGoogleAnalytics(measurementId: string) {
+export function testGoogleAnalytics(_measurementId: string) {
   if (typeof window === 'undefined') return;
 
-  // Verifica se o gtag estÃ¡ disponÃ­vel
-  if (typeof (window as any).gtag === 'function') {
-    console.log('[TEST] Disparando evento de teste no Google Analytics:', measurementId);
-    (window as any).gtag('event', 'test_event', {
+  // Verifica se o gtag está disponível
+  const win = window as unknown as { gtag?: (...args: unknown[]) => void };
+  if (typeof win.gtag === 'function') {
+    win.gtag('event', 'test_event', {
       event_category: 'admin_test',
       event_label: 'Teste de Analytics - Admin',
       value: 1,

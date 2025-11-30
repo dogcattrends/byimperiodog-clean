@@ -6,11 +6,38 @@
  * By Império Dog - Sistema de Analytics
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 import { requireAdmin } from '@/lib/adminAuth';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import type { AnalyticsMetrics, AnalyticsPeriod } from '@/types/analytics';
+
+interface AnalyticsEvent {
+  event_type?: string;
+  event_name?: string;
+  user_id?: string;
+  timestamp: string;
+  page_path?: string;
+  device?: string;
+  device_type?: string;
+  utm_source?: string;
+  utm_medium?: string;
+}
+
+interface Session {
+  userId?: string;
+  startTime: string;
+  endTime: string;
+  events: AnalyticsEvent[];
+}
+
+interface TrafficSource {
+  source: string;
+  medium: string;
+  sessions: number;
+  conversions: number;
+}
 
 /**
  * Calcula data de início baseado no período
@@ -88,7 +115,7 @@ export async function GET(req: NextRequest) {
  * Calcula métricas a partir dos eventos
  */
 function calculateMetrics(
-  events: any[],
+  events: AnalyticsEvent[],
   startDate: Date,
   endDate: Date,
   period: AnalyticsPeriod
@@ -117,12 +144,12 @@ function calculateMetrics(
   }, {} as Record<string, number>);
 
   const topPages = Object.entries(pageCounts)
-    .sort(([, a], [, b]) => b - a)
+    .sort(([, a], [, b]) => (Number(b) || 0) - (Number(a) || 0))
     .slice(0, 10)
     .map(([path, views]) => ({
       path,
       title: path,
-      views,
+      views: Number(views) || 0,
       uniqueViews: pageViews.filter(e => e.page_path === path).length,
     }));
 
@@ -151,7 +178,11 @@ function calculateMetrics(
     customEvents: [],
     topPages,
     trafficSources,
-    devices,
+    devices: {
+      desktop: devices.desktop,
+      mobile: devices.mobile,
+      tablet: devices.tablet,
+    },
     topLocations: [],
   };
 }
@@ -159,16 +190,16 @@ function calculateMetrics(
 /**
  * Calcula sessões a partir dos eventos
  */
-function calculateSessions(events: any[]): any[] {
+function calculateSessions(events: AnalyticsEvent[]): Session[] {
   // Simplificado - agrupa eventos por user_id com gap máximo de 30min
   const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutos
   
-  const sessions: any[] = [];
+  const sessions: Session[] = [];
   const userEvents = events.sort((a, b) => 
     new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
   );
 
-  let currentSession: any = null;
+  let currentSession: Session | null = null;
 
   for (const event of userEvents) {
     if (!currentSession || 
@@ -196,7 +227,7 @@ function calculateSessions(events: any[]): any[] {
 /**
  * Calcula duração média de sessão em segundos
  */
-function calculateAverageSessionDuration(sessions: any[]): number {
+function calculateAverageSessionDuration(sessions: Session[]): number {
   if (sessions.length === 0) return 0;
 
   const totalDuration = sessions.reduce((sum, session) => {
@@ -210,7 +241,7 @@ function calculateAverageSessionDuration(sessions: any[]): number {
 /**
  * Calcula taxa de rejeição (bounce rate)
  */
-function calculateBounceRate(sessions: any[]): number {
+function calculateBounceRate(sessions: Session[]): number {
   if (sessions.length === 0) return 0;
 
   const bouncedSessions = sessions.filter(s => s.events.length === 1).length;
@@ -220,7 +251,7 @@ function calculateBounceRate(sessions: any[]): number {
 /**
  * Calcula fontes de tráfego
  */
-function calculateTrafficSources(events: any[]): any[] {
+function calculateTrafficSources(events: AnalyticsEvent[]): TrafficSource[] {
   const sources = events.reduce((acc, e) => {
     const source = e.utm_source || 'direct';
     const medium = e.utm_medium || 'none';
@@ -236,10 +267,10 @@ function calculateTrafficSources(events: any[]): any[] {
     }
     
     return acc;
-  }, {} as Record<string, any>);
+  }, {} as Record<string, TrafficSource>);
 
   return Object.values(sources)
-    .sort((a: any, b: any) => b.sessions - a.sessions)
+    .sort((a, b) => b.sessions - a.sessions)
     .slice(0, 10);
 }
 

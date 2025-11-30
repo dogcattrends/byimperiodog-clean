@@ -14,7 +14,7 @@ import SkipLink from "@/components/common/SkipLink";
 import Pixels from "@/components/Pixels";
 import ToastContainer from "@/components/Toast";
 import { getSiteSettings } from "@/lib/getSettings";
-import { getTrackingSettings } from "@/lib/getTrackingSettings";
+import { getTrackingConfig } from "@/lib/tracking/getTrackingConfig";
 import { getPixelsSettings, resolveActiveEnvironment, type PixelsSettings } from "@/lib/pixels";
 import { resolveRobots, baseMetaOverrides } from "@/lib/seo";
 import { baseSiteMetadata } from "@/lib/seo.core";
@@ -116,12 +116,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   let useGTM = false;
   let pixelSettings: PixelsSettings | null = null;
   let FACEBOOK_PIXEL_ID: string | null = null;
+  let TIKTOK_PIXEL_ID: string | null = null;
+  const isProd = process.env.NODE_ENV === "production";
 
   if (!isAdminRoute) {
     const [siteSettings, fetchedPixelSettings, trackingConfig] = await Promise.all([
       getSiteSettings(),
       getPixelsSettings(),
-      getTrackingSettings(),
+      getTrackingConfig(),
     ]);
     pixelSettings = fetchedPixelSettings;
     const { config } = resolveActiveEnvironment(fetchedPixelSettings);
@@ -131,8 +133,20 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     META_VERIFY = ids.metaVerify;
     GOOGLE_VERIFY = ids.googleVerify;
     useGTM = Boolean(ids.gtm);
-    if (process.env.NODE_ENV === "production") {
-      FACEBOOK_PIXEL_ID = trackingConfig.facebookPixelId?.trim() || null;
+    if (isProd) {
+      if (trackingConfig.isFacebookEnabled && trackingConfig.facebookPixelId) {
+        FACEBOOK_PIXEL_ID = trackingConfig.facebookPixelId.trim();
+      }
+      if (trackingConfig.isGAEnabled && trackingConfig.gaMeasurementId) {
+        GA4_ID = trackingConfig.gaMeasurementId.trim();
+      }
+      if (trackingConfig.isGTMEnabled && trackingConfig.gtmContainerId) {
+        GTM_ID = trackingConfig.gtmContainerId.trim();
+        useGTM = Boolean(GTM_ID);
+      }
+      if (trackingConfig.isTikTokEnabled && trackingConfig.tiktokPixelId) {
+        TIKTOK_PIXEL_ID = trackingConfig.tiktokPixelId.trim();
+      }
     }
 
     if (ids.siteUrl) {
@@ -156,6 +170,95 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="dns-prefetch" href="https://connect.facebook.net" />
         <link rel="dns-prefetch" href="https://analytics.tiktok.com" />
         <link rel="dns-prefetch" href="https://s.pinimg.com" />
+
+        {/* Tracking settings from admin (only in prod) */}
+        {!isAdminRoute && isProd && useGTM && GTM_ID && (
+          <Script id="gtm-init" strategy="afterInteractive">
+            {`
+              (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+              new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+              j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+              'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+              })(window,document,'script','dataLayer','${GTM_ID}');
+            `}
+          </Script>
+        )}
+
+        {!isAdminRoute && isProd && !useGTM && GA4_ID && (
+          <>
+            <Script
+              id="ga4-lib"
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA4_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="ga4-init" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${GA4_ID}');
+              `}
+            </Script>
+          </>
+        )}
+
+        {!isAdminRoute && isProd && FACEBOOK_PIXEL_ID && (
+          <Script id="fb-pixel" strategy="afterInteractive">
+            {`
+              !function(f,b,e,v,n,t,s)
+              {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+              n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+              if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+              n.queue=[];t=b.createElement(e);t.async=!0;
+              t.src=v;s=b.getElementsByTagName(e)[0];
+              s.parentNode.insertBefore(t,s)}(window, document,'script',
+              'https://connect.facebook.net/en_US/fbevents.js');
+              fbq('init', '${FACEBOOK_PIXEL_ID}');
+              fbq('track', 'PageView');
+            `}
+          </Script>
+        )}
+
+        {!isAdminRoute && isProd && TIKTOK_PIXEL_ID && (
+          <Script id="tiktok-pixel" strategy="afterInteractive">
+            {`
+              !function (w, d, t) {
+                w.TiktokAnalyticsObject = t;
+                var ttq = w[t] = w[t] || [];
+                ttq.methods = ["page", "track", "identify", "instances", "debug", "on", "off", "once", "ready", "setUserProperties", "setUserIdentity", "reset"];
+                ttq.setAndDefer = function (t, e) {
+                  t[e] = function () {
+                    t.push([e].concat(Array.prototype.slice.call(arguments, 0)))
+                  }
+                };
+                for (var i = 0; i < ttq.methods.length; i++) ttq.setAndDefer(ttq, ttq.methods[i]);
+                ttq.instance = function (t) {
+                  var e = ttq._i[t] || [];
+                  for (var n = 0; n < ttq.methods.length; n++) ttq.setAndDefer(e, ttq.methods[n]);
+                  return e
+                };
+                ttq.load = function (e, n) {
+                  var i = "https://analytics.tiktok.com/i18n/pixel/events.js";
+                  ttq._i = ttq._i || {};
+                  ttq._i[e] = [];
+                  ttq._i[e]._u = i;
+                  ttq._t = ttq._t || {};
+                  ttq._t[e] = +new Date;
+                  ttq._o = ttq._o || {};
+                  ttq._o[e] = n || {};
+                  var o = document.createElement("script");
+                  o.type = "text/javascript";
+                  o.async = !0;
+                  o.src = i + "?sdkid=" + e + "&lib=" + t;
+                  var a = document.getElementsByTagName("script")[0];
+                  a.parentNode.insertBefore(o, a)
+                };
+                ttq.load('${TIKTOK_PIXEL_ID}');
+                ttq.page();
+              }(window, document, 'ttq');
+            `}
+          </Script>
+        )}
 
         {/* Preload da imagem de LCP para reduzir waterfall */}
         {/* Responsive: mobile WebP, desktop WebP (Next.js Image gera AVIF automaticamente) */}
@@ -238,6 +341,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           isAdminRoute ? "admin-shell" : ""
         }`}
       >
+        {!isAdminRoute && isProd && useGTM && GTM_ID && (
+          <noscript>
+            <iframe
+              src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
+              height="0"
+              width="0"
+              style={{ display: "none", visibility: "hidden" }}
+            />
+          </noscript>
+        )}
         {!isAdminRoute && <SkipLink />}
         {!isAdminRoute && (
           <Pixels isAdminRoute={isAdminRoute} settings={pixelSettings ?? undefined} />

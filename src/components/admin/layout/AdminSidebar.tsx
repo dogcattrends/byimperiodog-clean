@@ -27,7 +27,7 @@ const NAV_ITEMS = [
   { label: "Comentários", href: "/admin/blog/comments", icon: MessageSquare },
   { label: "Analytics", href: "/admin/analytics", icon: TrendingUp },
   { label: "SEO", href: "/admin/seo", icon: Search },
-  { label: "Pixels", href: "/admin/pixels", icon: Eye },
+  { label: "Tracking & Pixels", href: "/admin/tracking", icon: Eye },
   { label: "Experimentos", href: "/admin/experiments", icon: Sparkles },
   { label: "Configurações", href: "/admin/settings", icon: Settings },
 ];

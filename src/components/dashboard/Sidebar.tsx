@@ -59,7 +59,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: '/admin/users', label: 'Usuarios', icon: PersonIcon, disabled: true },
       { href: '/admin/audit-log', label: 'Audit Log', icon: ActivityLogIcon, disabled: true },
       { href: '/admin/system/health', label: 'Saude', icon: GearIcon },
-      { href: '/admin/pixels', label: 'Pixels', icon: GearIcon },
+      { href: '/admin/tracking', label: 'Tracking & Pixels', icon: GearIcon },
       { href: '/admin/settings', label: 'Config', icon: GearIcon },
     ],
   },

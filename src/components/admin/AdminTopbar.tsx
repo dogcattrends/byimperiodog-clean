@@ -9,17 +9,19 @@ export default function AdminTopbar() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const isK = e.key.toLowerCase() === "k";
-      if ((e.ctrlKey || e.metaKey) && isK) {
-        e.preventDefault();
+    const onKey = (event?: KeyboardEvent) => {
+      if (!event || typeof event.key !== "string") return;
+      const key = event.key.toLowerCase();
+      const isK = key === "k";
+      if ((event.ctrlKey || event.metaKey) && isK) {
+        event.preventDefault();
         setOpen(true);
       }
-      if (e.key === "/") {
-        e.preventDefault();
+      if (key === "/") {
+        event.preventDefault();
         setOpen(true);
       }
-      if (e.key === "?" && (e.shiftKey || !e.shiftKey)) {
+      if (event.key === "?" && (event.shiftKey || !event.shiftKey)) {
         // future: abrir ajuda
       }
     };

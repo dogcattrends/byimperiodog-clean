@@ -3,11 +3,9 @@
  * By Império Dog - Sistema de Pixels/Analytics
  */
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
-describe('Tracking API Integration Tests', () => {
-  const publicEndpoint = '/api/settings/tracking';
-  const adminEndpoint = '/api/admin/settings';
+describe('Tracking Settings API - Integration Tests', () => {
 
   describe('GET /api/settings/tracking (público)', () => {
     it('deve retornar configurações públicas sem autenticação', async () => {
@@ -50,7 +48,7 @@ describe('Tracking API Integration Tests', () => {
         { meta_pixel_id: '', expected: true }, // Vazio é válido
       ];
 
-      payloads.forEach(({ meta_pixel_id, expected }) => {
+      payloads.forEach(({ meta_pixel_id }) => {
         // Validação acontece no servidor
         expect(typeof meta_pixel_id).toBe('string');
       });
@@ -64,7 +62,7 @@ describe('Tracking API Integration Tests', () => {
         { ga4_id: '', expected: true }, // Vazio é válido
       ];
 
-      payloads.forEach(({ ga4_id, expected }) => {
+      payloads.forEach(({ ga4_id }) => {
         expect(typeof ga4_id).toBe('string');
       });
     });
@@ -80,10 +78,6 @@ describe('Tracking API Integration Tests', () => {
     });
 
     it('deve retornar erro 400 para validação inválida', () => {
-      const invalidPayload = {
-        meta_pixel_id: 'abc123', // Inválido
-      };
-
       const expectedErrorResponse = {
         error: 'Facebook Pixel ID deve conter apenas números (ex: 1234567890123456)',
       };
