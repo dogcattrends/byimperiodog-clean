@@ -294,3 +294,64 @@ export function buildOfferCatalogLD(opts: {
     }),
   };
 }
+
+/**
+ * Build Article JSON-LD schema
+ */
+export function buildArticleLD(opts: {
+  url: string;
+  title: string;
+  description: string;
+  datePublished: string;
+  dateModified?: string;
+  image?: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: opts.title,
+    description: opts.description,
+    url: opts.url,
+    datePublished: opts.datePublished,
+    dateModified: opts.dateModified || opts.datePublished,
+    image: opts.image,
+    author: {
+      "@type": "Organization",
+      name: "By Império Dog",
+    },
+  };
+}
+
+/**
+ * Build FAQ Page JSON-LD schema
+ */
+export function buildFAQPageLD(items: Array<{ question: string; answer: string }>) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer,
+      },
+    })),
+  };
+}
+
+/**
+ * Build Breadcrumb JSON-LD schema
+ */
+export function buildBreadcrumbLD(items: Array<{ name: string; url: string }>) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: item.url,
+    })),
+  };
+}

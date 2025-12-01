@@ -1,4 +1,5 @@
 ﻿import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/supabase";
 
 function makeStubBuilder(result: any = { data: null, error: null }) {
   const methods = [
@@ -6,17 +7,23 @@ function makeStubBuilder(result: any = { data: null, error: null }) {
     "maybeSingle",
     "single",
     "eq",
+    "neq",
+    "lte",
+    "gte",
+    "lt",
+    "gt",
     "in",
+    "or",
     "order",
     "limit",
+    "range",
     "insert",
     "update",
     "delete",
+    "upsert",
     "rpc",
     "ilike",
-    "like",
-    "neq",
-    "upsert"
+    "like"
   ];
   const builder: any = {};
   methods.forEach((m) => {
@@ -50,7 +57,7 @@ export function supabaseAdmin() {
   }
 
   try {
-    const client = createClient(url, key, { auth: { persistSession: false } });
+    const client = createClient<Database>(url, key, { auth: { persistSession: false } });
     return new Proxy(client, {
       get(target, prop) {
         const orig = (target as any)[prop];

@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import type { Database } from '@/types/supabase';
 
 function makeStubBuilder(result: any = { data: null, error: null }) {
   const methods = [
@@ -13,7 +14,7 @@ function makeStubBuilder(result: any = { data: null, error: null }) {
   return builder;
 }
 
-let client: ReturnType<typeof createClient> | null = null;
+let client: ReturnType<typeof createClient<Database>> | null = null;
 export function supabaseAnon(){
   if(client) return client;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -23,7 +24,7 @@ export function supabaseAnon(){
   }
 
   try{
-    client = createClient(url, key, { auth: { persistSession:false } });
+    client = createClient<Database>(url, key, { auth: { persistSession:false } });
     return client;
   }catch(e){
     return { from: (_: string) => makeStubBuilder({ data: [], error: null }) } as any;

@@ -67,3 +67,113 @@ export const WHATSAPP_MESSAGES = {
   contato: "Ola! Gostaria de tirar duvidas sobre o processo By Imperio Dog.",
   sobre: "Ola! Quero conhecer mais sobre a criadora e o acompanhamento vitalicio.",
 } as const;
+
+type LeadForMessage = {
+  nome?: string | null;
+  first_name?: string | null;
+  name?: string | null;
+  cidade?: string | null;
+  estado?: string | null;
+};
+
+type PuppyForMessage = {
+  name?: string | null;
+  color?: string | null;
+  sex?: string | null;
+  price_cents?: number | null;
+};
+
+export type WhatsAppMessageTone = "premium" | "consultivo" | "objetivo" | (string & {});
+
+export type WhatsAppMessagePayload = {
+  message: string;
+  variations: string[];
+  strategy: string;
+  ctaLink: string;
+};
+
+const TONE_PRESETS: Record<string, { greeting: string; hook: string; promise: string; ctaLabel: string }> = {
+  premium: {
+    greeting: "Ola",
+    hook: "Aqui e o concierge By Imperio Dog cuidando pessoalmente da sua experiencia.",
+    promise: "Envio video privado e resumo completo em minutos.",
+    ctaLabel: "Fale agora",
+  },
+  consultivo: {
+    greeting: "Ola",
+    hook: "Sou seu especialista dedicado para guiar cada passo.",
+    promise: "Posso ajustar agenda, documentos e video conforme voce preferir.",
+    ctaLabel: "Vamos alinhar",
+  },
+  objetivo: {
+    greeting: "Ola",
+    hook: "Mensagem direta do time By Imperio Dog.",
+    promise: "Consigo confirmar video ou visita ainda hoje.",
+    ctaLabel: "Responder agora",
+  },
+};
+
+function pickPreset(tone?: WhatsAppMessageTone) {
+  if (!tone) return TONE_PRESETS.premium;
+  return TONE_PRESETS[tone] ?? TONE_PRESETS.premium;
+}
+
+function leadFirstName(lead?: LeadForMessage) {
+  const candidate = lead?.first_name || lead?.nome || lead?.name || "cliente";
+  return candidate.trim().split(" ")[0];
+}
+
+function describePuppy(puppy?: PuppyForMessage) {
+  const name = puppy?.name?.trim();
+  const color = puppy?.color?.trim();
+  if (name && color) return `${name} ${color}`;
+  if (name) return name;
+  if (color) return `Spitz ${color}`;
+  return "Spitz selecionado";
+}
+
+function formatPrice(price_cents?: number | null) {
+  if (typeof price_cents !== "number" || Number.isNaN(price_cents)) return null;
+  const value = price_cents / 100;
+  return `R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+}
+
+export function generateWhatsAppMessage(
+  lead: LeadForMessage,
+  puppy: PuppyForMessage,
+  tone: WhatsAppMessageTone = "premium",
+): WhatsAppMessagePayload {
+  const preset = pickPreset(tone);
+  const name = leadFirstName(lead);
+  const puppyLabel = describePuppy(puppy);
+  const priceLabel = formatPrice(puppy?.price_cents);
+  const city = lead?.cidade?.trim();
+  const state = lead?.estado?.trim();
+  const location = city || state ? [city, state].filter(Boolean).join("/") : null;
+
+  const summaryParts = [
+    preset.hook,
+    `${puppyLabel}${priceLabel ? ` a partir de ${priceLabel}` : ""}.`,
+    location ? `Atendo pessoalmente clientes em ${location}.` : null,
+    preset.promise,
+  ].filter(Boolean);
+
+  const linkMessage = `Quero avancar sobre ${puppyLabel}`;
+  const whatsappLink = buildWhatsAppLink({ message: linkMessage });
+  const cta = `${preset.ctaLabel}: ${whatsappLink}`;
+
+  const message = `${preset.greeting} ${name}! ${summaryParts.join(" ")} ${cta}`;
+
+  const variations = [
+    `Primeiro contato — ${preset.greeting} ${name}! ${puppyLabel} esta reservado para voce. ${cta}`,
+    `Follow-up leve — ${name}, deixei o video do ${puppyLabel} pronto. Posso enviar agora? ${cta}`,
+    `Follow-up forte — ${name}, consigo garantir prioridade do ${puppyLabel} apenas hoje. Confirme comigo: ${cta}`,
+    `Urgencia — ${name}, ultima agenda premium para ver o ${puppyLabel} ainda hoje. ${cta}`,
+    `Confirmacao da visita — ${name}, confirmando sua visita privada para conhecer o ${puppyLabel}. Qualquer ajuste, fale aqui: ${cta}`,
+    `Reserva — ${name}, segue o acesso direto para finalizar a reserva do ${puppyLabel}. ${cta}`,
+  ];
+
+  const strategy = `Sequencia ${tone || "premium"} com CTA unico no WhatsApp, mensagens curtas e foco em resposta imediata.`;
+
+  return { message, variations, strategy, ctaLink: whatsappLink };
+}

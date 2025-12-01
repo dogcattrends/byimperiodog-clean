@@ -1,3 +1,48 @@
+type TrackingEvent = "page_view" | "view_form" | "submit_start" | "submit_success" | "submit_error";
+
+function safePushToDataLayer(event: string, payload: Record<string, any> = {}) {
+  try {
+    // GTM/GA4 via dataLayer
+    (window as any).dataLayer = (window as any).dataLayer || [];
+    (window as any).dataLayer.push({ event, ...payload });
+  } catch (_) {}
+  try {
+    // Facebook Pixel
+    if ((window as any).fbq) {
+      (window as any).fbq("trackCustom", event, payload);
+    }
+  } catch (_) {}
+  try {
+    // TikTok Pixel
+    if ((window as any).ttq) {
+      (window as any).ttq.track(event, payload);
+    }
+  } catch (_) {}
+}
+
+export function track(event: TrackingEvent, payload: Record<string, any> = {}) {
+  safePushToDataLayer(event, payload);
+}
+
+export function trackPageView(context: Record<string, any>) {
+  track("page_view", context);
+}
+
+export function trackFormView(context: Record<string, any>) {
+  track("view_form", context);
+}
+
+export function trackSubmitStart(context: Record<string, any>) {
+  track("submit_start", context);
+}
+
+export function trackSubmitSuccess(context: Record<string, any>) {
+  track("submit_success", context);
+}
+
+export function trackSubmitError(context: Record<string, any>) {
+  track("submit_error", context);
+}
 
 import type { PixelEnvironmentConfig } from "@/lib/pixels";
 
@@ -121,7 +166,7 @@ export function buildWebsiteLD(siteUrl: string) {
     url: `${clean}/`,
     potentialAction: {
       "@type": "SearchAction",
-      target: `${clean}/search?q={search_term_string}`,
+      target: `${clean}/blog?q={search_term_string}`,
       "query-input": "required name=search_term_string",
     },
   };
@@ -189,8 +234,28 @@ export function buildLocalBusinessLD(siteUrl: string) {
       longitude: "-46.541658",
     },
     areaServed: [
-      { "@type": "State", name: "Sao Paulo" },
-      { "@type": "Country", name: "Brasil" },
+      // Estados principais
+      { "@type": "State", "name": "São Paulo", "alternateName": "SP" },
+      { "@type": "State", "name": "Rio de Janeiro", "alternateName": "RJ" },
+      { "@type": "State", "name": "Minas Gerais", "alternateName": "MG" },
+      { "@type": "State", "name": "Paraná", "alternateName": "PR" },
+      // Capitais e grandes cidades SP
+      { "@type": "City", "name": "São Paulo", "containedIn": { "@type": "State", "name": "São Paulo" } },
+      { "@type": "City", "name": "Campinas", "containedIn": { "@type": "State", "name": "São Paulo" } },
+      { "@type": "City", "name": "São José dos Campos", "containedIn": { "@type": "State", "name": "São Paulo" } },
+      { "@type": "City", "name": "Sorocaba", "containedIn": { "@type": "State", "name": "São Paulo" } },
+      { "@type": "City", "name": "Ribeirão Preto", "containedIn": { "@type": "State", "name": "São Paulo" } },
+      { "@type": "City", "name": "Santos", "containedIn": { "@type": "State", "name": "São Paulo" } },
+      // RJ
+      { "@type": "City", "name": "Rio de Janeiro", "containedIn": { "@type": "State", "name": "Rio de Janeiro" } },
+      { "@type": "City", "name": "Niterói", "containedIn": { "@type": "State", "name": "Rio de Janeiro" } },
+      { "@type": "City", "name": "Petrópolis", "containedIn": { "@type": "State", "name": "Rio de Janeiro" } },
+      // MG
+      { "@type": "City", "name": "Belo Horizonte", "containedIn": { "@type": "State", "name": "Minas Gerais" } },
+      { "@type": "City", "name": "Uberlândia", "containedIn": { "@type": "State", "name": "Minas Gerais" } },
+      { "@type": "City", "name": "Juiz de Fora", "containedIn": { "@type": "State", "name": "Minas Gerais" } },
+      // Nacional
+      { "@type": "Country", "name": "Brasil" },
     ],
     priceRange: "$$$",
     openingHoursSpecification: [

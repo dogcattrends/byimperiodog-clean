@@ -12,7 +12,7 @@ export default function TrackingScripts() {
       label: string;
       maxAttempts?: number;
       intervalMs?: number;
-    }) => {
+    }): number => {
       const { getter, onReady, onFail, label, maxAttempts = 20, intervalMs = 300 } = opts;
       let attempts = 0;
       const timer = setInterval(() => {
@@ -27,7 +27,7 @@ export default function TrackingScripts() {
           console.warn(`[pixel-test] ${label} não carregou para teste`);
         }
       }, intervalMs);
-      return timer;
+      return timer as unknown as number;
     };
 
     const sendPageView = () => {

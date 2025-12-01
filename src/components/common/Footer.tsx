@@ -8,7 +8,7 @@ import { routes } from "@/lib/route";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 
 const NAV_ITEMS = [
-  { label: "Inicio", href: routes.home },
+  { label: "Início", href: routes.home },
   { label: "Filhotes", href: routes.filhotes },
   { label: "Processo", href: routes.sobre },
   { label: "Blog", href: routes.blog },
@@ -17,9 +17,9 @@ const NAV_ITEMS = [
 
 const SUPPORT_ITEMS = [
   { label: "FAQ do tutor", href: "/faq-do-tutor" },
-  { label: "Politica de privacidade", href: "/politica-de-privacidade" },
+  { label: "Política de privacidade", href: "/politica-de-privacidade" },
   { label: "Termos de uso", href: "/termos-de-uso" },
-  { label: "Politica editorial", href: "/politica-editorial" },
+  { label: "Política editorial", href: "/politica-editorial" },
 ];
 
 export default function Footer() {
@@ -30,7 +30,7 @@ export default function Footer() {
   }, []);
   const whatsapp = buildWhatsAppLink({
     message:
-      "Ola! Quero falar com a By Imperio Dog sobre disponibilidade de Spitz Alemao Anao e proximos passos.",
+      "Olá! Quero falar com a By Império Dog sobre disponibilidade de Spitz Alemão Anão e próximos passos.",
     utmSource: "site",
     utmMedium: "footer",
     utmCampaign: "footer_whatsapp",
@@ -42,29 +42,30 @@ export default function Footer() {
       <div className="mx-auto grid w-full max-w-7xl gap-12 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4 sm:px-8">
         <div className="space-y-3">
           <span className="inline-flex items-center rounded-full bg-emerald-800 px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-emerald-100">
-            By Imperio Dog
+            By Império Dog
           </span>
           <p className="text-sm leading-relaxed text-emerald-100/80">
-            Spitz Alemao Anao ate 22 cm, criado com responsabilidade, saude validada e mentoria vitalicia.
-            Atendimento premium sob consulta para familias que valorizam transparencia.
+            Spitz Alemão Anão até 22 cm, criado com responsabilidade, saúde validada e mentoria vitalícia.
+            Atendimento premium sob consulta para famílias que valorizam transparência.
           </p>
           <a
             href={whatsapp}
             className="inline-flex min-h-[48px] items-center gap-2 rounded-full bg-emerald-500 px-5 py-2 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200 focus-visible:ring-offset-2 focus-visible:ring-offset-emerald-950"
+            aria-label="Conversar no WhatsApp"
           >
-            <WhatsAppIcon className="h-4 w-4" aria-hidden />
+            <WhatsAppIcon className="h-4 w-4" aria-hidden="true" />
             Falar com a criadora
           </a>
         </div>
 
-        <nav aria-label="Navegacao" className="space-y-3 text-sm">
-          <h3 className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200/80">Navegacao</h3>
+        <nav aria-label="Navegação" className="space-y-3 text-sm">
+          <h3 className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200/80">Navegação</h3>
           <ul className="space-y-2">
             {NAV_ITEMS.map((item) => (
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className="inline-flex min-h-[48px] items-center text-emerald-100/80 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200 focus-visible:ring-offset-2 focus-visible:ring-offset-emerald-950"
+                  className="inline-flex min-h-[48px] items-center py-3 text-emerald-100/80 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200 focus-visible:ring-offset-2 focus-visible:ring-offset-emerald-950"
                 >
                   {item.label}
                 </Link>
@@ -80,7 +81,7 @@ export default function Footer() {
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className="inline-flex min-h-[48px] items-center text-emerald-100/80 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200 focus-visible:ring-offset-2 focus-visible:ring-offset-emerald-950"
+                  className="inline-flex min-h-[48px] items-center py-3 text-emerald-100/80 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200 focus-visible:ring-offset-2 focus-visible:ring-offset-emerald-950"
                 >
                   {item.label}
                 </Link>
@@ -92,7 +93,7 @@ export default function Footer() {
         <div className="space-y-3 text-sm">
           <h3 className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200/80">Contato</h3>
           <p className="text-emerald-100/80">
-            Atendimento sob consulta a partir de Sao Paulo - conversas individuais para alinhar rotina, investimento e socializacao antes da reserva.
+            Atendimento sob consulta a partir de São Paulo — conversas individuais para alinhar rotina, investimento e socialização antes da reserva.
           </p>
           <address className="not-italic space-y-1 text-emerald-100/60">
             <p>E-mail: contato@byimperiodog.com.br</p>

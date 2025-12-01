@@ -2,70 +2,15 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 
-import { supabasePublic } from "@/lib/supabasePublic";
+import type { Puppy } from "@/domain/puppy";
+import { listPuppiesCatalog } from "@/lib/data/supabase";
 import track from "@/lib/track";
+import { buildWhatsAppLink } from "@/lib/whatsapp";
 
 import PuppiesFilterBar from "./PuppiesFilterBar";
 import PuppyCard from "./PuppyCard";
 import PuppyCardSkeleton from "./PuppyCardSkeleton";
 import PuppyDetailsModal from "./PuppyDetailsModal";
-
-// Tipagem permissiva, mas consolidada para reduzir o uso de any espalhado
-type Puppy = {
-  id: string;
-  nome?: string | null; name?: string | null;
-  cor?: string | null;  color?: string | null;
-  gender?: string | null;
-  status?: string | null;
-  price_cents?: number | null; priceCents?: number | null;
-  imageUrl?: string | null; image_url?: string | null; image?: string | null; imagem?: string | null;
-  foto?: string | null; foto_principal?: string | null; thumb?: string | null; thumbnail?: string | null;
-  capa?: string | null; cover?: string | null; main_photo?: string | null; photo?: string | null; picture?: string | null;
-  midia?: unknown;
-  created_at?: string | null;
-};
-
-function isVideo(u: string) {
-  return /\.(mp4|webm|mov)$/i.test(u);
-}
-
-function firstImageFromMedia(m: unknown): string | undefined {
-  if (!m) return;
-  if (!Array.isArray(m) && typeof m === "object") {
-    const o = m as Record<string, unknown>;
-    const bucket = (o as Record<string, unknown>).images as unknown[]
-      || (o as Record<string, unknown>).fotos as unknown[]
-      || (o as Record<string, unknown>).media as unknown[]
-      || (o as Record<string, unknown>).itens as unknown[]
-      || (o as Record<string, unknown>).items as unknown[];
-    if (Array.isArray(bucket)) m = bucket;
-  }
-  const tryAnyUrl = (obj: unknown): string | undefined => {
-    if (!obj || typeof obj !== "object") return;
-    const o = obj as Record<string, unknown>;
-    const u = (o.url || o.src || o.href || o.path || o.publicUrl || o.downloadURL) as unknown;
-    if (typeof u === "string" && !isVideo(u)) return u;
-  };
-  const arr = Array.isArray(m) ? m : [];
-  for (const item of arr) {
-    if (typeof item === "string") {
-      if (!isVideo(item)) return item;
-    } else if (item && typeof item === "object") {
-      const u = tryAnyUrl(item);
-      if (u) return u;
-    }
-  }
-  return undefined;
-}
-const pickCover = (p: Puppy): string | undefined => (
-  p.imageUrl || p.image_url || p.image || p.imagem ||
-  p.cover || (p as Record<string, unknown> & { cover_url?: string }).cover_url || p.capa ||
-  p.foto || p.foto_principal || p.thumb || p.thumbnail ||
-  p.main_photo || p.photo || p.picture ||
-  // Media ou midia em array ja normalizada pode existir apos scripts de normalizacao
-  (Array.isArray((p as unknown as { media?: unknown[] }).media) && (p as unknown as { media?: unknown[] }).media?.[0] as string) ||
-  firstImageFromMedia(p.midia)
-);
 
 // Normaliza string para busca removendo acentos e convertendo para minusculas
 const normalize = (s: string) => s
@@ -73,11 +18,15 @@ const normalize = (s: string) => s
   .replace(/\p{Diacritic}/gu, "")
   .toLowerCase();
 
-export default function PuppiesGrid() {
-  const [items, setItems] = useState<Puppy[]>([]);
-  const [loading, setLoading] = useState(true);
+type Props = {
+  initialItems?: Puppy[];
+};
+
+export default function PuppiesGrid({ initialItems = [] }: Props) {
+  const [items, setItems] = useState<Puppy[]>(initialItems);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [retryMark, setRetryMark] = useState(0); // fora re-execuo
+  const [retryMark, setRetryMark] = useState(0);
   const [isPendingFilter, startTransition] = useTransition();
   const mountedRef = useRef(true);
 
@@ -89,24 +38,30 @@ export default function PuppiesGrid() {
 
   // modal de detalhes
   const [openId, setOpenId] = useState<string | null>(null);
-  
 
   useEffect(() => {
     mountedRef.current = true;
     const ac = new AbortController();
     (async () => {
+      // Se já tem items iniciais, não precisa buscar
+      if (initialItems.length > 0) {
+        console.log('[PuppiesGrid] Usando initialItems:', initialItems.length);
+        setItems(initialItems);
+        setLoading(false);
+        return;
+      }
+      
+      console.log('[PuppiesGrid] Buscando filhotes...');
       try {
         setLoading(true);
         setError(null);
-        const s = supabasePublic();
-        const { data, error } = await s
-          .from("puppies")
-          .select("*")
-          .order("created_at", { ascending: false });
-  if (error) { throw error; }
+        
+        const result = await listPuppiesCatalog({}, 'recent', { limit: 40 });
+        
         if (mountedRef.current) {
-          setItems((data ?? []) as Puppy[]);
-          track.event?.("list_loaded", { count: (data ?? []).length });
+          console.log('[PuppiesGrid] Filhotes carregados:', result.puppies.length);
+          setItems(result.puppies);
+          track.event?.("list_loaded", { count: result.puppies.length });
         }
       } catch (e) {
         const err = e as { name?: string; message?: string };
@@ -120,7 +75,7 @@ export default function PuppiesGrid() {
       mountedRef.current = false;
       ac.abort();
     };
-  }, [retryMark]);
+  }, [retryMark, initialItems]);
 
   const retry = useCallback(()=> {
     setRetryMark(m => m+1);
@@ -129,44 +84,51 @@ export default function PuppiesGrid() {
   const availableColors = useMemo(() => {
     const set = new Set<string>();
     for (const p of items) {
-      const c = (p.color || p.cor || "").trim().toLowerCase();
-      if (c) set.add(c);
+      if (p.color) set.add(p.color);
     }
     return Array.from(set).sort();
   }, [items]);
 
   const filtered = useMemo(() => {
-    // Filtragem rapida - strings ja normalizadas sob demanda
     let arr = items;
     const qTerm = q.trim();
-    const wantsSearch = !!qTerm;
-    const normQ = wantsSearch ? normalize(qTerm) : '';
-
-    if (wantsSearch) {
+    
+    if (qTerm) {
+      const normQ = qTerm.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
       arr = arr.filter(p => {
-        const name = normalize(p.nome || p.name || "");
-        const c = normalize(p.cor || p.color || "");
-        return name.includes(normQ) || c.includes(normQ);
+        const name = p.name.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
+        const desc = (p.description || '').toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
+        const color = p.color.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
+        return name.includes(normQ) || desc.includes(normQ) || color.includes(normQ);
       });
     }
+    
     if (gender) {
-      const g = gender.toLowerCase();
-      arr = arr.filter(p => String(p.gender || '').toLowerCase() === g);
+      arr = arr.filter(p => p.sex === gender);
     }
+    
     if (status) {
-      const s = status.toLowerCase();
-      arr = arr.filter(p => String(p.status || '').toLowerCase() === s);
+      arr = arr.filter(p => p.status === status);
     }
+    
     if (color) {
-      const cSel = color.toLowerCase();
-      arr = arr.filter(p => String(p.cor || p.color || '').toLowerCase() === cSel);
+      arr = arr.filter(p => p.color.toLowerCase() === color.toLowerCase());
     }
+    
     return arr;
   }, [items, q, gender, status, color]);
 
-  // Handlers que usam transicao para evitar travar digitacao
   const setQDeferred = useCallback((val: string) => {
     startTransition(() => setQ(val));
+  }, []);
+
+  const clearFilters = useCallback(() => {
+    setQ("");
+    setGender("");
+    setStatus("");
+    setColor("");
+    setRetryMark((m) => m + 1);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
   return (
@@ -226,7 +188,7 @@ export default function PuppiesGrid() {
               <PuppyCardSkeleton key={`skeleton-${i}`} />
             ))
           : filtered.map((p) => {
-              const cover = pickCover(p) || undefined;
+              const cover = p.thumbnailUrl || p.images[0] || undefined;
               return (
                 <div key={p.id} id={`filhote-${p.id}`} className="h-full">
                   <PuppyCard p={p} cover={cover} onOpen={() => setOpenId(p.id)} />
@@ -237,15 +199,35 @@ export default function PuppiesGrid() {
 
       {/* Nenhum encontrado */}
       {!loading && filtered.length === 0 && !error && (
-        <p className="mt-6 text-center text-sm text-[var(--text-muted)]">
-          Nenhum Spitz encontrado com esses filtros.
-        </p>
+        <div className="mt-8 flex flex-col items-center gap-4 rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface)] px-6 py-10 text-center">
+          <p className="text-sm text-[var(--text-muted)]">Nenhum Spitz encontrado com esses filtros.</p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="rounded-full border border-[var(--border)] px-4 py-2 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2"
+            >
+              Limpar filtros
+            </button>
+            <a
+              href={buildWhatsAppLink({
+                message: "Olá! Não encontrei filhotes com esses filtros. Pode me ajudar a encontrar o Spitz ideal?",
+                utmSource: "site",
+                utmMedium: "catalog_empty",
+                utmCampaign: "filhotes",
+                utmContent: "cta_whatsapp",
+              })}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center rounded-full bg-[var(--brand)] px-4 py-2 text-sm font-semibold text-[var(--brand-foreground)] shadow-sm transition hover:bg-[var(--brand)]/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2"
+            >
+              Falar com a criadora
+            </a>
+          </div>
+        </div>
       )}
 
-      {/* Modal detalhes */}
-      {openId && (
-        <PuppyDetailsModal id={openId} onClose={() => setOpenId(null)} />
-      )}
+      {openId && <PuppyDetailsModal id={openId} onClose={() => setOpenId(null)} />}
     </section>
   );
 }

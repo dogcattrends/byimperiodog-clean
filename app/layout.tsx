@@ -14,7 +14,6 @@ import SkipLink from "@/components/common/SkipLink";
 import Pixels from "@/components/Pixels";
 import ToastContainer from "@/components/Toast";
 import { getSiteSettings } from "@/lib/getSettings";
-import { getTrackingConfig } from "@/lib/tracking/getTrackingConfig";
 import { getPixelsSettings, resolveActiveEnvironment, type PixelsSettings } from "@/lib/pixels";
 import { resolveRobots, baseMetaOverrides } from "@/lib/seo";
 import { baseSiteMetadata } from "@/lib/seo.core";
@@ -120,10 +119,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const isProd = process.env.NODE_ENV === "production";
 
   if (!isAdminRoute) {
-    const [siteSettings, fetchedPixelSettings, trackingConfig] = await Promise.all([
+    const [siteSettings, fetchedPixelSettings] = await Promise.all([
       getSiteSettings(),
       getPixelsSettings(),
-      getTrackingConfig(),
     ]);
     pixelSettings = fetchedPixelSettings;
     const { config } = resolveActiveEnvironment(fetchedPixelSettings);
@@ -133,20 +131,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     META_VERIFY = ids.metaVerify;
     GOOGLE_VERIFY = ids.googleVerify;
     useGTM = Boolean(ids.gtm);
+    
+    // Em produção, usar IDs dos pixels se disponíveis
     if (isProd) {
-      if (trackingConfig.isFacebookEnabled && trackingConfig.facebookPixelId) {
-        FACEBOOK_PIXEL_ID = trackingConfig.facebookPixelId.trim();
-      }
-      if (trackingConfig.isGAEnabled && trackingConfig.gaMeasurementId) {
-        GA4_ID = trackingConfig.gaMeasurementId.trim();
-      }
-      if (trackingConfig.isGTMEnabled && trackingConfig.gtmContainerId) {
-        GTM_ID = trackingConfig.gtmContainerId.trim();
-        useGTM = Boolean(GTM_ID);
-      }
-      if (trackingConfig.isTikTokEnabled && trackingConfig.tiktokPixelId) {
-        TIKTOK_PIXEL_ID = trackingConfig.tiktokPixelId.trim();
-      }
+      FACEBOOK_PIXEL_ID = ids.fb || null;
+      TIKTOK_PIXEL_ID = ids.tiktok || null;
     }
 
     if (ids.siteUrl) {
@@ -165,11 +154,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {/* PERFORMANCE: Resource hints essenciais */}
         {/* ================================================================ */}
         <link rel="preconnect" href="https://npmnuihgydadihktglrd.supabase.co" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-        <link rel="dns-prefetch" href="https://www.google-analytics.com" />
-        <link rel="dns-prefetch" href="https://connect.facebook.net" />
-        <link rel="dns-prefetch" href="https://analytics.tiktok.com" />
-        <link rel="dns-prefetch" href="https://s.pinimg.com" />
+        {/* Tracking preconnects são adicionados condicionalmente abaixo baseado em useGTM/GA4_ID */}
 
         {/* Tracking settings from admin (only in prod) */}
         {!isAdminRoute && isProd && useGTM && GTM_ID && (
@@ -189,9 +174,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <Script
               id="ga4-lib"
               src={`https://www.googletagmanager.com/gtag/js?id=${GA4_ID}`}
-              strategy="afterInteractive"
+              strategy="lazyOnload"
             />
-            <Script id="ga4-init" strategy="afterInteractive">
+            <Script id="ga4-init" strategy="lazyOnload">
               {`
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
@@ -203,7 +188,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         )}
 
         {!isAdminRoute && isProd && FACEBOOK_PIXEL_ID && (
-          <Script id="fb-pixel" strategy="afterInteractive">
+          <Script id="fb-pixel" strategy="lazyOnload">
             {`
               !function(f,b,e,v,n,t,s)
               {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -220,7 +205,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         )}
 
         {!isAdminRoute && isProd && TIKTOK_PIXEL_ID && (
-          <Script id="tiktok-pixel" strategy="afterInteractive">
+          <Script id="tiktok-pixel" strategy="lazyOnload">
             {`
               !function (w, d, t) {
                 w.TiktokAnalyticsObject = t;
@@ -261,17 +246,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         )}
 
         {/* Preload da imagem de LCP para reduzir waterfall */}
-        {/* Responsive: mobile WebP, desktop WebP (Next.js Image gera AVIF automaticamente) */}
+        {/* AVIF tem melhor compressão que WebP (30-50% menor) */}
         {!isAdminRoute && pathname === "/" && (
-          <>
-            <link
-              rel="preload"
-              as="image"
-              href="/spitz-hero-desktop.webp"
-              type="image/webp"
-              fetchPriority="high"
-            />
-          </>
+          <link
+            rel="preload"
+            as="image"
+            href="/spitz-hero-desktop.avif"
+            type="image/avif"
+            fetchPriority="high"
+          />
         )}
 
         {/* Canonical dinamico (reforco; alternates via metadata) */}
@@ -301,6 +284,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <link rel="preconnect" href="https://www.google-analytics.com" crossOrigin="anonymous" />
             <link rel="dns-prefetch" href="https://www.google-analytics.com" />
           </>
+        )}
+        {!isAdminRoute && FACEBOOK_PIXEL_ID && (
+          <link rel="dns-prefetch" href="https://connect.facebook.net" />
+        )}
+        {!isAdminRoute && TIKTOK_PIXEL_ID && (
+          <link rel="dns-prefetch" href="https://analytics.tiktok.com" />
         )}
 
         {/* JSON-LD inline para renderizacao imediata (melhor SEO) */}
@@ -363,9 +352,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <div className="flex min-h-screen flex-col">
             {!isAdminRoute && <Header />}
             {!isAdminRoute && <div aria-hidden className="h-20" />}
-            <div className="flex-1" id="conteudo-principal" tabIndex={-1}>
+            <main className="flex-1" id="conteudo-principal" role="main">
               {children}
-            </div>
+            </main>
             {!isAdminRoute && <Footer />}
             {!isAdminRoute && <FloatingPuppiesCTA disabled={false} />}
             {!isAdminRoute && <ConsentBanner />}

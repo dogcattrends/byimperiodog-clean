@@ -5,6 +5,7 @@ import { Suspense } from 'react';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/cn';
 import { supabasePublic } from '@/lib/supabasePublic';
+import { getAllPosts } from '@/lib/content';
 
 import RecentPostsSkeleton from './RecentPostsSkeleton';
 
@@ -26,7 +27,21 @@ export async function RecentPostsSection() {
 	if (error) {
 		console.error('Erro posts home:', error.message);
 	}
-	const recentPosts = recentPostsRaw ?? [];
+	let recentPosts = recentPostsRaw ?? [];
+
+	// Fallback para Contentlayer quando não houver posts publicados no Supabase
+	if (!recentPosts || recentPosts.length === 0) {
+		const { items } = await getAllPosts({ page: 1, pageSize: 3 });
+		recentPosts = items.map((p) => ({
+			id: p.slug,
+			slug: p.slug,
+			title: p.title,
+			cover_url: p.cover || null,
+			excerpt: p.excerpt || null,
+			published_at: p.date || null,
+			reading_time: p.readingTime || null,
+		}));
+	}
 
 	return (
 		<section

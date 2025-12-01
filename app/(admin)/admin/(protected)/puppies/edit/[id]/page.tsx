@@ -5,15 +5,13 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Loader2 } from "lucide-react";
 
-import PuppyForm from "@/app/admin/puppies/PuppyForm";
+import PuppyForm from "../../_components/PuppyForm";
 import { adminFetch } from "@/lib/adminFetch";
-import { useToast } from "@/components/ui/toast";
 import type { RawPuppy } from "@/types/puppy";
 
 export default function EditPuppyPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-  const { push } = useToast();
 
   const idParam = Array.isArray(params?.id) ? params.id[0] : params?.id;
 
@@ -27,16 +25,13 @@ export default function EditPuppyPage() {
     async function load() {
       try {
         setLoading(true);
-        const response = await adminFetch("/api/admin/puppies");
+        const response = await adminFetch(`/api/admin/puppies?id=${idParam}`);
         const json = await response.json();
         if (!mounted) return;
         if (!response.ok) throw new Error(json?.error || "Falha ao carregar filhote");
-        const found = (json?.items as RawPuppy[] | undefined)?.find((item) => item.id === idParam);
-        if (!found) {
-          setError("Filhote nao encontrado.");
-        } else {
-          setRecord(found);
-        }
+        const found = json?.puppy as RawPuppy | undefined;
+        if (!found) setError("Filhote nao encontrado.");
+        else setRecord(found);
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         setError(message);
@@ -91,7 +86,6 @@ export default function EditPuppyPage() {
           mode="edit"
           record={record}
           onCompleted={() => {
-            push({ type: "success", message: "Filhote atualizado." });
             router.push("/admin/puppies");
             router.refresh();
           }}

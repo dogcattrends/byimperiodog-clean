@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import { ChevronRight, Heart } from "lucide-react";
+import { ChevronRight, Heart, PawPrint } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -58,7 +58,7 @@ function buildWaLink(action: "info" | "video" | "visit", name: string, color: st
 export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: string; onOpen?: () => void }) {
   const name = p.nome || p.name || "Filhote";
   const color = p.cor || p.color || "cor em avaliação";
-  const gender = p.gender === "male" ? "macho" : p.gender === "female" ? "fêmea" : "sexo em avaliação";
+  const gender = p.gender === "male" ? "macho" : p.gender === "female" ? "fêmea" : "sexo a definir";
   const price = fmtPrice(p.priceCents ?? p.price_cents);
 
   const label = p.status === "vendido" ? "Vendido" : p.status === "reservado" ? "Reservado" : "Disponível";
@@ -67,7 +67,6 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
   const waVideo = buildWaLink("video", name, color, gender);
   const waVisit = buildWaLink("visit", name, color, gender);
 
-  // Otimizar imagem do Supabase (GIF → WebP, resize 640px, quality 85)
   const optimizedCover = optimizePuppyCardImage(cover);
 
   const [imgLoaded, setImgLoaded] = useState(false);
@@ -75,80 +74,77 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
 
   return (
     <article className="group relative grid h-full grid-rows-[auto,1fr] overflow-hidden rounded-2xl border border-emerald-100/60 bg-white shadow-sm ring-1 ring-transparent transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:ring-emerald-200">
-      {/* ================================================================ */}
-      {/* IMAGEM 4:3 Otimizada (aspect-[4/3] maior e centralizada) */}
-      {/* ================================================================ */}
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={() => {
-          onOpen?.();
-          track.event?.("open_details", { placement: "card", puppy_id: p.id });
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
+      {/* Imagem 4:3 otimizada */}
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => {
             onOpen?.();
             track.event?.("open_details", { placement: "card", puppy_id: p.id });
-          }
-        }}
-        className="relative block w-full overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2"
-        data-evt="card_click"
-        data-id={p.id}
-        aria-label={`Ver detalhes de ${name}`}
-      >
-        <div className="relative aspect-[4/3] w-full overflow-hidden bg-zinc-100">
-          {!imgLoaded && optimizedCover ? <div className="absolute inset-0 animate-pulse bg-zinc-200" /> : null}
+          }}
+          className="relative block w-full overflow-hidden text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2"
+          data-evt="card_click"
+          data-id={p.id}
+          aria-label={`Ver detalhes de ${name}`}
+        >
+          <div className="relative aspect-[4/3] w-full overflow-hidden bg-zinc-100">
+            {!imgLoaded && optimizedCover ? <div className="absolute inset-0 animate-pulse bg-zinc-200" /> : null}
           {optimizedCover ? (
             <>
               <Image
                 src={optimizedCover}
-                alt={`Filhote de Spitz Alemao Anao ate 22 cm: ${name} em ${color}, ${gender}, status ${label.toLowerCase()}`}
-                fill
-                sizes={PUPPY_CARD_SIZES}
-                loading="lazy"
-                unoptimized
-                className={`object-cover transition-all duration-300 ${imgLoaded ? "opacity-100 group-hover:scale-105" : "opacity-0"}`}
-                onLoad={() => setImgLoaded(true)}
-                placeholder="blur"
-                blurDataURL={BLUR_DATA_URL}
-              />
-              <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 to-transparent" />
+                alt={`Filhote de Spitz Alemão Anão até 22 cm: ${name} em ${color}, ${gender}, status ${label.toLowerCase()}`}
+                  fill
+                  sizes={PUPPY_CARD_SIZES}
+                  loading="lazy"
+                  unoptimized
+                  className={`object-cover transition-all duration-300 ${
+                    imgLoaded ? "opacity-100 group-hover:scale-105" : "opacity-0"
+                  }`}
+                  onLoad={() => setImgLoaded(true)}
+                  placeholder="blur"
+                  blurDataURL={BLUR_DATA_URL}
+                />
+                <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 to-transparent" />
             </>
           ) : (
-            <div className="absolute inset-0 grid place-items-center text-sm text-zinc-400">Sem imagem</div>
+            <div className="absolute inset-0 grid place-items-center gap-2 text-sm text-zinc-400">
+              <PawPrint className="h-6 w-6" aria-hidden="true" />
+              <span>Imagem em atualização</span>
+            </div>
           )}
 
-          {/* Badges - Melhor contraste */}
-          <span
-            className={`absolute left-3 top-3 rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm ring-1 transition-all duration-200 ${statusClass[p.status || "disponivel"]}`}
-          >
-            {label}
-          </span>
+            <span
+              className={`absolute left-3 top-3 rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm ring-1 transition-all duration-200 ${
+                statusClass[p.status || "disponivel"]
+              }`}
+            >
+              {label}
+            </span>
 
-          <span className="absolute right-3 top-3 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-zinc-900 shadow-md ring-1 ring-black/5 transition-all duration-200">
-            {price}
-          </span>
+            <span className="absolute right-3 top-3 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-zinc-900 shadow-md ring-1 ring-black/5 transition-all duration-200">
+              {price}
+            </span>
+          </div>
+        </button>
 
-          {/* Botão de Favoritar - Tap target ≥48px */}
-          <button
-            type="button"
-            onClick={(event) => {
-              event.stopPropagation();
-              setLiked((prev) => !prev);
-              track.event?.("puppy_like_toggle", { puppy_id: p.id, liked: !liked, placement: "grid" });
-            }}
-            aria-label={liked ? "Remover dos favoritos" : "Adicionar aos favoritos"}
-            className="absolute bottom-3 right-3 z-10 flex min-h-[48px] min-w-[48px] items-center justify-center rounded-full bg-white p-2 text-rose-500 shadow-md ring-1 ring-black/5 transition-all duration-200 hover:scale-110 hover:bg-white hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2"
-          >
-            <Heart className={`h-5 w-5 ${liked ? "fill-rose-500" : "fill-none"}`} aria-hidden="true" />
-          </button>
-        </div>
+        {/* Botão de favoritar FORA do botão principal */}
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            setLiked((prev) => !prev);
+            track.event?.("puppy_like_toggle", { puppy_id: p.id, liked: !liked, placement: "grid" });
+          }}
+          aria-label={liked ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+          aria-pressed={liked}
+          className="absolute bottom-3 right-3 z-10 flex min-h-[48px] min-w-[48px] items-center justify-center rounded-full bg-white p-2 text-rose-500 shadow-md ring-1 ring-black/5 transition-all duration-200 hover:scale-110 hover:bg-white hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2"
+        >
+          <Heart className={`h-5 w-5 ${liked ? "fill-rose-500" : "fill-none"}`} aria-hidden="true" />
+        </button>
       </div>
 
-      {/* ================================================================ */}
-      {/* CONTEÚDO - line-clamp e espaçamento */}
-      {/* ================================================================ */}
+      {/* Conteúdo */}
       <div className="flex flex-1 flex-col gap-4 p-5">
         <div>
           <h3 className="line-clamp-2 text-lg font-semibold leading-tight text-zinc-800">{name}</h3>
@@ -157,7 +153,7 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
           </p>
         </div>
 
-        {/* CTA Principal - Tap target ≥48px */}
+        {/* CTA principal */}
         <a
           href={waInfo}
           target="_blank"
@@ -171,8 +167,8 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
           Quero esse filhote
         </a>
 
-        {/* CTAs Secundários - Tap targets ≥48px */}
-        <div className="grid grid-cols-3 gap-2 text-xs font-semibold" data-evt="share_click" data-id={p.id}>
+        {/* CTAs secundários - empilha no mobile */}
+        <div className="grid grid-cols-1 gap-2 text-xs font-semibold sm:grid-cols-3" data-evt="share_click" data-id={p.id}>
           <a
             href={waVideo}
             target="_blank"
@@ -195,11 +191,11 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
             Visita
           </a>
 
-          <Link
-            href={`/filhotes?detalhe=${encodeURIComponent(p.id)}`}
+          <button
+            type="button"
             onClick={() => {
               onOpen?.();
-              track.event?.("open_details", { placement: "card", puppy_id: p.id, target: "route" });
+              track.event?.("open_details", { placement: "card", puppy_id: p.id, target: "modal" });
             }}
             className="flex min-h-[44px] items-center justify-center gap-1 rounded-lg border border-zinc-200 px-2 py-2.5 text-zinc-800 transition-all duration-200 hover:bg-zinc-50 hover:border-zinc-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-1"
             data-evt="card_click"
@@ -207,7 +203,7 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
             title="Ver detalhes completos"
           >
             Detalhes <ChevronRight className="h-4 w-4" aria-hidden="true" />
-          </Link>
+          </button>
         </div>
 
         <p className="text-xs leading-relaxed text-zinc-500">
@@ -217,5 +213,3 @@ export default function PuppyCard({ p, cover, onOpen }: { p: Puppy; cover?: stri
     </article>
   );
 }
-
-

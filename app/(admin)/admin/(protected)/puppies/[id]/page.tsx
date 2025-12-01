@@ -1,192 +1,126 @@
-﻿"use client";
+"use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Loader2, PawPrint } from "lucide-react";
+import { ChevronLeft, Loader2, RefreshCcw } from "lucide-react";
 
-import { adminFetch } from "@/lib/adminFetch";
-import { useToast } from "@/components/ui/toast";
-import { normalizePuppy, type PuppyDTO, type RawPuppy } from "@/types/puppy";
+import PuppyForm from "@/app/admin/puppies/PuppyForm";
+import type { RawPuppy } from "@/types/puppy";
 
-const STATUS_LABEL: Record<string, string> = {
-  disponivel: "Disponivel",
-  reservado: "Reservado",
-  vendido: "Vendido",
-};
+type LoadedRecord = RawPuppy | null;
 
-function formatMoney(value?: number | null) {
-  if (value == null) return "-";
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value / 100);
-}
-
-function formatDate(value?: string | null) {
-  if (!value) return "-";
-  try {
-    return new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(new Date(value));
-  } catch {
-    return value;
-  }
-}
-
-export default function PuppyDetailsPage() {
+export default function PuppyFormPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-  const { push } = useToast();
-
-  const idParam = Array.isArray(params?.id) ? params.id[0] : params?.id;
-
-  const [loading, setLoading] = useState(true);
-  const [record, setRecord] = useState<PuppyDTO | null>(null);
+  const isNew = params.id === "new";
+  const [record, setRecord] = useState<LoadedRecord>(null);
+  const [loading, setLoading] = useState(!isNew);
+  const [reloading, setReloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!idParam) return;
-    let mounted = true;
-    async function load() {
+  const title = useMemo(() => {
+    if (isNew) return "Novo filhote";
+    if (record?.nome || record?.name) return `Editar: ${record.nome ?? record.name}`;
+    return "Editar filhote";
+  }, [isNew, record]);
+
+  const fetchRecord = useCallback(
+    async (signal?: AbortSignal) => {
+      if (isNew) return;
       try {
+        setError(null);
         setLoading(true);
-        const response = await adminFetch("/api/admin/puppies");
-        const json = await response.json();
-        if (!mounted) return;
-        if (!response.ok) throw new Error(json?.error || "Falha ao carregar filhote");
-        const found = (json?.items as RawPuppy[] | undefined)?.find((item) => item.id === idParam);
-        if (!found) {
-          setError("Filhote nao encontrado.");
-        } else {
-          setRecord(normalizePuppy(found));
+        const res = await fetch(`/api/admin/puppies?id=${params.id}`, {
+          cache: "no-store",
+          signal,
+        });
+        if (!res.ok) {
+          const payload = await res.json().catch(() => ({}));
+          throw new Error(payload?.error || "Não foi possível carregar o filhote");
         }
+        const json = await res.json();
+        setRecord(json?.puppy ?? null);
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        setError(message);
+        if ((err as Error)?.name === "AbortError") return;
+        setError((err as Error).message);
+        setRecord(null);
       } finally {
-        if (mounted) setLoading(false);
+        setLoading(false);
+        setReloading(false);
       }
+    },
+    [isNew, params.id],
+  );
+
+  useEffect(() => {
+    if (isNew) {
+      setRecord(null);
+      return;
     }
-    load();
-    return () => {
-      mounted = false;
-    };
-  }, [idParam]);
+    const controller = new AbortController();
+    fetchRecord(controller.signal);
+    return () => controller.abort();
+  }, [fetchRecord, isNew]);
+
+  const handleCompleted = useCallback(() => {
+    router.push("/admin/puppies");
+  }, [router]);
+
+  const handleRefresh = async () => {
+    setReloading(true);
+    await fetchRecord();
+  };
 
   return (
-    <div className="space-y-6 px-6 py-8">
-      <div className="flex items-center gap-3 text-sm text-[var(--text-muted)]">
-        <Link
-          href="/admin/puppies"
-          className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] px-3 py-1.5 transition hover:bg-[var(--surface-2)]"
-        >
-          <ArrowLeft className="h-4 w-4" aria-hidden /> Voltar para listagem
-        </Link>
-      </div>
-
-      {loading ? (
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-10 text-center text-sm text-[var(--text-muted)]">
-          <Loader2 className="mx-auto h-5 w-5 animate-spin" aria-hidden />
-          <span className="mt-2 block">Carregando informacoes...</span>
-        </div>
-      ) : error ? (
-        <div className="space-y-4">
-          <div className="rounded-2xl border border-red-300 bg-red-50 px-4 py-6 text-sm text-red-600" role="alert">
-            {error}
+    <div className="space-y-6">
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex flex-1 flex-col gap-2">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+            <button
+              type="button"
+              onClick={() => router.push("/admin/puppies")}
+              className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] px-3 py-1 text-xs font-semibold text-[var(--text)] hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" aria-hidden />
+              Filhotes
+            </button>
+            <span aria-hidden>›</span>
+            <span>{isNew ? "Novo" : "Editar"}</span>
           </div>
+          <div>
+            <h1 className="text-2xl font-bold text-[var(--text)]">{title}</h1>
+            <p className="text-sm text-[var(--text-muted)]">
+              Utilize o formulário unificado para manter cadastro, mídia e status sincronizados.
+            </p>
+          </div>
+        </div>
+        {!isNew && (
           <button
             type="button"
-            onClick={() => router.push("/admin/puppies")}
-            className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text)] hover:bg-[var(--surface-2)]"
+            onClick={handleRefresh}
+            disabled={reloading || loading}
+            className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] px-4 py-2 text-sm font-semibold text-[var(--text)] shadow-sm hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:opacity-60"
           >
-            Voltar para lista
+            {reloading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <RefreshCcw className="h-4 w-4" aria-hidden />}
+            Recarregar dados
           </button>
+        )}
+      </header>
+
+      {error && (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-700" role="alert">
+          {error}
         </div>
-      ) : record ? (
-        <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-          <section className="space-y-6 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
-            <header className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h1 className="text-3xl font-semibold text-[var(--text)]">{record.nome}</h1>
-                <p className="text-sm text-[var(--text-muted)]">Codigo: {record.codigo || "-"}</p>
-              </div>
-              <span className="inline-flex items-center gap-2 rounded-full bg-[var(--surface-2)] px-3 py-1 text-xs font-semibold text-[var(--text-muted)]">
-                <PawPrint className="h-4 w-4" aria-hidden /> {STATUS_LABEL[record.status] || record.status}
-              </span>
-            </header>
+      )}
 
-            <dl className="grid gap-3 text-sm text-[var(--text-muted)] md:grid-cols-2">
-              <div>
-                <dt className="font-semibold text-[var(--text)]">Sexo</dt>
-                <dd>{record.gender === "female" ? "Femea" : "Macho"}</dd>
-              </div>
-              <div>
-                <dt className="font-semibold text-[var(--text)]">Cor</dt>
-                <dd>{record.color || "-"}</dd>
-              </div>
-              <div>
-                <dt className="font-semibold text-[var(--text)]">Preco</dt>
-                <dd>{formatMoney(record.price_cents)}</dd>
-              </div>
-              <div>
-                <dt className="font-semibold text-[var(--text)]">Nascimento</dt>
-                <dd>{formatDate(record.nascimento)}</dd>
-              </div>
-            </dl>
-
-            <div className="space-y-3">
-              <h2 className="text-lg font-semibold text-[var(--text)]">Descricao publica</h2>
-              <p className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[var(--text)]">
-                {record.descricao || "Sem descricao cadastrada."}
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              <h2 className="text-lg font-semibold text-[var(--text)]">Notas internas</h2>
-              <p className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[var(--text)]">
-                {record.notes || "Sem notas."}
-              </p>
-            </div>
-          </section>
-
-          <aside className="space-y-4">
-            {record.image_url ? (
-              <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-sm">
-                <img
-                  src={record.image_url}
-                  alt={`Capa do filhote ${record.nome}`}
-                  className="h-56 w-full object-cover"
-                />
-              </div>
-            ) : null}
-
-            <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
-              <h2 className="text-sm font-semibold text-[var(--text)]">Midias</h2>
-              {record.midia.length === 0 ? (
-                <p className="mt-3 text-xs text-[var(--text-muted)]">Nenhuma imagem vinculada.</p>
-              ) : (
-                <ul className="mt-3 space-y-2 text-xs">
-                  {record.midia.map((url) => (
-                    <li key={url} className="truncate">
-                      <a
-                        href={url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-[var(--accent)] underline"
-                      >
-                        {url}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-
-            <Link
-              href={`/admin/puppies/edit/${record.id}`}
-              className="inline-flex items-center justify-center rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--accent-contrast)] shadow-sm transition hover:brightness-110 w-full"
-            >
-              Editar filhote
-            </Link>
-          </aside>
+      {loading ? (
+        <div className="flex items-center gap-2 rounded-2xl border border-dashed border-[var(--border)] bg-white/60 px-4 py-3 text-sm text-[var(--text-muted)]">
+          <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+          Carregando informações do filhote…
         </div>
-      ) : null}
+      ) : (
+        <PuppyForm mode={isNew ? "create" : "edit"} record={record ?? undefined} onCompleted={handleCompleted} />
+      )}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 // app/(admin)/admin/_components/AdminNav.tsx
  'use client';
 
+import * as AlertDialog from '@radix-ui/react-alert-dialog';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
@@ -61,32 +62,62 @@ export default function AdminNav() {
             return (
               <Link
                 key={n.href}
-            href={n.href}
-            aria-current={active ? 'page' : undefined}
-            className={clsx(
-              'rounded-lg px-3 py-2 text-sm font-medium transition',
-              active
-                ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200'
-                : 'text-zinc-700 hover:bg-zinc-100'
-            )}
-          >
-            {n.label}
-          </Link>
-        );
-      })}
+                href={n.href}
+                aria-current={active ? 'page' : undefined}
+                className={clsx(
+                  'rounded-lg px-3 py-2 text-sm font-medium transition',
+                  active
+                    ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200'
+                    : 'text-zinc-700 hover:bg-zinc-100'
+                )}
+              >
+                {n.label}
+              </Link>
+            );
+          })}
 
-            {/* sair */}
-            <button
-              type="button"
-              onClick={handleLogout}
-              disabled={isLoggingOut}
-              className={clsx(
-                'ml-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-zinc-100',
-                isLoggingOut ? 'text-zinc-400' : 'text-zinc-500'
-              )}
-            >
-              {isLoggingOut ? 'Saindo...' : 'Sair'}
-            </button>
+          {/* sair com confirmação */}
+            <AlertDialog.Root>
+              <AlertDialog.Trigger asChild>
+                <button
+                  type="button"
+                  className="ml-2 rounded-lg px-3 py-2 text-sm font-medium text-zinc-500 hover:bg-zinc-100"
+                >
+                  Sair
+                </button>
+              </AlertDialog.Trigger>
+              <AlertDialog.Portal>
+                <AlertDialog.Overlay className="fixed inset-0 z-50 bg-black/60" />
+                <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xl focus:outline-none">
+                  <AlertDialog.Title className="text-lg font-semibold text-zinc-900">
+                    Confirmar saída
+                  </AlertDialog.Title>
+                  <AlertDialog.Description className="mt-2 text-sm text-zinc-600">
+                    Tem certeza que deseja sair do painel administrativo? Você precisará fazer login novamente para acessar.
+                  </AlertDialog.Description>
+                  <div className="mt-6 flex gap-3 justify-end">
+                    <AlertDialog.Cancel asChild>
+                      <button
+                        type="button"
+                        className="rounded-lg px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+                      >
+                        Cancelar
+                      </button>
+                    </AlertDialog.Cancel>
+                    <AlertDialog.Action asChild>
+                      <button
+                        type="button"
+                        onClick={handleLogout}
+                        disabled={isLoggingOut}
+                        className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 disabled:opacity-70"
+                      >
+                        {isLoggingOut ? 'Saindo...' : 'Sim, sair'}
+                      </button>
+                    </AlertDialog.Action>
+                  </div>
+                </AlertDialog.Content>
+              </AlertDialog.Portal>
+            </AlertDialog.Root>
           </nav>
         </div>
       </div>

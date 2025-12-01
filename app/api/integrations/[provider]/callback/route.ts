@@ -70,26 +70,70 @@ export async function GET(req: NextRequest, { params }: { params: { provider: st
         const resources = await resourcesAdapter.listResources(tokens);
         if (resources && resources.length > 0) {
           const picked = resources[0];
-          // Auto-save the first resource to tracking_settings
+          // Auto-save the first resource to tracking_settings (per-user) e pixels_settings (global)
           const patch: Record<string, string> = {};
+          let pixelsField: keyof PixelEnv | null = null;
           switch (providerKey) {
             case "facebook":
               patch["facebook_pixel_id"] = picked.id;
+              pixelsField = "metaPixelId";
               break;
             case "google_analytics":
               patch["ga_measurement_id"] = picked.id;
+              pixelsField = "ga4Id";
               break;
             case "google_tag_manager":
               patch["gtm_container_id"] = picked.id;
+              pixelsField = "gtmId";
               break;
             case "tiktok":
               patch["tiktok_pixel_id"] = picked.id;
+              pixelsField = "tiktokPixelId";
               break;
           }
+
           if (Object.keys(patch).length > 0) {
+            await supa.from("tracking_settings").upsert({ user_id: userId, ...patch }, { onConflict: "user_id" });
+          }
+
+          if (pixelsField) {
+            const defaultEnv: PixelEnv = {
+              gtmId: null,
+              ga4Id: null,
+              metaPixelId: null,
+              tiktokPixelId: null,
+              googleAdsId: null,
+              googleAdsConversionLabel: null,
+              pinterestId: null,
+              hotjarId: null,
+              clarityId: null,
+              metaDomainVerification: null,
+              analyticsConsent: true,
+              marketingConsent: true,
+            };
+
+            const { data: pixelsData } = await supa
+              .from("pixels_settings")
+              .select("*")
+              .eq("id", "pixels")
+              .maybeSingle();
+
+            const prod: PixelEnv = { ...defaultEnv, ...(pixelsData?.production || {}) };
+            const staging: PixelEnv = { ...defaultEnv, ...(pixelsData?.staging || {}) };
+            prod[pixelsField] = picked.id;
+            staging[pixelsField] = picked.id;
+
             await supa
-              .from("tracking_settings")
-              .upsert({ user_id: userId, ...patch }, { onConflict: "user_id" });
+              .from("pixels_settings")
+              .upsert(
+                {
+                  id: "pixels",
+                  production: prod,
+                  staging,
+                  updated_at: new Date().toISOString(),
+                },
+                { onConflict: "id" }
+              );
           }
         }
       }
@@ -106,3 +150,18 @@ export async function GET(req: NextRequest, { params }: { params: { provider: st
     return NextResponse.json({ ok: false, error: msg }, { status: 500 });
   }
 }
+
+type PixelEnv = {
+  gtmId: string | null;
+  ga4Id: string | null;
+  metaPixelId: string | null;
+  tiktokPixelId: string | null;
+  googleAdsId: string | null;
+  googleAdsConversionLabel: string | null;
+  pinterestId: string | null;
+  hotjarId: string | null;
+  clarityId: string | null;
+  metaDomainVerification: string | null;
+  analyticsConsent: boolean;
+  marketingConsent: boolean;
+};

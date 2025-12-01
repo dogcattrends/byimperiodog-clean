@@ -9,6 +9,7 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
     "paths": {
       "@/components/*": [
         "src/components/*"
@@ -24,6 +25,12 @@
       ],
       "@/app/*": [
         "src/app/*"
+      ],
+      "@/domain": [
+        "src/domain"
+      ],
+      "@/domain/*": [
+        "src/domain/*"
       ],
       "@/public/*": [
         "public/*"
@@ -51,6 +58,7 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
+    "**/*.d.ts",
     ".next/types/**/*.ts"
   ],
   "exclude": [

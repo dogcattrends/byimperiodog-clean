@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { execSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 
 const targets = process.argv.slice(2);
@@ -44,6 +44,10 @@ for (const file of files) {
   if (!file.startsWith("app/") && !file.startsWith("content/")) continue;
 
   const absolutePath = resolve(process.cwd(), file);
+  
+  // Skip if file doesn't exist (e.g., archived folders)
+  if (!existsSync(absolutePath)) continue;
+  
   const raw = readFileSync(absolutePath, "utf8");
   const normalized = normalize(raw);
 

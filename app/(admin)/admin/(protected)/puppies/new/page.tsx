@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Sparkles } from "lucide-react";
 
-import PuppyForm from "@/app/admin/puppies/PuppyForm";
+import PuppyForm from "../_components/PuppyForm";
 
 export default function NewPuppyPage() {
   const router = useRouter();

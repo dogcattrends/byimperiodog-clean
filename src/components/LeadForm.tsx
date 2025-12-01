@@ -1,7 +1,7 @@
-﻿"use client";
+"use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -10,7 +10,20 @@ import { cn } from "@/lib/cn";
 import { trackLeadFormSubmit } from "@/lib/events";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 
-// Schema de validação com campos ampliados e LGPD
+type LeadFormContext = {
+  pageType?: string;
+  slug?: string;
+  color?: string;
+  city?: string;
+  intent?: string;
+};
+
+type Props = {
+  context?: LeadFormContext;
+  className?: string;
+};
+
+// Validação do formulário (LGPD + campos de qualificação)
 const schema = z.object({
   nome: z.string().min(2, "Informe seu nome completo"),
   telefone: z
@@ -19,13 +32,17 @@ const schema = z.object({
     .regex(/^\d{10,11}$/, "Use apenas números (DDD + telefone)"),
   cidade: z.string().min(2, "Informe a cidade"),
   estado: z.string().length(2, "Informe a UF (ex: SP)").toUpperCase(),
-  sexo_preferido: z.enum(["macho", "femea", "tanto_faz"], {
-    errorMap: () => ({ message: "Selecione uma preferência" }),
-  }).optional(),
+  sexo_preferido: z
+    .enum(["macho", "femea", "tanto_faz"], {
+      errorMap: () => ({ message: "Selecione uma preferência" }),
+    })
+    .optional(),
   cor_preferida: z.string().optional(),
-  prazo_aquisicao: z.enum(["imediato", "1_mes", "2_3_meses", "3_mais"], {
-    errorMap: () => ({ message: "Selecione um prazo" }),
-  }).optional(),
+  prazo_aquisicao: z
+    .enum(["imediato", "1_mes", "2_3_meses", "3_mais"], {
+      errorMap: () => ({ message: "Selecione um prazo" }),
+    })
+    .optional(),
   mensagem: z.string().optional(),
   consent_lgpd: z.literal(true, {
     errorMap: () => ({ message: "É necessário aceitar a Política de Privacidade" }),
@@ -33,10 +50,9 @@ const schema = z.object({
 });
 
 type FormValues = z.infer<typeof schema>;
-
 type SubmitStatus = "idle" | "success" | "error";
 
-export default function LeadForm() {
+export default function LeadForm({ context, className }: Props) {
   const [status, setStatus] = useState<SubmitStatus>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -45,20 +61,39 @@ export default function LeadForm() {
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
+    setValue,
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
   });
 
+  const whatsappUTMs = useMemo(
+    () => ({
+      utmSource: "lead_form",
+      utmMedium: "form_main",
+      utmCampaign: context?.color
+        ? `filhotes_cor_${context.color}`
+        : context?.city
+          ? `filhotes_cidade_${context.city}`
+          : "filhotes",
+      utmContent: context?.slug ? `lead_${context.slug}` : "lead_geral",
+    }),
+    [context?.city, context?.color, context?.slug]
+  );
+
   const onSubmit = async (data: FormValues) => {
     setStatus("idle");
     setErrorMessage(null);
-    
+
     try {
-      // Preparar payload com consent timestamp
       const payload = {
         ...data,
         consent_timestamp: new Date().toISOString(),
         consent_version: "1.0",
+        page_type: context?.pageType,
+        page_slug: context?.slug,
+        page_color: context?.color,
+        page_city: context?.city,
+        page_intent: context?.intent,
       };
 
       const response = await fetch("/api/leads", {
@@ -69,61 +104,46 @@ export default function LeadForm() {
 
       if (!response.ok) {
         const payloadError = await response.json().catch(() => ({}));
-        const errorMsg = payloadError?.error || "Não foi possível enviar agora. Tente novamente em instantes.";
-        
-        // Track erro
-        if (typeof window !== "undefined") {
-          const win = window as unknown as { gtag?: (...args: unknown[]) => void };
-          if (typeof win.gtag === "function") {
-            win.gtag("event", "lead_form_error", {
-              form_location: "lead-form-main",
-              error_message: errorMsg,
-            });
-          }
-        }
-        
+        const errorMsg =
+          payloadError?.error ||
+          "Não foi possível enviar agora. Verifique os dados ou tente novamente em instantes.";
         throw new Error(errorMsg);
       }
 
-      // Tracking sucesso
       trackLeadFormSubmit("lead-form-main");
-      if (typeof window !== "undefined") {
-        const win = window as unknown as { gtag?: (...args: unknown[]) => void };
-        if (typeof win.gtag === "function") {
-          win.gtag("event", "lead_form_submit", {
-            form_location: "lead-form-main",
-            interest: data.sexo_preferido || "not_specified",
-            prazo: data.prazo_aquisicao || "not_specified",
-            phone_valid: data.telefone.length >= 10,
-          });
-        }
-      }
 
-      // Sucesso: resetar form
       setStatus("success");
       reset();
 
-      // Redirecionar para WhatsApp após 2s com mensagem personalizada
       setTimeout(() => {
-        const mensagemWhatsApp = `Olá! Acabei de preencher o formulário no site. Meu nome é *${data.nome}* e estou interessado(a) em conhecer os filhotes disponíveis. ${data.mensagem ? `\n\nMinhas observações: ${data.mensagem}` : ""}`;
-        
+        const mensagemWhatsApp = `Olá! Acabei de preencher o formulário no site. Meu nome é *${data.nome}* e estou interessado(a) em conhecer os filhotes disponíveis.${
+          data.mensagem ? `\n\nMinhas observações: ${data.mensagem}` : ""
+        }`;
+
         const whatsappURL = buildWhatsAppLink({
           message: mensagemWhatsApp,
-          utmSource: "lead_form",
-          utmMedium: "form_main",
-          utmCampaign: "conversao",
+          ...whatsappUTMs,
         });
         window.open(whatsappURL, "_blank");
-      }, 2000);
-
+      }, 1200);
     } catch (error) {
       setStatus("error");
-      setErrorMessage(error instanceof Error ? error.message : "Erro inesperado. Recarregue a página e tente novamente.");
+      setErrorMessage(
+        error instanceof Error ? error.message : "Erro inesperado. Recarregue a página e tente novamente."
+      );
     }
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="mt-4 space-y-5" noValidate>
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className={cn(
+        "mt-4 space-y-5 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm",
+        className
+      )}
+      noValidate
+      aria-live="polite"
+    >
       {/* Nome e WhatsApp */}
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
@@ -141,10 +161,17 @@ export default function LeadForm() {
             className="w-full rounded-xl border border-[var(--border)] bg-white/90 px-3 py-2 text-sm text-[var(--text)] shadow-sm placeholder:text-[var(--text-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]/40"
             placeholder="Ex: Ana Souza"
           />
-          {errors.nome && <p id="erro-nome" className="text-sm text-rose-600">{errors.nome.message}</p>}
+          {errors.nome && (
+            <p id="erro-nome" className="text-sm text-rose-600" role="alert">
+              {errors.nome.message}
+            </p>
+          )}
         </div>
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="contato-telefone" className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">
+          <label
+            htmlFor="contato-telefone"
+            className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]"
+          >
             WhatsApp *
           </label>
           <input
@@ -153,6 +180,10 @@ export default function LeadForm() {
             inputMode="tel"
             autoComplete="tel"
             {...register("telefone")}
+            onChange={(e) => {
+              const digits = e.target.value.replace(/\D/g, "").slice(0, 11);
+              setValue("telefone", digits, { shouldValidate: true });
+            }}
             aria-invalid={errors.telefone ? "true" : "false"}
             aria-required="true"
             aria-describedby={errors.telefone ? "erro-telefone" : undefined}
@@ -160,7 +191,11 @@ export default function LeadForm() {
             placeholder="11999887766"
             maxLength={11}
           />
-          {errors.telefone && <p id="erro-telefone" className="text-sm text-rose-600">{errors.telefone.message}</p>}
+          {errors.telefone && (
+            <p id="erro-telefone" className="text-sm text-rose-600" role="alert">
+              {errors.telefone.message}
+            </p>
+          )}
         </div>
       </div>
 
@@ -180,7 +215,11 @@ export default function LeadForm() {
             className="w-full rounded-xl border border-[var(--border)] bg-white/90 px-3 py-2 text-sm text-[var(--text)] shadow-sm placeholder:text-[var(--text-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]/40"
             placeholder="Ex: Bragança Paulista"
           />
-          {errors.cidade && <p className="text-sm text-rose-600">{errors.cidade.message}</p>}
+          {errors.cidade && (
+            <p className="text-sm text-rose-600" role="alert">
+              {errors.cidade.message}
+            </p>
+          )}
         </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="contato-estado" className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">
@@ -197,15 +236,19 @@ export default function LeadForm() {
             placeholder="SP"
             maxLength={2}
           />
-          {errors.estado && <p className="text-sm text-rose-600">{errors.estado.message}</p>}
+          {errors.estado && (
+            <p className="text-sm text-rose-600" role="alert">
+              {errors.estado.message}
+            </p>
+          )}
         </div>
       </div>
 
-      {/* Sexo Preferido e Cor */}
+      {/* Preferências */}
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
           <label htmlFor="contato-sexo" className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">
-            Sexo do Filhote
+            Sexo do filhote
           </label>
           <select
             id="contato-sexo"
@@ -217,26 +260,30 @@ export default function LeadForm() {
             <option value="femea">Fêmea</option>
             <option value="tanto_faz">Tanto faz</option>
           </select>
-          {errors.sexo_preferido && <p className="text-sm text-rose-600">{errors.sexo_preferido.message}</p>}
+          {errors.sexo_preferido && (
+            <p className="text-sm text-rose-600" role="alert">
+              {errors.sexo_preferido.message}
+            </p>
+          )}
         </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="contato-cor" className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">
-            Cor Preferida
+            Cor preferida
           </label>
           <input
             id="contato-cor"
             type="text"
             {...register("cor_preferida")}
             className="w-full rounded-xl border border-[var(--border)] bg-white/90 px-3 py-2 text-sm text-[var(--text)] shadow-sm placeholder:text-[var(--text-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]/40"
-            placeholder="Ex: Chocolate, preto, azul..."
+            placeholder="Ex: creme, preto, particolor..."
           />
         </div>
       </div>
 
-      {/* Prazo de Aquisição */}
+      {/* Prazo de aquisição */}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="contato-prazo" className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">
-          Prazo para Aquisição
+          Prazo para aquisição
         </label>
         <select
           id="contato-prazo"
@@ -249,7 +296,11 @@ export default function LeadForm() {
           <option value="2_3_meses">2 a 3 meses</option>
           <option value="3_mais">Mais de 3 meses</option>
         </select>
-        {errors.prazo_aquisicao && <p className="text-sm text-rose-600">{errors.prazo_aquisicao.message}</p>}
+        {errors.prazo_aquisicao && (
+          <p className="text-sm text-rose-600" role="alert">
+            {errors.prazo_aquisicao.message}
+          </p>
+        )}
       </div>
 
       {/* Mensagem */}
@@ -263,7 +314,13 @@ export default function LeadForm() {
           {...register("mensagem")}
           className="w-full rounded-xl border border-[var(--border)] bg-white/90 px-3 py-2 text-sm text-[var(--text)] shadow-sm placeholder:text-[var(--text-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]/40"
           placeholder="Como será a rotina do filhote? Existe data ideal para a chegada?"
+          aria-describedby={errors.mensagem ? "erro-mensagem" : undefined}
         />
+        {errors.mensagem && (
+          <p id="erro-mensagem" className="text-sm text-rose-600" role="alert">
+            {errors.mensagem.message}
+          </p>
+        )}
       </div>
 
       {/* Consentimento LGPD */}
@@ -275,9 +332,10 @@ export default function LeadForm() {
             {...register("consent_lgpd")}
             aria-invalid={errors.consent_lgpd ? "true" : "false"}
             aria-required="true"
+            aria-describedby="consent-description"
             className="mt-0.5 h-4 w-4 rounded border-[var(--border)] text-[var(--brand)] focus:ring-2 focus:ring-[var(--brand)]/40"
           />
-          <label htmlFor="contato-consent" className="text-xs leading-relaxed text-[var(--text-muted)]">
+          <label htmlFor="contato-consent" className="text-xs leading-relaxed text-[var(--text-muted)]" id="consent-description">
             Li e aceito a{" "}
             <a
               href="/politica-de-privacidade"
@@ -286,14 +344,18 @@ export default function LeadForm() {
               className="text-[var(--brand)] underline hover:no-underline"
             >
               Política de Privacidade
-            </a>
-            {" "}e autorizo o uso dos meus dados para contato sobre os filhotes. *
+            </a>{" "}
+            e autorizo o uso dos meus dados para contato sobre os filhotes. *
           </label>
         </div>
-        {errors.consent_lgpd && <p className="text-sm text-rose-600">{errors.consent_lgpd.message}</p>}
+        {errors.consent_lgpd && (
+          <p className="text-sm text-rose-600" role="alert">
+            {errors.consent_lgpd.message}
+          </p>
+        )}
       </div>
 
-      {/* Submit e Mensagens de Feedback */}
+      {/* Submit e feedback */}
       <div className="space-y-3">
         <button
           type="submit"
@@ -305,22 +367,23 @@ export default function LeadForm() {
         >
           {isSubmitting ? "Enviando..." : "Quero receber orientação personalizada"}
         </button>
-        
+
         <div className="text-xs text-[var(--text-muted)]" aria-live="polite">
           {status === "success" && (
             <p className="rounded-xl bg-emerald-50 px-3 py-2 text-emerald-900">
-              ✅ Recebemos seu contato! Você será redirecionado ao WhatsApp em instantes...
+              Tudo certo. Recebemos seu contato! Você será redirecionado ao WhatsApp em instantes.
             </p>
           )}
           {status === "error" && errorMessage && (
             <p className="rounded-xl bg-rose-50 px-3 py-2 text-rose-600">
-              ❌ {errorMessage}
+              Ops, não conseguimos enviar. {errorMessage}
             </p>
           )}
         </div>
-        
+
         <p className="text-xs text-[var(--text-muted)]">
-          * Campos obrigatórios. Respondemos de segunda a sábado, das 9h às 19h. Seus dados são protegidos conforme LGPD.
+          * Campos obrigatórios. Respondemos de segunda a sábado, das 9h às 19h. Seus dados são protegidos conforme
+          LGPD.
         </p>
       </div>
     </form>

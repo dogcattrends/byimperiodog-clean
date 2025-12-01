@@ -1,91 +1,124 @@
-import { getPixelsSettings } from "@/lib/pixels";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { TrackingHubClient } from "./TrackingHubClient";
+﻿import "server-only";
+import type { Metadata } from "next";
 
-function toFormValues(settings: Awaited<ReturnType<typeof getPixelsSettings>>) {
-  const envToForm = (env: any) => ({
-    gtmId: env.gtmId || "",
-    ga4Id: env.ga4Id || "",
-    metaPixelId: env.metaPixelId || "",
-    tiktokPixelId: env.tiktokPixelId || "",
-    googleAdsId: env.googleAdsId || "",
-    googleAdsConversionLabel: env.googleAdsConversionLabel || "",
-    pinterestId: env.pinterestId || "",
-    hotjarId: env.hotjarId || "",
-    clarityId: env.clarityId || "",
-    metaDomainVerification: env.metaDomainVerification || "",
-    analyticsConsent: !!env.analyticsConsent,
-    marketingConsent: !!env.marketingConsent,
-  });
-  return {
-    production: envToForm(settings.production),
-    staging: envToForm(settings.staging),
-  };
-}
+import { getPixelsSettings, resolveActiveEnvironment } from "@/lib/pixels";
+import { resolveTracking } from "@/lib/tracking";
+import { TrackingSettingsForm } from "./TrackingSettingsForm";
 
-async function getInitialTrackingSettings(userId: string) {
-  try {
-    const supa = supabaseAdmin();
-    const { data } = await supa
-      .from("tracking_settings")
-      .select("facebook_pixel_id,ga_measurement_id,gtm_container_id,tiktok_pixel_id")
-      .eq("user_id", userId)
-      .maybeSingle();
-    return data || {};
-  } catch {
-    return {};
-  }
-}
+export const metadata: Metadata = {
+  title: "Tracking & Analytics | Admin",
+  description: "Gerenciamento de eventos, pixels e analytics",
+};
 
-async function getIntegrationsStatus(userId: string) {
-  try {
-    const supa = supabaseAdmin();
-    const { data } = await supa
-      .from("integrations")
-      .select("provider,access_token")
-      .eq("user_id", userId);
-    const status: Record<"facebook"|"google_analytics"|"google_tag_manager"|"tiktok", boolean> = {
-      facebook: false,
-      google_analytics: false,
-      google_tag_manager: false,
-      tiktok: false,
-    };
-    (data || []).forEach((row: any) => {
-      const p = row.provider as keyof typeof status;
-      if (p in status) status[p] = !!row.access_token;
-    });
-    return status;
-  } catch {
-    return { facebook: false, google_analytics: false, google_tag_manager: false, tiktok: false };
-  }
-}
+export default async function TrackingPage() {
+  const pixelSettings = await getPixelsSettings();
+  const { name: envName, config } = resolveActiveEnvironment(pixelSettings);
+  const ids = resolveTracking(null, config, process.env);
 
-function resolveUserId() {
-  const envUser = (process.env.ADMIN_USER_ID || process.env.DEFAULT_ADMIN_USER_ID || "").trim();
-  return envUser || "admin";
-}
+  const isConfigured = (id: string | null | undefined) => Boolean(id && id.length > 3);
+  const totalConfigured = [ids.gtm, ids.ga4, ids.fb, ids.tiktok, ids.pinterest, ids.hotjar, ids.clarity].filter(
+    isConfigured
+  ).length;
 
-export default async function Page() {
-  const userId = resolveUserId();
-  const pixelsSettings = await getPixelsSettings();
-  const formValues = toFormValues(pixelsSettings);
-  const trackingSettings = await getInitialTrackingSettings(userId);
-  const integrationsStatus = await getIntegrationsStatus(userId);
+  const providers = [
+    { id: "google_tag_manager", name: "Google Tag Manager", value: ids.gtm, doc: "GTM-XXXXXXX" },
+    { id: "google_analytics", name: "Google Analytics 4", value: ids.ga4, doc: "G-XXXXXXX" },
+    { id: "facebook", name: "Meta / Facebook Pixel", value: ids.fb, doc: "ID numérico" },
+    { id: "tiktok", name: "TikTok Pixel", value: ids.tiktok, doc: "TT-XXXX" },
+  ] as const;
 
   return (
-    <div className="space-y-10 p-6">
+    <div className="space-y-6">
       <header className="space-y-2">
-        <h1 className="text-2xl font-bold">Tracking & Pixels Hub</h1>
-        <p className="text-sm text-[var(--text-muted)] max-w-2xl">
-          Central unificada para configurar IDs de pixels, consentimento e integracoes OAuth para provedores de rastreamento. Use a secao de integracoes para conectar contas e auto-configurar identificadores quando possivel.
-        </p>
+        <h1 className="text-3xl font-bold text-zinc-900">Tracking & Analytics</h1>
+        <p className="text-sm text-zinc-600">Monitore eventos, pixels e performance.</p>
+        <div className="flex items-center gap-2 text-xs text-zinc-500">
+          <span>Ambiente ativo:</span>
+          <span
+            className={`rounded-full px-3 py-1 font-semibold ${
+              envName === "production" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
+            }`}
+          >
+            {envName === "production" ? "Produção" : "Staging"}
+          </span>
+        </div>
       </header>
-      <TrackingHubClient
-        initialPixels={formValues}
-        pixelsUpdatedAt={pixelsSettings.updated_at}
-        initialTrackingSettings={trackingSettings as any}
-        initialIntegrations={integrationsStatus}
-      />
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <Card title="Pixels ativos" helper="Facebook, Google, TikTok e outros">
+          <p className="text-2xl font-bold text-purple-600">{totalConfigured}</p>
+          <p className="text-xs text-zinc-500">Configurados</p>
+        </Card>
+        <Card title="Eventos recentes" helper="Últimos 24h">
+          <p className="text-2xl font-bold text-emerald-600">-</p>
+          <p className="text-xs text-zinc-500">Aguardando eventos</p>
+        </Card>
+        <Card title="Status geral" helper="Pixels essenciais">
+          <ul className="space-y-1 text-sm text-zinc-700">
+            <StatusLine label="GTM" value={ids.gtm} active={isConfigured(ids.gtm)} />
+            <StatusLine label="GA4" value={ids.ga4} active={isConfigured(ids.ga4)} />
+            <StatusLine label="Facebook Pixel" value={ids.fb} active={isConfigured(ids.fb)} />
+            <StatusLine label="TikTok" value={ids.tiktok} active={isConfigured(ids.tiktok)} />
+          </ul>
+        </Card>
+      </div>
+
+      <section className="space-y-4 rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
+        <div className="space-y-1">
+          <h2 className="text-xl font-semibold text-zinc-900">Provedores</h2>
+          <p className="text-sm text-zinc-600">
+            Conecte via OAuth ou edite manualmente. Após conectar, o primeiro recurso é salvo e habilitado automaticamente.
+          </p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          {providers.map((prov) => (
+            <div key={prov.id} className="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+              <h3 className="font-semibold text-zinc-900">{prov.name}</h3>
+              <p className="mt-1 text-sm text-zinc-600">ID: {prov.value || "Não configurado"}</p>
+              <p className="mt-2 text-xs text-zinc-500">Formato: {prov.doc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="space-y-4 rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
+        <div className="space-y-1">
+          <h2 className="text-xl font-semibold text-zinc-900">Configurações e IDs</h2>
+          <p className="text-sm text-zinc-600">
+            Insira ou ajuste os IDs de GTM, GA4, Meta Pixel e outros. Após salvar, as tags são injetadas automaticamente no site.
+          </p>
+        </div>
+        <TrackingSettingsForm />
+      </section>
     </div>
+  );
+}
+
+function Card({ title, helper, children }: { title: string; helper: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
+      <h2 className="text-lg font-semibold text-zinc-900">{title}</h2>
+      <p className="mt-1 text-sm text-zinc-600">{helper}</p>
+      <div className="mt-4 space-y-1">{children}</div>
+    </div>
+  );
+}
+
+function StatusLine({ label, value, active }: { label: string; value?: string | null; active: boolean }) {
+  return (
+    <li className="flex items-center justify-between rounded border border-zinc-100 px-3 py-2 text-sm">
+      <div>
+        <p className="font-semibold text-zinc-800">{label}</p>
+        <p className="text-xs text-zinc-500">{value ?? "Não configurado"}</p>
+      </div>
+      <span
+        className={`rounded-full px-3 py-1 text-xs font-semibold ${
+          active ? "bg-emerald-100 text-emerald-800" : "bg-zinc-100 text-zinc-600"
+        }`}
+        aria-label={active ? `${label} ativo` : `${label} inativo`}
+      >
+        {active ? "Ativo" : "Inativo"}
+      </span>
+    </li>
   );
 }

@@ -15,7 +15,7 @@
   --foreground: #201a16;
   --text: #2a231f;
   --text-light: #f6f7f7; /* Texto sobre fundos escuros */
-  --text-muted: #7a6a5f;
+  --text-muted: #5a4d42; /* Melhorado contraste WCAG AA 4.5:1 */
 
   /* Brand palette */
   --brand: #1f4d3a;
@@ -46,6 +46,8 @@
     line-height: 1.6;
   }
   a { color: inherit; text-decoration-color: var(--brand); }
+  a:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 2px; }
+  button:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 }
 
 body.admin-shell [data-site-shell="navbar"],
@@ -55,8 +57,8 @@ body.admin-shell [data-site-shell="cta"] {
 }
 
 @layer components {
-  .btn-base { @apply inline-flex items-center justify-center font-medium transition focus-visible:focus-ring disabled:opacity-60 disabled:pointer-events-none rounded-xl; }
-  .btn { @apply btn-base px-4 py-2 bg-[var(--surface-2)] text-[var(--text)] shadow-sm hover:shadow focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-opacity-40 focus-visible:ring-offset-2; }
+  .btn-base { @apply inline-flex items-center justify-center font-medium transition focus-visible:focus-ring disabled:opacity-60 disabled:pointer-events-none rounded-xl min-h-[44px]; }
+  .btn { @apply btn-base px-4 py-3 bg-[var(--surface-2)] text-[var(--text)] shadow-sm hover:shadow focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-opacity-40 focus-visible:ring-offset-2; }
   .btn-brand { @apply btn-base px-4 py-2 bg-brand text-[var(--brand-foreground)] shadow-sm hover:brightness-110 focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-opacity-40 focus-visible:ring-offset-2; }
   .btn-accent { @apply btn-base px-4 py-2 bg-accent text-[var(--accent-foreground)] shadow-sm hover:brightness-110 focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-opacity-40 focus-visible:ring-offset-2; }
   .btn-outline { @apply btn-base px-4 py-2 border border-[var(--border)] text-[var(--text)] bg-white hover:bg-[var(--surface-2)] focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-opacity-40 focus-visible:ring-offset-2; }

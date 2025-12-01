@@ -1,4 +1,76 @@
-﻿import Image from "next/image";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { pathToFileURL } from "url";
+
+import { getPostBySlug } from "@/lib/content";
+import MdxRenderer from "@/components/blog/MdxRenderer";
+
+type Params = { params: { slug: string } };
+
+export async function generateMetadata({ params }: Params): Promise<Metadata> {
+  const post = await getPostBySlug(params.slug);
+  if (!post) return {};
+  return {
+    title: post.title,
+    description: post.excerpt || undefined,
+    alternates: { canonical: `/blog/${post.slug}` },
+    openGraph: {
+      title: post.title,
+      description: post.excerpt || undefined,
+      type: "article",
+      url: `/blog/${post.slug}`,
+    },
+  };
+}
+
+export default async function BlogPostPage({ params }: Params) {
+  const post = await getPostBySlug(params.slug);
+  if (!post) return notFound();
+
+  // Tenta carregar o código MDX compilado do Contentlayer para renderização
+  let mdxCode: string | null = null;
+  try {
+    try {
+      const mod: any = await import('contentlayer/generated');
+      const hit = (mod.allPosts || []).find((p: any) => p.slug === params.slug || p._raw?.sourceFileName?.replace?.(/\.mdx$/, '') === params.slug);
+      mdxCode = hit?.body?.code || null;
+    } catch (err) {
+      const candidate = `${process.cwd()}/.contentlayer/generated/index.mjs`;
+      const url = pathToFileURL(candidate).href;
+      const mod: any = await import(url);
+      const hit = (mod.allPosts || []).find((p: any) => p.slug === params.slug || p._raw?.sourceFileName?.replace?.(/\.mdx$/, '') === params.slug);
+      mdxCode = hit?.body?.code || null;
+    }
+  } catch {}
+
+  return (
+    <main className="container mx-auto px-4 py-12 sm:px-6 lg:px-8" aria-labelledby="post-heading">
+      <article className="prose prose-zinc max-w-3xl dark:prose-invert">
+        <header>
+          <h1 id="post-heading" className="mb-2 text-3xl font-bold tracking-tight sm:text-4xl">
+            {post.title}
+          </h1>
+          {post.date ? (
+            <time className="block text-sm text-zinc-500" dateTime={post.date || undefined}>
+              {new Date(post.date!).toLocaleDateString("pt-BR")}
+            </time>
+          ) : null}
+          {post.excerpt ? <p className="mt-4 text-zinc-600">{post.excerpt}</p> : null}
+        </header>
+
+        <section className="mt-8">
+          {mdxCode ? (
+            <MdxRenderer code={mdxCode} />
+          ) : (
+            <p className="text-zinc-600">Conteúdo indisponível para este artigo.</p>
+          )}
+        </section>
+      </article>
+    </main>
+  );
+}
+// Removido bloco antigo mockado; mantida somente a implementa��o completa com Supabase/MDX
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
@@ -17,6 +89,9 @@ import TocNav from "@/components/blog/Toc";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { mdxComponents } from "@/components/MDXContent";
 import SeoJsonLd from "@/components/SeoJsonLd";
+import LeadForm from "@/components/LeadForm";
+import PageViewPing from "@/components/PageViewPing";
+import { whatsappLeadUrl } from "@/lib/utm";
 import { compileBlogMdx } from "@/lib/blog/mdx/compile";
 import { estimateReadingTime } from "@/lib/blog/reading-time";
 import { getRelatedUnified } from "@/lib/blog/related";
@@ -155,29 +230,30 @@ export default async function BlogPostPage({
   const interlinks = [
     {
       title: "Filhotes sob consulta",
-      description: "Entenda como selecionamos cada famÃ­lia e garanta prioridade na prÃ³xima ninhada.",
+      description: "Entenda como selecionamos cada família e garanta prioridade na próxima ninhada.",
       href: "/filhotes",
     },
     {
       title: "Processo completo",
-      description: "Veja as etapas: entrevista, socializaÃ§Ã£o, entrega humanizada e mentoria vitalÃ­cia.",
+      description: "Veja as etapas: entrevista, socialização, entrega humanizada e mentoria vitalícia.",
       href: "/sobre#processo",
     },
     {
       title: "FAQ do tutor",
-      description: "Respostas claras sobre investimento, suporte, logÃ­stica e rotina diÃ¡ria.",
+      description: "Respostas claras sobre investimento, suporte, logística e rotina diária.",
       href: "/faq",
     },
   ];
 
   return (
     <div className="relative mx-auto w-full max-w-6xl px-4 py-10">
+      <PageViewPing pageType="blog" />
       <SeoJsonLd data={structuredData} />
       <ReadingProgress />
 
       {preview && post.status !== "published" ? (
         <div className="mb-6 flex flex-wrap items-center gap-3 rounded-md border border-amber-400 bg-amber-50 p-3 text-sm text-amber-800">
-          <span className="font-medium">PrÃ©-visualizaÃ§Ã£o</span>
+          <span className="font-medium">Pré-visualização</span>
           <span>
             Status atual: <strong>{post.status}</strong>
           </span>
@@ -191,7 +267,7 @@ export default async function BlogPostPage({
       <Breadcrumbs
         className="mb-6"
         items={[
-          { label: "InÃ­cio", href: "/" },
+          { label: "Início", href: "/" },
           { label: "Blog", href: "/blog" },
           { label: post.title, href: `/blog/${post.slug}` },
         ]}
@@ -201,7 +277,7 @@ export default async function BlogPostPage({
         <div className="w-full flex-1 space-y-10">
           <header className="space-y-4">
             <span className="inline-flex items-center gap-2 rounded-pill bg-brand/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-brand">
-              {post.category || "ConteÃºdo premium"}
+              {post.category || "Conteúdo premium"}
             </span>
             <h1 className="text-3xl font-serif text-text sm:text-4xl">{post.title}</h1>
             {post.subtitle ? <p className="text-base text-text-muted">{post.subtitle}</p> : null}
@@ -268,7 +344,7 @@ export default async function BlogPostPage({
           <div className="flex flex-col gap-4 rounded-2xl border-y border-border py-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-1">
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand">Compartilhe</p>
-              <p className="text-sm text-text-muted">Leve conhecimento premium para outros tutores responsÃ¡veis.</p>
+              <p className="text-sm text-text-muted">Leve conhecimento premium para outros tutores responsáveis.</p>
             </div>
             <ShareButtons title={post.title} url={`${siteUrl.replace(/\/$/, "")}/blog/${post.slug}`} />
           </div>
@@ -281,9 +357,27 @@ export default async function BlogPostPage({
                 options={{ mdxOptions: { remarkPlugins: [remarkGfm], rehypePlugins: [rehypeSlug, rehypeAutolinkHeadings] } }}
               />
             ) : (
-              <p className="italic text-text-muted">ConteÃºdo em atualizaÃ§Ã£o.</p>
+              <p className="italic text-text-muted">Conteúdo em atualização.</p>
             )}
           </Prose>
+
+          {/* Convers�o direta: formul�rio de lead com contexto de blog */}
+          <section className="mt-10">
+            <h2 className="text-xl font-semibold">Quero receber recomenda��es</h2>
+            <LeadForm context={{ pageType: "blog", slug: post.slug }} />
+            {process.env.NEXT_PUBLIC_WA_PHONE && (
+              <div className="pt-2">
+                <a
+                  className="inline-block rounded bg-green-600 px-4 py-2 text-white"
+                  target="_blank"
+                  rel="noreferrer"
+                  href={whatsappLeadUrl(process.env.NEXT_PUBLIC_WA_PHONE.replace(/\D/g, ""), { pageType: "blog", url: `${siteUrl.replace(/\/$/, "")}/blog/${post.slug}` })}
+                >
+                  Falar no WhatsApp
+                </a>
+              </div>
+            )}
+          </section>
 
           <aside className="grid gap-4 rounded-3xl border border-border bg-surface-subtle p-6 shadow-soft sm:grid-cols-3">
             {interlinks.map((item) => (
@@ -292,7 +386,7 @@ export default async function BlogPostPage({
                 href={item.href}
                 className="group flex flex-col gap-2 rounded-2xl border border-border/60 bg-surface p-4 transition hover:-translate-y-1 hover:border-brand/70"
               >
-                <span className="text-xs font-semibold uppercase tracking-[0.3em] text-brand">Leia tambÃ©m</span>
+                <span className="text-xs font-semibold uppercase tracking-[0.3em] text-brand">Leia também</span>
                 <h3 className="text-sm font-semibold text-text group-hover:text-brand">{item.title}</h3>
                 <p className="text-xs text-text-muted">{item.description}</p>
               </Link>
@@ -378,3 +472,4 @@ function PublishButton({ slug }: { slug: string }) {
     </form>
   );
 }
+

@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/supabase";
 
 // Generic chainable stub builder that preserves chaining and
 // resolves to a safe { data, error } object at the end of the chain.
@@ -48,7 +49,7 @@ export function supabasePublic() {
   }
 
   try {
-    const client = createClient(url, anon, { auth: { persistSession: false } });
+    const client = createClient<Database>(url, anon, { auth: { persistSession: false } });
     return new Proxy(client, {
       get(target, prop) {
         const orig = (target as any)[prop];

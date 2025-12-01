@@ -1,175 +1,494 @@
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { MetricCard } from '@/components/admin/MetricCard';
-import { Sparkline } from '@/components/charts/Sparkline';
-import { Header } from '@/components/dashboard/Header';
-import { Main } from '@/components/dashboard/Main';
-import { ChartCard } from '@/components/dashboard/ChartCard';
-import { LazyReveal } from '@/components/dashboard/LazyReveal';
-import fs from 'node:fs';
-import path from 'node:path';
+import type { Metadata } from "next";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
-type EventRow = { id:string; name:string; value:number|null; path:string|null; ts:string; meta:any };
+import { MetricCard } from "./components/MetricCard";
+import { BarChart } from "./components/BarChart";
+import { LineChart } from "./components/LineChart";
+import { PieChart } from "./components/PieChart";
+import { analyzeConversion } from "@/lib/ai/conversion-analyzer";
+import { generateDashboardNarrative } from "@/lib/ai/dashboard-narrative";
+import { generateDecisions } from "@/lib/ai/decision-engine";
+import { generateDeepInsights } from "@/lib/ai/deep-insights";
+import { generateOperationalAlerts } from "@/lib/ai/operational-alerts";
+import { generatePriorityTasks } from "@/lib/ai/priority-engine";
+import { recalcDemandPredictions } from "@/lib/ai/demand-prediction";
+import { runAutopilotSeo } from "@/lib/ai/autopilot-seo";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
-function groupBy<T, K extends string | number>(arr: T[], by: (x:T)=>K){
-	return arr.reduce((acc: Record<K, T[]>, it)=>{ const k=by(it); (acc[k]=acc[k]||[]).push(it); return acc; }, {} as any);
-}
-function lastNDays(n:number){ const days: string[]=[]; const d=new Date(); for(let i=0;i<n;i++){ const di=new Date(d); di.setDate(d.getDate()-i); days.push(di.toISOString().slice(0,10)); } return days.reverse(); }
+export const metadata: Metadata = {
+  title: "Analytics | Admin",
+  robots: { index: false, follow: false },
+};
 
-export default async function AdminAnalyticsPage(){
-	const sb = supabaseAdmin();
-	const since = new Date(); since.setDate(since.getDate()-14);
-	const { data } = await sb.from('analytics_events').select('id,name,value,path,ts,meta').gte('ts', since.toISOString()).order('ts', { ascending:false }).limit(2000);
-	const rows = (data||[]) as EventRow[];
-	const byPath = groupBy(rows.filter(r=> r.path), r=> r.path as string);
-	const days = lastNDays(14);
-	const vitalsNames = new Set(['web_vitals_lcp','web_vitals_inp','web_vitals_cls']);
-	const vitals = Object.entries(byPath).map(([p, arr])=>{
-		const perDay = days.map(day=>{
-			const dayRows = arr.filter(r=> r.ts.slice(0,10)===day && vitalsNames.has(r.name));
-			const lcp = avg(dayRows.filter(r=> r.name==='web_vitals_lcp').map(r=> r.value||0));
-			const inp = avg(dayRows.filter(r=> r.name==='web_vitals_inp').map(r=> r.value||0));
-			const cls = avg(dayRows.filter(r=> r.name==='web_vitals_cls').map(r=> r.value||0));
-			return { day, lcp, inp, cls };
-		});
-		return { path:p, series: perDay };
-	});
-	function avg(ns:number[]){ return ns.length? Math.round((ns.reduce((a,b)=>a+b,0)/ns.length)*100)/100 : 0; }
-	const events = ['card_click','toc_click','share_click'];
-	const ctr = Object.entries(byPath).map(([p, arr])=>{
-		const totalViews = Math.max(1, arr.filter(r=> r.name==='web_vitals_lcp').length);
-		const counts = Object.fromEntries(events.map(e=> [e, arr.filter(r=> r.name===e).length]));
-		const ratios = Object.fromEntries(events.map(e=> [e, Math.round((counts[e]/totalViews)*100)]));
-		return { path:p, counts, ratios } as any;
-	});
-	const reportPath = path.join(process.cwd(), 'reports', 'a11y-contrast.md');
-	const contrastAlert = fs.existsSync(reportPath) ? fs.readFileSync(reportPath, 'utf8') : null;
-	// Métricas agregadas básicas para cards
-	const globalSeries = vitals.flatMap(v=> v.series);
-	const avgLcpSeries = days.map(day=> avg(globalSeries.filter(s=> s.day===day).map(s=> s.lcp))); // média diária LCP
-	const lastDay = avgLcpSeries[avgLcpSeries.length-1] || 0;
-	const prevDay = avgLcpSeries[avgLcpSeries.length-2] || 0;
-	const delta = prevDay? Math.round(((lastDay-prevDay)/prevDay)*100): 0;
-	const allCls = globalSeries.map(s=> s.cls).filter(Boolean);
-	const clsP75 = percentile(allCls,75);
-	const allInp = globalSeries.map(s=> s.inp).filter(Boolean);
-	const inpP75 = percentile(allInp,75);
-		// Rankings p75 por página
-		const perPathP75 = vitals.map(v=>{
-			const lcpP75 = percentile(v.series.map(s=> s.lcp).filter(Boolean), 75);
-			const inpP75 = percentile(v.series.map(s=> s.inp).filter(Boolean), 75);
-			const clsP75 = percentile(v.series.map(s=> s.cls).filter(Boolean), 75);
-			return { path:v.path, lcpP75, inpP75, clsP75 };
-		});
-		const worstLcp = [...perPathP75].sort((a,b)=> b.lcpP75 - a.lcpP75).slice(0,5);
-		const worstInp = [...perPathP75].sort((a,b)=> b.inpP75 - a.inpP75).slice(0,5);
-		const worstCls = [...perPathP75].sort((a,b)=> b.clsP75 - a.clsP75).slice(0,5);
-		const alerts = {
-			lcp: perPathP75.filter(p=> p.lcpP75>2500).length,
-			inp: perPathP75.filter(p=> p.inpP75>200).length,
-			cls: perPathP75.filter(p=> p.clsP75>0.1).length,
-		};
-		return (
-			<>
-				<Header />
-				<Main>
-					<div className="space-y-10">
-						<header className="space-y-1">
-							<h1 className="text-2xl font-bold tracking-tight">Analytics</h1>
-							<p className="text-sm text-[var(--text-muted)]">Web Vitals e interações – últimos 14 dias.</p>
-						</header>
-						<section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-							<MetricCard title="LCP Médio" value={lastDay+'ms'} hint={delta? `Δ ${delta}% vs dia anterior`:''}>
-								<div className="mt-2"><Sparkline points={avgLcpSeries} height={32} /></div>
-							</MetricCard>
-							<MetricCard title="CLS p75" value={clsP75} hint="Objetivo <0.1" />
-							<MetricCard title="INP p75" value={inpP75+'ms'} hint="Objetivo <200ms" />
-							<MetricCard title="Páginas" value={vitals.length} hint="Com vitals recentes" />
-						</section>
-						<section className="grid gap-4 md:grid-cols-2">
-							<ChartCard title="LCP (14d)" type="line" labels={days} datasets={[{label:'LCP', data: avgLcpSeries, borderColor:'var(--accent)', backgroundColor:'var(--accent)'}]} description="Média diária (lazy-loaded)" tooltip="Linha representa média diária agregada de LCP em ms" />
-							<div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4">
-								<h2 className="mb-2 text-sm font-semibold tracking-wide">Alertas</h2>
-								<ul className="text-[13px] text-[var(--text-muted)] space-y-1">
-									<li><span className="mr-2 inline-block h-2 w-2 rounded-full bg-amber-500 align-middle" />LCP fora da meta (&gt;2.5s): <span className="font-medium text-[var(--text)]">{alerts.lcp}</span></li>
-									<li><span className="mr-2 inline-block h-2 w-2 rounded-full bg-amber-500 align-middle" />INP fora da meta (&gt;200ms): <span className="font-medium text-[var(--text)]">{alerts.inp}</span></li>
-									<li><span className="mr-2 inline-block h-2 w-2 rounded-full bg-amber-500 align-middle" />CLS fora da meta (&gt;0.1): <span className="font-medium text-[var(--text)]">{alerts.cls}</span></li>
-								</ul>
-							</div>
-						</section>
-						<LazyReveal className="space-y-6">
-							<h2 className="text-sm font-semibold tracking-wide">Detalhe por página</h2>
-							<div className="grid gap-6 md:grid-cols-2">
-							{vitals.map(v=> (
-								<div key={v.path} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4">
-									<div className="mb-2 truncate text-sm font-medium" title={v.path}>{v.path}</div>
-									<div className="space-y-1 text-[10px] text-[var(--text-muted)]">
-										{v.series.map(s=> <div key={s.day} className="flex items-center justify-between gap-2">
-											<span className="w-16 truncate">{s.day.slice(5)}</span>
-											<Bar label="LCP" value={s.lcp} max={8000} good={2500} warn={4000} />
-											<Bar label="INP" value={s.inp} max={800} good={200} warn={500} />
-											<Bar label="CLS" value={s.cls} max={0.6} good={0.1} warn={0.25} />
-										</div>)}
-									</div>
-								</div>
-							))}
-							</div>
-						</LazyReveal>
-						<LazyReveal className="grid gap-6 md:grid-cols-3">
-							<div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4">
-								<h2 className="mb-2 text-sm font-semibold tracking-wide">Ranking LCP (p75)</h2>
-								<ol className="space-y-1 text-[12px]">
-									{worstLcp.map(r=> <li key={r.path} className="flex items-center justify-between gap-2"><span className="min-w-0 truncate" title={r.path}>{r.path}</span><Badge value={r.lcpP75} warn={2500} alert={4000} suffix="ms" /></li>)}
-								</ol>
-							</div>
-							<div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4">
-								<h2 className="mb-2 text-sm font-semibold tracking-wide">Ranking INP (p75)</h2>
-								<ol className="space-y-1 text-[12px]">
-									{worstInp.map(r=> <li key={r.path} className="flex items-center justify-between gap-2"><span className="min-w-0 truncate" title={r.path}>{r.path}</span><Badge value={r.inpP75} warn={200} alert={500} suffix="ms" /></li>)}
-								</ol>
-							</div>
-							<div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4">
-								<h2 className="mb-2 text-sm font-semibold tracking-wide">Ranking CLS (p75)</h2>
-								<ol className="space-y-1 text-[12px]">
-									{worstCls.map(r=> <li key={r.path} className="flex items-center justify-between gap-2"><span className="min-w-0 truncate" title={r.path}>{r.path}</span><Badge value={r.clsP75} warn={0.1} alert={0.25} /></li>)}
-								</ol>
-							</div>
-						</LazyReveal>
-						<section className="space-y-4">
-							<h2 className="text-sm font-semibold tracking-wide">Interações (CTR aproximado)</h2>
-							<div className="grid gap-4 md:grid-cols-2">
-							{ctr.map(c=> (
-								<div key={c.path} className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3 text-[11px]">
-									<div className="mb-1 truncate font-medium text-[var(--text)]" title={c.path}>{c.path}</div>
-									<div className="flex flex-wrap gap-2">
-										{events.map(e=> <span key={e} className="rounded bg-[var(--surface-2)] px-2 py-0.5">{e}:{c.counts[e]} ({c.ratios[e]}%)</span>)}
-									</div>
-								</div>
-							))}
-							</div>
-						</section>
-						{contrastAlert && (
-						<section className="space-y-2">
-							<h2 className="text-sm font-semibold tracking-wide">Relatório de contraste</h2>
-							<pre className="max-h-64 overflow-auto rounded border bg-[var(--surface-2)] p-3 text-[10px] leading-snug whitespace-pre-wrap">{contrastAlert}</pre>
-						</section>
-						)}
-					</div>
-				</Main>
-			</>
-		);
+type LeadRow = {
+  id: string;
+  created_at: string;
+  cor_preferida?: string | null;
+  sexo_preferido?: string | null;
+  page_slug?: string | null;
+  page?: string | null;
+  utm_source?: string | null;
+  utm_medium?: string | null;
+};
+
+type PuppyRow = {
+  id: string;
+  name: string;
+  status?: string | null;
+  color?: string | null;
+  price_cents?: number | null;
+  slug?: string | null;
+};
+
+type InteractionRow = {
+  lead_id: string;
+  response_time_minutes?: number | null;
+  messages_sent?: number | null;
+  created_at?: string | null;
+};
+
+function startOfDayIso(date: Date) {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d.toISOString();
 }
 
-function Bar({ label, value, max, good, warn }:{ label:string; value:number; max:number; good:number; warn:number }){
-	let color='bg-emerald-600';
-	if(value>warn) color='bg-red-600'; else if(value>good) color='bg-amber-600';
-	const pct=Math.min(100,(value/max)*100);
-	return <div className="flex flex-1 items-center gap-1"><span className="w-6 text-right">{label}</span><div className="h-2 flex-1 overflow-hidden rounded bg-[var(--surface-2)]"><div className={`h-full ${color}`} style={{width:pct+'%'}}/></div><span className="w-10 tabular-nums text-right">{value}</span></div>;
+function daysAgoIso(days: number) {
+  const d = new Date();
+  d.setDate(d.getDate() - days);
+  d.setHours(0, 0, 0, 0);
+  return d.toISOString();
 }
 
-function percentile(arr:number[], p:number){ if(!arr.length) return 0; const sorted=[...arr].sort((a,b)=>a-b); const idx=Math.min(sorted.length-1, Math.floor((p/100)*sorted.length)); return sorted[idx]; }
+async function fetchLeads(sb: SupabaseClient, sinceIso: string) {
+  const { data } = await sb
+    .from("leads")
+    .select("id,created_at,cor_preferida,sexo_preferido,page_slug,page,utm_source,utm_medium")
+    .gte("created_at", sinceIso)
+    .order("created_at", { ascending: false });
+  return (data ?? []) as LeadRow[];
+}
 
-function Badge({ value, warn, alert, suffix='' }:{ value:number; warn:number; alert:number; suffix?:string }){
-	let cls='bg-emerald-600 text-white';
-	if(value>alert) cls='bg-red-600 text-white'; else if(value>warn) cls='bg-amber-600 text-black';
-	return <span className={`inline-flex min-w-12 items-center justify-center rounded-full px-2 py-0.5 text-[11px] ${cls}`}><span className="tabular-nums">{value}{suffix}</span></span>;
+async function fetchLeadsLimited(sb: SupabaseClient, limit: number) {
+  const { data } = await sb
+    .from("leads")
+    .select("id,created_at,cor_preferida,sexo_preferido,page_slug,page,utm_source,utm_medium")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return (data ?? []) as LeadRow[];
+}
+
+async function fetchPuppies(sb: SupabaseClient) {
+  const { data } = await sb
+    .from("puppies")
+    .select("id,name,status,color,price_cents,slug")
+    .order("created_at", { ascending: false });
+  return (data ?? []) as PuppyRow[];
+}
+
+async function fetchInteractions(sb: SupabaseClient, sinceIso: string) {
+  try {
+    const { data } = await sb
+      .from("lead_interactions")
+      .select("lead_id,response_time_minutes,messages_sent,created_at")
+      .gte("created_at", sinceIso)
+      .order("created_at", { ascending: false });
+    return (data ?? []) as InteractionRow[];
+  } catch {
+    return [] as InteractionRow[];
+  }
+}
+
+export default async function AnalyticsPage({ searchParams }: { searchParams: { period?: string } }) {
+  const periodDays = Number(searchParams?.period) || 30;
+  const sb = supabaseAdmin();
+
+  const now = new Date();
+  const startToday = startOfDayIso(now);
+  const start7d = daysAgoIso(7);
+  const start30d = daysAgoIso(periodDays);
+
+  const [
+    leadsToday,
+    leads7d,
+    leadsRange,
+    latestLeads,
+    puppies,
+    interactions,
+    demandPredictions,
+    autopilotSeo,
+    deepInsights,
+    decisions,
+    narrative,
+    alerts,
+    priorityTasks,
+  ] = await Promise.all([
+    fetchLeads(sb, startToday),
+    fetchLeads(sb, start7d),
+    fetchLeads(sb, start30d),
+    fetchLeadsLimited(sb, 10),
+    fetchPuppies(sb),
+    fetchInteractions(sb, start30d),
+    recalcDemandPredictions(),
+    runAutopilotSeo(),
+    generateDeepInsights(),
+    generateDecisions(),
+    generateDashboardNarrative(),
+    generateOperationalAlerts(),
+    generatePriorityTasks(),
+  ]);
+
+  const puppiesByStatus = puppies.reduce(
+    (acc, p) => {
+      const key = (p.status ?? "unknown") as string;
+      acc[key] = (acc[key] ?? 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
+
+  const leadsByDay = (() => {
+    const buckets = new Map<string, number>();
+    leadsRange.forEach((l) => {
+      const d = new Date(l.created_at);
+      const key = d.toISOString().slice(0, 10);
+      buckets.set(key, (buckets.get(key) ?? 0) + 1);
+    });
+    return Array.from(buckets.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([label, value]) => ({ label, value }));
+  })();
+
+  const leadsByColor = (() => {
+    const buckets = new Map<string, number>();
+    leadsRange.forEach((l) => {
+      const key = (l.cor_preferida || "Não informado").toLowerCase();
+      buckets.set(key, (buckets.get(key) ?? 0) + 1);
+    });
+    return Array.from(buckets.entries()).map(([label, value]) => ({ label, value }));
+  })();
+
+  const leadsBySex = (() => {
+    const buckets = new Map<string, number>();
+    leadsRange.forEach((l) => {
+      const key = (l.sexo_preferido || "Indiferente").toLowerCase();
+      buckets.set(key, (buckets.get(key) ?? 0) + 1);
+    });
+    return Array.from(buckets.entries()).map(([label, value]) => ({ label, value }));
+  })();
+
+  const leadsBySource = (() => {
+    const buckets = new Map<string, number>();
+    leadsRange.forEach((l) => {
+      const key = l.utm_source || l.utm_medium || l.page || "desconhecido";
+      buckets.set(key, (buckets.get(key) ?? 0) + 1);
+    });
+    return Array.from(buckets.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([label, value]) => ({ label, value }));
+  })();
+
+  const topPuppies = (() => {
+    const buckets = new Map<string, number>();
+    leadsRange.forEach((l) => {
+      const slug = l.page_slug || l.page;
+      if (!slug) return;
+      buckets.set(slug, (buckets.get(slug) ?? 0) + 1);
+    });
+    const enriched = Array.from(buckets.entries()).map(([slug, value]) => {
+      const puppy = puppies.find((p) => p.slug === slug);
+      return { label: puppy?.name || slug, value };
+    });
+    return enriched.sort((a, b) => b.value - a.value).slice(0, 5);
+  })();
+
+  const conversionInsights = analyzeConversion(leadsRange as any, puppies as any, interactions as any);
+
+  return (
+    <div className="space-y-6">
+      <header className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-semibold text-[var(--text)]">Analytics</h1>
+          <p className="text-sm text-[var(--text-muted)]">Visão consolidada de leads e demanda.</p>
+        </div>
+        <form className="flex items-center gap-2 text-sm">
+          <label className="text-[var(--text)]" htmlFor="period">
+            Período
+          </label>
+          <select
+            id="period"
+            name="period"
+            defaultValue={periodDays}
+            className="h-9 rounded-lg border border-[var(--border)] bg-white px-3 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+          >
+            <option value="7">7 dias</option>
+            <option value="30">30 dias</option>
+            <option value="90">90 dias</option>
+          </select>
+          <button
+            type="submit"
+            className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-500"
+          >
+            Aplicar
+          </button>
+        </form>
+      </header>
+
+      <section aria-label="Métricas principais" className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <MetricCard label="Leads hoje" value={leadsToday.length} />
+        <MetricCard label="Leads 7 dias" value={leads7d.length} />
+        <MetricCard label={`Leads ${periodDays} dias`} value={leadsRange.length} />
+        <MetricCard
+          label="Conversão estimada"
+          value={`${Math.min(Math.round((leadsRange.length / Math.max(puppies.length, 1)) * 100), 100)}%`}
+          description="Ajuste quando status de venda estiver disponível"
+        />
+      </section>
+
+      <section className="grid grid-cols-1 gap-4 xl:grid-cols-3" aria-label="Cards de status">
+        <div className="rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm">
+          <h2 className="text-sm font-semibold text-[var(--text)]">Status do estoque</h2>
+          <dl className="mt-3 grid grid-cols-2 gap-2 text-sm">
+            <div className="rounded-lg bg-[var(--surface)] px-3 py-2">
+              <dt className="text-[var(--text-muted)]">Disponíveis</dt>
+              <dd className="text-lg font-semibold text-[var(--text)]">{puppiesByStatus["available"] ?? 0}</dd>
+            </div>
+            <div className="rounded-lg bg-[var(--surface)] px-3 py-2">
+              <dt className="text-[var(--text-muted)]">Reservados</dt>
+              <dd className="text-lg font-semibold text-[var(--text)]">{puppiesByStatus["reserved"] ?? 0}</dd>
+            </div>
+            <div className="rounded-lg bg-[var(--surface)] px-3 py-2">
+              <dt className="text-[var(--text-muted)]">Vendidos</dt>
+              <dd className="text-lg font-semibold text-[var(--text)]">{puppiesByStatus["sold"] ?? 0}</dd>
+            </div>
+            <div className="rounded-lg bg-[var(--surface)] px-3 py-2">
+              <dt className="text-[var(--text-muted)]">Total</dt>
+              <dd className="text-lg font-semibold text-[var(--text)]">{puppies.length}</dd>
+            </div>
+          </dl>
+        </div>
+
+        <LineChart data={leadsByDay} title="Leads por dia" />
+        <PieChart data={leadsByColor.slice(0, 6)} title="Demanda por cor" />
+      </section>
+
+      <section className="grid grid-cols-1 gap-4 xl:grid-cols-2" aria-label="Interesse por sexo e origem">
+        <BarChart data={leadsBySex} title="Interesse por sexo" />
+        <BarChart data={leadsBySource} title="Origem dos leads (UTM/referrer)" />
+      </section>
+
+      <section className="grid grid-cols-1 gap-4 lg:grid-cols-2" aria-label="Listagens auxiliares">
+        <div className="rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm">
+          <h2 className="text-lg font-semibold text-[var(--text)]">Últimos leads</h2>
+          <table className="mt-3 w-full table-fixed border-collapse text-sm">
+            <thead>
+              <tr className="text-left text-[11px] uppercase text-[var(--text-muted)]">
+                <th className="pb-2">Data</th>
+                <th className="pb-2">Cor</th>
+                <th className="pb-2">Sexo</th>
+                <th className="pb-2">Origem</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[var(--border)]">
+              {latestLeads.map((lead) => (
+                <tr key={lead.id} className="hover:bg-[var(--surface)]">
+                  <td className="py-2 pr-2 text-[var(--text)]">
+                    {new Date(lead.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}
+                  </td>
+                  <td className="py-2 pr-2 text-[var(--text-muted)]">{lead.cor_preferida || "—"}</td>
+                  <td className="py-2 pr-2 text-[var(--text-muted)]">{lead.sexo_preferido || "—"}</td>
+                  <td className="py-2 pr-2 text-[var(--text-muted)]">{lead.utm_source || lead.page || "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm">
+          <h2 className="text-lg font-semibold text-[var(--text)]">Filhotes mais buscados</h2>
+          <ol className="mt-3 space-y-2 text-sm text-[var(--text)]">
+            {topPuppies.length === 0 && <li className="text-[var(--text-muted)]">Sem dados no período.</li>}
+            {topPuppies.map((p, idx) => (
+              <li key={p.label} className="flex items-center justify-between rounded-lg bg-[var(--surface)] px-3 py-2">
+                <span className="flex items-center gap-2">
+                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-800">
+                    {idx + 1}
+                  </span>
+                  {p.label}
+                </span>
+                <span className="text-sm font-semibold text-[var(--text)]">{p.value} leads</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm" aria-label="Insights da IA">
+        <h2 className="text-lg font-semibold text-[var(--text)]">Insights da IA</h2>
+        <p className="text-sm text-[var(--text-muted)] mb-3">Gargalos do funil e recomendações automáticas.</p>
+        <div className="grid gap-3 md:grid-cols-2">
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-[var(--text)]">Gargalos</p>
+            <ul className="list-disc space-y-1 pl-5 text-sm text-[var(--text-muted)]">
+              {conversionInsights.bottlenecks.length === 0 && <li>Sem gargalos críticos.</li>}
+              {conversionInsights.bottlenecks.map((g) => (
+                <li key={g}>{g}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-[var(--text)]">Perdas</p>
+            <ul className="list-disc space-y-1 pl-5 text-sm text-[var(--text-muted)]">
+              {conversionInsights.losses.length === 0 && <li>Sem perdas significativas.</li>}
+              {conversionInsights.losses.map((g) => (
+                <li key={g}>{g}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <div className="mt-3 space-y-2">
+          <p className="text-sm font-semibold text-[var(--text)]">Recomendações</p>
+          <ul className="list-disc space-y-1 pl-5 text-sm text-[var(--text-muted)]">
+            {conversionInsights.recommendations.length === 0 && <li>Sem recomendações no momento.</li>}
+            {conversionInsights.recommendations.map((r) => (
+              <li key={r}>{r}</li>
+            ))}
+          </ul>
+          <p className="text-xs text-[var(--text-muted)]">Resumo: {conversionInsights.summary}</p>
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm" aria-label="Previsão de demanda">
+        <h2 className="text-lg font-semibold text-[var(--text)]">Previsão de demanda (próximas 4 semanas)</h2>
+        <p className="text-sm text-[var(--text-muted)] mb-3">Estimativa de leads por cor/sexo e riscos de falta.</p>
+        <div className="grid gap-3 md:grid-cols-2">
+          {demandPredictions.slice(0, 6).map((pred, idx) => (
+            <div key={`${pred.color}-${pred.sex}-${idx}`} className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2">
+              <p className="text-sm font-semibold text-[var(--text)]">
+                {pred.color} · {pred.sex} · {pred.predicted_leads} leads
+              </p>
+              <p className="text-xs text-[var(--text-muted)]">
+                {pred.week_start_date} a {pred.week_end_date}
+              </p>
+              <p className="text-xs text-[var(--text-muted)]">{pred.recommendation}</p>
+              {pred.risk_alert && <p className="text-xs font-semibold text-rose-700">{pred.risk_alert}</p>}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm" aria-label="Decisões da IA">
+        <h2 className="text-lg font-semibold text-[var(--text)]">Decisões da IA</h2>
+        <p className="text-sm text-[var(--text-muted)] mb-3">Ações sugeridas com explicação.</p>
+        <ul className="space-y-2">
+          {decisions.map((d, idx) => (
+            <li
+              key={`${d.title}-${idx}`}
+              className={`rounded-lg border border-[var(--border)] px-3 py-2 text-sm ${
+                d.severity === "critical"
+                  ? "bg-rose-50 text-rose-800"
+                  : d.severity === "warning"
+                  ? "bg-amber-50 text-amber-800"
+                  : "bg-[var(--surface)] text-[var(--text)]"
+              }`}
+            >
+              <p className="font-semibold">{d.title}</p>
+              <p>{d.action}</p>
+              <p className="text-xs text-[var(--text-muted)]">{d.reason}</p>
+            </li>
+          ))}
+          {decisions.length === 0 && <li className="text-sm text-[var(--text-muted)]">Sem decisões no momento.</li>}
+        </ul>
+      </section>
+
+      <section className="rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm">
+        <h2 className="text-lg font-semibold text-[var(--text)]">Alertas operacionais (OperationalAlertsAI)</h2>
+        <p className="text-sm text-[var(--text-muted)] mb-3">Monitoramento de overbooking, estoque e follow-up.</p>
+        <div className="grid gap-3 md:grid-cols-3">
+          <AlertList title="Críticos" items={alerts.critical} tone="critical" />
+          <AlertList title="Médios" items={alerts.medium} tone="warning" />
+          <AlertList title="Baixos" items={alerts.low} tone="info" />
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm">
+        <h2 className="text-lg font-semibold text-[var(--text)]">Narrativa executiva (DashboardNarrativeAI)</h2>
+        <p className="text-sm text-[var(--text-muted)] mb-3">Resumo textual da operação e próximos passos.</p>
+        <div className="space-y-2">
+          <div className="rounded-lg bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text)]">{narrative.summary}</div>
+          {narrative.opportunities.length > 0 && (
+            <div>
+              <p className="text-sm font-semibold text-[var(--text)]">Oportunidades</p>
+              <ul className="list-disc space-y-1 pl-5 text-sm text-[var(--text-muted)]">
+                {narrative.opportunities.map((o) => (
+                  <li key={o}>{o}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {narrative.risks.length > 0 && (
+            <div>
+              <p className="text-sm font-semibold text-[var(--text)]">Riscos</p>
+              <ul className="list-disc space-y-1 pl-5 text-sm text-[var(--text-muted)]">
+                {narrative.risks.map((r) => (
+                  <li key={r}>{r}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {narrative.recommendations.length > 0 && (
+            <div>
+              <p className="text-sm font-semibold text-[var(--text)]">Recomendações</p>
+              <ul className="list-disc space-y-1 pl-5 text-sm text-[var(--text-muted)]">
+                {narrative.recommendations.map((r) => (
+                  <li key={r}>{r}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm">
+        <h2 className="text-lg font-semibold text-[var(--text)]">Prioridades (PriorityEngine)</h2>
+        <p className="text-sm text-[var(--text-muted)] mb-3">Ordens de ação para operação diária.</p>
+        <ul className="space-y-2">
+          {priorityTasks.map((t, idx) => (
+            <li
+              key={`${t.title}-${idx}`}
+              className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm"
+            >
+              <p className="font-semibold text-[var(--text)]">{t.title}</p>
+              <p className="text-[var(--text-muted)]">{t.detail}</p>
+              <p className="text-xs text-[var(--text-muted)]">Prioridade: {t.priority}</p>
+            </li>
+          ))}
+          {priorityTasks.length === 0 && <li className="text-sm text-[var(--text-muted)]">Sem tarefas priorizadas.</li>}
+        </ul>
+      </section>
+    </div>
+  );
+}
+
+function AlertList({ title, items, tone }: { title: string; items: string[]; tone: "critical" | "warning" | "info" }) {
+  const toneClass =
+    tone === "critical"
+      ? "bg-rose-50 text-rose-800 border-rose-200"
+      : tone === "warning"
+      ? "bg-amber-50 text-amber-800 border-amber-200"
+      : "bg-[var(--surface)] text-[var(--text)] border-[var(--border)]";
+  return (
+    <div className={`rounded-xl border px-3 py-2 ${toneClass}`}>
+      <p className="text-sm font-semibold">{title}</p>
+      <ul className="mt-1 space-y-1 text-sm">
+        {items.map((it) => (
+          <li key={it} className="leading-snug">
+            {it}
+          </li>
+        ))}
+        {items.length === 0 && <li className="text-[var(--text-muted)]">Sem alertas.</li>}
+      </ul>
+    </div>
+  );
 }
