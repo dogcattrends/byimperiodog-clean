@@ -1,17 +1,17 @@
-import { z } from "zod";
+import type { ZodTypeAny, infer as ZodInfer } from "zod";
 
 import { AppError } from "@/lib/errors";
 
-export interface FetcherOptions<TSchema extends z.ZodTypeAny | undefined = undefined> extends RequestInit {
+export interface FetcherOptions<TSchema extends ZodTypeAny | undefined = undefined> extends RequestInit {
   timeoutMs?: number;
   schema?: TSchema;
 }
 
-export type FetcherResult<TSchema extends z.ZodTypeAny | undefined> = TSchema extends z.ZodTypeAny
-  ? z.infer<TSchema>
+export type FetcherResult<TSchema extends ZodTypeAny | undefined> = TSchema extends ZodTypeAny
+  ? ZodInfer<TSchema>
   : unknown;
 
-export async function fetcher<TSchema extends z.ZodTypeAny | undefined = undefined>(
+export async function fetcher<TSchema extends ZodTypeAny | undefined = undefined>(
   input: RequestInfo | URL,
   options: FetcherOptions<TSchema> = {},
 ): Promise<FetcherResult<TSchema>> {

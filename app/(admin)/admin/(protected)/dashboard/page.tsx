@@ -7,6 +7,9 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 import { AIInsightsPanel, type AIInsightPayload } from "./AIInsightsPanel";
 import { OperationalAlertsPanel, type OperationalAlerts } from "./OperationalAlertsPanel";
+import { refreshOperationalInsightsAction } from "./actions";
+import { DashboardErrorNotifier } from "./DashboardErrorNotifier";
+import { mapDeepInsightsToPayload } from "./insights";
 
 export const metadata: Metadata = {
   title: "Dashboard | Admin",
@@ -16,9 +19,15 @@ export const metadata: Metadata = {
 type LeadRow = {
   id: string;
   created_at: string;
+  nome?: string | null;
+  cidade?: string | null;
+  estado?: string | null;
   cor_preferida?: string | null;
   sexo_preferido?: string | null;
   status?: string | null;
+  lead_ai_insights?: {
+    matched_puppy_id?: string | null;
+  } | null;
 };
 
 type PuppyRow = {
@@ -48,6 +57,52 @@ type DemandRiskItem = {
   risk: "critico" | "alerta" | "ok";
 };
 
+type LatestLead = {
+  id: string;
+  nome?: string | null;
+  cidade?: string | null;
+  estado?: string | null;
+  status?: string | null;
+  created_at: string;
+  matchedPuppy?: { id: string; name?: string | null } | null;
+};
+
+type DashboardSnapshot = {
+  metrics: {
+    leadsToday: number;
+    leads7d: number;
+    leadsPrev7: number;
+    leadsDelta: number;
+    puppiesAvail: number;
+    puppiesReserved: number;
+    puppiesSold: number;
+  };
+  ops: OpsSnapshot;
+  demandRisks: DemandRiskItem[];
+  aiInsights: AIInsightPayload;
+  decisions: Awaited<ReturnType<typeof generateDecisions>>;
+  latestLeads: LatestLead[];
+};
+
+function createEmptySnapshot(): DashboardSnapshot {
+  return {
+    metrics: {
+      leadsToday: 0,
+      leads7d: 0,
+      leadsPrev7: 0,
+      leadsDelta: 0,
+      puppiesAvail: 0,
+      puppiesReserved: 0,
+      puppiesSold: 0,
+    },
+    ops: { leadsNoResponse: 0, puppiesNoPrice: 0, puppiesNoPhoto: 0, puppies90: 0 },
+    demandRisks: [],
+    aiInsights: mapDeepInsightsToPayload({}),
+    decisions: [] as Awaited<ReturnType<typeof generateDecisions>>,
+    latestLeads: [],
+  };
+}
+
 function startOfDayIso(date: Date) {
   const d = new Date(date);
   d.setHours(0, 0, 0, 0);
@@ -61,26 +116,43 @@ function daysAgoIso(days: number) {
   return d.toISOString();
 }
 
-async function fetchSnapshot() {
+async function fetchSnapshot(): Promise<DashboardSnapshot> {
   const sb = supabaseAdmin();
   const startToday = startOfDayIso(new Date());
   const start7 = daysAgoIso(7);
   const startPrev7 = daysAgoIso(14);
 
-  const [{ data: leads }, { data: puppies }] = await Promise.all([
+  const [
+    { data: leads, error: leadsError },
+    { data: puppies, error: puppiesError },
+    demandPredictions,
+    deepInsights,
+    decisions,
+  ] = await Promise.all([
     sb
       .from("leads")
-      .select("id,created_at,cor_preferida,sexo_preferido,status")
+      .select("id,created_at,nome,cidade,estado,cor_preferida,sexo_preferido,status,lead_ai_insights!left(matched_puppy_id)")
       .gte("created_at", daysAgoIso(120))
       .order("created_at", { ascending: false }),
     sb
       .from("puppies")
       .select("id,name,status,price_cents,created_at,color,midia")
       .order("created_at", { ascending: false }),
+    recalcDemandPredictions(),
+    generateDeepInsights(),
+    generateDecisions(),
   ]);
+
+  if (leadsError) {
+    throw new Error(`Falha ao carregar leads: ${leadsError.message}`);
+  }
+  if (puppiesError) {
+    throw new Error(`Falha ao carregar filhotes: ${puppiesError.message}`);
+  }
 
   const leadsArr = (leads ?? []) as LeadRow[];
   const puppiesArr = (puppies ?? []) as PuppyRow[];
+  const puppyLookup = new Map(puppiesArr.map((p) => [p.id, { id: p.id, name: p.name }]));
 
   const leadsToday = leadsArr.filter((l) => l.created_at >= startToday).length;
   const leads7d = leadsArr.filter((l) => l.created_at >= start7).length;
@@ -100,10 +172,21 @@ async function fetchSnapshot() {
     return days >= 90 && (p.status || "available") === "available";
   }).length;
 
-  const demandPredictions = await recalcDemandPredictions();
-  const deepInsights = await generateDeepInsights();
-  const decisions = await generateDecisions();
   const aiInsights = mapDeepInsightsToPayload(deepInsights);
+
+  const latestLeads: LatestLead[] = leadsArr.slice(0, 5).map((lead) => {
+    const matchedId = lead.lead_ai_insights?.matched_puppy_id || null;
+    const matchedPuppy = matchedId ? puppyLookup.get(matchedId) ?? null : null;
+    return {
+      id: lead.id,
+      created_at: lead.created_at,
+      nome: lead.nome,
+      cidade: lead.cidade,
+      estado: lead.estado,
+      status: lead.status,
+      matchedPuppy,
+    };
+  });
 
   // Risco: demanda alta x estoque baixo por cor
   const colorStock = new Map<string, number>();
@@ -135,13 +218,21 @@ async function fetchSnapshot() {
     demandRisks,
     aiInsights,
     decisions,
+    latestLeads,
   };
 }
 
-export async function refreshOperationalInsightsAction(): Promise<AIInsightPayload> {
-  "use server";
-  const deepInsights = await generateDeepInsights();
-  return mapDeepInsightsToPayload(deepInsights);
+async function loadDashboardSnapshot(): Promise<{ data: DashboardSnapshot; error?: string }> {
+  try {
+    const snapshot = await fetchSnapshot();
+    return { data: snapshot };
+  } catch (error) {
+    console.error("dashboard_snapshot_error", error);
+    return {
+      data: createEmptySnapshot(),
+      error: "Não foi possível carregar dados em tempo real. Os números exibidos podem estar desatualizados.",
+    };
+  }
 }
 
 function statusTone(delta: number) {
@@ -151,12 +242,13 @@ function statusTone(delta: number) {
 }
 
 export default async function DashboardPage() {
-  const snapshot = await fetchSnapshot();
-  const { metrics, ops, demandRisks, aiInsights, decisions } = snapshot;
+  const { data: snapshot, error: snapshotError } = await loadDashboardSnapshot();
+  const { metrics, ops, demandRisks, aiInsights, decisions, latestLeads } = snapshot;
   const operationalAlerts = buildOperationalAlerts(ops, demandRisks);
 
   return (
     <div className="space-y-6">
+      <DashboardErrorNotifier message={snapshotError} />
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-3xl font-semibold text-[var(--text)]">Console operacional</h1>
@@ -181,6 +273,48 @@ export default async function DashboardPage() {
         />
         <SmartCard label="Disponíveis" value={metrics.puppiesAvail} tone={metrics.puppiesAvail > 0 ? "good" : "bad"} helper="Estoque atual" />
         <SmartCard label="Reservados" value={metrics.puppiesReserved} tone="neutral" helper="Acompanhar confirmações" />
+      </section>
+
+      <section className="rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm" aria-labelledby="latest-leads-heading">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 id="latest-leads-heading" className="text-lg font-semibold text-[var(--text)]">
+              Últimos leads
+            </h2>
+            <p className="text-sm text-[var(--text-muted)]">Monitoramento dos 5 cadastros mais recentes.</p>
+          </div>
+        </div>
+        {latestLeads.length === 0 ? (
+          <p className="mt-4 text-sm text-[var(--text-muted)]" role="status">
+            Nenhum lead novo foi registrado recentemente. Assim que novos cadastros chegarem eles aparecem aqui.
+          </p>
+        ) : (
+          <ol className="mt-4 divide-y divide-[var(--border)]" role="list">
+            {latestLeads.map((lead) => (
+              <li key={lead.id} className="py-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-[var(--text)]">{lead.nome || "Lead sem nome"}</p>
+                    <p className="text-xs text-[var(--text-muted)]">
+                      {[lead.cidade, lead.estado].filter(Boolean).join(" · ") || "Local não informado"}
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-[var(--surface)] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                    {lead.status || "Status indefinido"}
+                  </span>
+                </div>
+                <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--text-muted)]">
+                  <p>
+                    {new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(new Date(lead.created_at))}
+                  </p>
+                  <p className="font-medium text-[var(--text)]">
+                    {lead.matchedPuppy?.name ? `Filhote: ${lead.matchedPuppy.name}` : "Sem filhote associado"}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        )}
       </section>
 
       <section className="rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm">
@@ -276,10 +410,11 @@ function SmartCard({
 }) {
   const toneClass =
     tone === "good" ? "text-emerald-700 bg-emerald-50" : tone === "bad" ? "text-rose-700 bg-rose-50" : "text-[var(--text)] bg-[var(--surface)]";
+  const displayValue = value ?? "—";
   return (
-    <div className="rounded-xl border border-[var(--border)] bg-white p-4 shadow-sm">
+    <div className="rounded-xl border border-[var(--border)] bg-white p-4 shadow-sm" role="status" aria-live="polite">
       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">{label}</p>
-      <p className="mt-2 text-3xl font-bold text-[var(--text)]">{value}</p>
+      <p className="mt-2 text-3xl font-bold text-[var(--text)]">{displayValue}</p>
       {delta !== undefined && (
         <span className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ${toneClass}`}>
           {delta >= 0 ? "+" : ""}
@@ -291,11 +426,15 @@ function SmartCard({
   );
 }
 
-function IssueCard({ label, value, severity }: { label: string; value: number; severity: "low" | "warning" | "high" }) {
+function IssueCard({ label, value, severity }: { label: string; value: number; severity: "low" | "medium" | "warning" | "high" }) {
   const tone =
-    severity === "high" ? "bg-rose-50 text-rose-800" : severity === "warning" ? "bg-amber-50 text-amber-800" : "bg-[var(--surface)] text-[var(--text)]";
+    severity === "high"
+      ? "bg-rose-50 text-rose-800"
+      : severity === "warning" || severity === "medium"
+        ? "bg-amber-50 text-amber-800"
+        : "bg-[var(--surface)] text-[var(--text)]";
   return (
-    <div className={`rounded-xl border border-[var(--border)] px-3 py-2 ${tone}`}>
+    <div className={`rounded-xl border border-[var(--border)] px-3 py-2 ${tone}`} role="status" aria-live="polite">
       <p className="text-sm font-semibold">{label}</p>
       <p className="text-2xl font-bold">{value}</p>
     </div>
@@ -370,27 +509,4 @@ function buildOperationalAlerts(ops: OpsSnapshot, demandRisks: DemandRiskItem[])
   return alerts;
 }
 
-function mapDeepInsightsToPayload(data: any): AIInsightPayload {
-  const summary = data?.summary || "Nenhum insight disponível.";
-  const opportunities = (data?.opportunities || [])
-    .map((item: any) => item?.detail || item?.title)
-    .filter(Boolean);
-  const risks = (data?.risks || [])
-    .map((item: any) => item?.detail || item?.title)
-    .filter(Boolean);
-  const recommendationsSource = data?.recommendations?.length ? data.recommendations : data?.dailyInsights || [];
-  const recommendations = recommendationsSource
-    .map((item: any) => (item?.title && item?.detail ? `${item.title}: ${item.detail}` : item?.detail || item?.title))
-    .filter(Boolean);
-
-  const riskLevel: AIInsightPayload["riskLevel"] = risks.length > 2 ? "alto" : risks.length ? "medio" : "baixo";
-
-  return {
-    summary,
-    opportunities,
-    risks,
-    recommendations,
-    riskLevel,
-    generatedAt: new Date().toISOString(),
-  };
-}
+ 

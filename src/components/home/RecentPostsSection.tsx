@@ -4,8 +4,8 @@ import { Suspense } from 'react';
 
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/cn';
-import { supabasePublic } from '@/lib/supabasePublic';
 import { getAllPosts } from '@/lib/content';
+import { supabasePublic } from '@/lib/supabasePublic';
 
 import RecentPostsSkeleton from './RecentPostsSkeleton';
 

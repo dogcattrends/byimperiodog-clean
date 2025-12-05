@@ -71,38 +71,60 @@ async function resolveMediaUrl(rawInput: unknown, client: SupabaseClient): Promi
   return raw;
 }
 
+function inferTypeFromUrl(url: string): "image" | "video" {
+  return /\.(mp4|webm|mov|m4v)$/i.test(url) ? "video" : "image";
+}
+
 async function hydrateMedia(record: any, client: SupabaseClient) {
   if (!record) return record;
 
-  const rawImageList = Array.isArray(record.images) && record.images.length
-    ? (record.images as unknown[])
-    : parseStringList(record.midia ?? record.media);
+  const rawMediaArray = Array.isArray(record.midia) ? record.midia : undefined;
+  const fallbackList = rawMediaArray && rawMediaArray.length ? [] : parseStringList(record.images ?? record.media ?? record.midia);
+  const mediaSource = rawMediaArray && rawMediaArray.length ? rawMediaArray : fallbackList;
 
-  const resolvedImages = (
-    await Promise.all(rawImageList.map((item) => resolveMediaUrl(item, client)))
-  ).filter((url): url is string => Boolean(url));
+  const resolvedEntries = (
+    await Promise.all(
+      (mediaSource as unknown[]).map(async (entry) => {
+        const baseUrl = typeof entry === "string" ? entry : entry?.url ?? entry?.src ?? "";
+        if (!baseUrl) return null;
+        const resolvedUrl = await resolveMediaUrl(baseUrl, client);
+        if (!resolvedUrl) return null;
+        const type = typeof entry === "object" && entry?.type === "video" ? "video" : "image";
+        return {
+          url: resolvedUrl,
+          type: type === "video" ? "video" : inferTypeFromUrl(resolvedUrl),
+        };
+      })
+    )
+  ).filter((item): item is { url: string; type: "image" | "video" } => Boolean(item));
 
-  const resolvedCover = (await resolveMediaUrl(record.image_url ?? record.imageUrl ?? resolvedImages[0], client)) ?? null;
-  const resolvedVideo = (await resolveMediaUrl(record.video_url ?? record.videoUrl, client)) ?? null;
+  const explicitVideo = await resolveMediaUrl(record.video_url ?? record.videoUrl, client);
+  if (explicitVideo && !resolvedEntries.some((entry) => entry.type === "video")) {
+    resolvedEntries.push({ url: explicitVideo, type: "video" });
+  }
+
+  const imageUrls = resolvedEntries.filter((entry) => entry.type === "image").map((entry) => entry.url);
+  const videoUrls = resolvedEntries.filter((entry) => entry.type === "video").map((entry) => entry.url);
+  const resolvedCover = imageUrls[0] ?? (await resolveMediaUrl(record.image_url ?? record.imageUrl, client)) ?? null;
+
+  const finalImages = imageUrls.length ? imageUrls : resolvedCover ? [resolvedCover] : [];
 
   if (process.env.NODE_ENV !== "production") {
     console.debug("[admin-puppies-route] media hydration", {
-      rawImageList,
-      resolvedImages,
+      mediaSource,
+      resolvedEntries,
       resolvedCover,
-      resolvedVideo,
+      videoUrls,
     });
   }
-
-  const images = resolvedImages.length ? resolvedImages : resolvedCover ? [resolvedCover] : [];
 
   return {
     ...record,
     image_url: resolvedCover,
-    video_url: resolvedVideo,
-    images,
-    midia: images,
-    media: images,
+    video_url: videoUrls[0] ?? explicitVideo ?? null,
+    images: finalImages,
+    media: finalImages,
+    midia: resolvedEntries,
   };
 }
 

@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useState } from "react";
+import { ComponentProps, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Loader2 } from "lucide-react";
@@ -16,7 +16,7 @@ export default function EditPuppyPage() {
   const idParam = Array.isArray(params?.id) ? params.id[0] : params?.id;
 
   const [loading, setLoading] = useState(true);
-  const [record, setRecord] = useState<RawPuppy | null>(null);
+  const [record, setRecord] = useState<ComponentProps<typeof PuppyForm>["record"]>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -31,7 +31,11 @@ export default function EditPuppyPage() {
         if (!response.ok) throw new Error(json?.error || "Falha ao carregar filhote");
         const found = json?.puppy as RawPuppy | undefined;
         if (!found) setError("Filhote nao encontrado.");
-        else setRecord(found);
+        else {
+          // Normaliza slug para string vazia quando vier nulo/undefined, evitando erro de tipo
+          const normalized: RawPuppy = { ...found, slug: found.slug ?? "" };
+          setRecord(normalized as ComponentProps<typeof PuppyForm>["record"]);
+        }
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         setError(message);

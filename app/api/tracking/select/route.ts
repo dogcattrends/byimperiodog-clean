@@ -1,8 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
 import { requireAdmin } from "@/lib/adminAuth";
-import { listResourcesByProvider } from "@/lib/tracking/resources";
-import { ProviderKey } from "@/lib/tracking/providers/types";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import type { ProviderKey } from "@/lib/tracking/providers/types";
+import { listResourcesByProvider } from "@/lib/tracking/resources";
 
 type Body = {
   provider: ProviderKey;

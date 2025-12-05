@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
-import { supabaseAnon } from "@/lib/supabaseAnon";
-import { PUPPY_COLORS, CITIES } from "@/domain/taxonomies";
+
+import { CITIES, PUPPY_COLORS } from "@/domain/taxonomies";
 import { getAllPosts } from "@/lib/content";
+import { supabaseAnon } from "@/lib/supabaseAnon";
 
 const COLORS = Object.values(PUPPY_COLORS);
 

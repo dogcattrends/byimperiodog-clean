@@ -1,13 +1,14 @@
-import { NextResponse } from 'next/server';
-import { supabasePublic } from '@/lib/supabasePublic';
-import { rankChunks, lexicalFallback, embedText } from '@/lib/rag';
-import { rateLimit } from '@/lib/rateLimit';
+import { NextResponse } from "next/server";
+
+import { embedText, lexicalFallback, rankChunks } from "@/lib/rag";
+import { rateLimit } from "@/lib/rateLimit";
+import { supabasePublic } from "@/lib/supabasePublic";
 
 interface QaRequestBody { q?: string }
 interface BlogPostRow { id: string; slug: string; title: string; content_mdx?: string | null; excerpt?: string | null }
 interface ChunkCandidate { id: string; slug: string; title: string; content: string; anchor?: string; offset: number; embedding?: number[] }
 
-export const runtime = 'edge';
+export const runtime = "edge";
 
 // Simple QA endpoint: retrieves candidate chunks (naive split) then ranks.
 // Simple in-memory embedding cache (query -> vector) ephemeral

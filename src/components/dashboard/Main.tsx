@@ -1,6 +1,6 @@
 "use client";
-import * as React from 'react';
 import { motion } from 'framer-motion';
+import * as React from 'react';
 
 export function Main({ children }:{children:React.ReactNode}){
   const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;

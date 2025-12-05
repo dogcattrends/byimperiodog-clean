@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+
 import { supabasePublic } from '@/lib/supabasePublic';
 export const revalidate = 300;
 const site = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.byimperiodog.com.br').replace(/\/$/, '');

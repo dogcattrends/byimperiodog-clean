@@ -1,7 +1,8 @@
-import { cookies } from "next/headers";
+﻿import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { NextRequest, NextResponse } from "next/server";
 
+import { createLogger } from "@/lib/logger";
 import {
   DEFAULT_ROLE,
   getRoleFromCookies,
@@ -11,7 +12,6 @@ import {
   type AdminRole,
 } from "@/lib/rbac";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { createLogger } from "@/lib/logger";
 
 type LayoutGuardOptions = {
   permission?: AdminPermission;
@@ -34,14 +34,40 @@ function resolveRoleFromRequest(req: Request | NextRequest): AdminRole {
   return getRoleFromHeaders(req.headers);
 }
 
+export type AdminIdentity = {
+  name: string;
+  email?: string | null;
+  role: AdminRole;
+};
+
+const adminAuthLogger = createLogger("admin:auth");
+
+function resolveIdentityFromCookies(store = cookies()): AdminIdentity {
+  const role = getRoleFromCookies(store);
+  const email = store.get("admin_email")?.value ?? null;
+  const nameFromCookie = store.get("admin_name")?.value ?? null;
+  const fallbackName = email ? email.split("@")[0] ?? "Admin" : "Admin";
+  return { role, email, name: nameFromCookie || fallbackName };
+}
+
 export function requireAdminLayout(options: LayoutGuardOptions = {}) {
   const store = cookies();
-  if (!isAuthenticatedCookie(store)) redirect("/admin/login");
+  const authenticated = isAuthenticatedCookie(store);
+  if (!authenticated) {
+    adminAuthLogger.warn("Admin layout guard bloqueou acesso sem cookie de sessao");
+    redirect("/admin/login");
+  }
 
-  const role = getRoleFromCookies(store);
-  if (options.permission && !hasPermission(role, options.permission)) {
+  const identity = resolveIdentityFromCookies(store);
+  if (options.permission && !hasPermission(identity.role, options.permission)) {
+    adminAuthLogger.warn("Admin sem permissao tentou acessar recurso", {
+      role: identity.role,
+      permission: options.permission,
+    });
     redirect("/admin?permission=denied");
   }
+
+  return identity;
 }
 
 export function redirectIfAuthed() {

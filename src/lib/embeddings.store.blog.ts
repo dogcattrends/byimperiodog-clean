@@ -1,6 +1,6 @@
 // Persistence layer for blog post embeddings (Supabase). No new envs.
-import { supabaseAdmin } from './supabaseAdmin';
 import { embedText } from './rag';
+import { supabaseAdmin } from './supabaseAdmin';
 
 export async function ensurePostEmbedding(post: { id:string; content_mdx?:string|null; title?:string|null }){
   const content = `${post.title||''}\n\n${post.content_mdx||''}`.slice(0,12000);

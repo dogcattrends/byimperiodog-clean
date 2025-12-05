@@ -1,6 +1,7 @@
 // PATH: src/app/api/admin/blog/ai/route.ts
 import { NextRequest } from 'next/server';
-import { EditorAIRequest, EditorAIResponse } from '@/lib/blog/types';
+
+import type { EditorAIRequest, EditorAIResponse } from '@/lib/blog/types';
 
 // Placeholder de provedor IA: supõe existência de variável de ambiente já configurada (ex: OPENAI_API_KEY ou AZURE_OPENAI_KEY)
 // Não expõe secrets; apenas chama fetch na API configurada. Substituir internamente conforme stack atual.

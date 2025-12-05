@@ -1,9 +1,9 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import confetti from "canvas-confetti";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 
 import { AdminButton } from "@/components/admin/ui/button";
 import Stepper from "@/components/admin/ui/stepper";

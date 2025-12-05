@@ -1,5 +1,5 @@
 import { getIntegrationForUser } from "@/lib/tracking/integrations";
-import { ProviderKey, Resource } from "@/lib/tracking/providers/types";
+import type { ProviderKey, Resource } from "@/lib/tracking/providers/types";
 
 const DEFAULT_USER_ID = process.env.INTEGRATIONS_DEFAULT_USER_ID;
 

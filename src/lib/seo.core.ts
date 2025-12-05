@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+
 import { supabasePublic } from './supabasePublic';
 
 // SITE base sem barra final

@@ -1,7 +1,7 @@
+import { CheckCircle, MapPin, Phone, Shield, Star, Truck } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
-import { CheckCircle, MapPin, Phone, Shield, Star, Truck } from "lucide-react";
 
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import PuppiesGrid from "@/components/PuppiesGrid";
@@ -14,15 +14,15 @@ const WA_PHONE = process.env.NEXT_PUBLIC_WA_PHONE?.replace(/\D/g, "") || "551196
 const WA_LINK = `https://wa.me/${WA_PHONE}`;
 
 export const metadata: Metadata = {
-  title: "Filhotes de Spitz Alemão Anão em Minas Gerais (MG) | By Imperio Dog",
+  title: "Filhotes de Spitz Alemão Anão (Lulu da Pomerânia) em Minas Gerais (MG) | By Imperio Dog",
   description:
     "Compre filhotes de Spitz Alemão Anão (Lulu da Pomerânia) em Minas Gerais com entrega segura em BH, Uberlândia, Juiz de Fora e todo o estado. Pedigree CBKC e suporte vitalício.",
   alternates: { canonical: canonical("/filhotes/minas-gerais") },
   openGraph: {
     type: "website",
     url: canonical("/filhotes/minas-gerais"),
-    title: "Filhotes de Spitz Alemão em Minas Gerais",
-    description: "Compre Spitz Alemão com entrega em todo MG. Criadora certificada CBKC.",
+    title: "Filhotes de Spitz Alemão (Lulu da Pomerânia) em Minas Gerais",
+    description: "Compre Spitz Alemão (Lulu da Pomerânia) com entrega em todo MG. Criadora certificada CBKC.",
     images: [{ url: "/spitz-hero-desktop.webp", width: 1200, height: 630 }],
   },
 };
@@ -64,14 +64,14 @@ const faqMG = [
       "Todos os filhotes vêm com pedigree CBKC, primeira dose da vacina V10, vermifugação completa, atestado veterinário, contrato, manual do tutor e suporte vitalício via WhatsApp. Também fornecemos orientação sobre alimentação e cuidados.",
   },
   {
-    question: "Qual o tamanho e peso do Spitz Alemão adulto?",
+    question: "Qual o tamanho e peso do Spitz Alemão (Lulu da Pomerânia) adulto?",
     answer:
       "O Spitz Alemão Anão (Lulu da Pomerânia) atinge de 18cm a 22cm de altura quando adulto, pesando entre 1,5kg e 3,5kg. São cães de porte mini, perfeitos para apartamentos e casas em MG.",
   },
 ];
 
 export default function FilhotesMinasGeraisPage() {
-  const waText = "Olá! Gostaria de informações sobre filhotes de Spitz Alemão disponíveis em Minas Gerais.";
+  const waText = "Olá! Gostaria de informações sobre filhotes de Spitz Alemão (Lulu da Pomerânia) disponíveis em Minas Gerais.";
   const waLink = `${WA_LINK}?text=${encodeURIComponent(waText)}`;
 
   // Local Business JSON-LD específico para MG
@@ -151,7 +151,7 @@ export default function FilhotesMinasGeraisPage() {
             Atendemos todo Minas Gerais
           </div>
           <h1 className="mt-6 text-4xl font-bold tracking-tight text-[var(--text)] sm:text-5xl lg:text-6xl">
-            Filhotes de Spitz Alemão Anão
+            Filhotes de Spitz Alemão Anão (Lulu da Pomerânia)
             <span className="block text-[var(--brand)]">em Minas Gerais (MG)</span>
           </h1>
           <p className="mx-auto mt-6 max-w-3xl text-lg text-[var(--text-secondary)]">
@@ -258,9 +258,7 @@ export default function FilhotesMinasGeraisPage() {
         {/* CTA Final */}
         <section className="mx-auto mt-20 max-w-4xl px-5 text-center">
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-8 lg:p-12">
-            <h2 className="text-3xl font-bold text-[var(--text)]">
-              Pronto para ter seu Spitz Alemão em Minas Gerais?
-            </h2>
+            <h2 className="text-3xl font-bold text-[var(--text)]">Pronto para ter seu Spitz Alemão (Lulu da Pomerânia) em Minas Gerais?</h2>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-[var(--text-secondary)]">
               Fale agora com nossa equipe e garanta seu filhote com entrega segura em todo MG
             </p>

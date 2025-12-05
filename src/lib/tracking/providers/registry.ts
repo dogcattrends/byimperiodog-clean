@@ -1,6 +1,6 @@
 import facebookAdapter from "./facebook";
 import { googleAnalyticsAdapter, googleTagManagerAdapter } from "./google";
-import { ProviderAdapter, ProviderKey } from "./types";
+import type { ProviderAdapter, ProviderKey } from "./types";
 
 // Placeholder for TikTok; implement when ready.
 const tiktokAdapter: ProviderAdapter = {

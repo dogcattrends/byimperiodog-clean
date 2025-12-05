@@ -13,17 +13,26 @@ export default function AdminLoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const emailTrimmed = email.trim();
+    if (!emailTrimmed) {
+      setError("Informe um email valido.");
+      return;
+    }
+    if (!password) {
+      setError("Informe a senha.");
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
       const res = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: emailTrimmed, password }),
       });
       if (!res.ok) {
         const json = await res.json().catch(() => ({}));
-        throw new Error(json.error || "Falha no login");
+        throw new Error(json.error || "Falha no login. Verifique as credenciais.");
       }
       router.push("/admin/dashboard");
     } catch (err) {
@@ -41,7 +50,11 @@ export default function AdminLoginPage() {
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <label className="block text-sm font-semibold text-[var(--text)]">
           Email
-          <div className="mt-2 flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 focus-within:ring-2 focus-within:ring-emerald-500">
+          <div
+            className={`mt-2 flex items-center gap-2 rounded-lg border bg-[var(--surface)] px-3 py-2 focus-within:ring-2 focus-within:ring-emerald-500 ${
+              error?.toLowerCase().includes("email") ? "border-rose-300 ring-1 ring-rose-200" : "border-[var(--border)]"
+            }`}
+          >
             <Mail className="h-4 w-4 text-[var(--text-muted)]" aria-hidden />
             <input
               type="email"
@@ -51,13 +64,18 @@ export default function AdminLoginPage() {
               className="w-full bg-transparent text-sm text-[var(--text)] outline-none"
               placeholder="admin@exemplo.com"
               autoComplete="email"
+              aria-invalid={error?.toLowerCase().includes("email") || undefined}
             />
           </div>
         </label>
 
         <label className="block text-sm font-semibold text-[var(--text)]">
           Senha
-          <div className="mt-2 flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 focus-within:ring-2 focus-within:ring-emerald-500">
+          <div
+            className={`mt-2 flex items-center gap-2 rounded-lg border bg-[var(--surface)] px-3 py-2 focus-within:ring-2 focus-within:ring-emerald-500 ${
+              error?.toLowerCase().includes("senha") || error?.toLowerCase().includes("login") ? "border-rose-300 ring-1 ring-rose-200" : "border-[var(--border)]"
+            }`}
+          >
             <Lock className="h-4 w-4 text-[var(--text-muted)]" aria-hidden />
             <input
               type="password"
@@ -65,8 +83,9 @@ export default function AdminLoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full bg-transparent text-sm text-[var(--text)] outline-none"
-              placeholder="••••••••"
+              placeholder="********"
               autoComplete="current-password"
+              aria-invalid={error?.toLowerCase().includes("senha") || undefined}
             />
           </div>
         </label>

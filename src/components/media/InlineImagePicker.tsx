@@ -1,12 +1,13 @@
 ﻿// PATH: src/components/media/InlineImagePicker.tsx
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import NextImage from "next/image";
 import { UploadCloud, Loader2 } from "lucide-react";
-import { adminFetch } from "@/lib/adminFetch";
+import NextImage from "next/image";
+import { useEffect, useMemo, useRef, useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { adminFetch } from "@/lib/adminFetch";
 import { cn } from "@/lib/cn";
 
 export type InlineImage = {

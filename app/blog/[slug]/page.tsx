@@ -1,75 +1,4 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { pathToFileURL } from "url";
-
-import { getPostBySlug } from "@/lib/content";
-import MdxRenderer from "@/components/blog/MdxRenderer";
-
-type Params = { params: { slug: string } };
-
-export async function generateMetadata({ params }: Params): Promise<Metadata> {
-  const post = await getPostBySlug(params.slug);
-  if (!post) return {};
-  return {
-    title: post.title,
-    description: post.excerpt || undefined,
-    alternates: { canonical: `/blog/${post.slug}` },
-    openGraph: {
-      title: post.title,
-      description: post.excerpt || undefined,
-      type: "article",
-      url: `/blog/${post.slug}`,
-    },
-  };
-}
-
-export default async function BlogPostPage({ params }: Params) {
-  const post = await getPostBySlug(params.slug);
-  if (!post) return notFound();
-
-  // Tenta carregar o código MDX compilado do Contentlayer para renderização
-  let mdxCode: string | null = null;
-  try {
-    try {
-      const mod: any = await import('contentlayer/generated');
-      const hit = (mod.allPosts || []).find((p: any) => p.slug === params.slug || p._raw?.sourceFileName?.replace?.(/\.mdx$/, '') === params.slug);
-      mdxCode = hit?.body?.code || null;
-    } catch (err) {
-      const candidate = `${process.cwd()}/.contentlayer/generated/index.mjs`;
-      const url = pathToFileURL(candidate).href;
-      const mod: any = await import(url);
-      const hit = (mod.allPosts || []).find((p: any) => p.slug === params.slug || p._raw?.sourceFileName?.replace?.(/\.mdx$/, '') === params.slug);
-      mdxCode = hit?.body?.code || null;
-    }
-  } catch {}
-
-  return (
-    <main className="container mx-auto px-4 py-12 sm:px-6 lg:px-8" aria-labelledby="post-heading">
-      <article className="prose prose-zinc max-w-3xl dark:prose-invert">
-        <header>
-          <h1 id="post-heading" className="mb-2 text-3xl font-bold tracking-tight sm:text-4xl">
-            {post.title}
-          </h1>
-          {post.date ? (
-            <time className="block text-sm text-zinc-500" dateTime={post.date || undefined}>
-              {new Date(post.date!).toLocaleDateString("pt-BR")}
-            </time>
-          ) : null}
-          {post.excerpt ? <p className="mt-4 text-zinc-600">{post.excerpt}</p> : null}
-        </header>
-
-        <section className="mt-8">
-          {mdxCode ? (
-            <MdxRenderer code={mdxCode} />
-          ) : (
-            <p className="text-zinc-600">Conteúdo indisponível para este artigo.</p>
-          )}
-        </section>
-      </article>
-    </main>
-  );
-}
-// Removido bloco antigo mockado; mantida somente a implementa��o completa com Supabase/MDX
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -87,11 +16,10 @@ import ScrollAnalytics from "@/components/blog/ScrollAnalytics";
 import ShareButtons from "@/components/blog/ShareButtons";
 import TocNav from "@/components/blog/Toc";
 import Breadcrumbs from "@/components/Breadcrumbs";
-import { mdxComponents } from "@/components/MDXContent";
-import SeoJsonLd from "@/components/SeoJsonLd";
 import LeadForm from "@/components/LeadForm";
+import { mdxComponents } from "@/components/MDXContent";
 import PageViewPing from "@/components/PageViewPing";
-import { whatsappLeadUrl } from "@/lib/utm";
+import SeoJsonLd from "@/components/SeoJsonLd";
 import { compileBlogMdx } from "@/lib/blog/mdx/compile";
 import { estimateReadingTime } from "@/lib/blog/reading-time";
 import { getRelatedUnified } from "@/lib/blog/related";
@@ -99,6 +27,7 @@ import { buildBlogMetadata, buildArticleJsonLd } from "@/lib/blog/seo";
 import { BLUR_DATA_URL } from "@/lib/placeholders";
 import { blogPostingSchema } from "@/lib/schema";
 import { supabaseAnon } from "@/lib/supabaseAnon";
+import { whatsappLeadUrl } from "@/lib/utm";
 
 interface Post {
   id: string;
@@ -181,7 +110,7 @@ export async function generateMetadata({
 }: {
   params: { slug: string };
   searchParams?: { preview?: string };
-}) {
+}): Promise<Metadata> {
   const preview = process.env.NODE_ENV !== "production" && searchParams?.preview === "1";
   const post = await fetchPost(params.slug, { preview });
   if (!post) return {};
@@ -361,9 +290,8 @@ export default async function BlogPostPage({
             )}
           </Prose>
 
-          {/* Convers�o direta: formul�rio de lead com contexto de blog */}
           <section className="mt-10">
-            <h2 className="text-xl font-semibold">Quero receber recomenda��es</h2>
+            <h2 className="text-xl font-semibold">Quero receber recomendações</h2>
             <LeadForm context={{ pageType: "blog", slug: post.slug }} />
             {process.env.NEXT_PUBLIC_WA_PHONE && (
               <div className="pt-2">
@@ -459,7 +387,7 @@ function PublishButton({ slug }: { slug: string }) {
           mod.revalidatePath(`/blog/${slug}`);
           mod.revalidatePath("/blog");
         } catch {
-          // no-op fallback
+          // ignore cache errors
         }
       }}
     >
@@ -472,4 +400,3 @@ function PublishButton({ slug }: { slug: string }) {
     </form>
   );
 }
-

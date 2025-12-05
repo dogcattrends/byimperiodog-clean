@@ -12,11 +12,11 @@
 
 import { Heart, MapPin } from "lucide-react";
 import Image from "next/image";
-import { getNextImageProps } from "@/lib/images";
 
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { Button, StatusBadge } from "@/components/ui";
 import type { Puppy } from "@/domain/puppy";
+import { getNextImageProps } from "@/lib/images";
 
 type Props = {
   puppy: Puppy;

@@ -1,6 +1,6 @@
 "use client";
+import { AnimatePresence, motion } from 'framer-motion';
 import * as React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 interface Toast { id:string; message:string; type?:'default'|'success'|'error'; timeout?:number }
 

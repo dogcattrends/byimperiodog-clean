@@ -1,5 +1,6 @@
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { ProviderKey, OAuthTokens } from "./providers/types";
+
+import type { OAuthTokens, ProviderKey } from "./providers/types";
 
 export type IntegrationRow = {
   id: string;

@@ -1,7 +1,8 @@
 import Script from "next/script";
-import { buildArticleLD, buildFAQPageLD, buildBreadcrumbLD } from "@/lib/schema";
+
 import LeadForm from "@/components/LeadForm";
 import PageViewPing from "@/components/PageViewPing";
+import { buildArticleLD, buildBreadcrumbLD, buildFAQPageLD } from "@/lib/schema";
 import { whatsappLeadUrl } from "@/lib/utm";
 
 export const metadata = {

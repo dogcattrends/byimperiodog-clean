@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { usePathname } from "next/navigation";
@@ -15,7 +15,7 @@ const NAV_ITEMS = [
   { label: "Filhotes / Estoque", href: "/admin/puppies", icon: FileSpreadsheet },
   { label: "Leads / Funil", href: "/admin/leads", icon: Users },
   { label: "Analytics", href: "/admin/analytics", icon: BarChart3 },
-  { label: "Configurações", href: "/admin/config", icon: Settings },
+  { label: "Configuracoes", href: "/admin/config", icon: Settings },
 ];
 
 export function AdminNav({ environment }: Props) {
@@ -27,7 +27,7 @@ export function AdminNav({ environment }: Props) {
     <div className="flex h-full flex-col gap-4 px-4 py-5">
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">By Império Dog</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">By Imperio Dog</p>
           <p className="text-sm font-semibold text-[var(--text)]">Painel Admin</p>
           <p className="text-[11px] text-[var(--text-muted)]">{environment}</p>
         </div>
@@ -42,7 +42,7 @@ export function AdminNav({ environment }: Props) {
         </button>
       </div>
 
-      <nav aria-label="Seções do painel" className="flex-1 space-y-1">
+      <nav aria-label="Secoes do painel" className="flex-1 space-y-1">
         {NAV_ITEMS.map((item) => {
           const active = pathname?.startsWith(item.href);
           const Icon = item.icon;
@@ -51,9 +51,7 @@ export function AdminNav({ environment }: Props) {
               key={item.href}
               href={item.href}
               className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-500 ${
-                active
-                  ? "bg-emerald-50 text-emerald-800 ring-1 ring-emerald-100"
-                  : "text-[var(--text)] hover:bg-[var(--surface)]"
+                active ? "bg-emerald-50 text-emerald-800 ring-1 ring-emerald-100" : "text-[var(--text)] hover:bg-[var(--surface)]"
               }`}
               aria-current={active ? "page" : undefined}
             >
@@ -86,8 +84,8 @@ export function AdminNav({ environment }: Props) {
       </button>
 
       <Dialog open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-        <DialogContent title="Menu de Navegação" className="max-w-sm">
-          <nav aria-label="Seções do painel" className="space-y-1">
+        <DialogContent title="Menu de Navegacao" className="max-w-sm">
+          <nav aria-label="Secoes do painel" className="space-y-1">
             {NAV_ITEMS.map((item) => {
               const active = pathname?.startsWith(item.href);
               const Icon = item.icon;
@@ -97,9 +95,7 @@ export function AdminNav({ environment }: Props) {
                   href={item.href}
                   onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold ${
-                    active
-                      ? "bg-emerald-50 text-emerald-800 ring-1 ring-emerald-100"
-                      : "text-[var(--text)] hover:bg-[var(--surface)]"
+                    active ? "bg-emerald-50 text-emerald-800 ring-1 ring-emerald-100" : "text-[var(--text)] hover:bg-[var(--surface)]"
                   }`}
                   aria-current={active ? "page" : undefined}
                 >

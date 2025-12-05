@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import Cropper from "react-easy-crop";
 import { useDropzone } from "react-dropzone";
+import Cropper from "react-easy-crop";
 
 import { AdminButton } from "@/components/admin/ui/button";
 import { showAdminToast } from "@/components/admin/ui/toast";

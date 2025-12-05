@@ -3,30 +3,15 @@
 import { useState, useTransition } from "react";
 import { CheckCircle2, Loader2 } from "lucide-react";
 
-type Config = {
-  brand_name: string;
-  brand_tagline: string;
-  contact_email: string;
-  contact_phone: string;
-  instagram: string;
-  tiktok: string;
-  whatsapp_message: string;
-  template_first_contact: string;
-  template_followup: string;
-  avg_response_minutes: number;
-  followup_rules: string;
-  seo_title_default: string;
-  seo_description_default: string;
-  seo_meta_tags: string;
-};
+import type { GeneralSettings } from "@/lib/admin/generalConfig";
 
-export function ConfigForm({ initialData }: { initialData: Config }) {
-  const [form, setForm] = useState<Config>(initialData);
+export function ConfigForm({ initialData }: { initialData: GeneralSettings }) {
+  const [form, setForm] = useState<GeneralSettings>(initialData);
   const [saving, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const onChange = (key: keyof Config, value: string | number) => {
+  const onChange = (key: keyof GeneralSettings, value: string | number) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -41,10 +26,16 @@ export function ConfigForm({ initialData }: { initialData: Config }) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(form),
         });
-        if (!res.ok) throw new Error("Erro ao salvar");
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(data?.error || "Erro ao salvar");
+        }
+        if (data?.config) {
+          setForm(data.config as GeneralSettings);
+        }
         setMessage("Configurações salvas com sucesso.");
       } catch (err) {
-        setError("Não foi possível salvar. Tente novamente.");
+        setError(err instanceof Error ? err.message : "Não foi possível salvar. Tente novamente.");
       }
     });
   };

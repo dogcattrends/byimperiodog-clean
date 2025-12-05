@@ -1,9 +1,9 @@
-import type { Database } from "@/types/supabase";
-import { supabaseAnon } from "@/lib/supabaseAnon";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import type { PuppyFilters, PuppySortBy, PuppySearchResult } from "@/domain/puppy";
-import type { Color, City, PuppyStatus } from "@/domain/taxonomies";
+import type { PuppyFilters, PuppySearchResult, PuppySortBy } from "@/domain/puppy";
+import type { City, Color, PuppyStatus } from "@/domain/taxonomies";
 import { normalizePuppyFromDB } from "@/lib/catalog/normalize";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { supabaseAnon } from "@/lib/supabaseAnon";
+import type { Database } from "@/types/supabase";
 
 type LeadsRow = Database["public"]["Tables"]["leads"]["Row"];
 type LeadsInsert = Database["public"]["Tables"]["leads"]["Insert"];

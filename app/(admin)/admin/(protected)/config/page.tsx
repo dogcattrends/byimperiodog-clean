@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
 
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { applyGeneralDefaults, GENERAL_COLUMN_SELECT, type GeneralSettings } from "@/lib/admin/generalConfig";
+import { getTrackingConfig } from "@/lib/tracking/getTrackingConfig";
 
-import { ConfigForm } from "./ui/ConfigForm";
+import { ConfigTabs } from "./ui/ConfigTabs";
+
+const TRACKING_ENVIRONMENTS = new Set(["production", "staging", "development"]);
 
 export const metadata: Metadata = {
   title: "Configurações | Admin",
@@ -11,43 +15,67 @@ export const metadata: Metadata = {
 
 export default async function AdminConfigPage() {
   const sb = supabaseAdmin();
-  const { data } = await sb
-    .from("admin_config")
-    .select("id,brand_name,brand_tagline,contact_email,contact_phone,instagram,tiktok,whatsapp_message,followup_rules,avg_response_minutes,template_first_contact,template_followup,seo_title_default,seo_description_default,seo_meta_tags")
-    .eq("id", "default")
-    .maybeSingle();
+  const runtimeEnv = resolveRuntimeEnvironment();
+  const [siteResult, legacyResult, trackingConfig] = await Promise.all([
+    sb.from("site_settings").select(GENERAL_COLUMN_SELECT).eq("id", 1).maybeSingle(),
+    sb.from("admin_config").select(GENERAL_COLUMN_SELECT).eq("id", "default").maybeSingle(),
+    getTrackingConfig(runtimeEnv.trackingEnvironment),
+  ]);
 
-  const config = {
-    brand_name: data?.brand_name ?? "By Império Dog",
-    brand_tagline: data?.brand_tagline ?? "Curadoria premium de Spitz Alemão",
-    contact_email: data?.contact_email ?? "",
-    contact_phone: data?.contact_phone ?? "",
-    instagram: data?.instagram ?? "",
-    tiktok: data?.tiktok ?? "",
-    whatsapp_message:
-      data?.whatsapp_message ??
-      "Oi! Eu vi seu interesse nos filhotes da By Império Dog. Como posso te ajudar a escolher o Spitz ideal?",
-    template_first_contact:
-      data?.template_first_contact ??
-      "Olá, vi sua mensagem sobre Spitz. Posso te mostrar fotos/vídeo e opções de cores e entregas.",
-    template_followup:
-      data?.template_followup ?? "Tudo bem? Ainda tem interesse no Spitz? Posso esclarecer dúvidas ou ajustar o valor/entrega.",
-    avg_response_minutes: data?.avg_response_minutes ?? 30,
-    followup_rules: data?.followup_rules ?? "Responder em até 30 min; 2 follow-ups em 24h; oferta expira em 48h.",
-    seo_title_default: data?.seo_title_default ?? "By Império Dog • Spitz Alemão Anão (Lulu da Pomerânia)",
-    seo_description_default:
-      data?.seo_description_default ??
-      "Filhotes de Spitz Alemão Anão com curadoria premium, saúde garantida e entrega segura. Veja cores, preços e vídeos.",
-    seo_meta_tags: data?.seo_meta_tags ?? "spitz, lulu da pomerânia, filhotes, criação responsável",
+  if (siteResult.error && !siteResult.data) {
+    console.warn("[admin/config] site_settings não disponível:", siteResult.error.message);
+  }
+  if (legacyResult.error && !legacyResult.data) {
+    console.warn("[admin/config] admin_config não disponível:", legacyResult.error.message);
+  }
+
+  const merged: Partial<GeneralSettings> = {
+    ...((legacyResult.data as Partial<GeneralSettings> | null) ?? {}),
+    ...((siteResult.data as Partial<GeneralSettings> | null) ?? {}),
   };
 
+  const generalConfig = applyGeneralDefaults(Object.keys(merged).length ? merged : null);
+
   return (
-    <div className="space-y-6">
-      <header className="space-y-1">
-        <h1 className="text-3xl font-semibold text-[var(--text)]">Configurações</h1>
-        <p className="text-sm text-[var(--text-muted)]">Marca, funil e SEO global do site.</p>
+    <div className="space-y-8">
+      <header className="space-y-3 rounded-3xl border border-[var(--border)] bg-white p-5 shadow-sm">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">Console</p>
+            <h1 className="text-3xl font-semibold text-[var(--text)]">Configurações</h1>
+            <p className="text-sm text-[var(--text-muted)]">Centralize dados da marca e integrações de tracking por ambiente.</p>
+          </div>
+          <div className="space-y-2 text-right text-xs text-[var(--text-muted)]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] px-4 py-1">
+              <span className="font-semibold">Ambiente ativo</span>
+              <span className={`rounded-full px-3 py-1 text-xs font-semibold ${runtimeEnv.badgeClass}`}>{runtimeEnv.label}</span>
+            </div>
+            <p>Somente Produção impacta o site público.</p>
+          </div>
+        </div>
       </header>
-      <ConfigForm initialData={config} />
+      <ConfigTabs
+        initialGeneral={generalConfig}
+        trackingConfig={trackingConfig}
+        trackingEnvironment={runtimeEnv.trackingEnvironment}
+        runtimeEnvLabel={runtimeEnv.label}
+        runtimeEnvValue={runtimeEnv.value}
+      />
     </div>
   );
+}
+
+function resolveRuntimeEnvironment() {
+  const value = (process.env.NEXT_PUBLIC_APP_ENV || process.env.APP_ENV || process.env.NODE_ENV || "development").toLowerCase();
+  const label = value === "production" ? "Produção" : value === "staging" ? "Staging" : "Development";
+  const badgeClass =
+    value === "production"
+      ? "bg-emerald-100 text-emerald-800"
+      : value === "staging"
+        ? "bg-amber-100 text-amber-800"
+        : "bg-slate-200 text-slate-800";
+
+  const trackingEnvironment = TRACKING_ENVIRONMENTS.has(value) ? (value as "production" | "staging" | "development") : "production";
+
+  return { value, label, badgeClass, trackingEnvironment };
 }

@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { Button } from '../ui/button';
 
 export function ErrorState({ message="Algo deu errado.", onRetry }: { message?:string; onRetry?:()=>void }){

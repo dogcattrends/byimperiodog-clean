@@ -1,20 +1,20 @@
-import { z } from "zod";
+import type { ZodTypeAny, infer as ZodInfer } from "zod";
 
 import { AppError, toAppError } from "@/lib/errors";
 import { createLogger, type Logger } from "@/lib/logger";
 
-type SafeActionHandler<TSchema extends z.ZodTypeAny, TResult> = (
-  input: z.infer<TSchema>,
+type SafeActionHandler<TSchema extends ZodTypeAny, TResult> = (
+  input: ZodInfer<TSchema>,
   context: { req: Request },
 ) => Promise<TResult>;
 
-interface SafeActionOptions<TSchema extends z.ZodTypeAny, TResult> {
+interface SafeActionOptions<TSchema extends ZodTypeAny, TResult> {
   schema: TSchema;
   handler: SafeActionHandler<TSchema, TResult>;
   logger?: Logger;
 }
 
-export function safeAction<TSchema extends z.ZodTypeAny, TResult>({
+export function safeAction<TSchema extends ZodTypeAny, TResult>({
   schema,
   handler,
   logger = createLogger("safeAction"),

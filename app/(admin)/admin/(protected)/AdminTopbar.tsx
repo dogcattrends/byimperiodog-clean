@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo } from "react";
 import { usePathname } from "next/navigation";
@@ -16,7 +16,7 @@ const LABEL_MAP: Record<string, string> = {
   leads: "Leads & Funil",
   relatorios: "Analytics",
   analytics: "Analytics",
-  tracking: "Configurações & Tracking",
+  tracking: "Configuracoes & Tracking",
 };
 
 export function AdminTopbar({ environment, userName = "Admin" }: Props) {

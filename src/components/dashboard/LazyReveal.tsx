@@ -1,6 +1,6 @@
 "use client";
-import * as React from 'react';
 import { motion } from 'framer-motion';
+import * as React from 'react';
 
 interface LazyRevealProps { children: React.ReactNode; once?: boolean; margin?: string; className?: string; skeletonHeight?: number; }
 

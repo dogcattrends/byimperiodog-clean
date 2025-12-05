@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import { Search, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 type Props = {
   q: string;

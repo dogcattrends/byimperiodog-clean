@@ -1,7 +1,7 @@
 "use client";
 
-import * as React from "react";
 import { Command } from "cmdk";
+import * as React from "react";
 
 const COMMANDS = [
   { label: "Dashboard", href: "/admin" },

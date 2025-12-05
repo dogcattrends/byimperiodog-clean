@@ -76,7 +76,7 @@ export function TrackingSettingsForm() {
             <input
               id={key}
               name={key}
-              value={values[key] ?? ""}
+              value={typeof values[key] === "string" ? values[key] : ""}
               onChange={(e) => setValues((prev) => ({ ...prev, [key]: e.target.value }))}
               placeholder={placeholder}
               className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"

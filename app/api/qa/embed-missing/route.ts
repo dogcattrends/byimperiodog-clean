@@ -1,9 +1,10 @@
-import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { batchEnsureEmbeddings } from '@/lib/embeddings.store.blog';
-import { internalGuard } from '@/lib/internalAuth';
+import { NextResponse } from "next/server";
 
-export const runtime = 'edge';
+import { batchEnsureEmbeddings } from "@/lib/embeddings.store.blog";
+import { internalGuard } from "@/lib/internalAuth";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
+
+export const runtime = "edge";
 
 // Gera embeddings para posts que não têm registro mdx em blog_post_embeddings
 export async function POST(req: Request){

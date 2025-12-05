@@ -1,8 +1,8 @@
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { buildArticleLD } from "@/lib/schemas/article";
 import { buildBreadcrumbLD } from "@/lib/schemas/breadcrumb";
-import { buildFaqLD } from "@/lib/schemas/faq";
+import { buildFAQPageLD } from "@/lib/schemas/faq";
 import { buildProductLD } from "@/lib/schemas/product";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 type BlogRow = {
   id: string;
@@ -220,7 +220,7 @@ export async function runAutopilotSeo(): Promise<AutopilotSeoResult> {
     jsonld.push({
       slug,
       kind: "faq",
-      payload: buildFaqLD(faqs.map((f) => ({ question: f.question, answer: f.answer }))),
+      payload: buildFAQPageLD(faqs.map((f) => ({ question: f.question, answer: f.answer }))),
     });
   });
 

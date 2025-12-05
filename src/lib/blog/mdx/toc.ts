@@ -1,4 +1,4 @@
-import { Parent } from 'unist';
+import type { Parent } from 'unist';
 
 export interface TocItem {
   id: string;

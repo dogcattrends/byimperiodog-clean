@@ -4,11 +4,11 @@
  * REGRA: NUNCA acesse Supabase diretamente de componentes.
  */
 
-import type { Puppy, PuppyFilters, PuppySortBy, PuppySearchResult } from "@/domain/puppy";
-import type { Color, City, PuppyStatus } from "@/domain/taxonomies";
+import type { Puppy, PuppyFilters, PuppySearchResult, PuppySortBy } from "@/domain/puppy";
+import type { City, Color, PuppyStatus } from "@/domain/taxonomies";
 import { supabaseAnon } from "@/lib/supabaseAnon";
-import { PuppyHelpers } from "@/domain/puppy";
-import { normalizePuppyFromDB, RawPuppyFromDB } from "./normalize";
+
+import { normalizePuppyFromDB } from "./normalize";
 
 // Cache simples em memória para reduzir round-trips ao Supabase
 const cache = new Map<string, { value: any; expiresAt: number }>();

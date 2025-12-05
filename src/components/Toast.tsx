@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle2, AlertTriangle, Info, X } from "lucide-react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
 type ToastAction = { label: string; callback: () => void | Promise<void> };
 export type ToastVariant = "success" | "error" | "info" | "warning";

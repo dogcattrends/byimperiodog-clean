@@ -1,9 +1,10 @@
 "use client";
 
-import type { Puppy } from "@/domain/puppy";
 import { useMemo } from "react";
 
-type BoardStatus = "available" | "reserved" | "sold" | "coming_soon";
+import type { AdminPuppyListItem, AdminPuppyStatus } from "./queries";
+
+type BoardStatus = Exclude<AdminPuppyStatus, "unavailable">;
 
 const COLUMNS: { key: BoardStatus; label: string; tone: string }[] = [
   { key: "available", label: "Disponível", tone: "bg-emerald-50 border-emerald-100" },
@@ -13,19 +14,20 @@ const COLUMNS: { key: BoardStatus; label: string; tone: string }[] = [
 ];
 
 type Props = {
-  items: Puppy[];
+  items: AdminPuppyListItem[];
   leadCounts: Record<string, number>;
-  onStatusChange: (id: string, status: BoardStatus) => void;
+  onStatusChange: (id: string, status: AdminPuppyStatus) => void;
+  mutatingId?: string | null;
 };
 
-export function PuppiesBoard({ items, leadCounts, onStatusChange }: Props) {
+export function PuppiesBoard({ items, leadCounts, onStatusChange, mutatingId }: Props) {
   const grouped = useMemo(() => {
-    const buckets = new Map<BoardStatus, Puppy[]>();
+    const buckets = new Map<BoardStatus, AdminPuppyListItem[]>();
     COLUMNS.forEach((c) => buckets.set(c.key, []));
-    items.forEach((p) => {
-      const status = (p as any).status as BoardStatus | undefined;
-      const bucket = buckets.get(status ?? "available");
-      bucket?.push(p);
+    items.forEach((puppy) => {
+      const status = (puppy.status as BoardStatus) ?? "available";
+      const bucket = buckets.get(status);
+      bucket?.push(puppy);
     });
     return buckets;
   }, [items]);
@@ -51,9 +53,9 @@ export function PuppiesBoard({ items, leadCounts, onStatusChange }: Props) {
             <div className="flex flex-1 flex-col gap-3" role="list">
               {list.length === 0 && <p className="rounded-xl border border-dashed border-[var(--border)] p-3 text-sm text-[var(--text-muted)]">Nenhum item aqui.</p>}
               {list.map((p) => {
-                const slug = (p as any).slug as string | undefined;
+                const slug = p.slug ?? undefined;
                 const leads = slug ? leadCounts[slug] ?? 0 : 0;
-                const cover = ((p as any).coverImage as string) || ((p as any).images?.[0] as string) || "/placeholder.png";
+                const cover = p.imageUrl || "/placeholder.png";
                 return (
                   <article key={p.id} className="rounded-xl border border-[var(--border)] bg-white shadow-sm" role="listitem">
                     <div className="flex gap-3 p-3">
@@ -64,15 +66,13 @@ export function PuppiesBoard({ items, leadCounts, onStatusChange }: Props) {
                         <div className="flex items-center justify-between gap-2">
                           <h3 className="text-sm font-semibold text-[var(--text)] line-clamp-2">{p.name}</h3>
                           <span className="rounded-full bg-[var(--surface)] px-2 py-0.5 text-[11px] font-semibold text-[var(--text-muted)]">
-                            {formatPrice((p as any).priceCents)}
+                            {formatPrice(p.priceCents)}
                           </span>
                         </div>
                         <p className="text-xs text-[var(--text-muted)]">
-                          {(p.color || "Cor ?") + " • " + (p.sex || "Sexo ?")}
+                          {[p.color || "Cor ?", p.sex ? (p.sex === "male" ? "Macho" : "Fêmea") : "Sexo ?"].join(" • ")}
                         </p>
-                        <p className="text-xs text-[var(--text-muted)]">
-                          {[p.city, (p as any).state].filter(Boolean).join(", ") || "Local ?"}
-                        </p>
+                        <p className="text-xs text-[var(--text-muted)]">{[p.city, p.state].filter(Boolean).join(", ") || "Local ?"}</p>
                         <p className="text-[11px] font-semibold text-emerald-700">{leads} lead{leads === 1 ? "" : "s"}</p>
                       </div>
                     </div>
@@ -90,13 +90,25 @@ export function PuppiesBoard({ items, leadCounts, onStatusChange }: Props) {
                             type="button"
                             onClick={() => onStatusChange(p.id, target.key)}
                             className={`rounded-full px-2 py-1 text-[11px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-500 ${
-                              (p as any).status === target.key ? "bg-emerald-100 text-emerald-800" : "bg-[var(--surface)] text-[var(--text-muted)] hover:text-[var(--text)]"
+                              p.status === target.key ? "bg-emerald-100 text-emerald-800" : "bg-[var(--surface)] text-[var(--text-muted)] hover:text-[var(--text)]"
                             }`}
                             aria-label={`Marcar ${p.name} como ${target.label}`}
+                            disabled={mutatingId === p.id}
                           >
                             {target.label}
                           </button>
                         ))}
+                        <button
+                          type="button"
+                          onClick={() => onStatusChange(p.id, "unavailable")}
+                          className={`rounded-full px-2 py-1 text-[11px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-500 ${
+                            p.status === "unavailable" ? "bg-red-100 text-red-800" : "bg-[var(--surface)] text-[var(--text-muted)] hover:text-[var(--text)]"
+                          }`}
+                          aria-label={`Arquivar ${p.name}`}
+                          disabled={mutatingId === p.id}
+                        >
+                          Arquivar
+                        </button>
                       </div>
                     </div>
                   </article>

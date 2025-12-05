@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+
 import { initWebVitals, logEvent } from "@/lib/analytics";
 
 export default function TrackingScripts() {

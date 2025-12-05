@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import { supabasePublic } from "@/lib/supabasePublic";
 
 export type PuppyNorm = {

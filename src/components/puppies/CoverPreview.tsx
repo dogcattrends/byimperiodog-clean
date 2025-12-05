@@ -1,7 +1,7 @@
 // PATH: src/components/puppies/CoverPreview.tsx
 "use client";
-import React from "react";
 import Image from "next/image";
+import React from "react";
 
 export interface CoverPreviewProps {
   url?: string;

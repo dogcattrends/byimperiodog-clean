@@ -1,8 +1,8 @@
 "use client";
 
-import { Search, HelpCircle, Plus } from "lucide-react";
-
+import { HelpCircle, Plus, Search } from "lucide-react";
 import { useEffect, useState } from "react";
+
 import CommandPalette from "@/components/admin/CommandPalette";
 
 export default function AdminTopbar() {

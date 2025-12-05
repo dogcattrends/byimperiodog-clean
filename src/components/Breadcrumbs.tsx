@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import clsx from 'classnames';
+import Link from 'next/link';
 
 type Crumb = {
   label: string;

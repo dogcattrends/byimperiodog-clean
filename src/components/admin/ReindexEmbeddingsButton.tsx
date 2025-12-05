@@ -1,8 +1,9 @@
 "use client";
 import React, { useState } from 'react';
-import { adminFetch } from '@/lib/adminFetch';
+
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/toast';
+import { adminFetch } from '@/lib/adminFetch';
 
 export function ReindexEmbeddingsButton({ className }: { className?: string }){
   const [loading,setLoading] = useState(false);

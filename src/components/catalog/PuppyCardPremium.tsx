@@ -1,48 +1,55 @@
 "use client";
 
 /**
- * PuppyCardPremium v4
- * - Texto em PT-BR corrigido
- * - Layout estável (aspect ratio, clamp, CTA legível)
- * - Acessibilidade e JSON-LD mantidos
- * - CTA único em <a> (evita foco duplo)
+ * PuppyCardPremium v5
+ * Card premium e persuasivo para marketplace de filhotes
+ * - Foto hero é o elemento #1 (aspect ratio estável, overlay leve)
+ * - Badges inteligentes + preço em chip premium
+ * - CTA principal WhatsApp com microcopy clara e aria-label detalhado
+ * - CTA secundário discreto
+ * - Acessibilidade AA: role, aria-labels, foco visível, alt obrigatório
+ * - JSON-LD de Product embutido para SEO
  */
 
-import { Calendar, ChevronRight, Heart, MapPin, Play, Video, MessageCircle } from "lucide-react";
+import { Calendar, ChevronRight, Heart, MapPin, MessageCircle, ShieldCheck, Video, Wand2 } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { Badge, Button, Card, CardContent, CardHeader, StatusBadge } from "@/components/ui";
-import { optimizePuppyCardImage } from "@/lib/optimize-image";
+import type { CatalogBadge } from "@/lib/ai/catalog-badges-ai";
+import type { CatalogSeoOutput } from "@/lib/ai/catalog-seo";
 import { getNextImageProps } from "@/lib/images";
+import { optimizePuppyCardImage } from "@/lib/optimize-image";
 import { BLUR_DATA_URL } from "@/lib/placeholders";
 import track from "@/lib/track";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 
 type PuppyCardData = {
   id: string;
-  slug?: string | null;
-  nome?: string | null;
   name?: string | null;
-  cor?: string | null;
+  slug?: string | null;
   color?: string | null;
-  gender?: "male" | "female" | string | null;
-  sexo?: string | null;
   sex?: "male" | "female" | string | null;
-  status?: "disponivel" | "reservado" | "vendido" | "available" | "reserved" | "sold" | string | null;
+  gender?: "male" | "female" | string | null;
+  status?: "available" | "reserved" | "sold" | string | null;
   price_cents?: number | null;
   priceCents?: number | null;
-  nascimento?: string | null;
   birthDate?: string | Date | null;
   city?: string | null;
   state?: string | null;
+  weightKg?: number | null;
+  images?: string[] | null;
+  aiSeo?: CatalogSeoOutput | null;
+  catalogSeo?: CatalogSeoOutput | null;
 };
 
 type PuppyCardProps = {
   puppy: PuppyCardData;
-  coverImage?: string;
-  onOpenDetails?: () => void;
+  coverImage?: string | null;
+  badges?: CatalogBadge[];
   priority?: boolean;
+  onOpenDetails?: () => void;
+  onWhatsAppClick?: () => void;
 };
 
 const formatPrice = (cents?: number | null) =>
@@ -50,262 +57,284 @@ const formatPrice = (cents?: number | null) =>
     ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(cents / 100)
     : "Sob consulta";
 
-function calculateAge(birthDate?: string | Date | null): string {
-  if (!birthDate) return "Idade a confirmar";
-  const birth = new Date(birthDate);
-  if (Number.isNaN(birth.getTime())) return "Idade a confirmar";
-  const diffDays = Math.floor((Date.now() - birth.getTime()) / (1000 * 60 * 60 * 24));
-  if (diffDays < 0) return `Nasce ${birth.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}`;
-  if (diffDays < 30) return `${diffDays} dias`;
-  if (diffDays < 365) {
-    const months = Math.floor(diffDays / 30);
-    return `${months} ${months === 1 ? "mês" : "meses"}`;
-  }
-  const years = Math.floor(diffDays / 365);
-  return `${years} ${years === 1 ? "ano" : "anos"}`;
+function formatAge(birth?: string | Date | null): { label: string; months?: number } {
+  if (!birth) return { label: "Idade a confirmar" };
+  const d = new Date(birth);
+  if (Number.isNaN(d.getTime())) return { label: "Idade a confirmar" };
+  const diffDays = Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24));
+  if (diffDays < 0) return { label: `Nasce ${d.toLocaleDateString("pt-BR")}` };
+  if (diffDays < 30) return { label: `${diffDays} dias` };
+  const months = Math.floor(diffDays / 30);
+  return { label: months === 1 ? "1 mês" : `${months} meses`, months };
 }
 
-function formatBirthDate(birthDate?: string | Date | null): string {
-  if (!birthDate) return "Data a confirmar";
-  const birth = new Date(birthDate);
-  if (Number.isNaN(birth.getTime())) return "Data a confirmar";
-  return birth.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+function normalizeStatus(status?: string | null) {
+  const v = (status || "available").toLowerCase();
+  if (v === "sold" || v === "vendido") return { label: "Vendido", color: "bg-rose-100 text-rose-800" };
+  if (v === "reserved" || v === "reservado") return { label: "Reservado", color: "bg-amber-100 text-amber-800" };
+  return { label: "Disponível", color: "bg-emerald-100 text-emerald-800" };
 }
 
-const normalizeGender = (gender?: string | null): "Macho" | "Fêmea" | "A definir" => {
-  const v = (gender || "").toLowerCase();
-  if (v === "male" || v === "macho") return "Macho";
-  if (v === "female" || v === "femea" || v === "fêmea") return "Fêmea";
+function normalizeSex(sex?: string | null) {
+  const v = (sex || "").toLowerCase();
+  if (v.includes("male") || v.includes("macho")) return "Macho";
+  if (v.includes("female") || v.includes("fêmea") || v.includes("femea")) return "Fêmea";
   return "A definir";
-};
+}
 
-const colorHex = (name?: string | null) => {
-  const v = (name || "").toLowerCase().trim();
-  const map: Record<string, string> = {
-    branco: "#FFFFFF",
-    white: "#FFFFFF",
-    preto: "#1A1A1A",
-    black: "#1A1A1A",
-    creme: "#F5E6D3",
-    cream: "#F5E6D3",
-    laranja: "#FF8C42",
-    orange: "#FF8C42",
-    cinza: "#9CA3AF",
-    gray: "#9CA3AF",
-    grey: "#9CA3AF",
-    marrom: "#8B4513",
-    brown: "#8B4513",
-    chocolate: "#7B3F00",
-    caramelo: "#D2691E",
-  };
-  return map[v] || "#F59E0B";
-};
+function buildSeo(puppy: PuppyCardData, fallbacks: { name: string; color: string; gender: string; location: string; priceCents: number }) {
+  const aiSeo = puppy.aiSeo || puppy.catalogSeo || null;
+  const shortTitle = aiSeo?.shortTitle || `${fallbacks.name} - ${fallbacks.color} ${fallbacks.gender}`;
+  const shortDescription =
+    aiSeo?.shortDescription ||
+    `Spitz Alemão Anão ${fallbacks.gender}, cor ${fallbacks.color}, ${fallbacks.location}. ${formatPrice(fallbacks.priceCents)}.`;
+  const altText =
+    aiSeo?.altText ||
+    `Filhote Spitz Alemão Anão ${fallbacks.gender.toLowerCase()} na cor ${fallbacks.color}, localizado em ${fallbacks.location}.`;
+  const seoKeywords = aiSeo?.seoKeywords || aiSeo?.focusedKeywords || [];
+  const structured = aiSeo?.structuredDataSnippets;
 
-const colorBorder = (name?: string | null) => (["branco", "white", "creme", "cream"].includes((name || "").toLowerCase()) ? "#94A3B8" : "#D4D4D8");
+  return { shortTitle, shortDescription, altText, seoKeywords, structured };
+}
 
-const normalizeStatus = (status?: string | null) => {
-  const v = (status || "disponivel").toLowerCase();
-  if (v === "vendido" || v === "sold") return { label: "Vendido", color: "text-rose-800", bgColor: "bg-rose-100" };
-  if (v === "reservado" || v === "reserved") return { label: "Reservado", color: "text-amber-800", bgColor: "bg-amber-100" };
-  return { label: "Disponível", color: "text-emerald-800", bgColor: "bg-emerald-100" };
-};
-
-export default function PuppyCardPremium({ puppy, coverImage, onOpenDetails, priority = false }: PuppyCardProps) {
-  const [isLiked, setIsLiked] = useState(false);
-  const [ctaState, setCtaState] = useState<"idle" | "loading">("idle");
-
-  const name = puppy.nome || puppy.name || "Filhote Spitz Alemão Anão";
-  const color = puppy.cor || puppy.color || "Cor em avaliação";
-  const gender = normalizeGender(puppy.sexo || puppy.sex || puppy.gender);
-  const price = formatPrice(puppy.priceCents ?? puppy.price_cents);
+export default function PuppyCardPremium({
+  puppy,
+  coverImage,
+  badges = [],
+  priority = false,
+  onOpenDetails,
+  onWhatsAppClick,
+}: PuppyCardProps) {
+  const [liked, setLiked] = useState(false);
   const priceCents = puppy.priceCents ?? puppy.price_cents ?? 0;
-  const birthRaw = puppy.nascimento || puppy.birthDate;
-  const age = calculateAge(birthRaw);
-  const birthDateFormatted = formatBirthDate(birthRaw);
   const status = normalizeStatus(puppy.status);
-  const location = [puppy.city, puppy.state].filter(Boolean).join(", ") || "Bragança Paulista, SP";
-  const chipColor = colorHex(color);
-  const chipBorder = colorBorder(color);
+  const gender = normalizeSex(puppy.sex || puppy.gender);
+  const color = puppy.color || "Cor em avaliação";
+  const name = puppy.name || "Spitz Alemão Anão";
+  const age = formatAge(puppy.birthDate);
+  const location = [puppy.city, puppy.state].filter(Boolean).join(", ") || "São Paulo, SP";
+  const priceLabel = formatPrice(priceCents);
+  const mainImage = coverImage || puppy.images?.[0] || null;
 
-  const optimizedImage = useMemo(() => (coverImage ? optimizePuppyCardImage(coverImage) : null), [coverImage]);
-  const processedImageProps = useMemo(() => {
-    // Usa pipeline quando não há coverImage manual
-    if (!coverImage && (puppy as any).slug) {
+  const seo = buildSeo(puppy, {
+    name,
+    color,
+    gender,
+    location,
+    priceCents,
+  });
+
+  const promoBadge = useMemo(() => {
+    if (badges.length > 0) return badges[0];
+    if (age.months !== undefined && age.months < 1) return { key: "new", label: "Recém-chegado", icon: "🌱", priority: 50, ariaLabel: "Filhote recém-chegado", color: "#0f766e", bgColor: "#ecfeff", textColor: "#0f172a" } as CatalogBadge;
+    return null;
+  }, [badges, age.months]);
+
+  const imgProps = useMemo(() => {
+    if (mainImage) return { src: optimizePuppyCardImage(mainImage), width: 800, height: 600 };
+    if (puppy.slug) {
       try {
-        return getNextImageProps((puppy as any).slug as string, "card", { priority });
+        return getNextImageProps(puppy.slug, "card", { priority });
       } catch {
         return null;
       }
     }
     return null;
-  }, [coverImage, (puppy as any).slug, priority]);
+  }, [mainImage, puppy.slug, priority]);
 
-  const whatsappLinks = useMemo(
-    () => ({
-      main: buildWhatsAppLink({
-        message: `Olá! Vi o filhote ${name} (${color}, ${gender}) e quero mais informações sobre disponibilidade e condições.`,
+  const whatsappUrl = useMemo(
+    () =>
+      buildWhatsAppLink({
+        message: `Olá! Quero falar sobre o filhote ${name} (${color}, ${gender}). Pode me ajudar com disponibilidade e condições?`,
         utmSource: "site",
         utmMedium: "catalog_card",
         utmCampaign: "puppies_premium",
         utmContent: "cta_main",
       }),
-    }),
-    [name, color, gender]
+    [name, color, gender],
   );
 
-  const handleCTA = useCallback(() => {
-    setCtaState("loading");
-    track.event("puppy_cta_click", { id: puppy.id, name, price_cents: priceCents, status: status.label });
-    setTimeout(() => setCtaState("idle"), 400);
-  }, [puppy.id, name, priceCents, status.label]);
+  const productLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: seo.shortTitle,
+    description: seo.shortDescription,
+    brand: { "@type": "Brand", name: "By Império Dog" },
+    image: mainImage,
+    url: puppy.slug ? `/filhotes/${puppy.slug}` : undefined,
+    color,
+    gender,
+    offers: {
+      "@type": "Offer",
+      priceCurrency: "BRL",
+      price: priceCents / 100,
+      availability:
+        status.label === "Disponível"
+          ? "https://schema.org/InStock"
+          : status.label === "Reservado"
+            ? "https://schema.org/PreOrder"
+            : "https://schema.org/OutOfStock",
+    },
+  };
 
-  const schema = useMemo(
-    () => ({
-      "@context": "https://schema.org",
-      "@type": "Product",
-      name,
-      description: `Filhote de Spitz Alemão Anão ${color} ${gender} disponível para adoção responsável`,
-      image: optimizedImage || coverImage,
-      brand: { "@type": "Brand", name: "By Império Dog" },
-      offers: {
-        "@type": "Offer",
-        priceCurrency: "BRL",
-        price: priceCents / 100,
-        availability:
-          status.label === "Disponível"
-            ? "https://schema.org/InStock"
-            : status.label === "Reservado"
-              ? "https://schema.org/PreOrder"
-              : "https://schema.org/OutOfStock",
-        itemCondition: "https://schema.org/NewCondition",
-      },
-    }),
-    [name, color, gender, optimizedImage, coverImage, priceCents, status.label]
-  );
+  const ctaLabel = "Falar no WhatsApp — resposta imediata";
+  const conciseDescription = `${color} · ${gender} · ${age.label}`;
 
   return (
-    <Card variant="elevated" interactive className="group h-full overflow-hidden rounded-3xl focus-within:ring-2 focus-within:ring-emerald-500 focus-within:ring-offset-2">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
+    <Card
+      role="article"
+      itemScope
+      itemType="https://schema.org/Product"
+      variant="elevated"
+      interactive
+      className="group relative h-full overflow-hidden rounded-3xl border border-[var(--border)] shadow-sm focus-within:ring-2 focus-within:ring-emerald-500 focus-within:ring-offset-2"
+    >
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productLd) }} />
 
       <CardHeader noPadding>
-        <div className="relative w-full overflow-hidden">
-          <div className="aspect-[4/3] w-full">
-            {processedImageProps ? (
-              <Image
-                {...processedImageProps}
-                alt={`Filhote ${name}`}
-                priority={priority}
-                fetchPriority={priority ? "high" : "auto"}
-                placeholder="blur"
-                blurDataURL={BLUR_DATA_URL}
-                className="object-cover w-full h-full"
-              />
-            ) : optimizedImage || coverImage ? (
-              <Image
-                src={optimizedImage || coverImage!}
-                alt={`Filhote ${name}`}
-                fill
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                priority={priority}
-                fetchPriority={priority ? "high" : "auto"}
-                placeholder="blur"
-                blurDataURL={BLUR_DATA_URL}
-                className="object-cover"
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center bg-[var(--surface-2)] text-sm text-[var(--text-muted)]">Sem imagem</div>
-            )}
-          </div>
+        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-b-none rounded-t-3xl">
+          {imgProps ? (
+            <Image
+              {...imgProps}
+              alt={seo.altText}
+              priority={priority}
+              fetchPriority={priority ? "high" : "auto"}
+              placeholder="blur"
+              blurDataURL={BLUR_DATA_URL}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center bg-[var(--surface-2)] text-sm text-[var(--text-muted)]">
+              Sem imagem
+            </div>
+          )}
 
-          <div className="absolute left-3 top-3 flex items-center gap-2">
-            <StatusBadge status={puppy.status as any} />
-            <Badge variant="neutral" size="sm" className="bg-white/90 shadow-sm">
-              {price}
-            </Badge>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-black/10 to-transparent" aria-hidden />
+
+          <div className="absolute left-3 right-3 top-3 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <StatusBadge status={puppy.status as any} className="text-xs font-semibold" />
+              {promoBadge && (
+                <span
+                  className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold shadow-sm"
+                  style={{ backgroundColor: promoBadge.bgColor ?? "#ecfeff", color: promoBadge.textColor ?? "#0f172a" }}
+                  aria-label={promoBadge.ariaLabel ?? promoBadge.label}
+                >
+                  <span aria-hidden>{(promoBadge as any).icon ?? "⭐"}</span>
+                  {promoBadge.label}
+                </span>
+              )}
+            </div>
+            <span className="inline-flex items-center gap-1 rounded-full bg-white/90 px-3 py-1 text-sm font-semibold text-[var(--text)] shadow-sm ring-1 ring-[var(--border)]">
+              {priceLabel}
+            </span>
           </div>
 
           <button
             type="button"
-            onClick={() => setIsLiked((v) => !v)}
-            aria-pressed={isLiked}
-            aria-label={isLiked ? "Remover dos favoritos" : "Adicionar aos favoritos"}
-            className="absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-full bg-white/90 text-rose-500 shadow-sm ring-1 ring-[var(--border)] transition hover:bg-white"
+            onClick={() => setLiked((v) => !v)}
+            aria-pressed={liked}
+            aria-label={liked ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+            className="absolute right-3 bottom-3 grid h-10 w-10 place-items-center rounded-full bg-white/90 text-rose-500 shadow-sm ring-1 ring-[var(--border)] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
           >
-            <Heart className={`h-5 w-5 ${isLiked ? "fill-rose-500" : ""}`} aria-hidden />
+            <Heart className={`h-5 w-5 ${liked ? "fill-rose-500" : ""}`} aria-hidden />
           </button>
+
+          <span
+            className="absolute left-3 bottom-3 inline-flex items-center gap-1 rounded-full bg-black/50 px-3 py-1 text-xs font-semibold text-white backdrop-blur"
+            aria-label="Foto real e atualizada"
+          >
+            <ShieldCheck className="h-4 w-4" aria-hidden />
+            Foto real / atualizada
+          </span>
         </div>
       </CardHeader>
 
-      <CardContent className="flex flex-1 flex-col gap-3">
+      <CardContent className="flex flex-1 flex-col gap-3 px-4 py-4 sm:px-5">
         <div className="space-y-1">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[var(--text-muted)]">By Império Dog</p>
-          <h3 className="text-xl font-semibold leading-snug text-[var(--text)] line-clamp-3">{name}</h3>
-          <p className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
-            <span
-              className="inline-flex h-3 w-3 items-center justify-center rounded-full border"
-              style={{ backgroundColor: chipColor, borderColor: chipBorder }}
-              aria-hidden
-            />
-            <span className="capitalize">{color}</span>
-            <span aria-hidden>•</span>
-            <span>{gender}</span>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-[var(--text-muted)]">By Império Dog</p>
+          <h3 className="text-lg font-semibold leading-tight text-[var(--text)]" itemProp="name">
+            {seo.shortTitle}
+          </h3>
+          <p className="text-sm text-[var(--text-muted)]" itemProp="description">
+            {conciseDescription}
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 text-xs text-[var(--text)]">
-          <div className="rounded-2xl border border-[var(--border)] bg-white px-3 py-2 shadow-xs">
-            <div className="flex items-center gap-2 text-[var(--text-muted)]">
-              <Calendar className="h-4 w-4" aria-hidden />
-              <span>Nascimento</span>
-            </div>
-            <p className="mt-1 font-semibold">{birthDateFormatted}</p>
-            <p className="text-[var(--text-muted)]">{age}</p>
-          </div>
-          <div className="rounded-2xl border border-[var(--border)] bg-white px-3 py-2 shadow-xs">
-            <div className="flex items-center gap-2 text-[var(--text-muted)]">
-              <MapPin className="h-4 w-4" aria-hidden />
-              <span>Local</span>
-            </div>
-            <p className="mt-1 font-semibold capitalize">{location}</p>
-            <p className="text-[11px] text-[var(--text-muted)]">Entrega combinada</p>
-          </div>
+        <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-[var(--text)]">
+          <span className="inline-flex items-center gap-2 rounded-full bg-[var(--surface)] px-3 py-1">{color}</span>
+          <span className="inline-flex items-center gap-2 rounded-full bg-[var(--surface)] px-3 py-1">{gender}</span>
+          <span className="inline-flex items-center gap-2 rounded-full bg-[var(--surface)] px-3 py-1">{age.label}</span>
+          {puppy.weightKg ? (
+            <span className="inline-flex items-center gap-2 rounded-full bg-[var(--surface)] px-3 py-1">
+              {puppy.weightKg.toFixed(1)} kg
+            </span>
+          ) : null}
         </div>
 
-        <div className="mt-auto flex flex-col gap-3">
-          <div className="flex flex-wrap gap-2 text-xs text-[var(--text-muted)]">
-            <span className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 ring-1 ring-[var(--border)]">
-              <Play className="h-4 w-4" aria-hidden /> Vídeo ao vivo
+        <div className="flex flex-wrap gap-2 text-xs text-[var(--text)]">
+          <span className="inline-flex items-center gap-2 rounded-xl border border-[var(--border)] bg-white px-3 py-2 shadow-xs">
+            <Calendar className="h-4 w-4" aria-hidden />
+            <span className="flex flex-col leading-tight">
+              <strong className="font-semibold">
+                {puppy.birthDate ? new Date(puppy.birthDate).toLocaleDateString("pt-BR") : "Nascimento"}
+              </strong>
+              <span className="text-[12px] text-[var(--text-muted)]">{age.label}</span>
             </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 ring-1 ring-[var(--border)]">
-              <Video className="h-4 w-4" aria-hidden /> Mentoria vitalícia
+          </span>
+          <span className="inline-flex items-center gap-2 rounded-xl border border-[var(--border)] bg-white px-3 py-2 shadow-xs">
+            <MapPin className="h-4 w-4" aria-hidden />
+            <span className="flex flex-col leading-tight">
+              <strong className="font-semibold capitalize">{location}</strong>
+              <span className="text-[12px] text-[var(--text-muted)]">Entrega combinada</span>
             </span>
-          </div>
+          </span>
+        </div>
 
+        <div className="mt-2 flex flex-col gap-3">
           <a
-            href={whatsappLinks.main}
+            href={whatsappUrl}
             target="_blank"
             rel="noreferrer"
-            onClick={handleCTA}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-400 px-5 py-3 text-base font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
-            aria-label={`Quero falar no WhatsApp sobre o filhote ${name}`}
+            onClick={() => {
+              onWhatsAppClick?.();
+              track.event?.("cta_whatsapp", { id: puppy.id, source: "card_premium" });
+            }}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+            aria-label={`Falar com atendente sobre o filhote ${name}`}
+            itemProp="offers"
           >
             <MessageCircle className="h-4 w-4" aria-hidden />
-            <span>{ctaState === "loading" ? "Abrindo WhatsApp..." : "Falar no WhatsApp"}</span>
+            {ctaLabel}
           </a>
-
-          <Button
+          <button
             type="button"
             onClick={onOpenDetails}
-            variant="subtle"
-            className="justify-between text-sm"
-            aria-label={`Ver detalhes completos do filhote ${name}`}
+            className="inline-flex items-center justify-between gap-2 rounded-full px-3 py-2 text-sm font-semibold text-[var(--text)] transition hover:text-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+            aria-label={`Ver detalhes e condições do filhote ${name}`}
           >
-            <span className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-2">
               <ChevronRight className="h-4 w-4" aria-hidden /> Ver detalhes e condições
             </span>
-            <span className="text-[var(--text-muted)]">{price}</span>
-          </Button>
+            <span className="text-[var(--text-muted)]">{priceLabel}</span>
+          </button>
         </div>
+
+        <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--text-muted)]">
+          <span className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 ring-1 ring-[var(--border)]">
+            <Video className="h-4 w-4" aria-hidden /> Vídeo ao vivo
+          </span>
+          <span className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 ring-1 ring-[var(--border)]">
+            <ShieldCheck className="h-4 w-4" aria-hidden /> Mentoria vitalícia
+          </span>
+          <span className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 ring-1 ring-[var(--border)]">
+            <Wand2 className="h-4 w-4" aria-hidden /> Socialização guiada
+          </span>
+        </div>
+
+        {seo.seoKeywords.length > 0 && (
+          <meta itemProp="keywords" content={seo.seoKeywords.join(", ")} />
+        )}
       </CardContent>
     </Card>
   );

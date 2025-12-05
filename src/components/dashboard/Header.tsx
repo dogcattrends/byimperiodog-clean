@@ -1,10 +1,11 @@
 ﻿"use client";
-import * as React from 'react';
-import Link from 'next/link';
-import { Breadcrumbs } from './Breadcrumbs';
-import { usePathname, useRouter } from 'next/navigation';
 import { MagnifyingGlassIcon, ChevronDownIcon, ExitIcon } from '@radix-ui/react-icons';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import * as React from 'react';
+
+import { Breadcrumbs } from './Breadcrumbs';
 
 export function Header(){
   const pathname = usePathname();

@@ -1,8 +1,9 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+
 import { requireAdmin } from "@/lib/adminAuth";
+import type { ProviderKey } from "@/lib/tracking/providers/types";
 import { listResourcesByProvider } from "@/lib/tracking/resources";
-import { ProviderKey } from "@/lib/tracking/providers/types";
 
 export async function GET(req: NextRequest, { params }: { params: { provider: string } }) {
   const auth = requireAdmin(req);

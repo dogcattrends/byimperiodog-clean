@@ -4,13 +4,12 @@
  * Inclui validação (Zod), saneamento e defaults seguros.
  */
 
-import type { Puppy } from "@/domain/puppy";
-import { PuppyHelpers } from "@/domain/puppy";
-import type { City, Color, PuppyStatus } from "@/domain/taxonomies";
 import { z } from "zod";
 
+import { PuppyHelpers, type Puppy } from "@/domain/puppy";
+import { PUPPY_COLORS, type City, type Color, type PuppyStatus } from "@/domain/taxonomies";
+
 // Paleta controlada; evita valores fora da taxonomia
-import { PUPPY_COLORS } from "@/domain/taxonomies";
 const COLOR_VALUES: Color[] = Object.keys(PUPPY_COLORS) as Color[];
 
 const CITY_SLUG_REGEX = /^[a-z0-9-]{2,60}$/;

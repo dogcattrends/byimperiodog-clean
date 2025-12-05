@@ -1,21 +1,45 @@
+type MediaValue =
+  | string
+  | {
+      url?: string | null;
+      type?: string | null;
+    };
+
 export interface RawPuppy {
   id?: string;
-  codigo?: string;
+  codigo?: string | null;
   nome?: string | null;
   name?: string | null;
-  gender?: 'male' | 'female';
-  status?: 'disponivel' | 'reservado' | 'vendido';
+  slug?: string | null;
+  gender?: "male" | "female";
+  sex?: "male" | "female";
+  sexo?: "macho" | "femea" | null;
+  status?:
+    | "disponivel"
+    | "reservado"
+    | "vendido"
+    | "indisponivel"
+    | "available"
+    | "reserved"
+    | "sold"
+    | "pending";
   color?: string | null;
-  price_cents?: number;
+  cor?: string | null; // legacy alias
+  city?: string | null;
+  cidade?: string | null;
+  state?: string | null;
+  estado?: string | null;
+  price_cents?: number | null;
+  priceCents?: number | null;
+  preco?: number | string | null;
   nascimento?: string | null;
   image_url?: string | null;
   descricao?: string | null;
+  description?: string | null; // legacy alias
   notes?: string | null;
   video_url?: string | null;
-  midia?: string[];
-  media?: string[]; // legacy alias
-  description?: string | null; // legacy alias
-  cor?: string | null; // legacy alias
+  midia?: MediaValue[];
+  media?: MediaValue[]; // legacy alias
 }
 
 export interface PuppyDTO {
@@ -34,19 +58,34 @@ export interface PuppyDTO {
   midia: string[];
 }
 
+function normalizeMediaList(source: MediaValue[] | undefined): string[] {
+  if (!source) return [];
+  return source
+    .map((item) => {
+      if (!item) return null;
+      if (typeof item === "string") return item;
+      return item.url ?? null;
+    })
+    .filter((url): url is string => typeof url === "string" && !!url);
+}
+
 export function normalizePuppy(raw: RawPuppy): PuppyDTO {
-  const nome = (raw.nome ?? raw.name ?? '').trim();
-  const midia = (raw.midia || raw.media || []).filter(Boolean);
+  const nome = (raw.nome ?? raw.name ?? "").trim();
+  const midia = normalizeMediaList((raw.midia as MediaValue[]) || (raw.media as MediaValue[]));
   const cover = raw.image_url || midia[0] || null;
-  const ordered = cover ? [cover, ...midia.filter(u => u !== cover)] : midia;
+  const ordered = cover ? [cover, ...midia.filter((u) => u !== cover)] : midia;
   return {
     id: raw.id,
     codigo: raw.codigo || undefined,
     nome,
-    gender: raw.gender === 'male' ? 'male' : 'female',
-    status: (raw.status && ['disponivel','reservado','vendido'].includes(raw.status)) ? raw.status as any : 'disponivel',
-    color: (raw.color || raw.cor || '').trim(),
-    price_cents: raw.price_cents || 0,
+    gender: (raw.gender || raw.sex) === "male" ? "male" : "female",
+    status:
+      raw.status && ["disponivel", "reservado", "vendido"].includes(raw.status)
+        ? (raw.status as any)
+        : "disponivel",
+    color: (raw.color || raw.cor || "").trim(),
+    price_cents:
+      raw.price_cents ?? raw.priceCents ?? (raw.preco ? Math.round(Number(raw.preco) * 100) : 0),
     nascimento: raw.nascimento || null,
     image_url: cover || null,
     descricao: raw.descricao || raw.description || null,

@@ -1,6 +1,7 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { supabaseAnon } from '@/lib/supabaseAnon';
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+
+import { supabaseAnon } from "@/lib/supabaseAnon";
 
 export const revalidate = 0;
 

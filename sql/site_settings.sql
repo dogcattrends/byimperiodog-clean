@@ -15,6 +15,22 @@ create table if not exists public.site_settings (
   meta_domain_verify text,     -- para <meta name="facebook-domain-verification" ...>
   custom_pixels jsonb default '[]'::jsonb,
 
+  -- Branding e canais de contato (admin/config)
+  brand_name text,
+  brand_tagline text,
+  contact_email text,
+  contact_phone text,
+  instagram text,
+  tiktok text,
+  whatsapp_message text,
+  template_first_contact text,
+  template_followup text,
+  followup_rules text,
+  avg_response_minutes int check (avg_response_minutes between 1 and 240),
+  seo_title_default text,
+  seo_description_default text,
+  seo_meta_tags text,
+
   -- Meta semanal customizável de criação de posts
   weekly_post_goal int default 7 check (weekly_post_goal between 1 and 100),
 

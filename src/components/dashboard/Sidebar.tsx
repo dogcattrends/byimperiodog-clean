@@ -1,8 +1,5 @@
 ﻿"use client";
-import * as React from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import * as Dialog from '@radix-ui/react-dialog';
 import {
   HamburgerMenuIcon,
   Cross2Icon,
@@ -19,7 +16,11 @@ import {
   CalendarIcon,
   LightningBoltIcon,
 } from '@radix-ui/react-icons';
-import * as Dialog from '@radix-ui/react-dialog';
+import { AnimatePresence, motion } from 'framer-motion';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import * as React from 'react';
+
 import { useTheme } from '../../../design-system/theme-provider';
 
 interface NavItem {

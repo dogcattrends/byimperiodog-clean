@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { Button } from '../ui/button';
 
 export function EmptyState({ title="Nada por aqui ainda.", description="Crie um novo item para começar.", actionLabel, onAction }: { title?:string; description?:string; actionLabel?:string; onAction?:()=>void }){

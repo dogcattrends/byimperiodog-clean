@@ -1,7 +1,7 @@
+import { CheckCircle, MapPin, Phone, Shield, Star, Truck } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
-import { CheckCircle, MapPin, Phone, Shield, Star, Truck } from "lucide-react";
 
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import PuppiesGrid from "@/components/PuppiesGrid";
@@ -14,15 +14,15 @@ const WA_PHONE = process.env.NEXT_PUBLIC_WA_PHONE?.replace(/\D/g, "") || "551196
 const WA_LINK = `https://wa.me/${WA_PHONE}`;
 
 export const metadata: Metadata = {
-  title: "Filhotes de Spitz Alemão Anão no Rio de Janeiro (RJ) | By Imperio Dog",
+  title: "Filhotes de Spitz Alemão Anão (Lulu da Pomerânia) no Rio de Janeiro (RJ) | By Imperio Dog",
   description:
     "Compre filhotes de Spitz Alemão Anão (Lulu da Pomerânia) no Rio de Janeiro com entrega segura na capital, Niterói, região metropolitana e interior. Pedigree CBKC e suporte vitalício.",
   alternates: { canonical: canonical("/filhotes/rio-de-janeiro") },
   openGraph: {
     type: "website",
     url: canonical("/filhotes/rio-de-janeiro"),
-    title: "Filhotes de Spitz Alemão no Rio de Janeiro",
-    description: "Compre Spitz Alemão com entrega em todo RJ. Criadora certificada CBKC.",
+    title: "Filhotes de Spitz Alemão (Lulu da Pomerânia) no Rio de Janeiro",
+    description: "Compre Spitz Alemão (Lulu da Pomerânia) com entrega em todo RJ. Criadora certificada CBKC.",
     images: [{ url: "/spitz-hero-desktop.webp", width: 1200, height: 630 }],
   },
 };
@@ -63,14 +63,15 @@ const faqRJ = [
       "Sim! Todos os filhotes vêm com pedigree CBKC, primeira dose da vacina V10, vermifugação completa, atestado veterinário e contrato. Fornecemos orientação completa sobre o calendário de vacinas.",
   },
   {
-    question: "Spitz Alemão se adapta bem ao clima do Rio?",
+    question: "Spitz Alemão (Lulu da Pomerânia) se adapta bem ao clima do Rio?",
     answer:
-      "Sim! Apesar da pelagem farta, o Spitz Alemão se adapta muito bem ao clima carioca. Recomendamos manter o filhote em ambientes frescos nas horas mais quentes e garantir acesso constante a água. A tosa higiênica ajuda no conforto.",
+      "Sim! Apesar da pelagem farta, o Spitz Alemão (Lulu da Pomerânia) se adapta muito bem ao clima carioca. Recomendamos manter o filhote em ambientes frescos nas horas mais quentes e garantir acesso constante a água. A tosa higiênica ajuda no conforto.",
   },
 ];
 
 export default function FilhotesRioDeJaneiroPage() {
-  const waText = "Olá! Gostaria de informações sobre filhotes de Spitz Alemão disponíveis no Rio de Janeiro.";
+  const waText =
+    "Olá! Gostaria de informações sobre filhotes de Spitz Alemão (Lulu da Pomerânia) disponíveis no Rio de Janeiro.";
   const waLink = `${WA_LINK}?text=${encodeURIComponent(waText)}`;
 
   // Local Business JSON-LD específico para RJ
@@ -150,7 +151,7 @@ export default function FilhotesRioDeJaneiroPage() {
             Atendemos todo o Rio de Janeiro
           </div>
           <h1 className="mt-6 text-4xl font-bold tracking-tight text-[var(--text)] sm:text-5xl lg:text-6xl">
-            Filhotes de Spitz Alemão Anão
+            Filhotes de Spitz Alemão Anão (Lulu da Pomerânia)
             <span className="block text-[var(--brand)]">no Rio de Janeiro (RJ)</span>
           </h1>
           <p className="mx-auto mt-6 max-w-3xl text-lg text-[var(--text-secondary)]">
@@ -257,9 +258,7 @@ export default function FilhotesRioDeJaneiroPage() {
         {/* CTA Final */}
         <section className="mx-auto mt-20 max-w-4xl px-5 text-center">
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-8 lg:p-12">
-            <h2 className="text-3xl font-bold text-[var(--text)]">
-              Pronto para ter seu Spitz Alemão no Rio de Janeiro?
-            </h2>
+            <h2 className="text-3xl font-bold text-[var(--text)]">Pronto para ter seu Spitz Alemão (Lulu da Pomerânia) no Rio de Janeiro?</h2>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-[var(--text-secondary)]">
               Fale agora com nossa equipe e garanta seu filhote com entrega segura em todo o RJ
             </p>

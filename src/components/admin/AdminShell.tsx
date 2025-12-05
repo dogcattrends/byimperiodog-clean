@@ -1,9 +1,11 @@
 ﻿"use client";
-import React, { ReactNode, useState, useEffect } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
+
 import { useTheme } from '../../../design-system/theme-provider';
-import { motion, AnimatePresence } from 'framer-motion';
 
 type NavItem = { href: string; label: string };
 

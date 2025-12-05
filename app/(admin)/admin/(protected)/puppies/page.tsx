@@ -1,30 +1,16 @@
 import type { Metadata } from "next";
 
-import { listPuppiesCatalog } from "@/lib/data/supabase";
 import { PuppiesPageClient } from "./PuppiesPageClient";
+import { fetchAdminPuppies, parsePuppyFilters } from "./queries";
 
 export const metadata: Metadata = {
   title: "Filhotes | Admin",
   robots: { index: false, follow: false },
 };
 
-export default async function AdminPuppiesPage() {
-  const { puppies } = await listPuppiesCatalog({}, "recent", { limit: 200 });
-
-  // Serializa para evitar erro de Date não serializável no client component
-  const serializedPuppies = puppies.map((p) => ({
-    ...p,
-    birthDate: p.birthDate.toISOString(),
-    createdAt: p.createdAt.toISOString(),
-    updatedAt: p.updatedAt.toISOString(),
-    readyForAdoptionDate: p.readyForAdoptionDate?.toISOString(),
-    publishedAt: p.publishedAt?.toISOString(),
-    soldAt: p.soldAt?.toISOString(),
-    reservedAt: p.reservedAt?.toISOString(),
-    reservationExpiresAt: p.reservationExpiresAt?.toISOString(),
-    vaccinationDates: p.vaccinationDates?.map((d) => d.toISOString()),
-    nextVaccinationDate: p.nextVaccinationDate?.toISOString(),
-  }));
+export default async function AdminPuppiesPage({ searchParams }: { searchParams?: Record<string, string | string[] | undefined> }) {
+  const { filters, sort } = parsePuppyFilters(searchParams ?? {});
+  const data = await fetchAdminPuppies({ filters, sort });
 
   return (
     <div className="space-y-[var(--space-6)]">
@@ -41,7 +27,16 @@ export default async function AdminPuppiesPage() {
         </a>
       </header>
 
-      <PuppiesPageClient items={serializedPuppies as any} leadCounts={{}} />
+      <PuppiesPageClient
+        items={data.items}
+        leadCounts={data.leadCounts}
+        filters={filters}
+        sort={sort}
+        total={data.total}
+        hasMore={data.hasMore}
+        statusSummary={data.statusSummary}
+        colorOptions={data.colorOptions}
+      />
     </div>
   );
 }

@@ -5,9 +5,9 @@ import Link from "next/link";
 import BlogCard from "@/components/blog/BlogCard";
 import SeoJsonLd from "@/components/SeoJsonLd";
 import { estimateReadingTime } from "@/lib/blog/reading-time";
-import { BLUR_DATA_URL } from "@/lib/placeholders";
 import { listPostsWithMeta } from "@/lib/blog/service";
 import { getAllPosts } from "@/lib/content";
+import { BLUR_DATA_URL } from "@/lib/placeholders";
 
 type SortOption = "recentes" | "antigos";
 

@@ -1,13 +1,14 @@
 ﻿"use client";
 
 import React from "react";
+
 import ColorChips from "@/components/puppies/ColorChips";
 import CoverPreview from "@/components/puppies/CoverPreview";
 import MediaGallery from "@/components/puppies/MediaGallery";
 import PriceInput from "@/components/puppies/PriceInput";
 import StatusToggle from "@/components/puppies/StatusToggle";
-import FormCard from "@/components/ui/FormCard";
 import { usePuppyForm } from "@/components/puppies/usePuppyForm";
+import FormCard from "@/components/ui/FormCard";
 import type { RawPuppy } from "@/types/puppy";
 
 interface PuppyFormProps {

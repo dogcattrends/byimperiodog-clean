@@ -11,25 +11,24 @@
  */
 
 import type { Metadata } from "next";
-import Script from "next/script";
-import { notFound } from "next/navigation";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import Script from "next/script";
 
-import { buildProductLD, buildBreadcrumbLD } from "@/lib/schema";
-import { getRelatedPuppies, buildDetailCrumbs } from "@/lib/interlinking";
-import { buildWhatsAppLink } from "@/lib/whatsapp";
-import { supabaseAnon } from "@/lib/supabaseAnon";
-import { normalizePuppyFromDB } from "@/domain/puppy";
 import PageViewPing from "@/components/PageViewPing";
-import type { Puppy } from "@/domain/puppy";
-
-import { PuppyHero } from "@/components/puppy/PuppyHero";
-import { PuppyGallery } from "@/components/puppy/PuppyGallery";
-import { PuppyDetails } from "@/components/puppy/PuppyDetails";
-import { PuppyBenefits } from "@/components/puppy/PuppyBenefits";
-import { PuppyTrust } from "@/components/puppy/PuppyTrust";
 import { PuppyActionsClient } from "@/components/puppy/PuppyActionsClient";
+import { PuppyBenefits } from "@/components/puppy/PuppyBenefits";
+import { PuppyDetails } from "@/components/puppy/PuppyDetails";
+import { PuppyGallery } from "@/components/puppy/PuppyGallery";
+import { PuppyHero } from "@/components/puppy/PuppyHero";
 import { PuppyRelated } from "@/components/puppy/PuppyRelated";
+import { PuppyTrust } from "@/components/puppy/PuppyTrust";
+import type { Puppy } from "@/domain/puppy";
+import { normalizePuppyFromDB } from "@/lib/catalog/normalize";
+import { buildDetailCrumbs, getRelatedPuppies } from "@/lib/interlinking";
+import { buildBreadcrumbLD, buildProductLD } from "@/lib/schema";
+import { supabaseAnon } from "@/lib/supabaseAnon";
+import { buildWhatsAppLink } from "@/lib/whatsapp";
 
 type Props = { params: { slug: string } };
 
@@ -44,8 +43,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const location = [puppy.city, puppy.state].filter(Boolean).join(", ");
   const sex = translateSex(puppy.sex);
-  const title = `${puppy.name} - Spitz Alemão Anão ${puppy.color} ${sex} ${location ? `em ${location}` : ""}`;
-  const description = puppy.description || `Filhote Spitz Alemão Anão ${puppy.color}, ${sex}. Pedigree CBKC, acompanhamento veterinário completo e mentoria vitalícia. ${location}`;
+  const title = `${puppy.name} - Spitz Alemão Anão (Lulu da Pomerânia) ${puppy.color} ${sex} ${location ? `em ${location}` : ""}`;
+  const description =
+    puppy.description ||
+    `Filhote Spitz Alemão Anão (Lulu da Pomerânia) ${puppy.color}, ${sex}. Pedigree CBKC, acompanhamento veterinário completo e mentoria vitalícia. ${location}`;
 
   return {
     title: `${title} | By Império Dog`,

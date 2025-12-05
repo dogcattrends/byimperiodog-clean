@@ -1,5 +1,6 @@
 "use client";
 import React from 'react';
+
 import { cn } from '../../lib/cn';
 
 export interface Column<T>{ key: keyof T | string; header: string; width?:string; render?:(row:T)=>React.ReactNode; align?:'left'|'right'|'center'; sortable?:boolean; className?:string; }

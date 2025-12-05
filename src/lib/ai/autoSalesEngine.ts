@@ -1,10 +1,10 @@
 import "server-only";
 
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { createLogger } from "@/lib/logger";
-import type { Database } from "@/types/supabase";
 import { analyzeLead, type LeadIntelResult, type LeadRecord } from "@/lib/leadIntel";
+import { createLogger } from "@/lib/logger";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { generateWhatsAppMessage, type WhatsAppMessageTone } from "@/lib/whatsapp";
+import type { Database } from "@/types/supabase";
 
 const logger = createLogger("autosales:engine");
 
@@ -421,4 +421,3 @@ async function closeSequence(sequenceId: string, strategy: AutoSalesStrategy, me
     })
     .eq("id", sequenceId);
 }
-*** End File

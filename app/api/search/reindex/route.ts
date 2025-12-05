@@ -1,7 +1,6 @@
-import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { ensureBlogIndex, BLOG_INDEX } from '@/lib/meili';
-import { internalGuard } from '@/lib/internalAuth';
+import { NextResponse } from "next/server";
+
+import { internalGuard } from "@/lib/internalAuth";
 
 export const runtime = 'nodejs';
 

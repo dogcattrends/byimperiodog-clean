@@ -1,7 +1,7 @@
+import { CheckCircle, MapPin, Phone, Shield, Star, Truck } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
-import { CheckCircle, MapPin, Phone, Shield, Star, Truck } from "lucide-react";
 
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import PuppiesGrid from "@/components/PuppiesGrid";
@@ -14,15 +14,15 @@ const WA_PHONE = process.env.NEXT_PUBLIC_WA_PHONE?.replace(/\D/g, "") || "551196
 const WA_LINK = `https://wa.me/${WA_PHONE}`;
 
 export const metadata: Metadata = {
-  title: "Filhotes de Spitz Alemão Anão em São Paulo (SP) | By Imperio Dog",
+  title: "Filhotes de Spitz Alemão Anão (Lulu da Pomerânia) em São Paulo (SP) | By Imperio Dog",
   description:
     "Compre filhotes de Spitz Alemão Anão (Lulu da Pomerânia) em São Paulo com entrega segura na capital, Grande SP e interior. Pedigree CBKC, suporte vitalício e criadora de referência.",
   alternates: { canonical: canonical("/filhotes/sao-paulo") },
   openGraph: {
     type: "website",
     url: canonical("/filhotes/sao-paulo"),
-    title: "Filhotes de Spitz Alemão em São Paulo",
-    description: "Compre Spitz Alemão com entrega em toda São Paulo. Criadora certificada CBKC.",
+    title: "Filhotes de Spitz Alemão (Lulu da Pomerânia) em São Paulo",
+    description: "Compre Spitz Alemão (Lulu da Pomerânia) com entrega em toda São Paulo. Criadora certificada CBKC.",
     images: [{ url: "/spitz-hero-desktop.webp", width: 1200, height: 630 }],
   },
 };
@@ -63,14 +63,14 @@ const faqSP = [
       "Sim! Todos os filhotes são entregues com a primeira dose da vacina múltipla (V10), vermifugação em dia e atestado de saúde veterinário. Orientamos sobre o calendário completo de vacinas.",
   },
   {
-    question: "Qual o tamanho de um Spitz Alemão adulto?",
+    question: "Qual o tamanho de um Spitz Alemão (Lulu da Pomerânia) adulto?",
     answer:
-      "O Spitz Alemão Anão (Lulu da Pomerânia) atinge até 22cm de altura na cernelha quando adulto, pesando entre 1,5kg e 3,5kg. São cães de porte mini, ideais para apartamentos.",
+      "O Spitz Alemão Anão (Lulu da Pomerânia) atinge até 22cm de altura na cernelha (altura) quando adulto, pesando entre 1,5kg e 3,5kg. São cães de porte mini, ideais para apartamentos.",
   },
 ];
 
 export default function FilhotesSaoPauloPage() {
-  const waText = "Olá! Gostaria de informações sobre filhotes de Spitz Alemão disponíveis em São Paulo.";
+  const waText = "Olá! Gostaria de informações sobre filhotes de Spitz Alemão (Lulu da Pomerânia) disponíveis em São Paulo.";
   const waLink = `${WA_LINK}?text=${encodeURIComponent(waText)}`;
 
   // Local Business JSON-LD específico para SP
@@ -150,7 +150,7 @@ export default function FilhotesSaoPauloPage() {
             Atendemos toda São Paulo
           </div>
           <h1 className="mt-6 text-4xl font-bold tracking-tight text-[var(--text)] sm:text-5xl lg:text-6xl">
-            Filhotes de Spitz Alemão Anão
+            Filhotes de Spitz Alemão Anão (Lulu da Pomerânia)
             <span className="block text-[var(--brand)]">em São Paulo (SP)</span>
           </h1>
           <p className="mx-auto mt-6 max-w-3xl text-lg text-[var(--text-secondary)]">
@@ -255,7 +255,7 @@ export default function FilhotesSaoPauloPage() {
         {/* CTA Final */}
         <section className="mx-auto mt-20 max-w-4xl px-5 text-center">
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-8 lg:p-12">
-            <h2 className="text-3xl font-bold text-[var(--text)]">Pronto para ter seu Spitz Alemão em São Paulo?</h2>
+            <h2 className="text-3xl font-bold text-[var(--text)]">Pronto para ter seu Spitz Alemão (Lulu da Pomerânia) em São Paulo?</h2>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-[var(--text-secondary)]">
               Fale agora com nossa equipe e garanta seu filhote com entrega segura em toda São Paulo
             </p>

@@ -3,15 +3,12 @@
  * Integração do pipeline de imagens com o sistema de upload do admin
  */
 
-import { processImage } from '../../scripts/image-pipeline/processor';
-import { uploadBatchToSupabase } from '../../scripts/image-pipeline/supabase-storage';
-import { analyzeImageQuality } from '../../scripts/image-pipeline/quality-analyzer';
-import type { ProcessedImage } from '../../scripts/image-pipeline/processor';
+import { analyzePuppyImage, type PuppyImageAIResult } from '@/lib/ai/puppyImageQualityAI';
+import { analyzePuppyVision, type PuppyVisionInsights } from '@/lib/ai/puppyVisionAI';
 
-import type { PuppyImageAIResult } from '@/lib/ai/puppyImageQualityAI';
-import { analyzePuppyImage } from '@/lib/ai/puppyImageQualityAI';
-import type { PuppyVisionInsights } from '@/lib/ai/puppyVisionAI';
-import { analyzePuppyVision } from '@/lib/ai/puppyVisionAI';
+import { processImage, type ProcessedImage } from '../../scripts/image-pipeline/processor';
+import { analyzeImageQuality } from '../../scripts/image-pipeline/quality-analyzer';
+import { uploadBatchToSupabase } from '../../scripts/image-pipeline/supabase-storage';
 
 export interface UploadImageOptions {
   puppyId: string;

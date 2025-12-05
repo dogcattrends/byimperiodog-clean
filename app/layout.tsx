@@ -1,8 +1,8 @@
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import NextDynamic from "next/dynamic";
-import Script from "next/script";
 import { headers } from "next/headers";
+import Script from "next/script";
 
 import "./globals.css";
 import "../design-system/tokens.css";
@@ -24,6 +24,7 @@ import {
   buildSiteNavigationLD,
   buildLocalBusinessLD,
 } from "@/lib/tracking";
+import { getTrackingConfig } from "@/lib/tracking/getTrackingConfig";
 
 import { ThemeProvider } from "../design-system/theme-provider";
 
@@ -366,3 +367,4 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     </html>
   );
 }
+
