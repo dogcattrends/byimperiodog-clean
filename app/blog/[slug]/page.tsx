@@ -114,6 +114,22 @@ async function fetchAuthor(authorId: string | null | undefined): Promise<Author 
   }
 }
 
+async function fetchAuthorBySlug(slug: string | null | undefined): Promise<Author | null> {
+  if (!slug) return null;
+  try {
+    const sb = supabaseAnon();
+    const { data } = await sb.from("blog_authors").select("id,name,slug,avatar_url").eq("slug", slug).maybeSingle();
+    return (data as unknown as Author) || null;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchReviewer(reviewerId: string | null | undefined): Promise<Author | null> {
+  // reviewer stored as author id (same table)
+  return fetchAuthor(reviewerId);
+}
+
 export async function generateStaticParams() {
   return [];
 }
@@ -146,6 +162,7 @@ export default async function BlogPostPage({
   if (!post) return notFound();
 
   const author = await fetchAuthor(post.author_id);
+  const reviewer = await fetchReviewer((post as any).reviewed_by || null);
   const compiled = post.content_mdx ? await compileBlogMdx(post.content_mdx) : null;
   const minutes = compiled?.readingTimeMinutes || estimateReadingTime(post.content_mdx || "");
   const related = (await getRelatedUnified(post.slug, 6)) as RelatedAny[];
@@ -238,6 +255,9 @@ export default async function BlogPostPage({
               {post.published_at ? <span>Publicado em {formatDate(post.published_at)}</span> : null}
               {post.updated_at && post.updated_at !== post.published_at ? (
                 <span className="rounded-pill bg-surface-subtle px-3 py-1 font-medium text-text">Atualizado em {formatDate(post.updated_at)}</span>
+              ) : null}
+              {reviewer ? (
+                <span className="rounded-pill bg-surface-subtle px-3 py-1 font-medium text-text">Revisado por {reviewer.name}</span>
               ) : null}
               {minutes ? (
                 <span className="rounded-pill bg-surface-subtle px-3 py-1 font-semibold text-text">
