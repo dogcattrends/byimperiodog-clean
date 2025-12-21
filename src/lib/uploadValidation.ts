@@ -6,7 +6,7 @@ export const ALLOWED_IMAGE_MIME = new Set([
   'image/png',
   'image/webp',
   'image/avif',
-  'image/gif', // GIF animado permitido
+  // GIFs are intentionally excluded for uploads (handled separately)
 ]);
 
 export const ALLOWED_VIDEO_MIME = new Set([

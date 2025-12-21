@@ -11,7 +11,7 @@ export default defineConfig({
     environment: 'happy-dom',
     include: ['tests/**/*.test.{ts,tsx}'],
     passWithNoTests: true,
-    setupFiles: ['tests/setup/test-env.ts'],
+    setupFiles: ['tests/setup/test-env-utf8.ts'],
     coverage: { reporter: ['text','html','json-summary'], enabled: true, reportsDirectory: 'coverage' },
     env: {
       NEXT_PUBLIC_SUPABASE_URL: 'https://npmnuihgydadihktglrd.supabase.co',
