@@ -1,4 +1,5 @@
-﻿import "server-only";
+﻿// Note: this is a pure utility module — do not mark as server-only so it can
+// be imported from both Server and Client contexts as needed.
 
 export type AdvisorStatusSuggestion = "novo" | "em_conversa" | "followup" | "quase_fechado" | "fechado" | "perdido";
 export type AdvisorPriorityLevel = "alta" | "media" | "baixa";

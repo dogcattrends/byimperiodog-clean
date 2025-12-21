@@ -1,37 +1,75 @@
-import {defineType} from 'sanity'
+import {defineField, defineType} from 'sanity'
 
 export default defineType({
   name: 'author',
   title: 'Author',
   type: 'document',
   fields: [
-    { name: 'name', title: 'Name', type: 'string', validation: (Rule: any) => Rule.required() },
-    { name: 'slug', title: 'Slug', type: 'slug', options: { source: 'name' }, validation: (Rule: any) => Rule.required() },
-    { name: 'bio', title: 'Bio', type: 'text' },
-    { name: 'profileImage', title: 'Profile image', type: 'image' },
+    defineField({
+      name: 'name',
+      title: 'Name',
+      type: 'string',
+      validation: (Rule: any) => Rule.required(),
+    }),
+    defineField({
+      name: 'slug',
+      title: 'Slug',
+      type: 'slug',
+      options: { source: 'name' },
+      validation: (Rule: any) => Rule.required().unique(),
+    }),
+    defineField({
+      name: 'bio',
+      title: 'Bio',
+      type: 'text',
+      validation: (Rule: any) => Rule.required().min(20),
+    }),
+    defineField({
+      name: 'experience',
+      title: 'Experience',
+      type: 'array',
+      of: [
+        defineField({
+          name: 'entry',
+          title: 'Experience entry',
+          type: 'object',
+          fields: [
+            { name: 'role', title: 'Role', type: 'string' },
+            { name: 'organization', title: 'Organization', type: 'string' },
+            {
+              name: 'period',
+              title: 'Period',
+              type: 'string',
+            },
+          ],
+        }),
+      ],
+    }),
+    defineField({
+      name: 'credentials',
+      title: 'Credentials',
+      type: 'array',
+      of: [{ type: 'string' }],
+    }),
+    defineField({
+      name: 'profileImage',
+      title: 'Profile image',
+      type: 'image',
+    }),
+    defineField({
+      name: 'website',
+      title: 'Website',
+      type: 'url',
+    }),
+    defineField({
+      name: 'twitter',
+      title: 'Twitter handle',
+      type: 'url',
+    }),
+    defineField({
+      name: 'linkedin',
+      title: 'LinkedIn profile',
+      type: 'url',
+    }),
   ],
 })
-// @ts-nocheck
-// @ts-nocheck
-import { defineField, defineType } from 'sanity'
-
-export default {
-  name: 'author',
-  title: 'Autor',
-  type: 'document',
-  fields: [
-    {name: 'name', title: 'Nome', type: 'string'},
-    {name: 'bio', title: 'Biografia', type: 'text'},
-    {name: 'avatar', title: 'Avatar', type: 'image'}
-  ]
-}
-export default {
-  name: 'author',
-  title: 'Autor',
-  type: 'document',
-  fields: [
-    {name: 'name', title: 'Nome', type: 'string'},
-    {name: 'bio', title: 'Biografia', type: 'text'},
-    {name: 'avatar', title: 'Avatar', type: 'image'}
-  ]
-}
