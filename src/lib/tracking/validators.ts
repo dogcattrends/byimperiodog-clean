@@ -66,8 +66,8 @@ export function validateGoogleAnalyticsId(id: string | null | undefined): Valida
     };
   }
 
-  // Validar formato: G- seguido de alfanumérico
-  if (!/^G-[A-Z0-9]{8,15}$/i.test(trimmed)) {
+  // Validar formato: G- seguido de alfanumérico (aceita códigos mais curtos)
+  if (!/^G-[A-Z0-9]{6,15}$/i.test(trimmed)) {
     return {
       valid: false,
       error: 'Google Analytics ID deve seguir o formato G-XXXXXXXXXX (GA4)',

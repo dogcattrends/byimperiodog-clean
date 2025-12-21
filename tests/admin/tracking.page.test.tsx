@@ -79,6 +79,10 @@ describe("Admin Tracking Settings Page", () => {
     const { container } = render(<TrackingSettingsForm />);
     const form = await waitFor(() => container.querySelector("form"));
     const btn = within(form as Element).getByRole("button", { name: /Salvar IDs/i });
+
+    // wait until initial load completes and the button is enabled
+    await waitFor(() => expect(btn).not.toBeDisabled());
+
     fireEvent.click(btn);
 
     expect(btn).toBeDisabled();
