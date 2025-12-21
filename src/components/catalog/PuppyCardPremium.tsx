@@ -24,7 +24,6 @@ import { BLUR_DATA_URL } from "@/lib/placeholders";
 import track from "@/lib/track";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 import PrimaryCTA from "@/components/ui/PrimaryCTA";
-import { ContactCTA } from "@/components/ui/ContactCTA";
 
 type PuppyCardData = {
   id: string;
@@ -213,7 +212,7 @@ export default function PuppyCardPremium({
 
           <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-black/10 to-transparent" aria-hidden />
 
-          <div className="absolute left-3 right-3 top-3 flex items-center justify-between gap-2">
+          <div className="absolute left-3 right-3 top-3 flex items-center justify-start gap-2">
             <div className="flex items-center gap-2">
               <StatusBadge status={puppy.status as any} className="text-xs font-semibold" />
               {promoBadge && (
@@ -227,9 +226,6 @@ export default function PuppyCardPremium({
                 </span>
               )}
             </div>
-            <span className="inline-flex items-center gap-1 rounded-full bg-white/90 px-3 py-1 text-sm font-semibold text-[var(--text)] shadow-sm ring-1 ring-[var(--border)]">
-              {priceLabel}
-            </span>
           </div>
 
           <button
@@ -294,32 +290,17 @@ export default function PuppyCardPremium({
         </div>
 
         <div className="mt-2 flex flex-col gap-3">
-          <ContactCTA
-            href={whatsappUrl}
-            label={ctaLabel}
-            icon={<MessageCircle className="h-4 w-4" aria-hidden />}
-            ariaLabel={`Falar com atendente sobre o filhote ${name}`}
-            target="_blank"
-            rel="noreferrer"
-            onClick={() => {
-              onWhatsAppClick?.();
-              track.event?.("cta_click", { action: "whatsapp_card", puppy_id: puppy.id });
+          <PrimaryCTA
+            onClick={(event) => {
+              event.preventDefault();
+              track.event?.("cta_click", { action: "want_puppy_card", puppy_id: puppy.id });
+              track.event?.("modal_open", { placement: "card", puppy_id: puppy.id });
+              onOpenDetails?.(event);
             }}
-          />
-        <PrimaryCTA
-          onClick={(event) => {
-            event.preventDefault();
-            track.event?.("cta_click", { action: "details_card", puppy_id: puppy.id });
-            track.event?.("modal_open", { placement: "card", puppy_id: puppy.id });
-            onOpenDetails?.(event);
-          }}
-          ariaLabel={`Ver detalhes e condições do filhote ${name}`}
-        >
-            <span className="inline-flex items-center gap-2">
-              <ChevronRight className="h-4 w-4" aria-hidden="true" /> Ver detalhes e condições
-            </span>
+            ariaLabel={`Quero esse filhote ${name}`}
+          >
+            <span className="inline-flex items-center gap-2">Quero esse filhote</span>
           </PrimaryCTA>
-          <span className="text-sm font-semibold text-[var(--text-muted)]">{priceLabel}</span>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--text-muted)]">

@@ -13,6 +13,7 @@
  */
 
 import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
+import dynamic from "next/dynamic";
 import { AlertCircle, ChevronDown, Loader2, RefreshCw, Search, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition } from "react";
 import type { MouseEvent } from "react";
@@ -25,7 +26,7 @@ import { personalizeRanking, type UserProfile } from "@/lib/ai/catalog-personali
 import track from "@/lib/track";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 
-import PuppyDetailsModal from "./PuppyDetailsModal";
+const PuppyDetailsModal = dynamic(() => import("./PuppyDetailsModal"), { ssr: false, loading: () => null });
 
 type RankingFlag = "hot" | "normal" | "slow";
 
