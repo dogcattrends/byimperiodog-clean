@@ -6,7 +6,8 @@ import { describe, it, expect } from 'vitest';
 describe('encoding integrity', () => {
   const exts = new Set(['.ts','.tsx','.md','.mdx','.sql','.js','.mjs','.cjs']);
   // Padrões multi-caractere mais específicos para evitar falsos positivos em mapeamentos de scripts
-  const BAD = ['Alemão','Anão','excelên','responsÃ','pós-','disponÃ'];
+  // Only check for mojibake-like sequences (real Portuguese words are allowed)
+  const BAD = ['responsÃ','pÃ³s-','disponÃ','indisponÃ'];
   // Ignorar arquivos que documentam ou contêm propositalmente as sequências quebradas
   const IGNORE_SUBSTR = [
     'docs/CLEANUP_LOG.md',

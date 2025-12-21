@@ -17,3 +17,24 @@ export async function getRelatedUnified(slug: string, limit = 6) {
     return [];
   }
 }
+
+import { supabaseAnon } from '@/lib/supabaseAnon';
+
+export async function getPostsByTag(tag: string, limit = 24) {
+  try {
+    const sb = supabaseAnon();
+    const { data, error } = await sb
+      .from('blog_posts')
+      .select('slug,title,excerpt,cover_url,published_at')
+      .contains('tags', [tag])
+      .eq('status', 'published')
+      .order('published_at', { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+    return Array.isArray(data) ? data : [];
+  } catch (e) {
+    console.error('getPostsByTag error', e);
+    return [];
+  }
+}

@@ -8,7 +8,21 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { LeadDetailClient, type LeadDetailData, type LeadHistoryEntry } from "../LeadDetailClient";
 import type { LeadPuppyMatch } from "../queries";
 import { normalizeLeadStatus } from "../queries";
-import { AdminErrorState } from "../ui/AdminErrorState";
+
+// Inline fallback error UI to avoid import resolution issues during build.
+function AdminErrorFallback({ title = "Falha ao carregar", message = "Ocorreu um erro inesperado.", actionHref = "/admin", actionLabel = "Tentar novamente" }: { title?: string; message?: string; actionHref?: string; actionLabel?: string }) {
+  return (
+    <div className="rounded-2xl border border-rose-200 bg-rose-50 px-6 py-8 text-center text-[var(--text)]">
+      <p className="text-lg font-semibold text-rose-700">{title}</p>
+      <p className="mt-2 text-sm text-rose-700/80">{message}</p>
+      <div className="mt-4">
+        <a href={actionHref} className="inline-flex items-center justify-center rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-rose-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-rose-500">
+          {actionLabel}
+        </a>
+      </div>
+    </div>
+  );
+}
 
 export const metadata: Metadata = {
   title: "Lead | Admin",
@@ -34,7 +48,7 @@ export default async function LeadDetailPage({ params }: { params: { id: string 
 
   if (error) {
     logger.error("Erro ao carregar lead", { error });
-    return <AdminErrorState title="Erro ao carregar lead" message="Nao foi possivel abrir este lead agora." actionHref="/admin/leads" />;
+    return <AdminErrorFallback title="Erro ao carregar lead" message="Nao foi possivel abrir este lead agora." actionHref="/admin/leads" />;
   }
   if (!data) notFound();
 
@@ -130,7 +144,7 @@ export default async function LeadDetailPage({ params }: { params: { id: string 
     return <LeadDetailClient lead={lead} history={history} matchedPuppy={matchedPuppy} insight={data.lead_ai_insights as any} advisor={advisor} />;
   } catch (err) {
     logger.error("Erro ao montar tela de detalhes do lead", { err });
-    return <AdminErrorState title="Erro ao carregar lead" message="Nao conseguimos carregar os detalhes agora. Tente novamente." actionHref="/admin/leads" />;
+    return <AdminErrorFallback title="Erro ao carregar lead" message="Nao conseguimos carregar os detalhes agora. Tente novamente." actionHref="/admin/leads" />;
   }
 }
 

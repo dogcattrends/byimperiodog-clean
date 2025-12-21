@@ -15,6 +15,7 @@
 import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import { AlertCircle, ChevronDown, Loader2, RefreshCw, Search, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition } from "react";
+import type { MouseEvent } from "react";
 
 import type { AiBadgeId } from "@/components/catalog/ai-badges";
 import PuppyCardPremium from "@/components/catalog/PuppyCardPremium";
@@ -760,6 +761,7 @@ export default function PuppiesGridPremium({ initialItems = [], initialFilters }
   const [openId, setOpenId] = useState<string | null>(null);
   const filterSnapshotRef = useRef<{ color: string; gender: string }>({ color: "", gender: "" });
   const priceFilterInitialized = useRef(false);
+  const lastTriggerRef = useRef<HTMLButtonElement | null>(null);
 
   const remoteFilters = useMemo(
     () => ({
@@ -1045,7 +1047,10 @@ export default function PuppiesGridPremium({ initialItems = [], initialFilters }
   );
 
   const handleOpenDetails = useCallback(
-    (puppy: CatalogPuppy) => {
+    (puppy: CatalogPuppy, event?: MouseEvent<HTMLButtonElement>) => {
+      if (event?.currentTarget) {
+        lastTriggerRef.current = event.currentTarget;
+      }
       setOpenId(puppy.id);
       updateSignalsWithInteraction(puppy, (signals) => {
         if (signals.detailOpenedId === puppy.id) return signals;
@@ -1190,7 +1195,7 @@ export default function PuppiesGridPremium({ initialItems = [], initialFilters }
                     puppy={puppy}
                     coverImage={puppy.images?.[0]}
                     badges={puppy.badges}
-                    onOpenDetails={() => handleOpenDetails(puppy)}
+                    onOpenDetails={(event) => handleOpenDetails(puppy, event)}
                     onWhatsAppClick={() => handleWhatsAppClick(puppy)}
                     priority={index < 4}
                     rankingFlags={puppy.rankingFlag}
@@ -1214,7 +1219,9 @@ export default function PuppiesGridPremium({ initialItems = [], initialFilters }
       )}
 
       {/* Modal de detalhes */}
-      {openId && <PuppyDetailsModal id={openId} onClose={() => setOpenId(null)} />}
+      {openId && (
+        <PuppyDetailsModal id={openId} onClose={() => setOpenId(null)} restoreFocusRef={lastTriggerRef} />
+      )}
     </section>
   );
 }

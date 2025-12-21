@@ -7,6 +7,8 @@ import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
+import PrimaryCTA from "@/components/ui/PrimaryCTA";
+import { ContactCTA } from "@/components/ui/ContactCTA";
 import { routes, type AppRoutes } from "@/lib/route";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 
@@ -71,13 +73,15 @@ export default function Header() {
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
-          <a
+          <PrimaryCTA href={routes.filhotes} ariaLabel="Ver filhotes premium">
+            Ver filhotes
+          </PrimaryCTA>
+          <ContactCTA
             href={whatsappLink}
-            className="inline-flex min-h-[48px] items-center gap-2 rounded-full bg-brand px-5 py-2 text-sm font-semibold text-brand-foreground shadow-sm transition hover:bg-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
-          >
-            <WhatsAppIcon className="h-4 w-4" aria-hidden="true" />
-            Conversar agora
-          </a>
+            label="Conversar agora"
+            icon={<WhatsAppIcon className="h-4 w-4" aria-hidden="true" />}
+            ariaLabel="Conversar agora no WhatsApp"
+          />
         </div>
 
         <Dialog.Root open={open} onOpenChange={setOpen}>
@@ -123,15 +127,22 @@ export default function Header() {
                   </Link>
                 ))}
               </nav>
-              <div className="mt-5">
-                <a
-                  href={whatsappLink}
-                  className="inline-flex w-full min-h-[52px] items-center justify-center gap-2 rounded-full bg-brand px-4 text-sm font-semibold text-brand-foreground shadow-sm transition hover:bg-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+              <div className="mt-5 space-y-2">
+                <PrimaryCTA
+                  href={routes.filhotes}
+                  className="w-full"
+                  ariaLabel="Ver filhotes premium"
                   onClick={() => setOpen(false)}
                 >
-                  <WhatsAppIcon className="h-4 w-4" aria-hidden="true" />
-                  Conversar no WhatsApp
-                </a>
+                  Ver filhotes premium
+                </PrimaryCTA>
+                <ContactCTA
+                  href={whatsappLink}
+                  label="Conversar no WhatsApp"
+                  icon={<WhatsAppIcon className="h-4 w-4" aria-hidden="true" />}
+                  variant="outline"
+                  ariaLabel="Conversar no WhatsApp"
+                />
               </div>
             </Dialog.Content>
           </Dialog.Portal>

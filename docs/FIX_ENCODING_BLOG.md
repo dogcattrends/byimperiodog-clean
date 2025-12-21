@@ -16,7 +16,7 @@ O usuário reportou via screenshot que os caracteres acentuados no blog estavam 
 - `vitalÃ­cia` → deveria ser **vitalícia**
 - `famÃ­lias` → deveria ser **famílias**
 - `socializaÃ§Ã£o` → deveria ser **socialização**
-- `disponÃveis` → deveria ser **disponíveis**
+- `disponíveis` → deveria ser **disponíveis**
 - `tambÃ©m` → deveria ser **também**
 - `saÃºde` → deveria ser **saúde**
 

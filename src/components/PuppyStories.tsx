@@ -400,7 +400,7 @@ Como integrar:
                 open={open}
                 onClose={() => setOpen(false)} />
 
-2. Ajustar fonte da imagem para garantir proporção 9:16 quando disponÃ­vel.
+ 2. Ajustar fonte da imagem para garantir proporção 9:16 quando disponível.
 */
 
 

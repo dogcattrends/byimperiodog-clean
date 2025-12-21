@@ -6,7 +6,7 @@ export const ALLOWED_IMAGE_MIME = new Set([
   'image/png',
   'image/webp',
   'image/avif',
-  'image/gif', // GIF animado permitido
+  // GIFs are intentionally excluded for uploads (handled separately)
 ]);
 
 export const ALLOWED_VIDEO_MIME = new Set([
@@ -20,9 +20,11 @@ export const MAX_GIF_BYTES = 10_000_000; // 10 MB (GIF animado)
 export const MAX_VIDEO_BYTES = 50_000_000; // 50 MB para vídeos
 
 export function isAllowedImage(mime: string, sizeBytes: number): boolean {
-  if (!ALLOWED_IMAGE_MIME.has(mime) || sizeBytes <= 0) return false;
-  const limit = mime === 'image/gif' ? MAX_GIF_BYTES : MAX_IMAGE_BYTES;
-  return sizeBytes <= limit;
+  // Explicitly reject GIF uploads (handled separately) for clarity.
+  if (mime === 'image/gif') return false;
+  if (!ALLOWED_IMAGE_MIME.has(mime)) return false;
+  if (sizeBytes <= 0) return false;
+  return sizeBytes <= MAX_IMAGE_BYTES;
 }
 
 export function isAllowedVideo(mime: string, sizeBytes: number): boolean {

@@ -13,7 +13,7 @@
 
 import { Calendar, ChevronRight, Heart, MapPin, MessageCircle, ShieldCheck, Video, Wand2 } from "lucide-react";
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { MouseEvent, useMemo, useState } from "react";
 
 import { Badge, Button, Card, CardContent, CardHeader, StatusBadge } from "@/components/ui";
 import type { CatalogBadge } from "@/lib/ai/catalog-badges-ai";
@@ -23,6 +23,8 @@ import { optimizePuppyCardImage } from "@/lib/optimize-image";
 import { BLUR_DATA_URL } from "@/lib/placeholders";
 import track from "@/lib/track";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
+import PrimaryCTA from "@/components/ui/PrimaryCTA";
+import { ContactCTA } from "@/components/ui/ContactCTA";
 
 type PuppyCardData = {
   id: string;
@@ -48,7 +50,7 @@ type PuppyCardProps = {
   coverImage?: string | null;
   badges?: CatalogBadge[];
   priority?: boolean;
-  onOpenDetails?: () => void;
+  onOpenDetails?: (event?: MouseEvent<HTMLButtonElement>) => void;
   onWhatsAppClick?: () => void;
 };
 
@@ -292,32 +294,32 @@ export default function PuppyCardPremium({
         </div>
 
         <div className="mt-2 flex flex-col gap-3">
-          <a
+          <ContactCTA
             href={whatsappUrl}
+            label={ctaLabel}
+            icon={<MessageCircle className="h-4 w-4" aria-hidden />}
+            ariaLabel={`Falar com atendente sobre o filhote ${name}`}
             target="_blank"
             rel="noreferrer"
             onClick={() => {
               onWhatsAppClick?.();
-              track.event?.("cta_whatsapp", { id: puppy.id, source: "card_premium" });
+              track.event?.("cta_click", { action: "whatsapp_card", puppy_id: puppy.id });
             }}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
-            aria-label={`Falar com atendente sobre o filhote ${name}`}
-            itemProp="offers"
-          >
-            <MessageCircle className="h-4 w-4" aria-hidden />
-            {ctaLabel}
-          </a>
-          <button
-            type="button"
-            onClick={onOpenDetails}
-            className="inline-flex items-center justify-between gap-2 rounded-full px-3 py-2 text-sm font-semibold text-[var(--text)] transition hover:text-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
-            aria-label={`Ver detalhes e condições do filhote ${name}`}
-          >
+          />
+        <PrimaryCTA
+          onClick={(event) => {
+            event.preventDefault();
+            track.event?.("cta_click", { action: "details_card", puppy_id: puppy.id });
+            track.event?.("modal_open", { placement: "card", puppy_id: puppy.id });
+            onOpenDetails?.(event);
+          }}
+          ariaLabel={`Ver detalhes e condições do filhote ${name}`}
+        >
             <span className="inline-flex items-center gap-2">
-              <ChevronRight className="h-4 w-4" aria-hidden /> Ver detalhes e condições
+              <ChevronRight className="h-4 w-4" aria-hidden="true" /> Ver detalhes e condições
             </span>
-            <span className="text-[var(--text-muted)]">{priceLabel}</span>
-          </button>
+          </PrimaryCTA>
+          <span className="text-sm font-semibold text-[var(--text-muted)]">{priceLabel}</span>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--text-muted)]">
