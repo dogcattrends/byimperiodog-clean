@@ -1,5 +1,51 @@
 "use client";
 
+import React from "react";
+import clsx from "clsx";
+import { trackCTAClick } from "@/lib/events";
+
+type PrimaryCTAProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  children: React.ReactNode;
+  ctaName?: string;
+  location?: string;
+  loading?: boolean;
+};
+
+export default function PrimaryCTA({ children, ctaName = "primary", location = "top", disabled, loading, className, ...rest }: PrimaryCTAProps) {
+  const isDisabled = disabled || loading;
+
+  const handleClick: React.MouseEventHandler<HTMLButtonElement> = (e) => {
+    if (isDisabled) {
+      e.preventDefault();
+      return;
+    }
+    try {
+      trackCTAClick(ctaName, location);
+    } catch {
+      // silent
+    }
+    if (rest.onClick) rest.onClick(e as any);
+  };
+
+  return (
+    <button
+      type="button"
+      aria-label={typeof children === "string" ? children : ctaName}
+      disabled={isDisabled}
+      onClick={handleClick}
+      className={clsx(
+        "inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-semibold shadow-sm focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-400 focus-visible:ring-offset-2",
+        isDisabled ? "bg-emerald-200 text-emerald-700 cursor-not-allowed" : "bg-emerald-600 text-white hover:bg-emerald-700",
+        className,
+      )}
+      {...rest}
+    >
+      {loading ? "Carregando..." : children}
+    </button>
+  );
+}
+"use client";
+
 import classNames from "classnames";
 import Link, { LinkProps } from "next/link";
 import { ReactNode } from "react";
