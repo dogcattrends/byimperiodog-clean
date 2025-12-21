@@ -69,13 +69,29 @@ type MDXComponentsMap = Record<string, React.ComponentType<Record<string, unknow
 async function fetchPost(slug: string, opts: { preview: boolean }): Promise<Post | null> {
   try {
     const sb = supabaseAnon();
-    const { data, error } = await sb
-      .from("blog_posts")
-      .select(
-        "id,slug,title,subtitle,excerpt,content_mdx,cover_url,cover_alt,published_at,created_at,updated_at,status,author_id,seo_title,seo_description,category,tags,lang"
-      )
-      .eq("slug", slug)
-      .maybeSingle();
+    // Try extended select (new editorial fields). If the DB doesn't have these columns,
+    // fall back to the legacy select to remain compatible.
+    let res: { data: Post | null; error: any } | null = null;
+    try {
+      res = await sb
+        .from("blog_posts")
+        .select(
+          `id,slug,title,subtitle,excerpt,tldr,key_takeaways: key_takeaways,faq,sources,content_mdx,cover_url,cover_alt,published_at,created_at,updated_at,status,author_id,seo_title,seo_description,category,tags,lang,last_reviewed_at,reviewed_by`
+        )
+        .eq("slug", slug)
+        .maybeSingle();
+    } catch (e) {
+      // fallback for older schemas
+      res = await sb
+        .from("blog_posts")
+        .select(
+          "id,slug,title,subtitle,excerpt,content_mdx,cover_url,cover_alt,published_at,created_at,updated_at,status,author_id,seo_title,seo_description,category,tags,lang"
+        )
+        .eq("slug", slug)
+        .maybeSingle();
+    }
+
+    const { data, error } = res || ({ data: null, error: null } as any);
 
     if (error) throw error;
     if (!data) return null;
@@ -133,10 +149,18 @@ export default async function BlogPostPage({
   const compiled = post.content_mdx ? await compileBlogMdx(post.content_mdx) : null;
   const minutes = compiled?.readingTimeMinutes || estimateReadingTime(post.content_mdx || "");
   const related = (await getRelatedUnified(post.slug, 6)) as RelatedAny[];
+  const faqFromPost = Array.isArray((post as any).faq) ? ((post as any).faq as { question?: string; answer?: string }[]) : undefined;
+  const faqExtras = faqFromPost
+    ? faqFromPost
+        .filter(Boolean)
+        .map((f) => ({ q: f.question || (f as any).q || '', a: f.answer || (f as any).a || '' }))
+        .filter((x) => x.q && x.a)
+    : undefined;
+
   const { article, breadcrumb, faqBlock } = buildArticleJsonLd(
     post as Post & { content_mdx?: string | null },
     author,
-    { toc: compiled?.toc }
+    { toc: compiled?.toc, faq: faqExtras }
   );
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.byimperiodog.com.br";
@@ -269,6 +293,32 @@ export default async function BlogPostPage({
               ) : null}
             </figure>
           ) : null}
+
+            {/* TL;DR and Key Takeaways (render early for citability) */}
+            {(post as any).tldr ? (
+              <section className="mt-6 rounded-md border border-border bg-surface p-4">
+                <h3 className="mb-2 text-sm font-semibold">TL;DR</h3>
+                <p className="text-sm text-text-muted">{(post as any).tldr}</p>
+              </section>
+            ) : null}
+
+            {Array.isArray((post as any).key_takeaways) && (post as any).key_takeaways.length ? (
+              <section className="mt-4 rounded-md border border-border bg-surface p-4">
+                <h3 className="mb-2 text-sm font-semibold">Principais insights</h3>
+                <ul className="list-inside list-disc text-sm text-text-muted">
+                  {((post as any).key_takeaways as string[]).map((t: string, i: number) => (
+                    <li key={i}>{t}</li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
+
+            {/* Table of contents (compact) */}
+            {compiled?.toc ? (
+              <div className="mt-4">
+                <TocNav toc={compiled.toc} />
+              </div>
+            ) : null}
 
           <div className="flex flex-col gap-4 rounded-2xl border-y border-border py-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-1">
