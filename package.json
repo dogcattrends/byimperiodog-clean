@@ -6,6 +6,7 @@
     "predev": "node scripts/run-gen-client-photos.mjs",
     "prebuild": "node scripts/content-guard.mjs && node scripts/run-gen-client-photos.mjs && node scripts/contentlayer-build-wrapper.mjs",
     "dev": "cross-env NEXT_DISABLE_VERSION_CHECK=1 NEXT_TELEMETRY_DISABLED=1 next dev -p 3000",
+    "dev:no-interactive": "node scripts/dev-no-interactive.mjs",
     "build": "next build --no-lint",
     "build:analyze": "cross-env ANALYZE=true next build --no-lint",
     "build:stats": "npm run build && node scripts/collect-build-stats.mjs",
