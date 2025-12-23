@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 // Calls the existing AI suggestion endpoint (if API key configured) and persists a suggestion
@@ -8,7 +9,7 @@ export async function POST(req: Request) {
     const { id, slug, title, excerpt, content_mdx } = body as { id?: string; slug?: string; title?: string; excerpt?: string; content_mdx?: string };
     if (!id && !slug) return NextResponse.json({ error: "id ou slug obrigatórios" }, { status: 400 });
 
-    let payload = { title, excerpt, content_mdx, slug };
+    const payload = { title, excerpt, content_mdx, slug };
 
     const resp = await fetch(new URL("../../seo-suggestions", req.url).toString(), {
       method: "POST",

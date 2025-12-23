@@ -5,16 +5,17 @@ import { cn } from '../../lib/cn';
 // Implementação leve de cva local para evitar dependência externa agora
 type CVADef = { variants: Record<string, Record<string,string>>; defaultVariants: Record<string,string> };
 function cva(base:string, def:CVADef){
-  return (opts:Record<string,any>)=>{
+  return (opts:Record<string,unknown>)=>{
     let cls = base;
     for(const k of Object.keys(def.variants)){
-      const v = (opts && opts[k]) || def.defaultVariants[k];
-      if(v && def.variants[k][v]) cls += ' '+def.variants[k][v];
+      const vRaw = (opts && (opts as Record<string,unknown>)[k]) ?? def.defaultVariants[k];
+      const v = String(vRaw || def.defaultVariants[k]);
+      if(v && def.variants[k] && def.variants[k][v]) cls += ' ' + def.variants[k][v];
     }
     return cls;
   };
 }
-type VariantProps<T> = any;
+// VariantProps removed — not used currently, avoid `any`
 
 const buttonVariants = cva(
   'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium ring-offset-[var(--bg)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 select-none',

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import type { AiOutlineRequest, AiOutlineResponse } from "@/types/blog";
 
 /**

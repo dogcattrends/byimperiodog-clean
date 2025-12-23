@@ -31,7 +31,7 @@ async function run() {
 	console.log('[seo-audit] Starting SEO audit for published posts...');
 	try {
 		const { data, error } = await supabase
-			.from<PostRow>('blog_posts')
+			.from('blog_posts')
 			.select('id,slug,title,author_id,tldr,key_takeaways,seo_description,excerpt,content_mdx,published_at,status')
 			.eq('status', 'published');
 

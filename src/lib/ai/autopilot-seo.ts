@@ -65,7 +65,7 @@ export type AutopilotSeoResult = {
   suggestedPosts: { title: string; description: string; keywords: string[] }[];
   actions: string[];
   manualRecommendations: string[];
-  jsonld: { slug: string; kind: "article" | "product" | "breadcrumb" | "faq"; payload: Record<string, unknown> }[];
+  jsonld: { slug: string; kind: "article" | "product" | "breadcrumb" | "faq"; payload: Record<string, unknown> | null }[];
 };
 
 async function safeSelect<T>(table: string, columns: string) {
@@ -198,6 +198,7 @@ export async function runAutopilotSeo(): Promise<AutopilotSeoResult> {
     jsonld.push({
       slug,
       kind: "product",
+      // cast to any to avoid strict shape mismatches from DB rows
       payload: buildProductLD({
         name: label,
         description: p.descricao || `Spitz (${p.color ?? "cor indefinida"})`,
@@ -206,7 +207,7 @@ export async function runAutopilotSeo(): Promise<AutopilotSeoResult> {
         currency: "BRL",
         availability: p.status || "InStock",
         url: `https://www.byimperiodog.com.br/filhotes/${slug}`,
-      }),
+      } as any),
     });
     jsonld.push({
       slug,
@@ -215,12 +216,12 @@ export async function runAutopilotSeo(): Promise<AutopilotSeoResult> {
         { name: "Home", url: "https://www.byimperiodog.com.br/" },
         { name: "Filhotes", url: "https://www.byimperiodog.com.br/filhotes" },
         { name: label, url: `https://www.byimperiodog.com.br/filhotes/${slug}` },
-      ]),
+      ] as any),
     });
     jsonld.push({
       slug,
       kind: "faq",
-      payload: buildFAQPageLD(faqs.map((f) => ({ question: f.question, answer: f.answer }))),
+      payload: buildFAQPageLD(faqs.map((f) => ({ question: f.question, answer: f.answer })) as any),
     });
   });
 

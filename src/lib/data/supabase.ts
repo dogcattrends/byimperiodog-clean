@@ -5,7 +5,7 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { supabaseAnon } from "@/lib/supabaseAnon";
 import type { Database } from "@/types/supabase";
 
-type LeadsRow = Database["public"]["Tables"]["leads"]["Row"];
+// _LeadsRow = Database["public"]["Tables"]["leads"]["Row"] (alias removed — previously unused)
 type LeadsInsert = Database["public"]["Tables"]["leads"]["Insert"];
 type PuppiesRow = Database["public"]["Tables"]["puppies"]["Row"];
 

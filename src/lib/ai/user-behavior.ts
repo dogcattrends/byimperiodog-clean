@@ -21,8 +21,8 @@ export type BehaviorRecommendation = {
   slowZones: { route: string; avgDuration: number; hint: string }[];
 };
 
-function topK<T extends { score: number }>(arr: T[], k: number) {
-  return [...arr].sort((a, b) => b.score - a.score).slice(0, k);
+function topK<T extends { score?: number }>(arr: T[], k: number) {
+  return [...arr].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, k);
 }
 
 export function generateBehaviorRecommendations(events: BehaviorEvent[]): BehaviorRecommendation {
@@ -49,15 +49,15 @@ export function generateBehaviorRecommendations(events: BehaviorEvent[]): Behavi
     6,
   );
 
-  // Atalhos rápidos: ações mais frequentes
-  const quickShortcuts = topK(
-    Array.from(actionFreq.entries()).map(([action, score]) => ({
-      href: mapActionToHref(action),
-      label: mapActionToLabel(action),
-      reason: `Ação recorrente (${score}x)`,
-    })),
-    4,
-  ).filter((item) => item.href);
+  // Atalhos rápidos: ações mais frequentes (map -> sort -> top)
+  const shortcutsWithScore = Array.from(actionFreq.entries())
+    .map(([action, score]) => ({ href: mapActionToHref(action), label: mapActionToLabel(action), reason: `Ação recorrente (${score}x)`, score }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 4);
+
+  const quickShortcuts = shortcutsWithScore
+    .map(({ href, label, reason }) => ({ href, label, reason }))
+    .filter((item) => item.href);
 
   // Zonas lentas: rotas com maior tempo médio
   const slowZones = Object.entries(routeDuration)

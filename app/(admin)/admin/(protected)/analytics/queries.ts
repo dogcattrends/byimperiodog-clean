@@ -71,9 +71,8 @@ type LeadsByDayRow = { day: string | null; total: number | null };
 type LeadsAggRow = { label?: string | null; value?: number | null };
 type StatusAggRow = { status: string | null; total: number | null };
 
-type SupabaseClient = ReturnType<typeof supabaseAdmin>;
-// Supabase client type helpers are environment-dependent; use a permissive
-// type here to avoid build-time TS errors while keeping runtime checks.
+// Supabase client type helpers are environment-dependent; remove unused
+// local helper type to avoid lint noise.
 type LeadsQueryBuilder = any;
 
 const applyFilters = <T extends LeadsQueryBuilder>(query: T, filters: AnalyticsFilters) => {

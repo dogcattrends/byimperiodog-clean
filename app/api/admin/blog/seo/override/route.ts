@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 // Upsert SEO overrides for a post by id or slug

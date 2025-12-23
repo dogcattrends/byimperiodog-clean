@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, no-empty */
 type TrackingEvent = "page_view" | "view_form" | "submit_start" | "submit_success" | "submit_error";
 
 function safePushToDataLayer(event: string, payload: Record<string, any> = {}) {

@@ -13,6 +13,7 @@ type Props = {
 
 const STATUS_LABELS: Record<AdminPuppyStatus, string> = {
   available: "Disponível",
+  pending: "Pendente",
   coming_soon: "Em breve",
   reserved: "Reservado",
   sold: "Vendido",

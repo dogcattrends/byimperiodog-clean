@@ -25,7 +25,7 @@ export function assignVariant(expKey: string, variant: string) {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(storageKey(expKey), variant);
-  } catch {}
+  } catch (e) { void e; }
 }
 
 export function chooseVariant(expKey: string, variants: VariantInput[]): string {

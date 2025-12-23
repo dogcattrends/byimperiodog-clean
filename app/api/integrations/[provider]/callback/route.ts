@@ -1,6 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getProvider } from "@/lib/tracking/providers/registry";
+import type { NextRequest} from "next/server";
+import { NextResponse } from "next/server";
+
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { getProvider } from "@/lib/tracking/providers/registry";
 
 function getQuery(url: string): URLSearchParams {
   return new URL(url).searchParams;

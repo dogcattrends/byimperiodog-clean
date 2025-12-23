@@ -40,12 +40,11 @@ export default function AdminNav() {
       await fetch('/api/admin/logout', {
         method: 'GET',
         cache: 'no-store',
-        // @ts-ignore keepalive é suportado no browser
-        keepalive: true,
+          keepalive: true,
         signal: (ctrl ? (ctrl as AbortController).signal : undefined) as any,
       });
       if (t) clearTimeout(t as any);
-    } catch {}
+    } catch (e) { /* ignored */ }
     // navega direto para o login e força revalidação do layout
     router.replace('/admin/login');
     router.refresh();

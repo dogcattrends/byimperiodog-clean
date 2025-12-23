@@ -33,8 +33,8 @@ export const environmentSchema = z
     ];
 
     for (const [key, re] of patterns) {
-      const val = (obj as any)[key];
-      if (typeof val === 'string' && !re.test(val)) {
+      const val = (obj as Record<string, unknown>)[key];
+      if (typeof val === "string" && !re.test(val)) {
         ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${key} is invalid`, path: [key] });
       }
     }

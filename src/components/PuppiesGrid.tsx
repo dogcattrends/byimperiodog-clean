@@ -12,11 +12,7 @@ import PuppyCard from "./PuppyCard";
 import PuppyCardSkeleton from "./PuppyCardSkeleton";
 import PuppyDetailsModal from "./PuppyDetailsModal";
 
-// Normaliza string para busca removendo acentos e convertendo para minusculas
-const normalize = (s: string) => s
-  .normalize("NFD")
-  .replace(/\p{Diacritic}/gu, "")
-  .toLowerCase();
+// Normalização inline usada onde necessário; remover função não utilizada para evitar warning
 
 type Props = {
   initialItems?: Puppy[];
@@ -45,13 +41,10 @@ export default function PuppiesGrid({ initialItems = [] }: Props) {
     (async () => {
       // Se já tem items iniciais, não precisa buscar
       if (initialItems.length > 0) {
-        console.log('[PuppiesGrid] Usando initialItems:', initialItems.length);
         setItems(initialItems);
         setLoading(false);
         return;
       }
-      
-      console.log('[PuppiesGrid] Buscando filhotes...');
       try {
         setLoading(true);
         setError(null);
@@ -59,7 +52,6 @@ export default function PuppiesGrid({ initialItems = [] }: Props) {
         const result = await listPuppiesCatalog({}, 'recent', { limit: 40 });
         
         if (mountedRef.current) {
-          console.log('[PuppiesGrid] Filhotes carregados:', result.puppies.length);
           setItems(result.puppies);
           track.event?.("list_loaded", { count: result.puppies.length });
         }

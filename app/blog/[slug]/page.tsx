@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { MDXRemote } from "next-mdx-remote/rsc";
+import React from "react";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";

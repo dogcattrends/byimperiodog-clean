@@ -13,6 +13,16 @@ export interface CoverPreviewProps {
 export function CoverPreview({ url, onChange, id = "image_url", label = "Imagem (URL)" }: CoverPreviewProps) {
   const [open, setOpen] = React.useState(false);
 
+  // close modal via Escape key for keyboard users
+  React.useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+
+    if (open) window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
   return (
     <div className="grid gap-2">
       <div className="grid gap-1">
@@ -54,12 +64,20 @@ export function CoverPreview({ url, onChange, id = "image_url", label = "Imagem 
 
       {open && url && (
         <div
-          role="dialog"
-          aria-modal="true"
           className="fixed inset-0 z-40 flex items-center justify-center bg-black/60"
+          role="button"
+          tabIndex={0}
+          aria-label="Fechar visualização da capa"
           onClick={() => setOpen(false)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              setOpen(false);
+            }
+          }}
         >
-          <div className="relative w-[90vw] max-w-3xl aspect-video bg-[var(--surface)] rounded-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          {/* evitar fechar modal ao clicar dentro do conteúdo */}
+          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events */}
+          <div role="dialog" aria-modal="true" aria-label="Visualização da capa" tabIndex={-1} className="relative w-[90vw] max-w-3xl aspect-video bg-[var(--surface)] rounded-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <Image src={url} alt="Capa" fill className="object-contain" sizes="90vw" />
             <button
               type="button"

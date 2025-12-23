@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { OAuthInfo, OAuthTokens, ProviderAdapter, Resource } from "./types";
 
 const FB_AUTH_URL = "https://www.facebook.com/v18.0/dialog/oauth";

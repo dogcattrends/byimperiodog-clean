@@ -1,4 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest} from "next/server";
+import { NextResponse } from "next/server";
+
+export const dynamic = "force-dynamic";
+
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 function authed(req: NextRequest) {

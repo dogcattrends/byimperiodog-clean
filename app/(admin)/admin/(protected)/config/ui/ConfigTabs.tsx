@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
 import { SlidersHorizontal, Wifi } from "lucide-react";
+import { useState, type ReactNode } from "react";
 
 import type { GeneralSettings } from "@/lib/admin/generalConfig";
 import type { TrackingConfig } from "@/lib/tracking/getTrackingConfig";
 
-import { ConfigForm } from "./ConfigForm";
+/* eslint-disable jsx-a11y/no-noninteractive-element-to-interactive-role */
 import { TrackingSettingsPage } from "../tracking/TrackingSettingsPage";
+
+import { ConfigForm } from "./ConfigForm";
 
 type TabId = "general" | "tracking";
 

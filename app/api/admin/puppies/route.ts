@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest} from "next/server";
+import { NextResponse } from "next/server";
 
 import { requireAdmin } from "@/lib/adminAuth";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
@@ -75,21 +76,33 @@ function inferTypeFromUrl(url: string): "image" | "video" {
   return /\.(mp4|webm|mov|m4v)$/i.test(url) ? "video" : "image";
 }
 
-async function hydrateMedia(record: any, client: SupabaseClient) {
+async function hydrateMedia(record: unknown, client: SupabaseClient) {
   if (!record) return record;
 
-  const rawMediaArray = Array.isArray(record.midia) ? record.midia : undefined;
-  const fallbackList = rawMediaArray && rawMediaArray.length ? [] : parseStringList(record.images ?? record.media ?? record.midia);
+  const rec = record as Record<string, unknown>;
+
+  const rawMediaArray = Array.isArray(rec.midia) ? (rec.midia as unknown[]) : undefined;
+  const fallbackList = rawMediaArray && rawMediaArray.length ? [] : parseStringList(rec.images ?? rec.media ?? rec.midia);
   const mediaSource = rawMediaArray && rawMediaArray.length ? rawMediaArray : fallbackList;
 
   const resolvedEntries = (
     await Promise.all(
       (mediaSource as unknown[]).map(async (entry) => {
-        const baseUrl = typeof entry === "string" ? entry : entry?.url ?? entry?.src ?? "";
+        let baseUrl = "";
+        if (typeof entry === "string") baseUrl = entry;
+        else if (entry && typeof entry === "object") {
+          const obj = entry as Record<string, unknown>;
+          if (typeof obj.url === "string") baseUrl = obj.url;
+          else if (typeof obj.src === "string") baseUrl = obj.src;
+        }
         if (!baseUrl) return null;
         const resolvedUrl = await resolveMediaUrl(baseUrl, client);
         if (!resolvedUrl) return null;
-        const type = typeof entry === "object" && entry?.type === "video" ? "video" : "image";
+        let type: "image" | "video" = "image";
+        if (entry && typeof entry === "object") {
+          const obj = entry as Record<string, unknown>;
+          if (obj.type === "video") type = "video";
+        }
         return {
           url: resolvedUrl,
           type: type === "video" ? "video" : inferTypeFromUrl(resolvedUrl),
@@ -98,28 +111,19 @@ async function hydrateMedia(record: any, client: SupabaseClient) {
     )
   ).filter((item): item is { url: string; type: "image" | "video" } => Boolean(item));
 
-  const explicitVideo = await resolveMediaUrl(record.video_url ?? record.videoUrl, client);
+  const explicitVideo = await resolveMediaUrl((rec.video_url ?? rec.videoUrl) as unknown, client);
   if (explicitVideo && !resolvedEntries.some((entry) => entry.type === "video")) {
     resolvedEntries.push({ url: explicitVideo, type: "video" });
   }
 
   const imageUrls = resolvedEntries.filter((entry) => entry.type === "image").map((entry) => entry.url);
   const videoUrls = resolvedEntries.filter((entry) => entry.type === "video").map((entry) => entry.url);
-  const resolvedCover = imageUrls[0] ?? (await resolveMediaUrl(record.image_url ?? record.imageUrl, client)) ?? null;
+  const resolvedCover = imageUrls[0] ?? (await resolveMediaUrl((rec.image_url ?? rec.imageUrl) as unknown, client)) ?? null;
 
   const finalImages = imageUrls.length ? imageUrls : resolvedCover ? [resolvedCover] : [];
 
-  if (process.env.NODE_ENV !== "production") {
-    console.debug("[admin-puppies-route] media hydration", {
-      mediaSource,
-      resolvedEntries,
-      resolvedCover,
-      videoUrls,
-    });
-  }
-
   return {
-    ...record,
+    ...(rec as Record<string, unknown>),
     image_url: resolvedCover,
     video_url: videoUrls[0] ?? explicitVideo ?? null,
     images: finalImages,

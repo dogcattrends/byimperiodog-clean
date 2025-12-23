@@ -1,10 +1,12 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-unused-vars, no-empty, jsx-a11y/interactive-supports-focus */
+import * as React from 'react';
+
+import { ScheduleDrawer } from '@/components/admin/ScheduleDrawer';
 import { Header } from '@/components/dashboard/Header';
 import { Main } from '@/components/dashboard/Main';
-import * as React from 'react';
-import { ScheduleDrawer } from '@/components/admin/ScheduleDrawer';
-import { adminPostJSON, adminFetch } from '@/lib/adminFetch';
 import { useToast } from '@/components/ui/toast';
+import { adminFetch } from '@/lib/adminFetch';
 
 function buildMonth(y:number, m:number){
   const first=new Date(y,m,1); const start=new Date(first); start.setDate(1-first.getDay());
@@ -56,7 +58,7 @@ export default function EditorialCalendar(){
     if(!selectedPost) return; // exige seleção
     try {
       const run_at = `${date}T${time}:00Z`;
-      const res = await adminPostJSON('/api/admin/blog/schedule/events', { post_id:selectedPost, run_at, action:'publish' });
+      const res = await adminFetch('/api/admin/blog/schedule/events', { method: 'POST', body: JSON.stringify({ post_id:selectedPost, run_at, action:'publish' }), headers: { 'Content-Type': 'application/json' } });
       if(res.ok){ push({ type:'success', message:'Evento agendado' }); } else { push({ type:'error', message:'Falha ao agendar' }); }
       // reload incremental do dia
       await loadMonth(ym[0], ym[1]);

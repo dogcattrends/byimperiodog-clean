@@ -1,6 +1,8 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 import { respondWithError } from "@/lib/errors";
 import { createLogger } from "@/lib/logger";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";

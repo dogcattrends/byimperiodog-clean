@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import classNames from "classnames";
-import type { ReactNode } from "react";
+import Link from "next/link";
 
 type RelatedLink = {
   label: string;

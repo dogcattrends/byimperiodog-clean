@@ -3,23 +3,24 @@
 import { useEffect, useMemo, useState } from "react";
 
 import type { Puppy } from "@/domain/puppy";
+import type { AdminPuppyListItem, AdminPuppyStatus } from "./queries";
 
 import { PuppiesBoard } from "./PuppiesBoard";
 import { PuppiesTable } from "./PuppiesTable";
 
-type Props = { items: Puppy[] };
+type Props = { items: AdminPuppyListItem[] | Puppy[] };
 
 export function PuppiesView({ items }: Props) {
   const [view, setView] = useState<"board" | "table">("board");
   const [leadCounts, setLeadCounts] = useState<Record<string, number>>({});
-  const [localItems, setLocalItems] = useState<Puppy[]>(items);
+  const [localItems, setLocalItems] = useState<AdminPuppyListItem[] | Puppy[] | any[]>(items as any[]);
   const slugs = useMemo(
     () =>
       Array.from(
         new Set(
           items
-            .map((p) => (p as any).slug as string | undefined)
-            .filter((s): s is string => Boolean(s)),
+                  .map((p) => p.slug as string | undefined)
+                  .filter((s): s is string => Boolean(s)),
         ),
       ),
     [items],
@@ -42,14 +43,47 @@ export function PuppiesView({ items }: Props) {
     return () => controller.abort();
   }, [slugs]);
 
-  const handleStatusChange = async (id: string, status: string) => {
+  const handleStatusChange = async (id: string, status: AdminPuppyStatus) => {
     await fetch("/api/admin/puppies/status", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, status }),
     });
-    setLocalItems((prev) => prev.map((p) => (p.id === id ? { ...p, status: status as any } : p)));
+    setLocalItems((prev) => prev.map((p) => (p.id === id ? { ...p, status: status } : p)));
   };
+
+  const toAdminItem = (p: unknown) => {
+    const r = p as unknown as Record<string, unknown>;
+    const createdRaw = r.createdAt ?? r.created_at;
+    const createdAt =
+      typeof createdRaw === 'string'
+        ? createdRaw
+        : createdRaw instanceof Date
+        ? createdRaw.toISOString()
+        : createdRaw
+        ? new Date(String(createdRaw)).toISOString()
+        : new Date().toISOString();
+
+    return {
+      id: String(r.id ?? ''),
+      name: String(r.name ?? r.nome ?? 'Sem nome'),
+      slug: r.slug ? String(r.slug) : undefined,
+      status: (String(r.status ?? r.rawStatus ?? 'available') as AdminPuppyStatus),
+      rawStatus: String(r.rawStatus ?? r.status ?? ''),
+      color: r.color ? String(r.color) : null,
+      sex: r.sex ? (String(r.sex) as any) : null,
+      city: r.city ? String(r.city) : null,
+      state: r.state ? String(r.state) : null,
+      priceCents: Number(r.priceCents ?? r.price_cents ?? 0) || 0,
+      createdAt,
+      imageUrl: r.imageUrl ? String(r.imageUrl) : r.image_url ? String(r.image_url) : null,
+      demandScore: r.demandScore ?? null,
+      demandFlag: r.demandFlag ?? null,
+      demandReason: r.demandReason ?? null,
+    } as AdminPuppyListItem;
+  };
+
+  const adminItems = (localItems ?? []).map((x) => toAdminItem(x));
 
   return (
     <div className="space-y-4">
@@ -76,9 +110,9 @@ export function PuppiesView({ items }: Props) {
       </div>
 
       {view === "board" ? (
-        <PuppiesBoard items={localItems} leadCounts={leadCounts} onStatusChange={handleStatusChange} />
+        <PuppiesBoard items={adminItems} leadCounts={leadCounts} onStatusChange={handleStatusChange} />
       ) : (
-        <PuppiesTable items={localItems} leadCounts={leadCounts} onStatusChange={handleStatusChange} />
+        <PuppiesTable items={adminItems} leadCounts={leadCounts} onStatusChange={handleStatusChange} />
       )}
     </div>
   );

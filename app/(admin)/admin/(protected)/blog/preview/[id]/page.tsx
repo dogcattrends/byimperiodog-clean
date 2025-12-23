@@ -1,8 +1,9 @@
-import React from 'react';
 import { notFound } from 'next/navigation';
-import { adminFetchSSR } from '@/lib/adminFetchSSR';
+import React from 'react';
+
 import { AdminShell } from '@/components/admin/AdminShell';
 import { BlogSubnav } from '@/components/admin/BlogSubnav';
+import { adminFetchSSR } from '@/lib/adminFetchSSR';
 
 // Página de preview segura (noindex) para posts ainda não publicados ou agendados.
 // Usa fetch server-side com credencial admin em contexto (assume middleware protege rota).
@@ -38,6 +39,7 @@ export default async function PreviewPage({ params }:{ params:{ id:string } }){
         </div>
         {post.cover_url && (
           <figure className="mb-8 overflow-hidden rounded-md border border-[var(--border)]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={post.cover_url} alt={post.cover_alt||''} className="w-full aspect-[16/9] object-cover" />
           </figure>
         )}

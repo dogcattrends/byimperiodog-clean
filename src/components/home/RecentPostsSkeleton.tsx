@@ -2,10 +2,9 @@
 export default function RecentPostsSkeleton() {
 	return (
 		<section
-			className="mx-auto w-full max-w-6xl px-5 md:px-6 py-16 sm:py-20"
-			aria-labelledby="home-blog-heading"
-			role="region"
-		>
+				className="mx-auto w-full max-w-6xl px-5 md:px-6 py-16 sm:py-20"
+				aria-labelledby="home-blog-heading"
+			>
 			<div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
 				<div>
 					<h2 id="home-blog-heading" className="text-2xl font-bold tracking-tight sm:text-3xl">

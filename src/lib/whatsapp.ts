@@ -83,7 +83,7 @@ type PuppyForMessage = {
   price_cents?: number | null;
 };
 
-export type WhatsAppMessageTone = "premium" | "consultivo" | "objetivo" | (string & {});
+export type WhatsAppMessageTone = "premium" | "consultivo" | "objetivo" | string;
 
 export type WhatsAppMessagePayload = {
   message: string;

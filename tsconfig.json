@@ -9,7 +9,6 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
     "paths": {
       "@/components/*": [
         "src/components/*"

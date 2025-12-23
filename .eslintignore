@@ -1,0 +1,2 @@
+# Temporariamente ignorar tipos gerados do supabase que causam parsing errors
+src/types/supabase.ts

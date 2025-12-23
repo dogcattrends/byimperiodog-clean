@@ -1,7 +1,7 @@
 "use client";
 
-import type { ReactNode } from "react";
 import { AlertTriangle, Brain, CheckCircle2, Lightbulb, ListChecks, Loader2, RefreshCcw } from "lucide-react";
+import type { ReactNode } from "react";
 
 import { useServerAction } from "@/hooks/useServerAction";
 
@@ -66,9 +66,9 @@ export function AIInsightsPanel({ action, initialInsight, fallbackText }: AIInsi
 
         {!showFallback && (
           <div className="space-y-4">
-            {isSkeleton ? (
-              <SkeletonSummary />
-            ) : (
+                  {isSkeleton ? (
+                    <SkeletonSummary />
+                  ) : (
               <div className="space-y-2">
                 <span
                   className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${riskTone[insight.riskLevel]}`}
@@ -81,7 +81,7 @@ export function AIInsightsPanel({ action, initialInsight, fallbackText }: AIInsi
                   Atualizado {isPending ? "agora" : new Date(insight.generatedAt).toLocaleString("pt-BR")}
                 </p>
               </div>
-            )}
+              )}
 
             <div className="grid gap-4 md:grid-cols-3" aria-label="Listas de insights">
               <InsightList
@@ -141,8 +141,8 @@ function InsightList({ title, icon, tone, items, loading, emptyLabel }: InsightL
       </header>
       {loading ? (
         <SkeletonList />
-      ) : items.length ? (
-        <ul className="space-y-2" role="list">
+        ) : items.length ? (
+        <ul className="space-y-2">
           {items.map((item) => (
             <li key={item} className="flex items-start gap-2 text-sm text-[var(--text)]">
               <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-500" aria-hidden />

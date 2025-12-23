@@ -1,8 +1,10 @@
-import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+/* eslint-disable @typescript-eslint/no-unused-vars, no-empty */
 import { revalidatePath } from "next/cache";
+import { NextResponse } from "next/server";
+
 import { requireAdmin, logAdminAction } from '@/lib/adminAuth';
 import { rateLimit } from '@/lib/rateLimit';
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 /*
   Orquestrador multi-fases de geração de post
@@ -60,9 +62,9 @@ export async function POST(req: Request) {
   try {
     const { data: created } = await sb.from('ai_generation_sessions').insert([{ topic, phase: 'outline', progress: 5 }]).select('id').single();
     sessionId = created?.id || null;
-  } catch {}
+  } catch (e) { /* ignored */ }
   async function updateSession(patch: { phase?: string; progress?: number; status?: string; error_message?: string; post_id?: string }) {
-    if(!sessionId) return; try { await sb.from('ai_generation_sessions').update(patch).eq('id', sessionId); } catch {}
+    if(!sessionId) return; try { await sb.from('ai_generation_sessions').update(patch).eq('id', sessionId); } catch (e) { /* ignored */ }
   }
 
   // 1. Outline
@@ -118,7 +120,7 @@ export async function POST(req: Request) {
   await updateSession({ phase:'finalize', progress:85 });
   try {
     const { slug, insertedId, cover_url } = await persistPost({ title, excerpt, mdx, seo_title, seo_description, status: body.status, scheduled_at: body.scheduled_at, generateImage: body.generateImage, coverPrompt: `Foto realista 16:9 filhote Spitz Alemão ${topic}`, coverAlt: `Filhote Spitz Alemão - ${topic}`, extras: { contentBlocks, readingTime, faqItems } });
-    if (tags && tags.length) { try { await persistTags(insertedId, tags); } catch {} }
+    if (tags && tags.length) { try { await persistTags(insertedId, tags); } catch (e) { /* ignored */ } }
     await updateSession({ phase:'done', progress:100, status:'completed', post_id: insertedId });
     logAdminAction({ route:'/api/admin/blog/ai/generate-post', method:'POST', action:'generate_post', payload:{ topic, post_id: insertedId } });
     return NextResponse.json({ ok: true, slug, title, excerpt, tags, cover_url, post_id: insertedId, reading_time: readingTime, session_id: sessionId });
@@ -152,8 +154,8 @@ function buildOutline(scope: string): SectionOutline[] {
 }
 
 function safeJSON(str: string): any {
-  try { return JSON.parse(str); } catch {}
-  const fb = str.match(/\{[\s\S]*\}$/); if (fb) { try { return JSON.parse(fb[0]); } catch {} }
+  try { return JSON.parse(str); } catch (e) { /* ignored */ }
+  const fb = str.match(/\{[\s\S]*\}$/); if (fb) { try { return JSON.parse(fb[0]); } catch (e) { /* ignored */ } }
   return {};
 }
 
@@ -178,7 +180,7 @@ function buildTitle(topic: string, scope: string): string {
 }
 
 function buildExcerpt(mdx: string, topic: string): string {
-  const plain = mdx.replace(/[#>*`_\-]/g,' ').replace(/\s+/g,' ').trim();
+  const plain = mdx.replace(/[#>*`_-]/g,' ').replace(/\s+/g,' ').trim();
   return (plain.slice(0, 155) || `Tudo sobre ${topic} no contexto do Spitz Alemão.`);
 }
 
@@ -268,17 +270,17 @@ async function persistPost(opts: { title: string; excerpt: string; mdx: string; 
   // Criar revisão inicial
   try {
     await sb.from('blog_post_revisions').insert([{ post_id: inserted.id, snapshot: { title, excerpt, seo_title, seo_description, content_mdx: mdx, content_blocks_json: extras?.contentBlocks, reading_time: extras?.readingTime, faq: extras?.faqItems || [] }, reason: 'initial-create' }]);
-  } catch {}
+  } catch (e) { /* ignored */ }
   let cover_url: string | undefined;
   if (generateImage) {
     try {
       // chamada interna (assumindo mesmo host)
       const imgRes = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || ''}/api/admin/blog/ai/image`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: coverPrompt, alt: coverAlt }) });
       if (imgRes.ok) { const j = await imgRes.json(); cover_url = j.url; }
-    } catch {}
+    } catch (e) { /* ignored */ }
     if (cover_url) await sb.from('blog_posts').update({ cover_url, og_image_url: cover_url }).eq('id', inserted.id);
   }
-  try { revalidatePath('/blog'); revalidatePath(`/blog/${inserted.slug}`); } catch {}
+  try { revalidatePath('/blog'); revalidatePath(`/blog/${inserted.slug}`); } catch (e) { /* ignored */ }
   return { slug: inserted.slug, insertedId: inserted.id, cover_url };
 }
 

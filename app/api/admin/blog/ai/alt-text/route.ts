@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import type { AiAltTextRequest, AiAltTextResponse } from "@/types/blog";
 
 /**

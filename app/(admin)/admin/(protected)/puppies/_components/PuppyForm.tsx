@@ -254,7 +254,7 @@ function parseLegacyArray(input: unknown): string[] {
     return uniqueList(
       trimmed
         .split(/\n|;|,|\|/)
-        .map((chunk) => chunk.replace(/^\"|\"$/g, "").trim())
+        .map((chunk) => chunk.replace(/^"|"$/g, "").trim())
         .map(normalizeUrl)
         .filter(Boolean)
     );

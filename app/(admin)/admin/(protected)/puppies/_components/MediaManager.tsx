@@ -169,6 +169,7 @@ export function MediaManager({
                 }`}
               >
                 <div className="aspect-square">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={photo.url}
                     alt={`Foto ${index + 1}`}
@@ -272,6 +273,7 @@ export function MediaManager({
                     controls
                     className="h-full w-full object-cover"
                   >
+                    <track kind="captions" />
                     Seu navegador não suporta vídeos.
                   </video>
                 </div>

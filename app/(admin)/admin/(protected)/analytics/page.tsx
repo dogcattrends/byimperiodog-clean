@@ -1,18 +1,19 @@
-import type { Metadata } from "next";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Metadata } from "next";
 
-import { MetricCard } from "./components/MetricCard";
-import { BarChart } from "./components/BarChart";
-import { LineChart } from "./components/LineChart";
-import { PieChart } from "./components/PieChart";
+import { getCatalogAiMetrics } from "@/lib/ai/catalog-analytics";
 import { analyzeConversion } from "@/lib/ai/conversion-analyzer";
 import { generateDashboardNarrative } from "@/lib/ai/dashboard-narrative";
 import { generateDecisions } from "@/lib/ai/decision-engine";
+import { recalcDemandPredictions } from "@/lib/ai/demand-prediction";
 import { generateOperationalAlerts } from "@/lib/ai/operational-alerts";
 import { generatePriorityTasks } from "@/lib/ai/priority-engine";
-import { recalcDemandPredictions } from "@/lib/ai/demand-prediction";
-import { getCatalogAiMetrics } from "@/lib/ai/catalog-analytics";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+
+import { BarChart } from "./components/BarChart";
+import { LineChart } from "./components/LineChart";
+import { MetricCard } from "./components/MetricCard";
+import { PieChart } from "./components/PieChart";
 
 export const metadata: Metadata = {
   title: "Analytics | Admin",

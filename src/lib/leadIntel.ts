@@ -10,7 +10,7 @@ import type { Database } from "@/types/supabase";
 
 type LeadRow = Database["public"]["Tables"]["leads"]["Row"];
 type PuppyRow = Database["public"]["Tables"]["puppies"]["Row"];
-type InsightRow = Database["public"]["Tables"]["lead_ai_insights"]["Row"];
+type InsightRow = any;
 
 export type LeadRecord = LeadRow & {
   cor_preferida?: string | null;
@@ -160,7 +160,7 @@ function recommendPuppies(puppies: PuppyRow[], prefs: { color?: string | null; s
         score += 30;
         reasons.push("Cor desejada");
       }
-      if (prefs.sex && normalize(p.sex) === normalize(prefs.sex)) {
+      if (prefs.sex && normalize((p as any).sex ?? (p as any).sexo) === normalize(prefs.sex)) {
         score += 20;
         reasons.push("Sexo desejado");
       }

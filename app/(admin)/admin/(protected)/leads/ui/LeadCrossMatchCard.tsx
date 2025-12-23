@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
 import { ArrowRight, Loader2, Shuffle } from "lucide-react";
+import { useState, useTransition } from "react";
 
 type Suggestion = {
   suggestion_type: "match" | "upsell" | "fallback";

@@ -28,11 +28,33 @@ export function DialogTrigger({ asChild, children }: { asChild?:boolean; childre
 export function DialogContent({ title, description, children, className }: { title?:string; description?:string; children:React.ReactNode; className?:string }){
   const { open,setOpen } = useDialog();
   const ref = useRef<HTMLDivElement|null>(null);
-  useEffect(()=>{ if(open){ const prev=document.activeElement as HTMLElement|null; ref.current?.focus(); function onKey(e:KeyboardEvent){ if(e.key==='Escape'){ setOpen(false); } } document.addEventListener('keydown',onKey); return ()=>{ document.removeEventListener('keydown',onKey); prev?.focus(); }; } },[open,setOpen]);
+  useEffect(() => {
+    if (open) {
+      const prev = document.activeElement as HTMLElement | null;
+      ref.current?.focus();
+      const onKey = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          setOpen(false);
+        }
+      };
+      document.addEventListener('keydown', onKey);
+      return () => {
+        document.removeEventListener('keydown', onKey);
+        prev?.focus();
+      };
+    }
+  }, [open, setOpen]);
   if(!open) return null;
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-4" role="dialog" aria-modal="true">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={()=> setOpen(false)} />
+      <div
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        onClick={()=> setOpen(false)}
+        role="button"
+        tabIndex={0}
+        aria-label="Fechar diálogo"
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setOpen(false); }}
+      />
       <div ref={ref} tabIndex={-1} className={cn('relative z-10 w-full max-w-md rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-xl focus:outline-none',className)}>
         {title && <h2 className="text-lg font-semibold tracking-tight text-[var(--text)]">{title}</h2>}
         {description && <p className="mt-1 text-sm text-[var(--text-muted)]">{description}</p>}

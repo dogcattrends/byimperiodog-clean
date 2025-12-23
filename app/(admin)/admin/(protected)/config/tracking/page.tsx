@@ -2,6 +2,7 @@ import "server-only";
 import type { Metadata } from "next";
 
 import { getTrackingConfig } from "@/lib/tracking/getTrackingConfig";
+
 import { TrackingSettingsPage } from "./TrackingSettingsPage";
 
 export const metadata: Metadata = {

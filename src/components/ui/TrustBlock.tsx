@@ -1,7 +1,6 @@
 "use client";
 
 import classNames from "classnames";
-import type { ReactNode } from "react";
 
 type TrustBlockProps = {
   title: string;
@@ -32,3 +31,5 @@ export function TrustBlock({ title, description, items, className }: TrustBlockP
     </section>
   );
 }
+
+export default TrustBlock;

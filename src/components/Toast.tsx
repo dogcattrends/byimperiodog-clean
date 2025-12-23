@@ -134,7 +134,7 @@ export default function ToastContainer({ max = 4 }: { max?: number }) {
                   onClick={async () => {
                     try {
                       await t.action!.callback();
-                    } catch {}
+                    } catch (e) { void e; }
                     setToasts((s) => s.filter((x) => x.id !== t.id));
                     const to = timeouts.current.get(t.id);
                     if (to) window.clearTimeout(to);

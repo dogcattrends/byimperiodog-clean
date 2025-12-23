@@ -1,23 +1,5 @@
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
-type LeadRecord = {
-  id: string;
-  nome?: string | null;
-  telefone?: string | null;
-  cidade?: string | null;
-  estado?: string | null;
-  cor_preferida?: string | null;
-  sexo_preferido?: string | null;
-  mensagem?: string | null;
-};
-
-type InsightRecord = {
-  desired_color?: string | null;
-  desired_sex?: string | null;
-  desired_city?: string | null;
-  budget_inferred?: string | null;
-};
-
 type PuppyRecord = {
   id: string;
   name: string;
@@ -36,6 +18,8 @@ export type PuppyRecommendation = {
   score: number;
   upsellOpportunity: boolean;
 };
+
+type ScoredRow = Record<string, unknown> & { score: number; reason: string };
 
 function normalize(value?: string | null) {
   return (value ?? "").toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "").trim();
@@ -113,26 +97,27 @@ export async function recommendPuppiesForLead(leadId: string): Promise<PuppyReco
     .or("status.is.null,status.eq.available")
     .limit(100);
 
-  const scored =
-    puppies
-      ?.map((p) => {
-        const { score, reason } = scorePuppy(p as PuppyRecord, prefs);
-        return { ...p, score, reason };
-      })
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 3) ?? [];
+  const scored = (puppies
+    ?.map((p: unknown) => {
+      const rec = p as PuppyRecord;
+      const { score, reason } = scorePuppy(rec, prefs);
+      return { ...(p as Record<string, unknown>), score, reason } as ScoredRow;
+    })
+    .sort((a: ScoredRow, b: ScoredRow) => b.score - a.score)
+    .slice(0, 3)) as ScoredRow[] | undefined ?? [];
 
-  const top = scored[0];
+  const top = scored[0] as ScoredRow | undefined;
 
   const reasoningText = top
     ? `Recomendado "${top.name}" pela combinação de ${top.reason}.`
     : "Nenhum filhote ideal encontrado, sugira opções amplas.";
 
-  const upsellOpportunity = Boolean(prefs.budget && top?.price_cents && top.price_cents / 100 > (prefs.budget ?? 0) * 1.1);
+  const topPriceCents = top ? (typeof (top as Record<string, unknown>).price_cents === 'number' ? (top as Record<string, unknown>).price_cents as number : Number((top as Record<string, unknown>).price_cents ?? NaN)) : NaN;
+  const upsellOpportunity = Boolean(prefs.budget && Number.isFinite(topPriceCents) && topPriceCents / 100 > (prefs.budget ?? 0) * 1.1);
 
   return {
-    puppyIdIdeal: top?.id ?? null,
-    top3Matches: scored.map((s) => ({ id: s.id, name: s.name, score: s.score, reason: s.reason })),
+    puppyIdIdeal: (top?.id as string) ?? null,
+    top3Matches: scored.map((s) => ({ id: s.id as string, name: s.name as string, score: s.score, reason: s.reason })),
     reasoningText,
     score: top?.score ?? 0,
     upsellOpportunity,

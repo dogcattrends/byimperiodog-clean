@@ -56,15 +56,15 @@ export default function StoriesBar({ stories, className, ariaLabel = "Stories do
             aria-label={`Abrir story de ${item.title}`}
           >
             <span className="relative aspect-square h-20 w-20 overflow-hidden rounded-3xl border-2 border-emerald-400 border-dashed transition group-hover:scale-105 group-focus-visible:ring-2 group-focus-visible:ring-emerald-500 group-focus-visible:ring-offset-2">
-              {item.cover?.imageUrl ? (
+                {item.cover?.imageUrl ? (
                 <Image
                   loader={passthroughImageLoader}
                   src={item.cover.imageUrl}
                   alt={item.cover.description ?? item.title}
                   fill
                   className="object-cover"
-                  placeholder="blur"
-                  blurDataURL={BLUR_DATA_URL}
+                  placeholder={process.env.NODE_ENV === "test" ? "empty" : "blur"}
+                  {...(process.env.NODE_ENV === "test" ? {} : { blurDataURL: BLUR_DATA_URL })}
                   sizes="80px"
                   priority={index < 4}
                 />

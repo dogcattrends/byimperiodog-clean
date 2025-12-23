@@ -12,7 +12,7 @@ export function FAQAccordion({ items }: Props) {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <div className="space-y-3" role="list">
+    <div className="space-y-3">
       {items.map((faq, idx) => {
         const isOpen = openIndex === idx;
         const contentId = `faq-content-${idx}`;
@@ -20,7 +20,6 @@ export function FAQAccordion({ items }: Props) {
         return (
           <div
             key={faq.question}
-            role="listitem"
             className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm"
           >
             <button

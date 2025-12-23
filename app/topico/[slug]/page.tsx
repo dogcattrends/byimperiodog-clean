@@ -1,8 +1,9 @@
-import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
+
+import PostCard from '@/components/blog/PostCard';
 import { getPostsByTag } from '@/lib/blog/related';
 import { buildBlogMetadata } from '@/lib/blog/seo';
-import PostCard from '@/components/blog/PostCard';
 
 export async function generateStaticParams() {
   return [];
@@ -29,9 +30,7 @@ export default async function TopicPage({ params }: { params: { slug: string } }
         {posts.map((p: any) => (
           <article key={p.slug}>
             <Link href={`/blog/${p.slug}`}>
-              <a>
-                <PostCard href={`/blog/${p.slug}`} title={p.title} coverUrl={p.cover_url} excerpt={p.excerpt} date={p.published_at} readingTime={null} />
-              </a>
+              <PostCard href={`/blog/${p.slug}`} title={p.title} coverUrl={p.cover_url} excerpt={p.excerpt} date={p.published_at} readingTime={null} />
             </Link>
           </article>
         ))}

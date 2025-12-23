@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 
 import { getPixelsSettings, resolveActiveEnvironment } from "@/lib/pixels";
 import { resolveTracking } from "@/lib/tracking";
+
 import { TrackingSettingsForm } from "./TrackingSettingsForm";
 
 export const metadata: Metadata = {

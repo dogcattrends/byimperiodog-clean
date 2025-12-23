@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+
 import { ensureBadges } from '@/lib/gamification.blog';
 import { internalGuard } from '@/lib/internalAuth';
 

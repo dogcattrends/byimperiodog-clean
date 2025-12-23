@@ -35,7 +35,6 @@ export function ColorSelector({ value, onChange, presets, id='color-selector', e
           <button
             type="button"
             key={c}
-            role="listitem"
             onClick={()=> onChange(c)}
             className={`px-2 py-1 rounded-md border text-[11px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${value===c? 'bg-[var(--accent)] text-[var(--accent-contrast)] border-[var(--accent)]':'bg-[var(--surface-2)] border-[var(--border)] hover:border-[var(--accent)]'}`}
           >{c}</button>

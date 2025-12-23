@@ -6,8 +6,10 @@
  * POST /api/admin/pixel-experiments - Cria novo experimento
  */
 
-import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
+
 import { requireAdmin } from '@/lib/adminAuth';
 import type { Experiment, CreateExperimentPayload } from '@/types/experiments';
 

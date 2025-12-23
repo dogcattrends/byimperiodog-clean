@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import facebookAdapter from "./facebook";
 import { googleAnalyticsAdapter, googleTagManagerAdapter } from "./google";
 import type { ProviderAdapter, ProviderKey } from "./types";

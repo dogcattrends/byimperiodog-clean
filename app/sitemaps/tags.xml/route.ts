@@ -6,7 +6,14 @@ const site = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.byimperiodog.com.
 export async function GET(){
   const sb = supabasePublic();
   const { data } = await sb.from('blog_tags').select('slug,updated_at,created_at').limit(5000);
-  const urls = (data||[]).map((t: any)=> ({ loc: `${site}/blog/tag/${t.slug}`, lastmod: t.updated_at || t.created_at || new Date().toISOString(), changefreq:'weekly', priority:'0.4' }));
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u: any)=>`  <url><loc>${u.loc}</loc><lastmod>${u.lastmod}</lastmod><changefreq>${u.changefreq}</changefreq><priority>${u.priority}</priority></url>`).join('\n')}\n</urlset>`;
+  const urls = (data || []).map((t: unknown) => {
+    const row = t as unknown as Record<string, unknown>;
+    const lastmod = String(row.updated_at ?? row.created_at ?? new Date().toISOString());
+    return { loc: `${site}/blog/tag/${String(row.slug ?? '')}`, lastmod, changefreq: 'weekly', priority: '0.4' };
+  });
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls
+    .map((u: { loc: string; lastmod: string; changefreq: string; priority: string }) => `  <url><loc>${u.loc}</loc><lastmod>${u.lastmod}</lastmod><changefreq>${u.changefreq}</changefreq><priority>${u.priority}</priority></url>`)
+    .join('\n')}
+\n</urlset>`;
   return new NextResponse(xml, { headers:{ 'Content-Type':'application/xml; charset=utf-8','Cache-Control':'public, max-age=600, stale-while-revalidate=900' }});
 }

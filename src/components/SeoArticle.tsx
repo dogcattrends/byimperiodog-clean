@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // components/SeoArticle.tsx
 export function SeoArticle({ title, description, url, published, modified, author, faq, howTo }:{
   title:string; description:string; url:string; published:string; modified:string;

@@ -25,7 +25,7 @@ import { PuppyRelated } from "@/components/puppy/PuppyRelated";
 import { PuppyTrust } from "@/components/puppy/PuppyTrust";
 import type { Puppy } from "@/domain/puppy";
 import { normalizePuppyFromDB } from "@/lib/catalog/normalize";
-import { buildDetailCrumbs, getRelatedPuppies } from "@/lib/interlinking";
+import { buildDetailCrumbs } from "@/lib/interlinking";
 import { buildBreadcrumbLD, buildProductLD } from "@/lib/schema";
 import { supabaseAnon } from "@/lib/supabaseAnon";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
@@ -72,6 +72,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 // SSG: Gerar páginas estáticas para puppies disponíveis
 export async function generateStaticParams() {
+    /* eslint-disable @typescript-eslint/no-unused-vars, no-unused-vars */
   try {
     const sb = supabaseAnon();
     const { data } = await sb
@@ -83,6 +84,7 @@ export async function generateStaticParams() {
     return (data || []).map((p: any) => ({ slug: p.slug }));
   } catch {
     return [];
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   }
 }
 

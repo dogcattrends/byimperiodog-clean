@@ -11,8 +11,6 @@ interface ChunkCandidate { id: string; slug: string; title: string; content: str
 export const runtime = "edge";
 
 // Simple QA endpoint: retrieves candidate chunks (naive split) then ranks.
-// Simple in-memory embedding cache (query -> vector) ephemeral
-const EMB_CACHE = new Map<string, { v:number[]; t:number }>();
 
 export async function POST(req: Request){
   const body: QaRequestBody = await req.json().catch(()=>({}));

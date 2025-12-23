@@ -241,7 +241,6 @@ export default function PuppyCard({ p, cover, onOpen, priority = false, rankingF
 
   return (
     <article
-      role="article"
       aria-label={cardAriaLabel}
       className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-emerald-100/80 bg-white shadow-sm transition duration-200 hover:scale-[1.02] hover:shadow-xl focus-within:shadow-xl"
       data-ranking-flag={rankingFlags}

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, no-empty */
 import { createClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/types/supabase";

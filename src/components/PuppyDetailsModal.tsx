@@ -6,16 +6,17 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { RefObject } from "react";
 
 import AccessibleModal from "@/components/ui/AccessibleModal";
-import PrimaryCTA from "@/components/ui/PrimaryCTA";
 import { ContactCTA } from "@/components/ui/ContactCTA";
 import { ContentTOC } from "@/components/ui/ContentTOC";
+import PrimaryCTA from "@/components/ui/PrimaryCTA";
 import { RelatedLinks } from "@/components/ui/RelatedLinks";
 import { TrustBlock } from "@/components/ui/TrustBlock";
-import type { Puppy } from "@/domain/puppy";
 import { BRAND, BUSINESS_RULES } from "@/domain/config";
+import type { Puppy } from "@/domain/puppy";
+import { TaxonomyHelpers } from "@/domain/taxonomies";
 import { supabasePublic } from "@/lib/supabasePublic";
-import { buildWhatsAppLink } from "@/lib/whatsapp";
 import track from "@/lib/track";
+import { buildWhatsAppLink } from "@/lib/whatsapp";
 
 type Props = {
   id: string;
@@ -51,7 +52,7 @@ export default function PuppyDetailsModal({ id, onClose, restoreFocusRef }: Prop
         if (!active) return;
         if (error) throw error;
         if (!data) throw new Error("Filhote não encontrado.");
-        setPuppy(normalize(data));
+        setPuppy(normalize(data) as Puppy);
       } catch (e) {
         if (active) setError((e as Error)?.message ?? "Erro ao carregar detalhes.");
       } finally {
@@ -76,7 +77,7 @@ export default function PuppyDetailsModal({ id, onClose, restoreFocusRef }: Prop
   const phoneDigits = BRAND.contact.phone.replace(/[^\d+]/g, "");
   const phoneLink = useMemo(() => `tel:${phoneDigits}`, [phoneDigits]);
 
-  const mediaItems = useMemo(() => puppy?.images ?? [], [puppy]);
+  const mediaItems = useMemo(() => (puppy?.images ?? []) as string[], [puppy]);
   const locationLabel = useMemo(() => {
     if (!puppy) return "Bragança Paulista, SP";
     const location = [puppy.city, puppy.state].filter(Boolean).join(", ");
@@ -209,9 +210,10 @@ export default function PuppyDetailsModal({ id, onClose, restoreFocusRef }: Prop
                         className="h-full w-full object-cover"
                         controls
                         aria-label={`Vídeo do filhote ${puppy.name}`}
-                        poster={mediaItems.find((m) => !isVideo(m))}
+                        poster={mediaItems.find((m: string) => !isVideo(m))}
                       >
-                        <source src={mediaItems[activeMediaIndex]} />
+                          <source src={mediaItems[activeMediaIndex]} />
+                            <track kind="captions" srcLang="pt-BR" src={puppy.captionUrl ?? ""} />
                       </video>
                     ) : (
                       <Image
@@ -234,7 +236,7 @@ export default function PuppyDetailsModal({ id, onClose, restoreFocusRef }: Prop
 
                 {mediaItems.length > 1 && (
                   <div className="flex gap-3 overflow-auto pb-2" aria-label="Galeria de fotos e vídeos">
-                    {mediaItems.map((item, index) => {
+                    {mediaItems.map((item: string, index: number) => {
                       const active = index === activeMediaIndex;
                       return (
                         <button
@@ -308,11 +310,11 @@ export default function PuppyDetailsModal({ id, onClose, restoreFocusRef }: Prop
                     <MapPin className="h-4 w-4 text-[var(--text-muted)]" aria-hidden />
                     <span>{locationLabel}</span>
                   </div>
-                  {puppy.aggregate_rating != null && (
+                  {puppy.averageRating != null && (
                     <div className="flex items-center gap-2">
                       <PawPrint className="h-4 w-4 text-amber-500" aria-hidden />
                       <span className="text-[var(--text)]">
-                        {puppy.aggregate_rating.toFixed(1)} ({puppy.review_count ?? 0} avaliações)
+                        {Number(puppy.averageRating).toFixed(1)} ({puppy.reviewCount ?? 0} avaliações)
                       </span>
                     </div>
                   )}
@@ -433,50 +435,73 @@ function isVideo(url: string) {
   return /\.(mp4|webm|ogg)$/i.test(url);
 }
 
-function normalize(p: any): Puppy {
-  const name = p.nome || p.name || "Filhote";
-  const rawPrice = p.price_cents ?? p.priceCents ?? p.preco ?? 0;
+function normalize(p: unknown): Partial<Puppy> {
+  const obj = p as Record<string, unknown>;
+  const name = (obj.nome as string) || (obj.name as string) || "Filhote";
+  const rawPrice = (obj.price_cents as number) ?? (obj.priceCents as number) ?? Number(obj.preco as unknown) ?? 0;
   const priceCents = Number.isFinite(rawPrice) ? Math.round(rawPrice) : 0;
-  const midia = p.midia || p.images || [];
-  const images =
-    Array.isArray(midia) && midia.length > 0
-      ? midia
-          .map((item: any) => (typeof item === "string" ? item : item?.url))
-          .filter((url): url is string => typeof url === "string" && /^https?:\/\//.test(url))
-      : [];
-  const rawStatus = (p.status ?? "available").toString().toLowerCase();
-  const normalizedStatus = rawStatus === "reservado" ? "reserved" : rawStatus === "vendido" ? "sold" : "available";
-  const rawBirth = p.nascimento ?? p.birth_date ?? p.birthDate;
-  const birthDate = rawBirth ? new Date(rawBirth) : new Date();
+  const midia = (obj.midia as unknown) || (obj.images as unknown) || [];
+  const images = Array.isArray(midia) && midia.length > 0
+    ? (midia as unknown[])
+        .map((item) => (typeof item === 'string' ? item : ((item as Record<string, unknown>)?.url as string | undefined)))
+        .filter((url): url is string => typeof url === 'string' && /^https?:\/\//.test(url))
+    : [];
+  const rawStatus = String((obj.status as string) ?? 'available').toLowerCase();
+  const normalizedStatus = rawStatus === 'reservado' ? 'reserved' : rawStatus === 'vendido' ? 'sold' : 'available';
+  const rawBirth = obj.nascimento ?? obj.birth_date ?? obj.birthDate;
+  const birthDate = rawBirth ? new Date(String(rawBirth)) : new Date();
+
+  const averageRating = Number.isFinite(Number(obj.aggregate_rating as unknown))
+    ? Number(obj.aggregate_rating as unknown)
+    : Number.isFinite(Number(obj.averageRating as unknown))
+    ? Number(obj.averageRating as unknown)
+    : undefined;
+
+  const reviewCount = Number.isFinite(Number(obj.review_count as unknown))
+    ? Number(obj.review_count as unknown)
+    : Number.isFinite(Number(obj.reviewCount as unknown))
+    ? Number(obj.reviewCount as unknown)
+    : undefined;
+
+  const captionUrl = (obj.caption_url as string) || (obj.captionUrl as string) || undefined;
+
+  // normalize color to allowed slug from taxonomies
+  const colorCandidate = String((obj.cor as string) || (obj.color as string) || '').toLowerCase().trim().replace(/\s+/g, '-');
+  const color = TaxonomyHelpers.getColorBySlug(colorCandidate) ? (colorCandidate as any) : 'creme';
+
+  // normalize city to slug
+  const cityCandidate = String((obj.city as string) || (obj.cidade as string) || '').toLowerCase().trim().replace(/\s+/g, '-');
+  const city = TaxonomyHelpers.getCityBySlug(cityCandidate) ? (cityCandidate as any) : 'braganca-paulista';
 
   return {
-    id: p.id,
-    slug: p.slug,
+    id: (obj.id as string) || (obj._id as string) || undefined,
+    slug: (obj.slug as string) || undefined,
     name,
-    description: p.descricao || p.description || "",
+    description: (obj.descricao as string) || (obj.description as string) || '',
     priceCents,
-    color: p.cor || p.color || "Creme",
-    sex: p.sexo === "female" || p.sex === "female" ? "female" : "male",
+    color: color,
+    sex: (obj.sexo as string) === 'female' || (obj.sex as string) === 'female' ? 'female' : 'male',
     birthDate,
-    city: p.city || p.cidade || "Bragança Paulista",
-    state: p.state || p.estado || "SP",
-    status: normalizedStatus as Puppy["status"],
-    aggregate_rating: Number.isFinite(p.aggregate_rating) ? Number(p.aggregate_rating) : undefined,
-    review_count: Number.isFinite(p.review_count) ? Number(p.review_count) : undefined,
+    city: city,
+    state: ((obj.state as string) || (obj.estado as string) || 'SP').toUpperCase(),
+    status: normalizedStatus as Puppy['status'],
+    averageRating,
+    reviewCount,
     images,
-    hasPedigree: Boolean(p.hasPedigree ?? p.pedigree),
-    availableForShipping: p.available_for_shipping ?? p.availableForShipping ?? true,
-    shippingNotes: p.shippingNotes ?? p.shipping_notes ?? "",
-    currency: "BRL",
-    breed: "Spitz Alemão Anão",
-    size: "toy",
-    source: "own-breeding",
+    captionUrl,
+    hasPedigree: Boolean(obj.hasPedigree ?? (obj.pedigree as unknown)),
+    availableForShipping: (obj.available_for_shipping as boolean) ?? (obj.availableForShipping as boolean) ?? true,
+    shippingNotes: (obj.shippingNotes as string) || (obj.shipping_notes as string) || '',
+    currency: 'BRL',
+    breed: 'Spitz Alemão Anão',
+    size: 'toy',
+    source: 'own-breeding',
     createdAt: new Date(),
     updatedAt: new Date(),
-    vaccinationStatus: "up-to-date",
-    viewCount: p.view_count ?? 0,
-    favoriteCount: p.favorite_count ?? 0,
-    shareCount: p.share_count ?? 0,
-    inquiryCount: p.inquiry_count ?? 0,
-  } as Puppy;
+    vaccinationStatus: 'up-to-date',
+    viewCount: (obj.view_count as number) ?? 0,
+    favoriteCount: (obj.favorite_count as number) ?? 0,
+    shareCount: (obj.share_count as number) ?? 0,
+    inquiryCount: (obj.inquiry_count as number) ?? 0,
+  };
 }

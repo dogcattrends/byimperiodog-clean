@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import type { AiExpandRequest, AiExpandResponse, OutlineSection } from "@/types/blog";
 
 /**

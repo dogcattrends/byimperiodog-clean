@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, no-empty */
 import { NextResponse } from 'next/server';
+
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 // Matriz de tópicos estratégicos (clusters principais + subtemas)

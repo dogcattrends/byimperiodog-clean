@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable jsx-a11y/no-redundant-roles */
 
 import { useMemo } from "react";
 
@@ -59,9 +60,10 @@ export function PuppiesBoard({ items, leadCounts, onStatusChange, mutatingId }: 
                 return (
                   <article key={p.id} className="rounded-xl border border-[var(--border)] bg-white shadow-sm" role="listitem">
                     <div className="flex gap-3 p-3">
-                      <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-[var(--surface)]">
-                        <img src={cover} alt={p.name} className="h-full w-full object-cover" loading="lazy" width={64} height={64} />
-                      </div>
+                        <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-[var(--surface)]">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={cover} alt={p.name} className="h-full w-full object-cover" loading="lazy" width={64} height={64} />
+                        </div>
                       <div className="flex-1 space-y-1">
                         <div className="flex items-center justify-between gap-2">
                           <h3 className="text-sm font-semibold text-[var(--text)] line-clamp-2">{p.name}</h3>

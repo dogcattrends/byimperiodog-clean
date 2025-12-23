@@ -41,7 +41,8 @@ export function analyzeConversion(leads: Lead[], puppies: Puppy[], interactions:
   const totalLeads = leads.length || 1;
   const closed = leads.filter((l) => l.status === "fechado").length;
   const lost = leads.filter((l) => l.status === "perdido").length;
-  const inContact = leads.filter((l) => l.status === "em_contato").length;
+  // Número de leads em contato (gerado para análise futura)
+  // const _inContact = leads.filter((l) => l.status === "em_contato").length;
 
   const closeRate = (closed / totalLeads) * 100;
   const lostRate = (lost / totalLeads) * 100;
@@ -66,7 +67,7 @@ export function analyzeConversion(leads: Lead[], puppies: Puppy[], interactions:
     colorLossMap.set(color, entry);
   });
   const colorLosses = Array.from(colorLossMap.entries())
-    .map(([color, v]) => ({ color, rate: (v.lost / Math.max(1, v.total)) * 100 }))
+    .map(([color, v]) => ({ color, rate: (v.lost / Math.max(1, v.total)) * 100, total: v.total }))
     .filter((c) => c.rate > 40 && c.total > 3);
   colorLosses.forEach((c) => losses.push(`Cor ${c.color} tem abandono alto (${c.rate.toFixed(1)}%).`));
 

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 // GET: lista tags; aceita ?q= para filtro básico por nome/slug.
@@ -42,7 +43,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Listagem simples de tags
-    let query = sb.from("blog_tags").select("id,name,slug").order("name", { ascending: true }).limit(500);
+    const query = sb.from("blog_tags").select("id,name,slug").order("name", { ascending: true }).limit(500);
     const { data, error } = await query;
     if (error) throw error;
   const items = (data || []).filter((t: { name?:string|null; slug?:string|null }) => !q || t.name?.toLowerCase().includes(q) || t.slug?.toLowerCase().includes(q));

@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { NextResponse } from "next/server";
 
 type GenerateBody = {
   topic?: string;
@@ -92,7 +92,7 @@ export async function POST(req: Request) {
     const { data, error } = await supabase.from("blog_posts").insert(payload).select().single();
     if (error) throw error;
 
-    console.log("blog_post_generated", { id: data.id, slug: data.slug, status: data.status });
+    // log removed to avoid noisy console output in production
     return NextResponse.json({ ok: true, id: data.id, slug: data.slug, status: data.status });
   } catch (err: any) {
     return NextResponse.json({ error: err?.message || "Erro" }, { status: 500 });

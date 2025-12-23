@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
+import { requireAdmin } from "@/lib/adminAuth";
 import { processLeadIntel } from "@/lib/leadIntel";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { requireAdmin } from "@/lib/adminAuth";
 
 export async function GET(req: Request) {
   const guard = requireAdmin(req);

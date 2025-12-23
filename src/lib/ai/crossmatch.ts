@@ -80,15 +80,15 @@ export async function runCrossMatch(leadId: string): Promise<CrossMatchSuggestio
     };
   }
 
-  const prices = puppies.map((p) => p.price_cents || 0).filter(Boolean);
+  const prices = (puppies.map((p: any) => p.price_cents || 0).filter(Boolean) as number[]);
   const medianPrice = prices.sort((a, b) => a - b)[Math.floor(prices.length / 2)] || 0;
 
-  const scored = puppies.map((p) => {
+  const scored = puppies.map((p: any) => {
     const { score, type } = scorePuppy(lead, p, medianPrice);
     return { puppy: p, score, type };
   });
 
-  scored.sort((a, b) => b.score - a.score);
+  scored.sort((a: any, b: any) => b.score - a.score);
   const top = scored.slice(0, 3);
   const best = top[0];
 
@@ -105,6 +105,6 @@ export async function runCrossMatch(leadId: string): Promise<CrossMatchSuggestio
     puppyName: best?.puppy.name,
     reasoning: reasoningParts.length ? `Combina por ${reasoningParts.join(", ")}.` : "Melhor afinidade disponível.",
     probability_of_acceptance: acceptance,
-    alternatives: top.map((t) => ({ id: t.puppy.id, name: t.puppy.name, score: t.score })),
+    alternatives: top.map((t: any) => ({ id: t.puppy.id, name: t.puppy.name, score: t.score })),
   };
 }

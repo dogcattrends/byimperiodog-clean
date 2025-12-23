@@ -1,9 +1,9 @@
-﻿import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
+﻿import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
 import { serializeRoleCookie } from "@/lib/rbac";
-import { supabaseAnon } from "@/lib/supabaseAnon";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { supabaseAnon } from "@/lib/supabaseAnon";
 
 export async function POST(req: Request) {
   const { email, password } = (await req.json().catch(() => ({}))) as { email?: string; password?: string };

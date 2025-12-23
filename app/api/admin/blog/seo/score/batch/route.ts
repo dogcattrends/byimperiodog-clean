@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
+
 import { requireAdmin } from '@/lib/adminAuth';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 const ENTIDADES = ['spitz','pomerânia','filhote','adulto','treinamento','socialização','alimentação','saúde','grooming','vacina'];
 

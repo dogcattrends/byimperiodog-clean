@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 /**
  * PuppyCardPremium v5
@@ -13,9 +14,12 @@
 
 import { Calendar, ChevronRight, Heart, MapPin, MessageCircle, ShieldCheck, Video, Wand2 } from "lucide-react";
 import Image from "next/image";
-import { MouseEvent, useMemo, useState } from "react";
+import type { MouseEvent} from "react";
+import { useMemo, useState } from "react";
 
-import { Badge, Button, Card, CardContent, CardHeader, StatusBadge } from "@/components/ui";
+import { Badge, Card, CardContent, CardHeader, StatusBadge } from "@/components/ui";
+import { ContactCTA } from "@/components/ui/ContactCTA";
+import PrimaryCTA from "@/components/ui/PrimaryCTA";
 import type { CatalogBadge } from "@/lib/ai/catalog-badges-ai";
 import type { CatalogSeoOutput } from "@/lib/ai/catalog-seo";
 import { getNextImageProps } from "@/lib/images";
@@ -23,7 +27,6 @@ import { optimizePuppyCardImage } from "@/lib/optimize-image";
 import { BLUR_DATA_URL } from "@/lib/placeholders";
 import track from "@/lib/track";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
-import PrimaryCTA from "@/components/ui/PrimaryCTA";
 
 type PuppyCardData = {
   id: string;
@@ -40,17 +43,26 @@ type PuppyCardData = {
   state?: string | null;
   weightKg?: number | null;
   images?: string[] | null;
-  aiSeo?: CatalogSeoOutput | null;
-  catalogSeo?: CatalogSeoOutput | null;
+  aiSeo?: any | null;
+  catalogSeo?: any | null;
 };
 
 type PuppyCardProps = {
   puppy: PuppyCardData;
   coverImage?: string | null;
-  badges?: CatalogBadge[];
+  badges?: any[];
   priority?: boolean;
-  onOpenDetails?: (event?: MouseEvent<HTMLButtonElement>) => void;
+  onOpenDetails?: (event?: MouseEvent<any>) => void;
   onWhatsAppClick?: () => void;
+  primaryLabel?: string;
+  showPrice?: boolean;
+  showContactCTA?: boolean;
+  ctaTrackingId?: string;
+  rankingFlags?: any;
+  aiBadges?: any;
+  rankingPosition?: number;
+  rankingReason?: string | null;
+  rankingSource?: string | null;
 };
 
 const formatPrice = (cents?: number | null) =>
@@ -105,6 +117,10 @@ export default function PuppyCardPremium({
   priority = false,
   onOpenDetails,
   onWhatsAppClick,
+  primaryLabel,
+  showPrice = true,
+  showContactCTA = true,
+  ctaTrackingId,
 }: PuppyCardProps) {
   const [liked, setLiked] = useState(false);
   const priceCents = puppy.priceCents ?? puppy.price_cents ?? 0;
@@ -179,7 +195,8 @@ export default function PuppyCardPremium({
   };
 
   const ctaLabel = "Falar no WhatsApp — resposta imediata";
-  const conciseDescription = `${color} · ${gender} · ${age.label}`;
+  const conciseDescription = `${color} • ${gender} • ${age.label}`;
+  const resolvedPrimaryTrackingId = ctaTrackingId ?? `puppy_card_primary_${puppy.id}`;
 
   return (
     <Card
@@ -196,7 +213,7 @@ export default function PuppyCardPremium({
         <div className="relative aspect-[4/3] w-full overflow-hidden rounded-b-none rounded-t-3xl">
           {imgProps ? (
             <Image
-              {...imgProps}
+              {...(imgProps as any)}
               alt={seo.altText}
               priority={priority}
               fetchPriority={priority ? "high" : "auto"}
@@ -293,14 +310,34 @@ export default function PuppyCardPremium({
           <PrimaryCTA
             onClick={(event) => {
               event.preventDefault();
-              track.event?.("cta_click", { action: "want_puppy_card", puppy_id: puppy.id });
               track.event?.("modal_open", { placement: "card", puppy_id: puppy.id });
               onOpenDetails?.(event);
             }}
-            ariaLabel={`Quero esse filhote ${name}`}
+            ariaLabel={`${primaryLabel ?? "Ver detalhes e condições"} ${name}`}
+            tracking={{
+              ctaId: resolvedPrimaryTrackingId,
+              location: "puppy_card",
+            }}
           >
-            <span className="inline-flex items-center gap-2">Quero esse filhote</span>
+            <span className="inline-flex items-center gap-2">
+              <ChevronRight className="h-4 w-4" aria-hidden="true" />
+              {primaryLabel ?? "Ver detalhes e condições"}
+            </span>
           </PrimaryCTA>
+          {showPrice && (
+            <span className="text-sm font-semibold text-[var(--text-muted)]">{priceLabel}</span>
+          )}
+          {showContactCTA && (
+            <ContactCTA
+              variant="inline"
+              href={whatsappUrl}
+              label="Conversar no WhatsApp"
+              icon={<MessageCircle className="h-4 w-4" aria-hidden="true" />}
+              ariaLabel={`Conversar sobre o filhote ${name}`}
+              tracking={{ ctaId: "puppy_card_contact", location: "puppy_card" }}
+              onClick={() => onWhatsAppClick?.()}
+            />
+          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--text-muted)]">

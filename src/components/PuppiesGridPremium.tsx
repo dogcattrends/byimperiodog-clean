@@ -13,8 +13,8 @@
  */
 
 import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
-import dynamic from "next/dynamic";
 import { AlertCircle, ChevronDown, Loader2, RefreshCw, Search, SlidersHorizontal, Sparkles, X } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition } from "react";
 import type { MouseEvent } from "react";
 
@@ -136,7 +136,7 @@ const extractImages = (row: any): string[] => {
         if (item && typeof item.url === "string") return item.url;
         return null;
       })
-      .filter((item): item is string => Boolean(item));
+      .filter((item: unknown): item is string => Boolean(item));
   }
   if (Array.isArray(row.media)) {
     return row.media
@@ -145,7 +145,7 @@ const extractImages = (row: any): string[] => {
         if (item && typeof item.url === "string") return item.url;
         return null;
       })
-      .filter((item): item is string => Boolean(item));
+      .filter((item: unknown): item is string => Boolean(item));
   }
   return [];
 };
@@ -696,12 +696,20 @@ type InitialFilters = {
   status?: string;
 };
 
+type PuppyCardOptions = {
+  showPrice?: boolean;
+  showContactCTA?: boolean;
+  primaryLabel?: string;
+  ctaTrackingId?: string;
+};
+
 type Props = {
   initialItems?: Puppy[];
   initialFilters?: InitialFilters;
+  cardOptions?: PuppyCardOptions;
 };
 
-export default function PuppiesGridPremium({ initialItems = [], initialFilters }: Props) {
+export default function PuppiesGridPremium({ initialItems = [], initialFilters, cardOptions }: Props) {
   const normalizedInitialItems = useMemo(() => normalizeCatalogItems(initialItems, "catalog_ai"), [initialItems]);
 
   // Estado base e refs de personalização
@@ -730,6 +738,14 @@ export default function PuppiesGridPremium({ initialItems = [], initialFilters }
   const lastSuccessfulRef = useRef<CatalogPuppy[]>(normalizedInitialItems);
   const [userSignals, setUserSignals] = useState<UserSignals>({});
   const [profileLoaded, setProfileLoaded] = useState(false);
+  const resolvedCardOptions = useMemo<PuppyCardOptions>(
+    () => ({
+      showPrice: true,
+      showContactCTA: true,
+      ...cardOptions,
+    }),
+    [cardOptions],
+  );
 
   useEffect(() => {
     rawItemsRef.current = normalizedInitialItems;
@@ -1198,6 +1214,10 @@ export default function PuppiesGridPremium({ initialItems = [], initialFilters }
                     badges={puppy.badges}
                     onOpenDetails={(event) => handleOpenDetails(puppy, event)}
                     onWhatsAppClick={() => handleWhatsAppClick(puppy)}
+                    primaryLabel={resolvedCardOptions.primaryLabel}
+                    showPrice={resolvedCardOptions.showPrice}
+                    showContactCTA={resolvedCardOptions.showContactCTA}
+                    ctaTrackingId={resolvedCardOptions.ctaTrackingId}
                     priority={index < 4}
                     rankingFlags={puppy.rankingFlag}
                     aiBadges={puppy.aiBadges}

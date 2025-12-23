@@ -1,7 +1,7 @@
 import Link from "next/link";
 
-import { BlogSubnav } from "@/components/admin/BlogSubnav";
 import BlogPostsTable from "@/components/admin/blog/BlogPostsTable";
+import { BlogSubnav } from "@/components/admin/BlogSubnav";
 import { blogRepo } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -14,12 +14,7 @@ export default async function AdminBlogPage() {
     includePendingComments: true,
   });
 
-  // Debug log
-  console.log('[AdminBlogPage] listSummaries result:', {
-    items: initial.items.length,
-    total: initial.total,
-    hasServiceKey: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
-  });
+  // Debug information intentionally removed for production; keep data variable for inspection if needed.
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6 p-6">

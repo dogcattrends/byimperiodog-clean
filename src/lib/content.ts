@@ -24,27 +24,30 @@ const CMS = (process.env.CMS_DRIVER || 'contentlayer').toLowerCase();
 // the generated files under `.contentlayer/generated` using a file URL.
 import { pathToFileURL } from 'url';
 
-async function loadContentlayerPosts(): Promise<any[]> {
+async function loadContentlayerPosts(): Promise<unknown[]> {
   try {
     // First try the conventional import used during development/TS builds.
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const mod = await import('contentlayer/generated');
-      return (mod as any).allPosts || [];
-    } catch (err) {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const mod = await import('contentlayer/generated');
+        const m = mod as unknown as { allPosts?: unknown[] };
+        return m.allPosts || [];
+      } catch (err) {
       // If that fails (webpack/exports resolution on CI), try loading the
       // generated file directly from the workspace `.contentlayer` folder.
       const candidate = `${process.cwd()}/.contentlayer/generated/index.mjs`;
       try {
         const url = pathToFileURL(candidate).href;
         const mod = await import(url);
-        return (mod as any).allPosts || [];
+        const m1 = mod as unknown as { allPosts?: unknown[] };
+        return m1.allPosts || [];
       } catch (err2) {
         // last-ditch: try without explicit index (some setups export directory)
         try {
           const url2 = pathToFileURL(`${process.cwd()}/.contentlayer/generated`).href;
           const mod = await import(url2);
-          return (mod as any).allPosts || [];
+          const m2 = mod as unknown as { allPosts?: unknown[] };
+          return m2.allPosts || [];
         } catch (err3) {
           return [];
         }
@@ -54,21 +57,35 @@ async function loadContentlayerPosts(): Promise<any[]> {
     return [];
   }
 }
+function normalizePost(p: unknown): BlogPost {
+  const obj = p as Record<string, unknown>;
+  const raw = (obj._raw as Record<string, unknown> | undefined) ?? undefined;
+  const slug = (obj.slug as string) || (raw?.sourceFileName as string)?.replace?.(/\.mdx$/, '') || '';
+  const title = (obj.title as string) || (obj.name as string) || 'Post';
+  const excerpt = (obj.description as string) || (obj.excerpt as string) || null;
+  const cover = (obj.cover as string) || (obj.cover_url as string) || null;
+  const date = (obj.date as string) || (obj.published_at as string) || null;
+  const updated = (obj.updated as string) || (obj.updated_at as string) || null;
+  const tags = (obj.tags as unknown) as string[] | null;
+  const category = (obj.category as string) || null;
+  const author = (obj.author as string) || null;
+  const readingTime = (obj.readingTime as number) || (obj.reading_time as number) || null;
+  const url = (obj.url as string) || (slug ? `/blog/${slug}` : undefined);
+  const bodyRaw = ((obj.body as Record<string, unknown> | undefined)?.raw as string) || (obj.content_mdx as string) || null;
 
-function normalizePost(p: any): BlogPost {
   return {
-    slug: p.slug || p._raw?.sourceFileName?.replace?.(/\.mdx$/, '') || '',
-    title: p.title || p.name || 'Post',
-    excerpt: p.description || p.excerpt || null,
-    cover: p.cover || p.cover_url || null,
-    date: p.date || p.published_at || null,
-    updated: p.updated || p.updated_at || null,
-    tags: p.tags || null,
-    category: p.category || null,
-    author: p.author || null,
-    readingTime: p.readingTime || p.reading_time || null,
-    url: p.url || (p.slug ? `/blog/${p.slug}` : undefined),
-    bodyRaw: p.body?.raw || p.content_mdx || null,
+    slug,
+    title,
+    excerpt,
+    cover,
+    date,
+    updated,
+    tags,
+    category,
+    author,
+    readingTime,
+    url,
+    bodyRaw,
   };
 }
 
@@ -112,7 +129,11 @@ export async function getPostBySlug(slug: string) {
     return null;
   }
   const src = await loadContentlayerPosts();
-  const hit = src.find((p) => p.slug === slug || p._raw?.sourceFileName?.replace?.(/\.mdx$/, '') === slug);
+  const hit = src.find((p) => {
+    const obj = p as Record<string, unknown>;
+    const s = (obj.slug as string) || ((obj._raw as Record<string, unknown> | undefined)?.sourceFileName as string | undefined)?.replace?.(/\.mdx$/, '');
+    return s === slug;
+  });
   return hit ? normalizePost(hit) : null;
 }
 

@@ -3,7 +3,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import classNames from "classnames";
 import { AnimatePresence, motion } from "framer-motion";
-import { ReactNode, useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 type AccessibleModalProps = {
   open: boolean;

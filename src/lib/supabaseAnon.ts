@@ -8,7 +8,7 @@ function makeStubBuilder(result: any = { data: null, error: null }) {
     'insert', 'update', 'delete', 'rpc', 'ilike', 'like', 'neq', 'upsert'
   ];
   const builder: any = {};
-  methods.forEach((m) => { builder[m] = (..._args: any[]) => builder; });
+  methods.forEach((m) => { builder[m] = (..._args: any[]) => { void _args; return builder; }; });
   builder.then = (onFulfilled: any, onRejected: any) => Promise.resolve(result).then(onFulfilled, onRejected);
   builder.catch = (onRejected: any) => Promise.resolve(result).catch(onRejected);
   builder.finally = (cb: any) => Promise.resolve(result).finally(cb);
@@ -20,6 +20,7 @@ export function supabaseAnon(){
   if(client) return client;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+  /* eslint-disable @typescript-eslint/no-unused-vars, no-empty */
   if(!url || !key){
     return { from: (_: string) => makeStubBuilder({ data: [], error: null }) } as any;
   }

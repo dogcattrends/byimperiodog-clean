@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, no-empty */
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+
 import { suggestInternalLinks } from "@/lib/internalLinks";
 
 type GenPayload = {
@@ -81,8 +83,8 @@ Inclua título, um excerpt curto e conteúdo estruturado com headings (Introduç
 
     // crude parsing: assume first line is title, next paragraph is excerpt, rest is MDX
     const lines = text.split(/\r?\n/).filter(Boolean);
-    let title = lines[0] || "Post gerado";
-    let excerpt = (lines[1] || "").slice(0, 160);
+    const title = lines[0] || "Post gerado";
+    const excerpt = (lines[1] || "").slice(0, 160);
     let content_mdx = text;
 
     // If returned content doesn't look like MDX (no headings), wrap it

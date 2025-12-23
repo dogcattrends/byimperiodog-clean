@@ -24,7 +24,6 @@ import {
   buildSiteNavigationLD,
   buildLocalBusinessLD,
 } from "@/lib/tracking";
-import { getTrackingConfig } from "@/lib/tracking/getTrackingConfig";
 
 import { ThemeProvider } from "../design-system/theme-provider";
 
@@ -334,6 +333,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {!isAdminRoute && isProd && useGTM && GTM_ID && (
           <noscript>
             <iframe
+              title="Google Tag Manager (no-js)"
               src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
               height="0"
               width="0"

@@ -1,54 +1,18 @@
 "use client";
 
-import React from "react";
-import clsx from "clsx";
-import { trackCTAClick } from "@/lib/events";
-
-type PrimaryCTAProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  children: React.ReactNode;
-  ctaName?: string;
-  location?: string;
-  loading?: boolean;
-};
-
-export default function PrimaryCTA({ children, ctaName = "primary", location = "top", disabled, loading, className, ...rest }: PrimaryCTAProps) {
-  const isDisabled = disabled || loading;
-
-  const handleClick: React.MouseEventHandler<HTMLButtonElement> = (e) => {
-    if (isDisabled) {
-      e.preventDefault();
-      return;
-    }
-    try {
-      trackCTAClick(ctaName, location);
-    } catch {
-      // silent
-    }
-    if (rest.onClick) rest.onClick(e as any);
-  };
-
-  return (
-    <button
-      type="button"
-      aria-label={typeof children === "string" ? children : ctaName}
-      disabled={isDisabled}
-      onClick={handleClick}
-      className={clsx(
-        "inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-semibold shadow-sm focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-400 focus-visible:ring-offset-2",
-        isDisabled ? "bg-emerald-200 text-emerald-700 cursor-not-allowed" : "bg-emerald-600 text-white hover:bg-emerald-700",
-        className,
-      )}
-      {...rest}
-    >
-      {loading ? "Carregando..." : children}
-    </button>
-  );
-}
-"use client";
-
 import classNames from "classnames";
-import Link, { LinkProps } from "next/link";
-import { ReactNode } from "react";
+import type { LinkProps } from "next/link";
+import Link from "next/link";
+import type { MouseEvent, MouseEventHandler, ReactNode } from "react";
+
+import track from "@/lib/track";
+
+export type TrackingMeta = {
+  ctaId?: string;
+  location?: string;
+  deviceMode?: "mobile" | "desktop" | "modal";
+  extra?: Record<string, unknown>;
+};
 
 export type PrimaryCTAProps = {
   children: ReactNode;
@@ -56,8 +20,10 @@ export type PrimaryCTAProps = {
   ariaLabel?: string;
   icon?: ReactNode;
   variant?: "solid" | "ghost";
+  type?: "button" | "submit" | "reset";
   className?: string;
-  onClick?: () => void;
+  tracking?: TrackingMeta;
+  onClick?: MouseEventHandler<HTMLButtonElement | HTMLAnchorElement>;
   disabled?: boolean;
 } & Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "type"> &
   Omit<LinkProps, "href">;
@@ -70,6 +36,17 @@ const variants = {
   ghost: "bg-white text-[var(--text)] hover:bg-[var(--surface-2)] shadow-[var(--elevation-1)] border-[var(--border)]",
 };
 
+const enrichTracking = (tracking?: TrackingMeta) => {
+  if (!tracking) return undefined;
+  const payload: Record<string, unknown> = {
+    cta_id: tracking.ctaId,
+    location: tracking.location,
+    device_mode: tracking.deviceMode,
+    ...tracking.extra,
+  };
+  return payload;
+};
+
 export default function PrimaryCTA({
   children,
   href,
@@ -77,6 +54,7 @@ export default function PrimaryCTA({
   icon,
   variant = "solid",
   className,
+  tracking,
   onClick,
   disabled,
   ...rest
@@ -92,14 +70,26 @@ export default function PrimaryCTA({
     "cursor-not-allowed opacity-60": disabled,
   });
 
+  const handleClick = (event: MouseEvent<HTMLButtonElement | HTMLAnchorElement>) => {
+    if (disabled) {
+      event.preventDefault();
+      return;
+    }
+    const payload = enrichTracking(tracking);
+    if (payload) {
+      track.event?.("cta_click", payload);
+    }
+    onClick?.(event);
+  };
+
   if (href) {
     return (
       <Link
         href={href}
         aria-label={ariaLabel}
         className={combinedClass}
-        onClick={disabled ? (e) => e.preventDefault() : undefined}
-        {...rest}
+        onClick={handleClick}
+        {...(rest as unknown as Record<string, unknown>)}
       >
         {content}
       </Link>
@@ -107,14 +97,7 @@ export default function PrimaryCTA({
   }
 
   return (
-    <button
-      type="button"
-      aria-label={ariaLabel}
-      className={combinedClass}
-      onClick={onClick}
-      disabled={disabled}
-      {...rest}
-    >
+    <button type="button" aria-label={ariaLabel} className={combinedClass} onClick={handleClick} disabled={disabled} {...rest}>
       {content}
     </button>
   );

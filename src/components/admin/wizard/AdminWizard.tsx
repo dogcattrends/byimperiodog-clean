@@ -97,24 +97,24 @@ export default function AdminWizard({ initialValues }: { initialValues?: Partial
           {currentStepId === "perfil" && (
             <>
               <fieldset>
-                <label className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                <label htmlFor="perfil-nome" className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
                   Nome
                 </label>
-                <input {...methods.register("perfil.nome")} className="admin-input" autoFocus />
+                <input id="perfil-nome" {...methods.register("perfil.nome")} className="admin-input" />
                 <FormError message={methods.formState.errors.perfil?.nome?.message} />
               </fieldset>
               <fieldset>
-                <label className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                <label htmlFor="perfil-email" className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
                   E-mail
                 </label>
-                <input {...methods.register("perfil.email")} className="admin-input" />
+                <input id="perfil-email" {...methods.register("perfil.email")} className="admin-input" />
                 <FormError message={methods.formState.errors.perfil?.email?.message} />
               </fieldset>
               <fieldset>
-                <label className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                <label htmlFor="perfil-telefone" className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
                   Telefone
                 </label>
-                <input {...methods.register("perfil.telefone")} className="admin-input" />
+                <input id="perfil-telefone" {...methods.register("perfil.telefone")} className="admin-input" />
                 <FormError message={methods.formState.errors.perfil?.telefone?.message} />
               </fieldset>
             </>
@@ -123,27 +123,27 @@ export default function AdminWizard({ initialValues }: { initialValues?: Partial
           {currentStepId === "preferencia" && (
             <>
               <fieldset>
-                <label className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                <label htmlFor="preferencia-genero" className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
                   Genero preferido
                 </label>
-                <select {...methods.register("preferencia.genero")} className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-2.5 text-sm shadow-sm outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10">
+                <select id="preferencia-genero" {...methods.register("preferencia.genero")} className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-2.5 text-sm shadow-sm outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10">
                   <option value="">Selecione</option>
                   <option value="macho">Macho</option>
                   <option value="fêmea">Fêmea</option>
                 </select>
               </fieldset>
               <fieldset>
-                <label className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                <label htmlFor="preferencia-cor" className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
                   Cor desejada
                 </label>
-                <input {...methods.register("preferencia.cor")} className="admin-input" />
+                <input id="preferencia-cor" {...methods.register("preferencia.cor")} className="admin-input" />
                 <FormError message={methods.formState.errors.preferencia?.cor?.message} />
               </fieldset>
               <fieldset>
-                <label className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                <label htmlFor="preferencia-entrega" className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
                   Entrega
                 </label>
-                <select {...methods.register("preferencia.entrega")} className="admin-input">
+                <select id="preferencia-entrega" {...methods.register("preferencia.entrega")} className="admin-input">
                   <option value="presencial">Presencial</option>
                   <option value="concierge">Concierge</option>
                 </select>
@@ -153,21 +153,21 @@ export default function AdminWizard({ initialValues }: { initialValues?: Partial
 
           {currentStepId === "checklist" && (
             <>
-              <label className="inline-flex items-center gap-2 text-sm text-slate-700">
-                <input type="checkbox" {...methods.register("checklist.casaPreparada")} />
+              <label htmlFor="checklist-casaPreparada" className="inline-flex items-center gap-2 text-sm text-slate-700">
+                <input id="checklist-casaPreparada" type="checkbox" {...methods.register("checklist.casaPreparada")} />
                 Casa ja esta preparada para o filhote
               </label>
               <fieldset>
-                <label className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                <label htmlFor="checklist-veterinarioReferencia" className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
                   Veterinario de referencia
                 </label>
-                <input {...methods.register("checklist.veterinarioReferencia")} className="admin-input" />
+                <input id="checklist-veterinarioReferencia" {...methods.register("checklist.veterinarioReferencia")} className="admin-input" />
               </fieldset>
               <fieldset>
-                <label className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                <label htmlFor="checklist-observacoes" className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
                   Observacoes
                 </label>
-                <textarea {...methods.register("checklist.observacoes")} rows={4} className="admin-input" />
+                <textarea id="checklist-observacoes" {...methods.register("checklist.observacoes")} rows={4} className="admin-input" />
               </fieldset>
             </>
           )}

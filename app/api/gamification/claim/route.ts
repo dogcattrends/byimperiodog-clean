@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+
 import { getOrCreateGamUser, awardXp, evaluateAndAwardBadges } from '@/lib/gamification.blog';
 
 export const runtime = 'edge';

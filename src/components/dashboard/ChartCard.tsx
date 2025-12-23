@@ -16,6 +16,7 @@ interface ChartCardProps {
 
 export function ChartCard({ title, description, type, labels, datasets, loading, error, emptyFallback='Sem dados', tooltip }:ChartCardProps){
   const isEmpty = !datasets.some(d=> d.data.some(v=> v!==0));
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const summary = React.useMemo(()=>{
     if(isEmpty) return `${title}: vazio.`;
     // Cria pequena frase: usa primeiro dataset

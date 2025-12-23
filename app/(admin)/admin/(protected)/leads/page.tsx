@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 
 import { createLogger } from "@/lib/logger";
 
+import { AdminErrorState } from "../ui/AdminErrorState";
+
 import LeadsCRM from "./LeadsCRM";
 import { fetchAdminLeads, parseLeadFilters } from "./queries";
-import { AdminErrorState } from "../ui/AdminErrorState";
 
 export const metadata: Metadata = {
   title: "Leads | Admin",

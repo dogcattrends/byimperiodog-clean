@@ -12,10 +12,10 @@ export interface WebVitalMetric {
 
 let initialized = false;
 
-export function initWebVitals(logger: (m: WebVitalMetric) => void = console.log) {
+export function initWebVitals(logger: (m: WebVitalMetric) => void = () => {}) {
   if (initialized || typeof window === 'undefined') return;
   initialized = true;
-  const wrap = (cb: any) => (metric: any) => {
+  const wrap = (cb: (metric: WebVitalMetric) => void) => (metric: WebVitalMetric) => {
     try { cb(metric); } catch { /* noop */ }
   };
   onCLS(wrap(logger));

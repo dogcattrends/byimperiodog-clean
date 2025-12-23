@@ -13,13 +13,17 @@ export async function GET(){
     .eq('status','published')
     .limit(5000);
   const now = Date.now();
-  const urls = (data||[]).map((p: any)=> {
-    const lastmod = p.updated_at || p.published_at || new Date().toISOString();
-    const ageDays = (now - Date.parse(p.published_at || p.updated_at || lastmod)) / 86400000;
+  const urls = (data || []).map((p: unknown) => {
+    const row = p as unknown as Record<string, unknown>;
+    const lastmod = String(row.updated_at ?? row.published_at ?? new Date().toISOString());
+    const ageDays = (now - Date.parse(String(row.published_at ?? row.updated_at ?? lastmod))) / 86400000;
     const changefreq = ageDays < 7 ? 'daily' : 'weekly';
     const priority = ageDays < 7 ? '0.8' : '0.7';
-    return { loc: `${site}/blog/${p.slug}`, lastmod, changefreq, priority, img: p.cover_url };
+    return { loc: `${site}/blog/${String(row.slug ?? '')}`, lastmod, changefreq, priority, img: String(row.cover_url ?? '') };
   });
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${urls.map((u: any)=>`  <url><loc>${u.loc}</loc><lastmod>${u.lastmod}</lastmod><changefreq>${u.changefreq}</changefreq><priority>${u.priority}</priority>${u.img?`<image:image><image:loc>${u.img}</image:loc></image:image>`:''}</url>`).join('\n')}\n</urlset>`;
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${urls
+    .map((u: { loc: string; lastmod: string; changefreq: string; priority: string; img?: string }) => `  <url><loc>${u.loc}</loc><lastmod>${u.lastmod}</lastmod><changefreq>${u.changefreq}</changefreq><priority>${u.priority}</priority>${u.img ? `<image:image><image:loc>${u.img}</image:loc></image:image>` : ''}</url>`)
+    .join('\n')}
+\n</urlset>`;
   return new NextResponse(xml, { headers:{ 'Content-Type':'application/xml; charset=utf-8','Cache-Control':'public, max-age=300, stale-while-revalidate=600' }});
 }

@@ -1,5 +1,5 @@
 // PATH: src/app/api/admin/blog/ai/route.ts
-import { NextRequest } from 'next/server';
+import type { NextRequest } from 'next/server';
 
 import type { EditorAIRequest, EditorAIResponse } from '@/lib/blog/types';
 
@@ -63,7 +63,9 @@ function parseOutline(raw: string): { heading: string; children?: string[] }[] |
     const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : raw);
     if (Array.isArray(parsed)) return parsed as any;
     if (Array.isArray(parsed.outline)) return parsed.outline;
-  } catch {}
+  } catch (e) {
+    /* ignored - provider returned non-JSON or malformed content */
+  }
   return undefined;
 }
 

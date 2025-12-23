@@ -6,6 +6,8 @@
  * tanto no frontend pÃºblico quanto no painel admin.
  */
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import type {
   PublicTrackingSettings,
   TrackingSettings,

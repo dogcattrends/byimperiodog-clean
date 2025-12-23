@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable no-console */
 
 import { useEffect } from "react";
 
@@ -37,8 +38,7 @@ export default function TrackingScripts() {
       const search = window.location.search ? window.location.search.replace(/^\?/, "") : "";
 
       // GA4 / Ads (gtag)
-      // @ts-ignore
-      const gtag = (window as any).gtag;
+      const gtag = (window as unknown as Record<string, unknown>).gtag as unknown;
       if (typeof gtag === "function") {
         gtag("event", "page_view", {
           page_location: url,
@@ -47,24 +47,21 @@ export default function TrackingScripts() {
       }
 
       // Meta Pixel
-      // @ts-ignore
-      const fbq = (window as any).fbq;
+      const fbq = (window as unknown as Record<string, unknown>).fbq as unknown;
       if (typeof fbq === "function") {
         fbq("track", "PageView");
       }
 
       // TikTok
-      // @ts-ignore
-      const ttq = (window as any).ttq;
-      if (ttq && typeof ttq.page === "function") {
-        ttq.page();
+      const ttq = (window as unknown as Record<string, unknown>).ttq as Record<string, unknown> | undefined;
+      if (ttq && typeof (ttq as any).page === "function") {
+        (ttq as any).page();
       }
 
       // Pinterest
-      // @ts-ignore
-      const pintrk = (window as any).pintrk;
+      const pintrk = (window as unknown as Record<string, unknown>).pintrk as unknown;
       if (typeof pintrk === "function") {
-        pintrk("page");
+        (pintrk as any)("page");
       }
     };
 
@@ -84,14 +81,14 @@ export default function TrackingScripts() {
     }
 
     // Delegated clicks for CTR (cards, toc, share)
-    const onClick = (e: MouseEvent) => {
+      const onClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
       if (!target) return;
       const el = target.closest('[data-evt]') as HTMLElement | null;
       if (!el) return;
       const name = el.getAttribute('data-evt');
       if (!name) return;
-      const meta: Record<string, any> = {};
+      const meta: Record<string, unknown> = {};
       const id = el.getAttribute('data-id'); if (id) meta.id = id;
       const label = el.getAttribute('aria-label') || el.textContent?.trim()?.slice(0,80) || undefined;
       if (label) meta.label = label;
@@ -111,7 +108,7 @@ export default function TrackingScripts() {
       if (pixelTest === "meta") {
         waitHandle = waitFor(
           {
-            getter: () => (window as any).fbq as ((...args: any[]) => void) | undefined,
+            getter: () => (window as unknown as Record<string, unknown>).fbq as ((...args: unknown[]) => void) | undefined,
             onReady: (fbq) => {
               fbq("track", "TestEvent", { source: "public_test", pixel_id: pixelId });
               window.opener?.postMessage(
@@ -126,7 +123,7 @@ export default function TrackingScripts() {
       } else if (pixelTest === "ga4") {
         waitHandle = waitFor(
           {
-            getter: () => (window as any).gtag as ((...args: any[]) => void) | undefined,
+            getter: () => (window as unknown as Record<string, unknown>).gtag as ((...args: unknown[]) => void) | undefined,
             onReady: (gtag) => {
               gtag("event", "test_event", {
                 event_category: "admin_test",
@@ -146,7 +143,7 @@ export default function TrackingScripts() {
       } else if (pixelTest === "gtm") {
         waitHandle = waitFor(
           {
-            getter: () => (window as any).dataLayer as Array<any> | undefined,
+            getter: () => (window as unknown as Record<string, unknown>).dataLayer as Array<unknown> | undefined,
             onReady: (dl) => {
               dl.push({
                 event: "test_event",
@@ -165,7 +162,7 @@ export default function TrackingScripts() {
       } else if (pixelTest === "tiktok") {
         waitHandle = waitFor(
           {
-            getter: () => (window as any).ttq as { track?: (...args: any[]) => void } | undefined,
+            getter: () => (window as unknown as Record<string, unknown>).ttq as { track?: (...args: unknown[]) => void } | undefined,
             onReady: (ttq) => {
               ttq.track?.("TestEvent", { source: "admin_test" });
               window.opener?.postMessage(

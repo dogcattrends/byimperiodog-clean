@@ -38,9 +38,9 @@ export default function BlogComments({ postId }: { postId: string }) {
       if (before) setComments((prev) => [...prev, ...items]);
       else setComments(items);
       setNextCursor(Array.isArray(json) ? null : json?.nextCursor ?? null);
-    } catch (err: any) {
-      console.error(err);
-    }
+    } catch (err) {
+        console.error(err);
+      }
   }
 
   async function submit(e: React.FormEvent) {
@@ -59,8 +59,9 @@ export default function BlogComments({ postId }: { postId: string }) {
       setAuthor("");
       setBody("");
       fetchComments();
-    } catch (err: any) {
-      setMessage(String(err?.message || err));
+    } catch (err) {
+      if (err instanceof Error) setMessage(err.message);
+      else setMessage(String(err));
     } finally {
       setLoading(false);
     }
@@ -105,15 +106,15 @@ export default function BlogComments({ postId }: { postId: string }) {
 
       <form onSubmit={submit} className="mt-6 space-y-3">
         <div>
-          <label className="block text-sm">Nome</label>
-          <input value={author} onChange={(e) => setAuthor(e.target.value)} className="mt-1 block w-full rounded border px-3 py-2" />
+          <label htmlFor="comment-author" className="block text-sm">Nome</label>
+          <input id="comment-author" value={author} onChange={(e) => setAuthor(e.target.value)} className="mt-1 block w-full rounded border px-3 py-2" />
         </div>
         <div>
-          <label className="block text-sm">Comentário</label>
-          <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={4} className="mt-1 block w-full rounded border px-3 py-2" required />
+          <label htmlFor="comment-body" className="block text-sm">Comentário</label>
+          <textarea id="comment-body" value={body} onChange={(e) => setBody(e.target.value)} rows={4} className="mt-1 block w-full rounded border px-3 py-2" required />
         </div>
         <div className="flex items-center gap-3">
-          <button className="rounded bg-blue-600 text-white px-3 py-1" disabled={loading}>{loading ? "Enviando..." : "Enviar"}</button>
+          <button type="submit" className="rounded bg-blue-600 text-white px-3 py-1" disabled={loading}>{loading ? "Enviando..." : "Enviar"}</button>
           <button type="button" className="rounded border px-3 py-1" onClick={() => { setMessage(null); }}>Limpar</button>
         </div>
         {message && <div className="text-sm mt-2">{message}</div>}

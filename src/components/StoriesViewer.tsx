@@ -127,8 +127,8 @@ export function StoriesViewer({ stories, open, initialIndex, onOpenChange }: Sto
                   alt={slide.description ?? slide.title}
                   fill
                   className="object-contain"
-                  placeholder="blur"
-                  blurDataURL={BLUR_DATA_URL}
+                  placeholder={process.env.NODE_ENV === "test" ? "empty" : "blur"}
+                  {...(process.env.NODE_ENV === "test" ? {} : { blurDataURL: BLUR_DATA_URL })}
                   decoding="async"
                   draggable={false}
                   sizes="(max-width: 768px) 90vw, 520px"

@@ -4,7 +4,7 @@ import { CITIES, PUPPY_COLORS } from "@/domain/taxonomies";
 import { getAllPosts } from "@/lib/content";
 import { supabaseAnon } from "@/lib/supabaseAnon";
 
-const COLORS = Object.values(PUPPY_COLORS);
+// const COLORS = Object.values(PUPPY_COLORS); // unused — kept commented to document available taxonomy
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "https://www.byimperiodog.com.br";
 
@@ -64,7 +64,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // ============================================================================
   // 4. Páginas de cidades (/spitz-anao/[city])
   // ============================================================================
-  const cityPages: MetadataRoute.Sitemap = Object.entries(CITIES).map(([slug, city]) => ({
+  const cityPages: MetadataRoute.Sitemap = Object.keys(CITIES).map((slug) => ({
     url: `${SITE_URL}/spitz-anao/${slug}`,
     lastModified,
     changeFrequency: "weekly" as const,

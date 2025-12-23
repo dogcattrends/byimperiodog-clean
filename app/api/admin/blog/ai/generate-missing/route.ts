@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, no-empty */
 import { NextResponse } from 'next/server';
+
+import { requireAdmin } from '@/lib/adminAuth';
+import { logAdminAction } from '@/lib/adminAuth';
+import { rateLimit } from '@/lib/rateLimit';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { computeCoverage, TOPIC_CLUSTERS } from '@/lib/topicClusters';
-import { requireAdmin } from '@/lib/adminAuth';
-import { rateLimit } from '@/lib/rateLimit';
-import { logAdminAction } from '@/lib/adminAuth';
 
 /* Batch gera posts para clusters faltantes (limite opcional ?limit=5)
    Estratégia simples sequencial (pode ser otimizada com fila/background)

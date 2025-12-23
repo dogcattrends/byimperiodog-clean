@@ -7,8 +7,8 @@ import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
-import PrimaryCTA from "@/components/ui/PrimaryCTA";
 import { ContactCTA } from "@/components/ui/ContactCTA";
+import PrimaryCTA from "@/components/ui/PrimaryCTA";
 import { routes, type AppRoutes } from "@/lib/route";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 

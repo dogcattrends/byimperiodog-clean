@@ -35,7 +35,7 @@ async function SearchResults({ q }: { q: string }) {
     const items: SearchItem[] = Array.isArray(data?.results) ? data.results : [];
 
     if (!items.length) {
-      return <p className="text-sm text-zinc-500">Nenhum resultado para "{q}".</p>;
+      return <p className="text-sm text-zinc-500">Nenhum resultado para “{q}”.</p>;
     }
 
     return (

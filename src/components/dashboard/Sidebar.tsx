@@ -205,7 +205,7 @@ export function Sidebar(){
         </AnimatePresence>
       </Dialog.Root>
       {/* Desktop sidebar */}
-      <aside className="relative hidden w-64 shrink-0 flex-col border-r border-[var(--border)] bg-[var(--surface)] px-4 py-6 lg:flex" role="complementary" aria-label="Barra lateral">
+      <aside className="relative hidden w-64 shrink-0 flex-col border-r border-[var(--border)] bg-[var(--surface)] px-4 py-6 lg:flex" aria-label="Barra lateral">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-black/5 to-transparent dark:from-white/5" aria-hidden />
         <NavList />
         <div className="mt-auto pt-6 text-[10px] text-[var(--text-muted)]">{new Date().getFullYear()} © By Imperio Dog</div>

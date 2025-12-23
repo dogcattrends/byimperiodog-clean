@@ -5,6 +5,7 @@ const STATUS_TO_DB = {
   available: "disponivel",
   reserved: "reservado",
   sold: "vendido",
+  pending: "pendente",
   coming_soon: "em_breve",
   unavailable: "indisponivel",
 } as const;
@@ -46,7 +47,7 @@ export type AdminPuppyListItem = {
   name: string;
   slug?: string | null;
   status: AdminPuppyStatus;
-  rawStatus: string;
+  rawStatus?: string;
   color?: string | null;
   sex?: "male" | "female" | null;
   city?: string | null;
@@ -79,7 +80,7 @@ type ColorRow = { color: string | null };
 type LeadAggRow = { page_slug: string | null; count: number };
 
 const DEFAULT_LIMIT = 200;
-const NUMBER_REGEX = /^\d+(?:[\.,]\d+)?$/;
+const NUMBER_REGEX = /^\d+(?:[.,]\d+)?$/;
 
 const normalizeSearch = (value?: string) => value?.normalize("NFD").replace(/[`´~^]/g, "").trim();
 
@@ -109,7 +110,7 @@ function normalizeStatus(value?: string | null): AdminPuppyStatus {
 }
 
 function normalizeSex(row: PuppyRow): "male" | "female" | null {
-  const sex = row.gender ?? row.sex ?? row.sexo;
+  const sex = row.gender ?? (row as Record<string, unknown>).sex ?? row.sexo;
   if (!sex) return null;
   const value = String(sex).toLowerCase();
   if (value === "male" || value.startsWith("mach")) return "male";
@@ -121,8 +122,9 @@ function normalizePrice(row: PuppyRow): number {
   const camelPrice = (row as { priceCents?: number | null }).priceCents;
   if (typeof camelPrice === "number") return camelPrice;
   if (typeof row.preco === "number") return Math.round(row.preco * 100);
-  if (typeof row.preco === "string" && row.preco.trim()) {
-    const normalized = row.preco.replace(/\./g, "").replace(/,/g, ".");
+  const precoRaw = (row as Record<string, unknown>).preco;
+  if (typeof precoRaw === "string" && precoRaw.trim()) {
+    const normalized = precoRaw.replace(/\./g, "").replace(/,/g, ".");
     const parsed = Number(normalized);
     if (Number.isFinite(parsed)) return Math.round(parsed * 100);
   }
@@ -217,7 +219,7 @@ export async function fetchAdminPuppies({
   }
 
   if (filters.search) {
-    const like = `%${filters.search.replace(/%/g, "\%")}%`;
+    const like = `%${filters.search.replace(/%/g, "%")}%`;
     query = query.or(
       ["nome", "name", "slug", "color", "cidade", "city"].map((column) => `${column}.ilike.${like}`).join(","),
     );
@@ -264,7 +266,7 @@ export async function fetchAdminPuppies({
     city: (row.city ?? row.cidade ?? null) as string | null,
     state: (row.state ?? row.estado ?? null) as string | null,
     priceCents: normalizePrice(row),
-    createdAt: row.created_at ?? new Date().toISOString(),
+    createdAt: typeof row.created_at === "string" ? row.created_at : row.created_at ? new Date(row.created_at).toISOString() : new Date().toISOString(),
     imageUrl: selectCover(row),
     demandScore: row.catalog_ranking?.score ?? null,
     demandFlag: row.catalog_ranking?.flag ?? null,
@@ -300,6 +302,7 @@ export async function fetchAdminPuppies({
 
   const initialSummary: Record<AdminPuppyStatus, number> = {
     available: 0,
+    pending: 0,
     reserved: 0,
     sold: 0,
     coming_soon: 0,

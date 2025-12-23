@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 // Endpoint ad-hoc para aplicar migration de seo_score se ainda não existir.
@@ -11,7 +12,7 @@ export async function POST(){
     try {
       const colResp: any = await (sb.rpc as any)('introspection_columns', { table_name: 'blog_posts' });
       if(colResp?.data) colCheck = colResp.data;
-    } catch {}
+    } catch (e) { /* introspection optional - ignored */ }
     if(colCheck && colCheck.some((c:any)=> c.column_name==='seo_score')){
       return NextResponse.json({ ok:true, already:true });
     }
@@ -52,7 +53,7 @@ update blog_posts set seo_score = fn_compute_seo_score(content_mdx, seo_title, s
     for(const stmt of statements){
       try {
         await (sb.rpc as any)('exec_sql', { q: stmt });
-      } catch { /* ignora se função não existir */ }
+      } catch (e) { /* exec_sql optional - ignora se função não existir */ }
     }
 
     return NextResponse.json({ ok:true, applied:true });

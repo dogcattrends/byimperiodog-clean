@@ -74,6 +74,7 @@ export interface Puppy {
   // ==========================================
   images: string[]; // URLs das imagens (primeira = thumbnail principal)
   videoUrl?: string; // URL do vídeo de apresentação (YouTube, Vimeo)
+  captionUrl?: string; // URL de legendas/captions do vídeo (opcional)
   galleryImages?: string[]; // Galeria adicional de imagens
   thumbnailUrl?: string; // Thumbnail customizado (se diferente da primeira image)
 

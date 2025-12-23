@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+
 import { requireAdmin } from '@/lib/adminAuth';
 import { applySuggestion, approveSuggestion } from '@/lib/seoSuggestions';
 

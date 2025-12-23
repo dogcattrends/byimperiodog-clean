@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
 import { AlertCircle, Dog, Loader2, Sparkles } from "lucide-react";
+import { useState, useTransition } from "react";
 
 type Recommendation = {
   puppyIdIdeal: string | null;

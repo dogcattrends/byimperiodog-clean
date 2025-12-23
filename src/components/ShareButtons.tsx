@@ -40,9 +40,7 @@ export default function ShareButtons({ url, title, summary, className, utm }: Pr
         setTimeout(() => setCopied(false), 1500);
         logEvent('share_click', { channel: 'copy_fallback', url: shareUrl, title });
       }
-    } catch {
-      // ignore
-    }
+    } catch (e) { void e; }
   }, [shareUrl, title, summary]);
 
   const copy = useCallback(async () => {
@@ -51,7 +49,7 @@ export default function ShareButtons({ url, title, summary, className, utm }: Pr
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
       logEvent('share_click', { channel: 'copy', url: shareUrl, title });
-    } catch {}
+    } catch (e) { void e; }
   }, [shareUrl, title]);
 
   const socials = useMemo(() => {

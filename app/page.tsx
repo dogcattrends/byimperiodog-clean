@@ -4,8 +4,10 @@ import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 
 import HeroSection from "@/components/sections/Hero";
+import TrustBlock from "@/components/ui/TrustBlock";
 import { normalizePuppyFromDB } from "@/lib/catalog/normalize";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { TRUST_BLOCK_ITEMS } from "@/lib/trust-data";
 
 // Lazy load below-the-fold components para reduzir JS inicial e TBT
 const PuppiesGridPremium = dynamic(
@@ -76,6 +78,14 @@ export default async function HomePage() {
   return (
     <main id="conteudo-principal" role="main" className="relative flex flex-col">
       <HeroSection />
+
+      <section className="container mx-auto px-4 py-16 sm:px-6 lg:px-8">
+        <TrustBlock
+          title="Confiança comprovada"
+          description="Processo guiado com provas sociais, logística premium e suporte direto com a criadora."
+          items={TRUST_BLOCK_ITEMS}
+        />
+      </section>
 
       {/* Catálogo Premium de Filhotes */}
       <PuppiesGridPremium initialItems={initialPuppies} />

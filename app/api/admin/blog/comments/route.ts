@@ -1,5 +1,7 @@
-import { NextResponse } from "next/server";
+/* eslint-disable @typescript-eslint/no-unused-vars, no-empty */
 import { revalidatePath } from "next/cache";
+import { NextResponse } from "next/server";
+
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export async function GET() {

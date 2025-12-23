@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server";
-import { supabaseAdmin, hasServiceRoleKey } from "@/lib/supabaseAdmin";
 import { revalidatePath } from "next/cache";
+import { NextResponse } from "next/server";
+
+import { supabaseAdmin, hasServiceRoleKey } from "@/lib/supabaseAdmin";
 
 export async function POST() {
   if (!hasServiceRoleKey()) {
@@ -33,7 +34,7 @@ export async function POST() {
   try {
     revalidatePath("/blog");
     for (const d of due) revalidatePath(`/blog/${d.slug}`);
-  } catch {}
+  } catch (e) { /* ignore revalidate errors */ }
 
   return NextResponse.json({ updated: due.length });
 }

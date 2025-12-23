@@ -1,5 +1,7 @@
-import { NextResponse } from "next/server";
+/* eslint-disable @typescript-eslint/no-unused-vars, no-empty */
 import { revalidatePath } from "next/cache";
+import { NextResponse } from "next/server";
+
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 type WriteRequest = {
@@ -98,16 +100,16 @@ export async function POST(req: Request) {
       const j = await res.json();
       const raw = j.choices?.[0]?.message?.content || "{}";
       // Parser tolerante a JSON possivelmente com lixo antes/depois
-      function safeParse(str: string): any {
-        try { return JSON.parse(str); } catch {}
+      const safeParse = (str: string): any => {
+        try { return JSON.parse(str); } catch (e) { /* ignore */ }
         const firstBrace = str.indexOf('{');
         const lastBrace = str.lastIndexOf('}');
         if (firstBrace >=0 && lastBrace > firstBrace) {
           const slice = str.substring(firstBrace, lastBrace+1);
-          try { return JSON.parse(slice); } catch {}
+          try { return JSON.parse(slice); } catch (e) { /* ignore */ }
         }
         return { title: topic, excerpt: str.slice(0,155), content_mdx: str };
-      }
+      };
       content = safeParse(raw);
     }
 

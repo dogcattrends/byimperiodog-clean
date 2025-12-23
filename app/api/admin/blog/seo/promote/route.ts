@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 // Promote a suggestion row to override and mark approved

@@ -2,14 +2,11 @@
 
 import { CheckCircle2, HeartHandshake, ShieldCheck } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 import { useMemo } from "react";
 
-import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/cn";
+import PrimaryCTA from "@/components/ui/PrimaryCTA";
 import { HERO_IMAGE_SIZES } from "@/lib/image-sizes";
-import { buildWhatsAppLink } from "@/lib/whatsapp";
+import { routes } from "@/lib/route";
 import heroDesktop from "@/public/spitz-hero-desktop.webp";
 
 const SELLING_POINTS = [
@@ -35,24 +32,6 @@ const STATS = [
   { value: "180+", label: "famílias acompanhadas" },
   { value: "24h", label: "suporte humano dedicado" },
 ] as const;
-
-const primaryWhatsApp = buildWhatsAppLink({
-  message:
-    "Olá! Quero receber orientação personalizada sobre os Spitz Alemão Anão até 22 cm da By Império Dog.",
-  utmSource: "site",
-  utmMedium: "hero",
-  utmCampaign: "hero_primary_cta",
-  utmContent: "whatsapp_button",
-});
-
-const secondaryWhatsApp = buildWhatsAppLink({
-  message:
-    "Olá! Vi a seção de mentoria e gostaria de conversar agora sobre disponibilidade e próximos passos.",
-  utmSource: "site",
-  utmMedium: "hero",
-  utmCampaign: "hero_secondary_cta",
-  utmContent: "whatsapp_link",
-});
 
 export default function HeroSection() {
   const greeting = useMemo(() => {
@@ -106,22 +85,12 @@ export default function HeroSection() {
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <a
-              href={primaryWhatsApp}
-                className={cn(
-                buttonVariants({ size: "lg" }),
-                "min-h-[52px] w-full sm:w-auto sm:px-8 bg-emerald-600 text-white shadow-lg hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2",
-              )}
-            >
-              <WhatsAppIcon className="h-5 w-5" aria-hidden="true" />
-              Conversar no WhatsApp
-            </a>
-            <Link
-              href="#filhotes"
-              className="inline-flex min-h-[52px] w-full items-center justify-center rounded-full border border-emerald-300 bg-white px-6 text-sm font-semibold text-emerald-700 transition hover:border-emerald-400 hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 sm:w-auto"
-            >
-              Ver filhotes disponíveis
-            </Link>
+            <PrimaryCTA href={routes.filhotes} tracking={{ location: "hero", ctaId: "hero_primary" }}>
+              Ver filhotes premium
+            </PrimaryCTA>
+            <PrimaryCTA href="/guia" variant="ghost" tracking={{ location: "hero", ctaId: "hero_secondary" }}>
+              Baixar o guia do tutor
+            </PrimaryCTA>
           </div>
 
           <ul className="flex flex-wrap items-center gap-3 text-xs font-medium uppercase tracking-[0.3em] text-emerald-700">
@@ -174,13 +143,14 @@ export default function HeroSection() {
                   Envie um vídeo da sua casa e receba checklist de rotina, enxoval e investimento em minutos.
                 </p>
               </div>
-              <a
-                href={secondaryWhatsApp}
-                  className="inline-flex min-h-[48px] items-center gap-2 text-sm font-semibold text-emerald-800 transition-colors hover:text-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+              <PrimaryCTA
+                href={routes.filhotes}
+                variant="ghost"
+                tracking={{ location: "hero", ctaId: "hero_secondary_contact" }}
+                className="min-h-[48px] px-4 py-2 text-sm"
               >
-                <WhatsAppIcon className="h-4 w-4" aria-hidden="true" />
-                Falar agora
-              </a>
+                Falar com a criadora
+              </PrimaryCTA>
             </div>
           </div>
         </div>

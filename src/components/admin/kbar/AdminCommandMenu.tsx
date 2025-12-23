@@ -27,7 +27,6 @@ export default function AdminCommandMenu() {
       className="fixed inset-0 z-[9999] flex items-start justify-center bg-black/40 backdrop-blur-sm"
     >
       <Command.Input
-        autoFocus
         className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm focus:outline-none"
         placeholder="Busque comandos..."
       />

@@ -1,7 +1,8 @@
 ﻿"use client";
 
-import { useEffect, useState, FormEvent } from "react";
 import { Loader2, Save } from "lucide-react";
+import type { FormEvent } from "react";
+import { useEffect, useState } from "react";
 
 import type { PublicTrackingSettings } from "@/types/tracking";
 

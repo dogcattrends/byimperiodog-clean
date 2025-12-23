@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, no-empty */
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 

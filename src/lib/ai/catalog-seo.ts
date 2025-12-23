@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * CatalogSEOAI
  * Gera textos curtos e otimizados para SEO/conversão nos cards do catálogo.

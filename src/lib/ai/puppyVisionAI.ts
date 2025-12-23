@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import "server-only";
 
 import { createHash } from "node:crypto";
@@ -127,7 +128,7 @@ export async function analyzePuppyVision(
   const height = metadata.height ?? 0;
   const brightness = calculateBrightness(stats);
   const noise = calculateNoise(stats);
-  const sharpness = await measureSharpness(image);
+  const sharpness = await measureSharpness(image, options);
   const aspectRatio = height ? Number((width / height).toFixed(2)) : 1;
 
   const lowLight = brightness < 95;
@@ -261,7 +262,7 @@ function calculateNoise(stats: sharp.Stats): number {
   return channels.reduce((sum, ch) => sum + ch.stdev, 0) / channels.length;
 }
 
-async function measureSharpness(image: sharp.Sharp): Promise<number> {
+async function measureSharpness(image: sharp.Sharp, options: PuppyVisionOptions = {}): Promise<number> {
   try {
     const hints: string[] = [];
     if (options.puppyName) hints.push(`filhote ${options.puppyName}`);
@@ -342,6 +343,7 @@ async function runVisionModel(buffer: Buffer, format: string, options: PuppyVisi
     return null;
   }
   try {
+    const requirements = `Analise esta foto pensando como um diretor de marketing de canil premium. Responda SOMENTE em JSON com os campos solicitados.`;
     const reduced = await sharp(buffer).resize(768, 768, { fit: "inside" }).jpeg({ quality: 85 }).toBuffer();
     const base64 = reduced.toString("base64");
     const mime = format === "png" ? "image/png" : "image/jpeg";

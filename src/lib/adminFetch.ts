@@ -14,25 +14,26 @@ export async function adminFetch(input: RequestInfo | URL, init: RequestInit = {
   // 3) Se 401 no browser: perguntar uma vez e refazer
   if (typeof window !== 'undefined' && res.status === 401) {
     try {
-      const trying = (window as any).__adminPassRetrying;
+      const win = window as unknown as Record<string, unknown>;
+      const trying = (win.__adminPassRetrying as boolean) || false;
       if (!trying) {
-        (window as any).__adminPassRetrying = true;
+        (win.__adminPassRetrying as unknown) = true;
         const entered = window.prompt('Senha admin (x-admin-pass):');
         if (entered) {
           localStorage.setItem('adminPass', entered);
           headers.set('x-admin-pass', entered);
           res = await fetch(input, { ...init, headers });
         }
-        (window as any).__adminPassRetrying = false;
+        (win.__adminPassRetrying as unknown) = false;
       }
-    } catch {}
+    } catch { /* ignore */ }
   }
   return res;
 }
-
-export async function adminPostJSON<T=any>(url: string, data: any, extraInit: RequestInit = {}): Promise<T> {
-  const res = await adminFetch(url, { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json', ...(extraInit.headers||{}) }, ...extraInit });
-  const json = await res.json().catch(()=>null);
-  if(!res.ok) throw new Error(json?.error || 'Erro');
+export async function adminPostJSON<T = unknown>(url: string, data: unknown, extraInit: RequestInit = {}): Promise<T> {
+  const res = await adminFetch(url, { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json', ...(extraInit.headers || {}) }, ...extraInit });
+  const json = (await res.json().catch(() => null)) as unknown;
+  const jsObj = json as Record<string, unknown> | null;
+  if (!res.ok) throw new Error((jsObj && (String(jsObj.error || jsObj.message) || 'Erro')) || 'Erro');
   return json as T;
 }

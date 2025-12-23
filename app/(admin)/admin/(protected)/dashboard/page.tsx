@@ -1,15 +1,16 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, jsx-a11y/no-redundant-roles */
 import type { Metadata } from "next";
 
-import { generateDeepInsights } from "@/lib/ai/deep-insights";
 import { generateDecisions } from "@/lib/ai/decision-engine";
+import { generateDeepInsights } from "@/lib/ai/deep-insights";
 import { recalcDemandPredictions } from "@/lib/ai/demand-prediction";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
-import { AIInsightsPanel, type AIInsightPayload } from "./AIInsightsPanel";
-import { OperationalAlertsPanel, type OperationalAlerts } from "./OperationalAlertsPanel";
 import { refreshOperationalInsightsAction } from "./actions";
+import { AIInsightsPanel, type AIInsightPayload } from "./AIInsightsPanel";
 import { DashboardErrorNotifier } from "./DashboardErrorNotifier";
 import { mapDeepInsightsToPayload } from "./insights";
+import { OperationalAlertsPanel, type OperationalAlerts } from "./OperationalAlertsPanel";
 
 export const metadata: Metadata = {
   title: "Dashboard | Admin",

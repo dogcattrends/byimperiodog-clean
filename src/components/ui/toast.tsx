@@ -17,7 +17,7 @@ export function useToast(){
 
 export function ToastProvider({ children }: { children:React.ReactNode }){
   const [toasts,setToasts] = useState<Toast[]>([]);
-  const timers = useRef<Record<string,any>>({});
+  const timers = useRef<Record<string, number>>({});
   const remove = useCallback((id:string)=> {
     setToasts(t=> t.filter(x=> x.id!==id));
     if(timers.current[id]){ clearTimeout(timers.current[id]); delete timers.current[id]; }
@@ -26,7 +26,7 @@ export function ToastProvider({ children }: { children:React.ReactNode }){
     const id = Math.random().toString(36).slice(2);
     const toast:Toast = { id, type:'info', duration:3000, ...t };
     setToasts(ts=> [...ts,toast]);
-    if(toast.duration && toast.duration>0){ timers.current[id]= setTimeout(()=> remove(id), toast.duration); }
+    if(toast.duration && toast.duration>0){ timers.current[id]= window.setTimeout(()=> remove(id), toast.duration); }
   },[remove]);
   useEffect(()=> ()=> Object.values(timers.current).forEach(clearTimeout),[]);
   return (

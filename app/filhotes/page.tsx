@@ -1,10 +1,25 @@
 import type { Metadata } from "next";
+import dynamicImport from "next/dynamic";
 
-import PuppiesGridPremium from "@/components/PuppiesGridPremium";
+import PrimaryCTA from "@/components/ui/PrimaryCTA";
+import TrustBlock from "@/components/ui/TrustBlock";
 import type { Puppy } from "@/domain/puppy";
 import { getRankedPuppies, type RankedPuppy } from "@/lib/ai/catalog-ranking";
 import { normalizePuppyFromDB } from "@/lib/catalog/normalize";
+import { routes } from "@/lib/route";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { TRUST_BLOCK_ITEMS } from "@/lib/trust-data";
+
+const PuppiesGridPremium = dynamicImport(() => import("@/components/PuppiesGridPremium"), {
+  ssr: true,
+  loading: () => (
+    <section className="py-16">
+      <div className="container mx-auto px-4">
+        <div className="h-96 rounded-3xl bg-gradient-to-br from-zinc-100 to-zinc-50 animate-pulse" />
+      </div>
+    </section>
+  ),
+});
 
 type CatalogPuppy = Puppy & {
   rankingFlag?: RankedPuppy["flag"];
@@ -57,12 +72,10 @@ const buildFiltersFromSearchParams = (searchParams?: Record<string, string | str
 });
 
 export const metadata: Metadata = {
-  title: "Filhotes Disponíveis - Spitz Alemão (Lulu da Pomerânia) | By Imperio Dog",
+  title: "Filhotes disponíveis premium | By Império Dog",
   description:
-    "Descubra filhotes de Spitz Alemão (Lulu da Pomerânia) disponíveis com saúde garantida, pedigree e suporte completo. Reserve seu filhote de forma segura hoje mesmo.",
-  alternates: {
-    canonical: "/filhotes",
-  },
+    "Escolha filhotes de Spitz Alemão Anão e Lulu da Pomerânia com pedigree CBKC, triagem veterinária e mentoria vitalícia. Processo transparente e suporte direto com a criadora.",
+  alternates: { canonical: "/filhotes" },
 };
 
 export const dynamic = "force-dynamic";
@@ -113,7 +126,7 @@ async function fetchPuppies(filters: CatalogFilters): Promise<CatalogPuppy[]> {
       return [];
     }
 
-    return (data ?? []).map((raw) => ({
+    return (data ?? []).map((raw: any) => ({
       ...normalizePuppyFromDB(raw),
       rankingFlag: undefined,
       rankingScore: undefined,
@@ -141,31 +154,51 @@ export default async function FilhotesPage({ searchParams }: PageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-zinc-50/30">
-      <PuppiesGridPremium initialItems={puppies} initialFilters={initialFilters} />
-    </div>
+    <main className="bg-gradient-to-b from-white to-zinc-50/40">
+      <section className="container mx-auto px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[var(--text-muted)]">
+          Spitz Alemão Anão Lulu da Pomerânia — Criador certificado
+        </p>
+        <h1 className="mt-2 text-3xl font-semibold text-zinc-900 sm:text-4xl">
+          Filhotes disponíveis com processo premium
+        </h1>
+        <p className="mt-4 max-w-3xl text-base text-zinc-600">
+          Cada filhote passa por triagem veterinária, socialização guiada e documentação completa.
+          Trabalhamos com ninhadas limitadas para garantir atenção personalizada a cada novo tutor.
+        </p>
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <PrimaryCTA href={routes.filhotes} tracking={{ location: "filhotes_page", ctaId: "filhotes_primary" }}>
+            Ver catálogo completo
+          </PrimaryCTA>
+          <PrimaryCTA
+            href="/guia"
+            variant="ghost"
+            tracking={{ location: "filhotes_page", ctaId: "filhotes_secondary" }}
+          >
+            Receber o guia do tutor
+          </PrimaryCTA>
+        </div>
+        <div className="mt-10 max-w-5xl">
+          <TrustBlock
+            title="Confiança comprovada"
+            description="Processo guiado para entregarmos filhotes seguros e tutores preparados"
+            items={TRUST_BLOCK_ITEMS}
+          />
+        </div>
+      </section>
+
+      <section id="catalog" className="pb-16">
+        <PuppiesGridPremium
+          initialItems={puppies}
+          initialFilters={initialFilters}
+          cardOptions={{
+            showPrice: false,
+            showContactCTA: false,
+            primaryLabel: "Quero esse filhote",
+            ctaTrackingId: "filhotes_card_primary",
+          }}
+        />
+      </section>
+    </main>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

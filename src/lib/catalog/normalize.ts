@@ -76,33 +76,34 @@ function stripHtml(input?: string): string {
 export function normalizePuppyFromDB(rawInput: unknown): Puppy {
   const raw = RawPuppySchema.safeParse(rawInput);
   const base = raw.success ? raw.data : (rawInput as Partial<RawPuppyFromDB>);
+  const b = base as Partial<Record<string, unknown>>;
 
   // Suporta campos em português e inglês
-  const name = ((base as any).nome || (base as any).name || "filhote").trim();
-  const color = coerceColor((base as any).cor || base.color);
-  const genderValue = (base as any).sexo || base.gender;
+  const name = ((b.nome as string) || (b.name as string) || "filhote").trim();
+  const color = coerceColor((b.cor as string) || (b.color as string));
+  const genderValue = (b.sexo as string) || (b.gender as string);
   const sex = genderValue === "femea" || genderValue === "female" ? "female" : "male";
-  const birthDate = safeDate((base as any).nascimento || base.birth_date);
-  
+  const birthDate = safeDate((b.nascimento as string) || (b.birth_date as string));
+
   // Preço: converte de decimal para centavos se necessário
-  let priceCents = base.price_cents ?? 0;
-  if ((base as any).preco && !base.price_cents) {
-    const precoDecimal = parseFloat((base as any).preco);
+  let priceCents = (b.price_cents as number) ?? 0;
+  if ((b.preco as string) && !b.price_cents) {
+    const precoDecimal = parseFloat(b.preco as string);
     priceCents = Math.round(precoDecimal * 100);
   }
 
   // Mapeia campo 'midia' do banco para 'images'
-  const midiaArray = (base as any).midia || base.images || [];
+  const midiaArray = (b.midia as unknown) || (b.images as unknown) || [];
   const images = Array.isArray(midiaArray)
-    ? midiaArray
-        .filter((item: any) => item && (typeof item === 'string' || item.url))
-        .map((item: any) => typeof item === 'string' ? item : item.url)
+    ? (midiaArray as unknown[])
+      .filter((item) => item && (typeof item === 'string' || ((item as Record<string, unknown>)?.url)))
+      .map((item) => (typeof item === 'string' ? (item as string) : ((item as Record<string, unknown>).url as string)))
         .filter((u: string) => URL_REGEX.test(u))
     : [];
   const thumbnail = images.length > 0 ? images[0] : undefined;
 
   // Descrição em português ou inglês
-  const description = stripHtml((base as any).descricao || base.description) || "";
+  const description = stripHtml((b.descricao as string) || (b.description as string)) || "";
 
   return {
     id: base.id as string,
@@ -120,10 +121,10 @@ export function normalizePuppyFromDB(rawInput: unknown): Puppy {
     readyForAdoptionDate: new Date(birthDate.getTime() + 60 * 24 * 60 * 60 * 1000),
     images,
     thumbnailUrl: thumbnail,
-    city: coerceCity(((base as any).cidade as string) || (base.city as string)),
-    state: (((base as any).estado as string) || (base.state as string) || "SP").toUpperCase(),
+    city: coerceCity(((b.cidade as string) || (b.city as string))),
+    state: (((b.estado as string) || (b.state as string) || "SP").toUpperCase()),
     availableForShipping: true,
-    status: coerceStatus(base.status),
+    status: coerceStatus(b.status as string),
     isHighlighted: false,
     isFeatured: false,
     isBestSeller: false,
@@ -132,14 +133,14 @@ export function normalizePuppyFromDB(rawInput: unknown): Puppy {
     hasPedigree: true,
     vaccinationStatus: "up-to-date",
     hasMicrochip: false,
-    averageRating: base.aggregate_rating ?? 0,
-    reviewCount: base.review_count ?? 0,
-    viewCount: base.view_count ?? 0,
-    favoriteCount: base.favorite_count ?? 0,
-    shareCount: base.share_count ?? 0,
-    inquiryCount: base.inquiry_count ?? 0,
+    averageRating: (b.aggregate_rating as number) ?? 0,
+    reviewCount: (b.review_count as number) ?? 0,
+    viewCount: (b.view_count as number) ?? 0,
+    favoriteCount: (b.favorite_count as number) ?? 0,
+    shareCount: (b.share_count as number) ?? 0,
+    inquiryCount: (b.inquiry_count as number) ?? 0,
     seoKeywords: [],
-    createdAt: safeDate(base.created_at),
-    updatedAt: safeDate(base.updated_at),
+    createdAt: safeDate(b.created_at as string),
+    updatedAt: safeDate(b.updated_at as string),
   };
 }

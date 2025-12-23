@@ -2,7 +2,6 @@
 
 import classNames from "classnames";
 import Link from "next/link";
-import type { ReactNode } from "react";
 
 type ContentTOCItem = { title: string; href: string };
 

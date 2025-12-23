@@ -1,9 +1,10 @@
-import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { supabaseAnon } from "@/lib/supabaseAnon";
-import { buildBlogMetadata } from "@/lib/blog/seo";
+import { notFound } from "next/navigation";
+
 import PostCard from "@/components/blog/PostCard";
+import { buildBlogMetadata } from "@/lib/blog/seo";
+import { supabaseAnon } from "@/lib/supabaseAnon";
 
 async function fetchAuthorBySlug(slug: string) {
   try {
@@ -56,9 +57,7 @@ export default async function AuthorPage({ params }: { params: { slug: string } 
           {posts.map((p: any) => (
             <li key={p.slug}>
               <Link href={`/blog/${p.slug}`}>
-                <a>
-                  <PostCard href={`/blog/${p.slug}`} title={p.title} coverUrl={p.cover_url} excerpt={p.excerpt} date={p.published_at} readingTime={null} />
-                </a>
+                <PostCard href={`/blog/${p.slug}`} title={p.title} coverUrl={p.cover_url} excerpt={p.excerpt} date={p.published_at} readingTime={null} />
               </Link>
             </li>
           ))}

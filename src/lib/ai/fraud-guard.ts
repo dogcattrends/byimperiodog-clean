@@ -1,22 +1,5 @@
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
-type LeadRow = {
-  id: string;
-  created_at: string;
-  nome?: string | null;
-  telefone?: string | null;
-  cidade?: string | null;
-  estado?: string | null;
-  mensagem?: string | null;
-  page?: string | null;
-  page_slug?: string | null;
-  utm_source?: string | null;
-  utm_medium?: string | null;
-  referer?: string | null;
-  ip_address?: string | null;
-  user_agent?: string | null;
-};
-
 export type FraudAssessment = {
   leadId: string;
   score: number; // 0-100
@@ -107,7 +90,7 @@ export async function assessLeadFraud(leadId: string): Promise<FraudAssessment> 
       .select("mensagem")
       .neq("id", lead.id)
       .limit(20);
-    const dupMsg = (similar ?? []).some((s) => similarity(s.mensagem || "", lead.mensagem || "") > 0.8);
+    const dupMsg = (similar ?? []).some((s: any) => similarity(s.mensagem || "", lead.mensagem || "") > 0.8);
     if (dupMsg) {
       score += 25;
       actions.push("Mensagem repetida indica spam.");

@@ -1,6 +1,6 @@
 // src/lib/csv.ts
-export function toCsv(rows: any[], headers?: string[]) {
-  const esc = (v: any) => {
+export function toCsv(rows: Array<Record<string, unknown>>, headers?: string[]) {
+  const esc = (v: unknown) => {
     if (v === null || v === undefined) return "";
     const s = String(v);
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
@@ -8,7 +8,7 @@ export function toCsv(rows: any[], headers?: string[]) {
 
   const cols = headers ?? (rows[0] ? Object.keys(rows[0]) : []);
   const head = cols.join(",");
-  const lines = rows.map((r) => cols.map((h) => esc(r[h])).join(","));
+  const lines = rows.map((r) => cols.map((h) => esc((r as Record<string, unknown>)[h])).join(","));
   return [head, ...lines].join("\n");
 }
 

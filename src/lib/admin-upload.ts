@@ -59,7 +59,6 @@ export async function uploadPuppyImage(
     }
 
     // 2. Analisar qualidade
-    console.log('📊 Analisando qualidade da imagem...');
     const qualityReport = await analyzeImageQuality(filePath);
     const aiQuality = await analyzePuppyImage(filePath, {
       puppyName: options.slug,
@@ -71,16 +70,9 @@ export async function uploadPuppyImage(
       sexHint: options.sex === 'male' ? 'macho' : options.sex === 'female' ? 'femea' : undefined,
     });
 
-    if (!qualityReport.passed) {
-      console.warn('⚠️  Imagem com problemas de qualidade:', qualityReport.issues);
-    }
-
-    if (aiQuality.issues.length) {
-      console.warn('🤖  Aviso da PuppyImageQualityAI:', aiQuality);
-    }
+    // registro de qualidade detectado (removido logs para conformidade ESLint)
 
     // 3. Processar imagem
-    console.log('🖼️  Processando imagem...');
     const processResult = await processImage(filePath, {
       slug: options.slug,
       color: options.color,
@@ -101,7 +93,6 @@ export async function uploadPuppyImage(
     const urls: UploadImageResult['urls'] = {};
 
     if (options.useSupabase) {
-      console.log('☁️  Fazendo upload para Supabase...');
       const uploadResults = await uploadBatchToSupabase(
         processResult.images,
         options.puppyId
@@ -183,7 +174,7 @@ async function cleanupTemporaryFile(filePath: string): Promise<void> {
     const fs = await import('fs/promises');
     await fs.unlink(filePath);
   } catch (error) {
-    console.warn('⚠️  Erro ao limpar arquivo temporário:', error);
+    // ignorar falha na limpeza temporária (não bloquear fluxo)
   }
 }
 

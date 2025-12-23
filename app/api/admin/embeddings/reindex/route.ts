@@ -1,6 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin, logAdminAction } from '@/lib/adminAuth';
 import { createClient } from '@supabase/supabase-js';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
+
+import { requireAdmin, logAdminAction } from '@/lib/adminAuth';
+
 
 // Minimal reindex endpoint: re-embeds latest N published posts using OpenAI if available
 export async function POST(req: NextRequest){
@@ -18,7 +21,7 @@ export async function POST(req: NextRequest){
     if(error) throw error;
     if(!posts || posts.length===0) return NextResponse.json({ ok:true, updated:0 });
 
-    function toPlain(md: string){ return md.replace(/```[\s\S]*?```/g,' ').replace(/[#>*_`]/g,' ').replace(/\s+/g,' ').trim(); }
+    const toPlain = (md: string) => md.replace(/```[\s\S]*?```/g,' ').replace(/[#>*_`]/g,' ').replace(/\s+/g,' ').trim();
 
     // Embed
     const inputs = posts.map(p=> `${p.title}\n${p.excerpt||''}\n${p.content_mdx||''}` ).map(toPlain).map(t=> t.slice(0,8000));

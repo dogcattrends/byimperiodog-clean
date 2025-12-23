@@ -8,7 +8,7 @@ import { adminFetch } from '@/lib/adminFetch';
 export function ReindexEmbeddingsButton({ className }: { className?: string }){
   const [loading,setLoading] = useState(false);
   const [msg,setMsg] = useState<string|null>(null);
-  const { push: pushToast } = useToast?.() || { push: (_:any)=>{} } as any;
+  const { push: pushToast } = useToast();
   async function onClick(){
     try {
       setLoading(true); setMsg(null);
@@ -16,10 +16,10 @@ export function ReindexEmbeddingsButton({ className }: { className?: string }){
       const j = await r.json().catch(()=>null);
       if(!r.ok) throw new Error(j?.error || 'Erro ao reindexar');
       setMsg(`Atualizados: ${j?.updated ?? 0}`);
-      try { pushToast({ message: `Embeddings atualizados: ${j?.updated ?? 0}`, type: 'success' }); } catch {}
+      try { pushToast({ message: `Embeddings atualizados: ${j?.updated ?? 0}`, type: 'success' }); } catch (e) { void e; }
     } catch(e:any){
       setMsg(`Falha: ${e?.message||e}`);
-      try { pushToast({ message: `Falha ao reindexar: ${e?.message||e}` , type: 'error' }); } catch {}
+      try { pushToast({ message: `Falha ao reindexar: ${e?.message||e}` , type: 'error' }); } catch (e) { void e; }
     } finally { setLoading(false); }
   }
   return (

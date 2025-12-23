@@ -15,7 +15,7 @@ interface PuppyFormProps {
   mode?: "create" | "edit";
   record?: RawPuppy | null;
   colorPresets?: string[];
-  onCompleted?: (payload?: any) => void;
+  onCompleted?: (payload?: unknown) => void;
 }
 
 const DEFAULT_COLORS = [
@@ -141,10 +141,10 @@ export default function PuppyForm({
               </select>
             </div>
             <div className="grid gap-1 md:col-span-2">
-              <label className="font-medium" id="status-label">
+              <label htmlFor="status" className="font-medium">
                 Status
               </label>
-              <StatusToggle value={values.status} onChange={(next) => set("status", next)} />
+              <StatusToggle id="status" value={values.status} onChange={(next) => set("status", next)} />
             </div>
             <div className="md:col-span-2">
               <ColorChips value={values.color} options={colorPresets} onChange={(next) => set("color", next)} />

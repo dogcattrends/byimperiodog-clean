@@ -75,7 +75,7 @@ export default function InlineImagePicker({ onSelect, postId, disabled, helperTe
       if (postId) form.set("post_id", postId);
       const response = await adminFetch("/api/admin/blog/media/upload", {
         method: "POST",
-        body: form as any,
+        body: form,
         cache: "no-store",
       });
       const json = await response.json();
@@ -108,8 +108,9 @@ export default function InlineImagePicker({ onSelect, postId, disabled, helperTe
     if (!file) return;
     try {
       await handleUpload(file);
-    } catch (err: any) {
-      setError(err?.message || "Erro desconhecido");
+    } catch (err) {
+      if (err instanceof Error) setError(err.message);
+      else setError(String(err) || "Erro desconhecido");
       setPreviewUrl(null);
     }
   }

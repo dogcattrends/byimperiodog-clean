@@ -2,15 +2,26 @@
 import { useForm } from "react-hook-form";
 
 type Props = { code: string };
+type FormValues = {
+  nome?: string;
+  cpf?: string;
+  email?: string;
+  telefone?: string;
+  endereco?: string;
+  hemograma?: FileList;
+  laudo?: FileList;
+};
 
 export default function ContractForm({ code }: Props) {
-  const { register, handleSubmit, formState: { isSubmitting }, reset } = useForm();
+  const { register, handleSubmit, formState: { isSubmitting }, reset } = useForm<FormValues>();
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: FormValues) => {
     const form = new FormData();
     form.append("code", code);
     for (const [k, v] of Object.entries(data)) {
-      if (v instanceof File) form.append(k, v);
+      const val = v as unknown;
+      if (val instanceof File) form.append(k, val);
+      if (val instanceof FileList && val.length) form.append(k, val[0]);
     }
     form.set("payload", JSON.stringify({
       nome: data.nome,
@@ -38,10 +49,10 @@ export default function ContractForm({ code }: Props) {
 
       <div className="card space-y-2">
         <p className="font-semibold">Anexos no ato da entrega</p>
-        <label className="text-sm">Hemograma (PDF/JPG)</label>
-        <input type="file" accept=".pdf,image/*" {...register("hemograma")} />
-        <label className="text-sm mt-2">Laudo do Veterinário (PDF/JPG)</label>
-        <input type="file" accept=".pdf,image/*" {...register("laudo")} />
+        <label htmlFor="hemograma" className="text-sm">Hemograma (PDF/JPG)</label>
+        <input id="hemograma" type="file" accept=".pdf,image/*" {...register("hemograma")} />
+        <label htmlFor="laudo" className="text-sm mt-2">Laudo do Veterinário (PDF/JPG)</label>
+        <input id="laudo" type="file" accept=".pdf,image/*" {...register("laudo")} />
       </div>
 
       <button disabled={isSubmitting} className="btn-primary">{isSubmitting ? "Enviando..." : "Enviar dados"}</button>

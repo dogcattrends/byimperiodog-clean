@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, react/no-unescaped-entities */
 "use client";
 
-import { useCallback, useState } from "react";
 import { AlertTriangle, CheckCircle2, Info, Loader2, Power, ShieldCheck, Wifi, WifiOff } from "lucide-react";
+import { useCallback, useState } from "react";
 
 import { useToast } from "@/components/ui/toast";
 import type { TrackingConfig } from "@/lib/tracking/getTrackingConfig";

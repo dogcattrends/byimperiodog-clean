@@ -1,50 +1,50 @@
 // Client-only helper. Use: track.event("generate_lead", { puppy_id: "..." })
-type Params = Record<string, any>;
+type Params = Record<string, unknown>;
 
 export function sendGA4(name: string, params?: Params) {
-  // @ts-ignore
-  const gtag = (window as any).gtag;
-  if (typeof gtag === "function") {
-    gtag("event", name, params || {});
+  const win = typeof window !== 'undefined' ? (window as unknown as Record<string, unknown>) : undefined;
+  const gtag = win?.gtag as unknown as ((...args: unknown[]) => void) | undefined;
+  if (typeof gtag === 'function') {
+    gtag('event', name, params || {});
   }
 }
 
 export function sendFB(name: string, params?: Params) {
-  // @ts-ignore
-  const fbq = (window as any).fbq;
-  if (typeof fbq === "function") {
+  const win = typeof window !== 'undefined' ? (window as unknown as Record<string, unknown>) : undefined;
+  const fbq = win?.fbq as unknown as ((...args: unknown[]) => void) | undefined;
+  if (typeof fbq === 'function') {
     const map: Record<string, string> = {
-      generate_lead: "Lead",
-      view_item: "ViewContent",
-      select_item: "ViewContent",
+      generate_lead: 'Lead',
+      view_item: 'ViewContent',
+      select_item: 'ViewContent',
     };
-    fbq("track", map[name] || name, params || {});
+    fbq('track', map[name] || name, params || {});
   }
 }
 
 export function sendTT(name: string, params?: Params) {
-  // @ts-ignore
-  const ttq = (window as any).ttq;
-  if (ttq && typeof ttq.track === "function") {
+  const win = typeof window !== 'undefined' ? (window as unknown as Record<string, unknown>) : undefined;
+  const ttq = win?.ttq as unknown as { track?: (...args: unknown[]) => void } | undefined;
+  if (ttq && typeof ttq.track === 'function') {
     const map: Record<string, string> = {
-      generate_lead: "SubmitForm",
-      view_item: "ViewContent",
-      select_item: "ClickButton",
+      generate_lead: 'SubmitForm',
+      view_item: 'ViewContent',
+      select_item: 'ClickButton',
     };
     ttq.track(map[name] || name, params || {});
   }
 }
 
 export function sendPIN(name: string, params?: Params) {
-  // @ts-ignore
-  const pintrk = (window as any).pintrk;
-  if (typeof pintrk === "function") {
+  const win = typeof window !== 'undefined' ? (window as unknown as Record<string, unknown>) : undefined;
+  const pintrk = win?.pintrk as unknown as ((...args: unknown[]) => void) | undefined;
+  if (typeof pintrk === 'function') {
     const map: Record<string, string> = {
-      generate_lead: "lead",
-      view_item: "pagevisit",
-      select_item: "viewcategory",
+      generate_lead: 'lead',
+      view_item: 'pagevisit',
+      select_item: 'viewcategory',
     };
-    pintrk("track", map[name] || name, params || {});
+    pintrk('track', map[name] || name, params || {});
   }
 }
 
@@ -55,36 +55,40 @@ export function event(name: string, params?: Params) {
     sendTT(name, params);
     sendPIN(name, params);
     // se usar Ads via gtag, já foi coberto no sendGA4 (mesma API)
-  } catch (e) {
-    // silencioso
-  }
+  } catch (e) { void e; }
 }
 
 export function page() {
   try {
     const path = typeof window !== "undefined" ? window.location.pathname : undefined;
     event("page_view", path ? { path } : undefined);
-  } catch {}
+  } catch (e) { void e; }
 }
 
 let clicksBound = false;
 export function bindClicks() {
   try {
-    if (clicksBound || typeof document === "undefined") return;
+    if (clicksBound || typeof document === 'undefined') return;
     clicksBound = true;
-    document.addEventListener("click", (ev) => {
+    document.addEventListener('click', (ev) => {
       const target = ev.target as HTMLElement | null;
       if (!target) return;
-      const el = target.closest<HTMLElement>("[data-track-event]");
+      const el = target.closest<HTMLElement>('[data-track-event]');
       if (!el) return;
-      const name = el.getAttribute("data-track-event");
+      const name = el.getAttribute('data-track-event');
       if (!name) return;
-      const paramsAttr = el.getAttribute("data-track-params");
+      const paramsAttr = el.getAttribute('data-track-params');
       let params: Params | undefined;
-      try { params = paramsAttr ? JSON.parse(paramsAttr) : undefined; } catch {}
+      try {
+        params = paramsAttr ? (JSON.parse(paramsAttr) as Params) : undefined;
+      } catch {
+        params = undefined;
+      }
       event(name, params);
     });
-  } catch {}
+  } catch {
+    /* ignore */
+  }
 }
 
 // Experiments A/B helpers: emite para pixels e persiste no backend (/api/analytics)
@@ -92,24 +96,24 @@ type ExperimentPayload = { experiment: string; variant: string; [k: string]: unk
 
 function postAnalytics(name: string, meta: ExperimentPayload) {
   try {
-    const path = typeof window !== "undefined" ? window.location.pathname : undefined;
+    const path = typeof window !== 'undefined' ? window.location.pathname : undefined;
     const body = JSON.stringify({ name, meta, path });
-    // Usa sendBeacon quando disponível para não bloquear navegação
-    // @ts-ignore
-    const beacon = typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function";
+    const nav = typeof navigator !== 'undefined' ? (navigator as unknown as Record<string, unknown>) : undefined;
+    const beacon = nav && typeof nav.sendBeacon === 'function';
     if (beacon) {
-      // @ts-ignore
-      navigator.sendBeacon("/api/analytics", new Blob([body], { type: "application/json" }));
+      (nav.sendBeacon as (...args: unknown[]) => boolean)('/api/analytics', new Blob([body], { type: 'application/json' }));
       return;
     }
     // fallback fetch não bloqueante
-    fetch("/api/analytics", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    fetch('/api/analytics', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body,
       keepalive: true,
-    }).catch(() => {});
-  } catch {}
+    }).catch(() => void 0);
+  } catch {
+    /* ignore */
+  }
 }
 
 export function experimentView(experiment: string, variant: string) {

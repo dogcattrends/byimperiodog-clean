@@ -3,11 +3,12 @@
 // Wizard Editorial IA — fluxo leve (Brief → Outline → Draft → SEO → Imagem → Revisão/Publ.)
 // Usa endpoints já existentes: /api/admin/blog/ai/outline, /ai/generate-post, /seo-suggestions, /ai/image, /blog (CRUD)
 
-import React, { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import React, { useMemo, useState } from "react";
+
 import { BlogSubnav } from "@/components/admin/BlogSubnav";
 import { adminFetch } from "@/lib/adminFetch";
-import Link from "next/link";
-import Image from "next/image";
 
 type Step = 0|1|2|3|4|5;
 
@@ -108,8 +109,8 @@ export default function WizardPage(){
         {/* Step 0: Brief */}
         {step===0 && (
           <section className="space-y-3">
-            <label className="block text-sm font-medium">Tópico do post</label>
-            <input value={topic} onChange={e=>setTopic(e.target.value)} className="w-full rounded border px-3 py-2" placeholder="Ex.: Guia de cuidados do Spitz" />
+            <label htmlFor="wizard-topic" className="block text-sm font-medium">Tópico do post</label>
+            <input id="wizard-topic" value={topic} onChange={e=>setTopic(e.target.value)} className="w-full rounded border px-3 py-2" placeholder="Ex.: Guia de cuidados do Spitz" />
             <div className="flex gap-2">
               <button onClick={doOutline} disabled={!topic||loading} className="rounded border px-3 py-2 disabled:opacity-50">Gerar Outline</button>
             </div>
@@ -133,12 +134,12 @@ export default function WizardPage(){
         {/* Step 2: Draft */}
         {step===2 && (
           <section className="space-y-3">
-            <label className="block text-sm font-medium">Título</label>
-            <input value={draft.title} onChange={e=> setDraft(d=>({...d,title:e.target.value}))} className="w-full rounded border px-3 py-2" />
-            <label className="block text-sm font-medium">Resumo</label>
-            <textarea value={draft.excerpt} onChange={e=> setDraft(d=>({...d,excerpt:e.target.value}))} className="w-full rounded border px-3 py-2" rows={2} />
-            <label className="block text-sm font-medium">Conteúdo (MDX)</label>
-            <textarea value={draft.content_mdx} onChange={e=> setDraft(d=>({...d,content_mdx:e.target.value}))} className="w-full rounded border px-3 py-2 font-mono" rows={12} />
+            <label htmlFor="wizard-title" className="block text-sm font-medium">Título</label>
+            <input id="wizard-title" value={draft.title} onChange={e=> setDraft(d=>({...d,title:e.target.value}))} className="w-full rounded border px-3 py-2" />
+            <label htmlFor="wizard-excerpt" className="block text-sm font-medium">Resumo</label>
+            <textarea id="wizard-excerpt" value={draft.excerpt} onChange={e=> setDraft(d=>({...d,excerpt:e.target.value}))} className="w-full rounded border px-3 py-2" rows={2} />
+            <label htmlFor="wizard-content" className="block text-sm font-medium">Conteúdo (MDX)</label>
+            <textarea id="wizard-content" value={draft.content_mdx} onChange={e=> setDraft(d=>({...d,content_mdx:e.target.value}))} className="w-full rounded border px-3 py-2 font-mono" rows={12} />
             <div className="flex gap-2">
               <button onClick={()=> setStep(1)} className="rounded border px-3 py-2">Voltar</button>
               <button onClick={doSeo} disabled={loading} className="rounded border px-3 py-2">Gerar SEO</button>
@@ -151,12 +152,12 @@ export default function WizardPage(){
           <section className="space-y-3">
             <div className="grid gap-3 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium">SEO Title</label>
-                <input value={draft.seo_title} onChange={e=> setDraft(d=>({...d,seo_title:e.target.value}))} className="w-full rounded border px-3 py-2" />
+                <label htmlFor="wizard-seo-title" className="block text-sm font-medium">SEO Title</label>
+                <input id="wizard-seo-title" value={draft.seo_title} onChange={e=> setDraft(d=>({...d,seo_title:e.target.value}))} className="w-full rounded border px-3 py-2" />
               </div>
               <div>
-                <label className="block text-sm font-medium">SEO Description</label>
-                <input value={draft.seo_description} onChange={e=> setDraft(d=>({...d,seo_description:e.target.value}))} className="w-full rounded border px-3 py-2" />
+                <label htmlFor="wizard-seo-desc" className="block text-sm font-medium">SEO Description</label>
+                <input id="wizard-seo-desc" value={draft.seo_description} onChange={e=> setDraft(d=>({...d,seo_description:e.target.value}))} className="w-full rounded border px-3 py-2" />
               </div>
             </div>
             <div className="flex gap-2">

@@ -1,6 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
+
 import { requireAdmin } from '@/lib/adminAuth';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 export async function POST(req: NextRequest){
   const auth = requireAdmin(req); if(auth) return auth;
@@ -13,7 +15,7 @@ export async function POST(req: NextRequest){
     // insert contract (se tabela existir)
     try {
       await sb.from('contracts').insert([{ puppy_id, client_name, client_phone: client_phone||null, client_email: client_email||null, status:'pending', created_at: new Date().toISOString() }]);
-    } catch {}
+    } catch (e) { /* ignore optional contracts table */ }
     return NextResponse.json({ ok:true });
   } catch(e:any){
     return NextResponse.json({ error: e?.message || 'erro' },{ status:500 });

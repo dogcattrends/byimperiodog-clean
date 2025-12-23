@@ -3,7 +3,7 @@
  * Gera badges com base em score, demanda e contexto de estoque/localização.
  */
 
-export type BadgeKey = "hot" | "trend" | "opportunity" | "last_units";
+export type BadgeKey = "hot" | "trend" | "opportunity" | "last_units" | "new";
 
 export type Badge = {
   key: BadgeKey;
@@ -15,6 +15,8 @@ export type Badge = {
   bgColor: string;
   textColor: string;
 };
+
+export type CatalogBadge = Badge;
 
 export type BadgeInput = {
   score: number;
@@ -34,6 +36,7 @@ const COLOR_SCHEMES: Record<
   trend: { color: "#2563EB", bg: "#E0EAFF", text: "#1D4ED8", icon: "⭐" },
   opportunity: { color: "#4F46E5", bg: "#EDE9FE", text: "#4338CA", icon: "👀" },
   last_units: { color: "#22C55E", bg: "#ECFDF3", text: "#15803D", icon: "⚡" },
+  new: { color: "#0f766e", bg: "#ecfeff", text: "#0f172a", icon: "🌱" },
 };
 
 const labelMap: Record<BadgeKey, string> = {
@@ -41,6 +44,7 @@ const labelMap: Record<BadgeKey, string> = {
   trend: "Tendência da semana",
   opportunity: "Oportunidade especial",
   last_units: "Últimas unidades",
+  new: "Recém-chegado",
 };
 
 const priorities: Record<BadgeKey, number> = {
@@ -48,6 +52,7 @@ const priorities: Record<BadgeKey, number> = {
   trend: 80,
   last_units: 70,
   opportunity: 60,
+  new: 50,
 };
 
 function getBadgeColorScheme(key: BadgeKey) {
