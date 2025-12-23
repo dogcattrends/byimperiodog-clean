@@ -2,7 +2,7 @@
 declare module 'meilisearch' {
   export class MeiliSearch {
     constructor(cfg: { host: string; apiKey?: string });
-    getIndex(index: string): Promise<any> & any;
-    createIndex(index: string, cfg?: any): Promise<any>;
+    getIndex(index: string): Promise<unknown>;
+    createIndex(index: string, cfg?: unknown): Promise<unknown>;
   }
 }

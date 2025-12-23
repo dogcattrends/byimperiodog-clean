@@ -1,19 +1,19 @@
 declare module 'part:@sanity/base/schema-creator' {
-  const createSchema: any;
+  const createSchema: unknown;
   export default createSchema;
 }
 
 declare module 'all:part:@sanity/base/schema-type' {
-  const types: any;
+  const types: unknown;
   export default types;
 }
 
 declare module '@sanity/desk-tool/structure-builder' {
-  const S: any;
+  const S: unknown;
   export default S;
 }
 
 declare module '@sanity/client' {
-  const client: any;
+  const client: unknown;
   export default client;
 }

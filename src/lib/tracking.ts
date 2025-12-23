@@ -1,47 +1,54 @@
 /* eslint-disable @typescript-eslint/no-unused-vars, no-empty */
 type TrackingEvent = "page_view" | "view_form" | "submit_start" | "submit_success" | "submit_error";
 
-function safePushToDataLayer(event: string, payload: Record<string, any> = {}) {
+function safePushToDataLayer(event: string, payload: Record<string, unknown> = {}) {
   try {
     // GTM/GA4 via dataLayer
-    (window as any).dataLayer = (window as any).dataLayer || [];
-    (window as any).dataLayer.push({ event, ...payload });
+    const w = window as unknown as {
+      dataLayer?: Array<Record<string, unknown>>;
+      fbq?: (...args: unknown[]) => void;
+      ttq?: { track?: (...args: unknown[]) => void };
+    };
+    w.dataLayer = w.dataLayer || [];
+    w.dataLayer.push({ event, ...(payload as Record<string, unknown>) });
   } catch (_) {}
   try {
     // Facebook Pixel
-    if ((window as any).fbq) {
-      (window as any).fbq("trackCustom", event, payload);
+    const wfb = window as unknown as { fbq?: (...args: unknown[]) => void };
+    if (typeof wfb.fbq === "function") {
+      wfb.fbq!("trackCustom", event, payload);
     }
   } catch (_) {}
   try {
     // TikTok Pixel
-    if ((window as any).ttq) {
-      (window as any).ttq.track(event, payload);
+    const wtt = window as unknown as { ttq?: { track?: (...args: unknown[]) => void } };
+    if (wtt.ttq && typeof wtt.ttq.track === "function") {
+      wtt.ttq.track!(event, payload);
     }
   } catch (_) {}
 }
 
-export function track(event: TrackingEvent, payload: Record<string, any> = {}) {
+export function track(event: TrackingEvent, payload: Record<string, unknown> = {}) {
   safePushToDataLayer(event, payload);
 }
 
-export function trackPageView(context: Record<string, any>) {
+export function trackPageView(context: Record<string, unknown>) {
   track("page_view", context);
 }
 
-export function trackFormView(context: Record<string, any>) {
+export function trackFormView(context: Record<string, unknown>) {
   track("view_form", context);
 }
 
-export function trackSubmitStart(context: Record<string, any>) {
+export function trackSubmitStart(context: Record<string, unknown>) {
   track("submit_start", context);
 }
 
-export function trackSubmitSuccess(context: Record<string, any>) {
+export function trackSubmitSuccess(context: Record<string, unknown>) {
   track("submit_success", context);
 }
 
-export function trackSubmitError(context: Record<string, any>) {
+export function trackSubmitError(context: Record<string, unknown>) {
   track("submit_error", context);
 }
 
@@ -109,7 +116,7 @@ export function resolveTracking(
     hotjar: norm(config?.hotjarId ?? settings?.hotjar_id ?? env.NEXT_PUBLIC_HOTJAR_ID),
     clarity: norm(config?.clarityId ?? settings?.clarity_id ?? env.NEXT_PUBLIC_CLARITY_ID),
     metaVerify: norm(config?.metaDomainVerification ?? settings?.meta_domain_verify ?? env.NEXT_PUBLIC_META_DOMAIN_VERIFY),
-    googleVerify: norm((settings as any)?.google_site_verify ?? env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION),
+    googleVerify: norm((settings as Record<string, unknown>)?.google_site_verify ?? env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION),
     siteUrl: norm(env.NEXT_PUBLIC_SITE_URL) || "https://www.byimperiodog.com.br",
     custom,
   };
