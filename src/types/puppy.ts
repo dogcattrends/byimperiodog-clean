@@ -79,10 +79,10 @@ export function normalizePuppy(raw: RawPuppy): PuppyDTO {
     codigo: raw.codigo || undefined,
     nome,
     gender: (raw.gender || raw.sex) === "male" ? "male" : "female",
-    status:
-      raw.status && ["disponivel", "reservado", "vendido"].includes(raw.status)
-        ? (raw.status as any)
-        : "disponivel",
+    status: ((): PuppyDTO['status'] => {
+      const s = typeof raw.status === 'string' ? raw.status : '';
+      return ['disponivel', 'reservado', 'vendido'].includes(s) ? (s as PuppyDTO['status']) : 'disponivel';
+    })(),
     color: (raw.color || raw.cor || "").trim(),
     price_cents:
       raw.price_cents ?? raw.priceCents ?? (raw.preco ? Math.round(Number(raw.preco) * 100) : 0),
