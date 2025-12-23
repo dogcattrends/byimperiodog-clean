@@ -29,8 +29,9 @@ export async function generateOperationalAlerts(): Promise<Alerts> {
   const alerts: Alerts = { critical: [], medium: [], low: [] };
   const puppyLeadCount = new Map<string, number>();
 
-  (leads ?? []).forEach((l: any) => {
-    const slug = (l.page_slug || l.page || "").toString();
+  (leads ?? []).forEach((l: unknown) => {
+    const row = l as Record<string, unknown>;
+    const slug = String(row.page_slug ?? row.page ?? "");
     if (!slug) return;
     puppyLeadCount.set(slug, (puppyLeadCount.get(slug) ?? 0) + 1);
   });
@@ -38,39 +39,48 @@ export async function generateOperationalAlerts(): Promise<Alerts> {
   // Map estoque por cor para comparar com demanda
   const stockByColor = new Map<string, number>();
   (puppies ?? [])
-    .filter((p: any) => (p.status || "available") === "available")
-    .forEach((p: any) => {
-      const c = (p.color || "desconhecida").toLowerCase();
+    .filter((p: unknown) => String((p as Record<string, unknown>).status ?? "available") === "available")
+    .forEach((p: unknown) => {
+      const row = p as Record<string, unknown>;
+      const c = String(row.color ?? "desconhecida").toLowerCase();
       stockByColor.set(c, (stockByColor.get(c) ?? 0) + 1);
     });
 
   // Filhotes sem foto / sem preço / tempo de estoque
-  (puppies ?? []).forEach((p: any) => {
-    if (!p.midia || p.midia.length === 0) alerts.medium.push(`Filhote sem foto: ${p.name || p.slug || p.id}`);
-    if (!p.price_cents || p.price_cents <= 0) alerts.medium.push(`Filhote sem preço: ${p.name || p.slug || p.id}`);
-    if (daysBetween(p.created_at) > 90 && (p.status || "available") === "available") {
-      alerts.medium.push(`Filhote >90 dias no estoque: ${p.name || p.slug || p.id}`);
+  (puppies ?? []).forEach((p: unknown) => {
+    const row = p as Record<string, unknown>;
+    const id = String(row.id ?? "");
+    const name = String(row.name ?? row.slug ?? id);
+    const midia = row.midia as unknown[] | undefined;
+    if (!midia || midia.length === 0) alerts.medium.push(`Filhote sem foto: ${name}`);
+    const price = Number(row.price_cents ?? 0) || 0;
+    if (!price || price <= 0) alerts.medium.push(`Filhote sem preço: ${name}`);
+    if (daysBetween(String(row.created_at ?? null)) > 90 && String(row.status ?? "available") === "available") {
+      alerts.medium.push(`Filhote >90 dias no estoque: ${name}`);
     }
 
-    const leadHits = puppyLeadCount.get(p.slug || "") ?? 0;
-    if (leadHits >= 20 && (p.status || "available") === "available") {
-      alerts.critical.push(`Risco de overbooking: ${p.name || p.slug || p.id} com ${leadHits} leads.`);
+    const leadHits = puppyLeadCount.get(String(row.slug ?? "")) ?? 0;
+    if (leadHits >= 20 && String(row.status ?? "available") === "available") {
+      alerts.critical.push(`Risco de overbooking: ${name} com ${leadHits} leads.`);
     }
   });
 
   // Leads sem resposta >2h
   const twoHoursAgo = Date.now() - 2 * 60 * 60 * 1000;
-  (leads ?? []).forEach((l: any) => {
-    const last = l.last_contact_at ? new Date(l.last_contact_at).getTime() : new Date(l.created_at).getTime();
-    if ((!l.status || l.status === "novo") && last < twoHoursAgo) {
-      alerts.medium.push(`Lead sem resposta >2h: ${l.id}`);
+  (leads ?? []).forEach((l: unknown) => {
+    const row = l as Record<string, unknown>;
+    const last = row.last_contact_at ? new Date(String(row.last_contact_at)).getTime() : new Date(String(row.created_at)).getTime();
+    const status = String(row.status ?? "");
+    if ((!status || status === "novo") && last < twoHoursAgo) {
+      alerts.medium.push(`Lead sem resposta >2h: ${String(row.id ?? "")}`);
     }
   });
 
   // Demanda por cor > estoque
   const demandByColor = new Map<string, number>();
-  (leads ?? []).forEach((l: any) => {
-    const c = (l.cor_preferida || "desconhecida").toLowerCase();
+  (leads ?? []).forEach((l: unknown) => {
+    const row = l as Record<string, unknown>;
+    const c = String(row.cor_preferida ?? "desconhecida").toLowerCase();
     demandByColor.set(c, (demandByColor.get(c) ?? 0) + 1);
   });
   demandByColor.forEach((demand, color) => {

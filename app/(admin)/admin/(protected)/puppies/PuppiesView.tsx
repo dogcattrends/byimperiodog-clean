@@ -1,12 +1,14 @@
 "use client";
 
+/* eslint-disable import/order */
 import { useEffect, useMemo, useState } from "react";
 
 import type { Puppy } from "@/domain/puppy";
-import type { AdminPuppyListItem, AdminPuppyStatus } from "./queries";
 
 import { PuppiesBoard } from "./PuppiesBoard";
 import { PuppiesTable } from "./PuppiesTable";
+
+import type { AdminPuppyListItem, AdminPuppyStatus } from "./queries";
 
 type Props = { items: AdminPuppyListItem[] | Puppy[] };
 

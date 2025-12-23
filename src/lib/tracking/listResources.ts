@@ -1,11 +1,11 @@
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import type { ProviderKey } from "@/lib/tracking/providers/types";
 
-export type NormalizedResource = { id: string; name: string; extra?: Record<string, any> };
+export type NormalizedResource = { id: string; name: string; extra?: Record<string, unknown> };
 
-async function getIntegration(userId: string, provider: ProviderKey) {
+async function getIntegration(userId: string, provider: ProviderKey): Promise<Record<string, unknown> | null> {
   const supa = supabaseAdmin();
-  const { data, error }: { data: any[] | null; error: any } = await supa
+  const { data, error }: { data: Record<string, unknown>[] | null; error: unknown } = await supa
     .from("integrations")
     .select("id,user_id,provider,access_token,refresh_token,expires_at,provider_account_id,metadata")
     .eq("user_id", userId)
@@ -18,7 +18,7 @@ async function getIntegration(userId: string, provider: ProviderKey) {
 export async function listFacebookPixels(userId: string): Promise<NormalizedResource[]> {
   const integ = await getIntegration(userId, "facebook");
   if (!integ?.access_token) return [];
-  const accessToken: string = integ.access_token;
+  const accessToken: string = String(integ.access_token ?? "");
 
   try {
     // Fetch ad accounts
@@ -34,11 +34,14 @@ export async function listFacebookPixels(userId: string): Promise<NormalizedReso
     if (!pixelsRes.ok) return [];
     const pixelsJson = await pixelsRes.json();
     const pixels = pixelsJson.data || [];
-    return pixels.map((p: any) => ({
-      id: p.id,
-      name: p.name || `Pixel ${p.id}`,
-      extra: { accountId: firstAccountId },
-    }));
+    return pixels.map((p: unknown) => {
+      const row = p as Record<string, unknown>;
+      return {
+        id: String(row.id ?? ""),
+        name: String(row.name ?? `Pixel ${row.id ?? ""}`),
+        extra: { accountId: firstAccountId },
+      };
+    });
   } catch (err) {
     console.error("Error listing Facebook pixels:", err);
     return [];
@@ -49,9 +52,9 @@ export async function listGAProperties(userId: string): Promise<NormalizedResour
   const integ = await getIntegration(userId, "google_analytics");
   if (!integ?.access_token) return [];
   const tokens = {
-    accessToken: integ.access_token,
-    refreshToken: integ.refresh_token || null,
-    expiresAt: integ.expires_at ? Math.floor(new Date(integ.expires_at).getTime() / 1000) : null,
+    accessToken: String(integ.access_token ?? ""),
+    refreshToken: integ.refresh_token ? String(integ.refresh_token) : null,
+    expiresAt: integ.expires_at ? Math.floor(new Date(String(integ.expires_at)).getTime() / 1000) : null,
     tokenType: "Bearer",
   };
 
@@ -62,11 +65,15 @@ export async function listGAProperties(userId: string): Promise<NormalizedResour
     if (!res.ok) return [];
     const json = await res.json();
     const properties = json.properties || [];
-    return properties.map((p: any) => ({
-      id: p.name?.split("/").pop() || p.name,
-      name: p.displayName || p.name,
-      extra: { measurementId: p.measurementId },
-    }));
+    return properties.map((p: unknown) => {
+      const row = p as Record<string, unknown>;
+      const id = String((row.name as string | undefined)?.split("/").pop() ?? row.name ?? "");
+      return {
+        id,
+        name: String(row.displayName ?? row.name ?? id),
+        extra: { measurementId: row.measurementId },
+      };
+    });
   } catch (err) {
     console.error("Error listing GA properties:", err);
     return [];
@@ -76,7 +83,7 @@ export async function listGAProperties(userId: string): Promise<NormalizedResour
 export async function listGTMContainers(userId: string): Promise<NormalizedResource[]> {
   const integ = await getIntegration(userId, "google_tag_manager");
   if (!integ?.access_token) return [];
-  const accessToken: string = integ.access_token;
+  const accessToken: string = String(integ.access_token ?? "");
 
   try {
     const accountsRes = await fetch("https://www.googleapis.com/tagmanager/v2/accounts", {
@@ -94,11 +101,14 @@ export async function listGTMContainers(userId: string): Promise<NormalizedResou
     if (!containersRes.ok) return [];
     const containersJson = await containersRes.json();
     const containers = containersJson.container || [];
-    return containers.map((c: any) => ({
-      id: c.publicId || c.containerId,
-      name: c.name || c.publicId,
-      extra: { accountId: firstAccount.accountId },
-    }));
+    return containers.map((c: unknown) => {
+      const row = c as Record<string, unknown>;
+      return {
+        id: String(row.publicId ?? row.containerId ?? ""),
+        name: String(row.name ?? row.publicId ?? ""),
+        extra: { accountId: firstAccount.accountId },
+      };
+    });
   } catch (err) {
     console.error("Error listing GTM containers:", err);
     return [];
@@ -108,12 +118,12 @@ export async function listGTMContainers(userId: string): Promise<NormalizedResou
 export async function listTikTokPixels(userId: string): Promise<NormalizedResource[]> {
   const integ = await getIntegration(userId, "tiktok");
   if (!integ?.access_token) return [];
-  const accessToken: string = integ.access_token;
+  const accessToken: string = String(integ.access_token ?? "");
 
   try {
     // TikTok requires advertiser_id; you may need to fetch it first or store it
     // For now, attempt to list pixels if advertiser_id is in metadata
-    const advertiserId = (integ.metadata as any)?.advertiser_id;
+    const advertiserId = String(((integ.metadata as unknown as Record<string, unknown>)?.advertiser_id) ?? "");
     if (!advertiserId) {
       console.warn("TikTok advertiser_id not found in integration metadata");
       return [];
@@ -126,11 +136,14 @@ export async function listTikTokPixels(userId: string): Promise<NormalizedResour
     if (!res.ok) return [];
     const json = await res.json();
     const pixels = json.data?.pixels || [];
-    return pixels.map((p: any) => ({
-      id: p.pixel_id || p.pixel_code,
-      name: p.pixel_name || `Pixel ${p.pixel_id}`,
-      extra: { advertiserId },
-    }));
+    return pixels.map((p: unknown) => {
+      const row = p as Record<string, unknown>;
+      return {
+        id: String(row.pixel_id ?? row.pixel_code ?? ""),
+        name: String(row.pixel_name ?? `Pixel ${row.pixel_id ?? ""}`),
+        extra: { advertiserId },
+      };
+    });
   } catch (err) {
     console.error("Error listing TikTok pixels:", err);
     return [];

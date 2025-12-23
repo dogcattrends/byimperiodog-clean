@@ -85,11 +85,15 @@ async function listGoogleAnalyticsResources(tokens: OAuthTokens): Promise<Resour
     }
     const json = await res.json();
     const properties = json.properties || [];
-    return properties.map((p: any) => ({
-      id: p.name?.split("/").pop() || p.name,
-      name: p.displayName || p.name,
-      extra: { measurementId: p.measurementId, propertyType: p.propertyType },
-    }));
+    return properties.map((p: unknown) => {
+      const row = p as Record<string, unknown>;
+      const id = String((row.name as string | undefined)?.split("/").pop() ?? row.name ?? "");
+      return {
+        id,
+        name: String(row.displayName ?? row.name ?? id),
+        extra: { measurementId: row.measurementId, propertyType: row.propertyType },
+      };
+    });
   } catch (err) {
     console.error("Error listing GA properties:", err);
     return [];
@@ -125,11 +129,14 @@ async function listGoogleTagManagerResources(tokens: OAuthTokens): Promise<Resou
     }
     const containersJson = await containersRes.json();
     const containers = containersJson.container || [];
-    return containers.map((c: any) => ({
-      id: c.publicId || c.containerId,
-      name: c.name || c.publicId,
-      extra: { accountId: firstAccount.accountId, accountName: firstAccount.name },
-    }));
+    return containers.map((c: unknown) => {
+      const row = c as Record<string, unknown>;
+      return {
+        id: String(row.publicId ?? row.containerId ?? ""),
+        name: String(row.name ?? row.publicId ?? ""),
+        extra: { accountId: firstAccount.accountId, accountName: firstAccount.name },
+      };
+    });
   } catch (err) {
     console.error("Error listing GTM containers:", err);
     return [];
