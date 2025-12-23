@@ -7,6 +7,15 @@ import { initWebVitals, logEvent } from "@/lib/analytics";
 
 export default function TrackingScripts() {
   useEffect(() => {
+    type PixelWindow = Window & {
+      gtag?: (...args: unknown[]) => void;
+      fbq?: (...args: unknown[]) => void;
+      ttq?: { page?: () => void; track?: (...args: unknown[]) => void };
+      pintrk?: (...args: unknown[]) => void;
+      dataLayer?: Array<Record<string, unknown>>;
+    };
+    const win = window as unknown as PixelWindow;
+
     const waitFor = <T,>(opts: {
       getter: () => T | undefined;
       onReady: (value: T) => void;
@@ -38,7 +47,7 @@ export default function TrackingScripts() {
       const search = window.location.search ? window.location.search.replace(/^\?/, "") : "";
 
       // GA4 / Ads (gtag)
-      const gtag = (window as unknown as Record<string, unknown>).gtag as unknown;
+      const gtag = win.gtag;
       if (typeof gtag === "function") {
         gtag("event", "page_view", {
           page_location: url,
@@ -47,22 +56,16 @@ export default function TrackingScripts() {
       }
 
       // Meta Pixel
-      const fbq = (window as unknown as Record<string, unknown>).fbq as unknown;
-      if (typeof fbq === "function") {
-        fbq("track", "PageView");
-      }
+      const fbq = win.fbq;
+      if (typeof fbq === "function") fbq("track", "PageView");
 
       // TikTok
-      const ttq = (window as unknown as Record<string, unknown>).ttq as Record<string, unknown> | undefined;
-      if (ttq && typeof (ttq as any).page === "function") {
-        (ttq as any).page();
-      }
+      const ttq = win.ttq;
+      if (ttq && typeof ttq.page === "function") ttq.page();
 
       // Pinterest
-      const pintrk = (window as unknown as Record<string, unknown>).pintrk as unknown;
-      if (typeof pintrk === "function") {
-        (pintrk as any)("page");
-      }
+      const pintrk = win.pintrk;
+      if (typeof pintrk === "function") pintrk("page");
     };
 
     // Defer tracking para não bloquear main thread
@@ -104,11 +107,11 @@ export default function TrackingScripts() {
     const pixelId = params.get("pixel_id");
     let waitHandle: number | undefined;
 
-    if (pixelTest && pixelId) {
+      if (pixelTest && pixelId) {
       if (pixelTest === "meta") {
         waitHandle = waitFor(
           {
-            getter: () => (window as unknown as Record<string, unknown>).fbq as ((...args: unknown[]) => void) | undefined,
+            getter: () => win.fbq as ((...args: unknown[]) => void) | undefined,
             onReady: (fbq) => {
               fbq("track", "TestEvent", { source: "public_test", pixel_id: pixelId });
               window.opener?.postMessage(
@@ -123,7 +126,7 @@ export default function TrackingScripts() {
       } else if (pixelTest === "ga4") {
         waitHandle = waitFor(
           {
-            getter: () => (window as unknown as Record<string, unknown>).gtag as ((...args: unknown[]) => void) | undefined,
+            getter: () => win.gtag as ((...args: unknown[]) => void) | undefined,
             onReady: (gtag) => {
               gtag("event", "test_event", {
                 event_category: "admin_test",
@@ -143,7 +146,7 @@ export default function TrackingScripts() {
       } else if (pixelTest === "gtm") {
         waitHandle = waitFor(
           {
-            getter: () => (window as unknown as Record<string, unknown>).dataLayer as Array<unknown> | undefined,
+            getter: () => win.dataLayer as Array<unknown> | undefined,
             onReady: (dl) => {
               dl.push({
                 event: "test_event",
@@ -162,7 +165,7 @@ export default function TrackingScripts() {
       } else if (pixelTest === "tiktok") {
         waitHandle = waitFor(
           {
-            getter: () => (window as unknown as Record<string, unknown>).ttq as { track?: (...args: unknown[]) => void } | undefined,
+            getter: () => win.ttq as { track?: (...args: unknown[]) => void } | undefined,
             onReady: (ttq) => {
               ttq.track?.("TestEvent", { source: "admin_test" });
               window.opener?.postMessage(
