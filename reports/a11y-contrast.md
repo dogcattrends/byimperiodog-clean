@@ -2,23 +2,26 @@
 
 Base URL: http://localhost:3000
 
-- /: 3 falhas de contraste
-  - Regra: color-contrast (serious) — Elements must meet minimum color contrast ratio thresholds
-    - alvo: div:nth-child(1) > article > .space-y-2.p-5 > .hover\:bg-emerald-700.active\:scale-95.bg-emerald-600
-    - alvo: div:nth-child(2) > article > .space-y-2.p-5 > .hover\:bg-emerald-700.active\:scale-95.bg-emerald-600
-    - alvo: .hover\:bg-emerald-500\/90
-- /sobre: 10 falhas de contraste
-  - Regra: color-contrast (serious) — Elements must meet minimum color contrast ratio thresholds
-    - alvo: .hover\:brightness-110
-    - alvo: .pl-16:nth-child(1) > .absolute.left-0.top-1
-    - alvo: .pl-16:nth-child(2) > .absolute.left-0.top-1
-    - alvo: .pl-16:nth-child(3) > .absolute.left-0.top-1
-    - alvo: .pl-16:nth-child(4) > .absolute.left-0.top-1
-- /contato: 1 falhas de contraste
-  - Regra: color-contrast (serious) — Elements must meet minimum color contrast ratio thresholds
-    - alvo: .text-white\/90
-- /filhote/test: 0 falhas de contraste
-- /admin: 0 falhas de contraste
+- /: ERROR page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/
+Call log:
+[2m  - navigating to "http://localhost:3000/", waiting until "load"[22m
+
+- /sobre: ERROR page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/sobre
+Call log:
+[2m  - navigating to "http://localhost:3000/sobre", waiting until "load"[22m
+
+- /contato: ERROR page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/contato
+Call log:
+[2m  - navigating to "http://localhost:3000/contato", waiting until "load"[22m
+
+- /filhote/test: ERROR page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/filhote/test
+Call log:
+[2m  - navigating to "http://localhost:3000/filhote/test", waiting until "load"[22m
+
+- /admin: ERROR page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/admin
+Call log:
+[2m  - navigating to "http://localhost:3000/admin", waiting until "load"[22m
+
 
 ## Fixes propostos (tokens neutros)
 - Ajustes sugeridos em app/globals.css para tokens: --surface, --surface-2, --border, --text-muted
