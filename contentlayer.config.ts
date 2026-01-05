@@ -1,9 +1,9 @@
 import { defineDocumentType, makeSource } from '@contentlayer/source-files';
-import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
-import remarkGfm from 'remark-gfm';
-// @ts-ignore - tipos conflitantes de vfile entre dependências
 import rehypePrettyCode from 'rehype-pretty-code';
+import rehypeSlug from 'rehype-slug';
+import remarkGfm from 'remark-gfm';
+// @ts-expect-error - tipos conflitantes de vfile entre dependências
 
 // Observação: os resolvers de computedFields usam cast interno para compatibilidade de tipos do Contentlayer.
 
@@ -22,14 +22,31 @@ export const Post = defineDocumentType(() => ({
     author: { type: 'string', required: false },
   },
   computedFields: {
-  slug: { type: 'string', resolve: (doc) => (doc as any)._raw.sourceFileName.replace(/\.mdx$/, '') },
-  url: { type: 'string', resolve: (doc) => `/blog/${(doc as any)._raw.sourceFileName.replace(/\.mdx$/, '')}` },
-  readingTime: { type:'number', resolve: (doc)=> {
-    const text = ((doc as any).body?.raw || '') as string;
-        const words = text.split(/\s+/).filter(Boolean).length;
-        return Math.max(1, Math.round(words/200));
-      }
-    }
+  slug: {
+    type: 'string',
+    resolve: (doc) => {
+      const d = doc as unknown as { _raw?: { sourceFileName?: string } };
+      const name = d._raw?.sourceFileName || '';
+      return name.replace(/\.mdx$/, '');
+    },
+  },
+  url: {
+    type: 'string',
+    resolve: (doc) => {
+      const d = doc as unknown as { _raw?: { sourceFileName?: string } };
+      const name = d._raw?.sourceFileName || '';
+      return `/blog/${name.replace(/\.mdx$/, '')}`;
+    },
+  },
+  readingTime: {
+    type: 'number',
+    resolve: (doc) => {
+      const d = doc as unknown as { body?: { raw?: string } };
+      const text = (d.body?.raw || '') as string;
+      const words = text.split(/\s+/).filter(Boolean).length;
+      return Math.max(1, Math.round(words / 200));
+    },
+  },
   },
 }));
 
@@ -44,7 +61,7 @@ export default makeSource({
       rehypeSlug,
       [rehypeAutolinkHeadings, { behavior: 'wrap' }],
   // Wrapper para evitar erro de tipo entre múltiplas versões de vfile
-  [rehypePrettyCode as any, { theme: 'github-dark' }],
+  [rehypePrettyCode as unknown as any, { theme: 'github-dark' }],
     ],
   },
 });
