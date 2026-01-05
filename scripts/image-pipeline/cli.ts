@@ -5,9 +5,10 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-import { analyzeImageQuality, formatQualityReport } from './quality-analyzer';
-import { processImage, cleanupOldImages } from './processor';
+
 import { IMAGE_CONFIG } from './config';
+import { processImage, cleanupOldImages } from './processor';
+import { analyzeImageQuality, formatQualityReport } from './quality-analyzer';
 
 interface ImageFile {
   path: string;
@@ -153,7 +154,6 @@ async function scanImageFolders(inputDir: string): Promise<ImageFile[]> {
       // Extrair metadados do nome da pasta
       // Padrão: spitz-branco-macho ou lulu-laranja-femea
       const parts = folder.name.split('-');
-      const slug = parts[0]; // spitz, lulu, etc
       const color = parts[1]; // branco, laranja
       const sexStr = parts[2]; // macho, femea
       const sex: 'male' | 'female' | undefined =

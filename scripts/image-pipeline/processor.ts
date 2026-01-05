@@ -5,8 +5,10 @@
 
 import fs from 'fs/promises';
 import path from 'path';
+
 import sharp from 'sharp';
 import { v4 as uuidv4 } from 'uuid';
+
 import { IMAGE_CONFIG, type ImageSize } from './config';
 
 export interface ProcessOptions {
@@ -58,7 +60,7 @@ export async function processImage(
     await fs.mkdir(outputDir, { recursive: true });
 
     // 3. Processar cada tamanho
-    for (const [sizeName, sizeConfig] of Object.entries(IMAGE_CONFIG.sizes)) {
+    for (const sizeName of Object.keys(IMAGE_CONFIG.sizes)) {
       const size = sizeName as ImageSize;
 
       try {
