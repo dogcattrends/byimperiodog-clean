@@ -2,20 +2,6 @@
 import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
 
-type PostRow = {
-	id: string;
-	slug: string | null;
-	title: string | null;
-	author_id?: string | null;
-	tldr?: string | null;
-	key_takeaways?: string[] | null;
-	seo_description?: string | null;
-	excerpt?: string | null;
-	content_mdx?: string | null;
-	published_at?: string | null;
-	status?: string | null;
-};
-
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || '';
