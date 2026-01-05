@@ -12,7 +12,7 @@ type AnyPuppyInput = RawPuppy | (RawPuppy & { nome?: string|null; name?: string|
 export interface UsePuppyFormOptions {
   mode: 'create' | 'edit';
   record?: AnyPuppyInput; // required para edit; aceita shape proveniente do backend
-  onSuccess?: (data: any) => void;
+  onSuccess?: (data: unknown) => void;
 }
 
 export function usePuppyForm({ mode, record, onSuccess }: UsePuppyFormOptions){
@@ -47,7 +47,7 @@ export function usePuppyForm({ mode, record, onSuccess }: UsePuppyFormOptions){
 
   const priceCents = useMemo(()=> parseBRLToCents(values.price_display), [values.price_display]);
 
-  function set<K extends keyof typeof values>(k:K, v:any){ setValues(s=> ({ ...s, [k]: v })); }
+  function set<K extends keyof typeof values>(k:K, v: unknown){ setValues(s=> ({ ...s, [k]: v as any })); }
   function setMedia(list:string[]){
     setValues(s=>{ let next = list; const cover = s.image_url || list[0]; if(cover){ next = [cover, ...list.filter(u=> u!==cover)]; } return { ...s, midia: next }; });
   }
@@ -80,7 +80,7 @@ export function usePuppyForm({ mode, record, onSuccess }: UsePuppyFormOptions){
     }
     try {
       setSubmitting(true);
-      const payload:any = {
+      const payload: Record<string, unknown> = {
         codigo: values.codigo || undefined,
         nome: values.nome.trim(),
         gender: values.gender,
@@ -94,12 +94,24 @@ export function usePuppyForm({ mode, record, onSuccess }: UsePuppyFormOptions){
         video_url: values.video_url || null,
         midia: values.midia,
       };
-      const url = '/api/admin/puppies';
+      // Use the centralized manage endpoint for create/update operations
+      const url = '/api/admin/puppies/manage';
       let method: 'POST'|'PUT' = 'POST';
       if(isEdit){ method='PUT'; payload.id = record?.id; }
       const r = await adminFetch(url,{ method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
-      const j = await r.json();
-      if(!r.ok) throw new Error(j?.error || 'Erro');
+      let j: any = null;
+      // Be defensive: tests/mocks may return a plain object without headers/text helpers.
+      const ct = r && r.headers && typeof r.headers.get === 'function' ? (r.headers.get('content-type') || '') : '';
+      if (ct.includes('application/json') && typeof r.json === 'function') {
+        j = await r.json().catch(() => null);
+      } else if (typeof r.text === 'function') {
+        const txt = await r.text().catch(() => null);
+        j = txt ? { error: String(txt) } : null;
+      } else if (typeof r.json === 'function') {
+        // Fallback: if mock provides json() but no headers
+        j = await r.json().catch(() => null);
+      }
+      if (!r.ok) throw new Error((j && (String(j.error || j.message))) || `Erro (${r.status})`);
       push({ type:'success', message: isEdit? 'Filhote atualizado.' : `Filhote cadastrado${values.codigo? ' (#'+values.codigo+')':''}.` });
       onSuccess && onSuccess(j);
       if(!isEdit){
@@ -107,7 +119,10 @@ export function usePuppyForm({ mode, record, onSuccess }: UsePuppyFormOptions){
         setErrors({});
         setShowSummary(false);
       }
-    } catch(err:any){ push({ type:'error', message: err?.message || 'Erro ao salvar' }); }
+    } catch(err: unknown){
+      const message = err instanceof Error ? err.message : String(err ?? 'Erro ao salvar');
+      push({ type:'error', message });
+    }
     finally { setSubmitting(false); }
   }
 
