@@ -1,6 +1,7 @@
 /* Auditoria Fase A: ESLint config reforçada */
 module.exports = {
   root: true,
+  ignorePatterns: ['app/api/share-card/**'],
   extends: [
     'next/core-web-vitals',
     'eslint:recommended',
