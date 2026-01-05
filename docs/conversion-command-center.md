@@ -45,7 +45,7 @@ Este documento consolida o plano aprovado para elevar o `byimperiodog-clean` ao 
   *Rollback:* voltar ao form clássico (submit básico) e resetar CTA.  
 - **Sprint D (blog)**: inserir TL;DR, Key Takeaways, ContentTOC, RelatedLinks; garantir JSON-LD (Article + Breadcrumb + FAQ); CTA para filhotes/guia perto do conteúdo.  
   *Rollback:* desfazer blocos TLDR e voltar à versão base.  
-- **Sprint E (observabilidade)**: tracking events (page_view, modal_open, cta_click, lead_submit, pdf_download). script `content-quality-audit`, smoke axe e QA checklist mobile/desktop.  
+- **Sprint E (observabilidade)**: tracking events (page_view, modal_open, cta_click, lead_submit, pdf_downloaded). script `content-quality-audit`, smoke axe e QA checklist mobile/desktop.  
   *Rollback:* scripts auditáveis no CI com flag `--dry-run`.
 
 ## 4. Componentização estratégica (single source)
@@ -72,13 +72,13 @@ Este documento consolida o plano aprovado para elevar o `byimperiodog-clean` ao 
 
 - 1 ação principal por tela (PrimaryCTA).  
 - Microcopy direto (“ver detalhes”, “reservar”, “falar agora”).  
-- Provas + processo (`TrustBlock`) adjacente ao CTA (ex: “Processo de adoção seguro em 3 passos”).  
+- Provas + processo (`TrustBlock`) adjacente ao CTA (ex: “Processo de aquisição seguro em 3 passos”).  
 - Evitar fricção: forms curtos (nome/email/consent), CTA claro e visível, modais com header + close.  
 - CTA modal sempre presente; fallback textual e com `aria-live`.
 
 ## 7. Medição e QA
 
-- **Eventos**: `page_view`, `modal_open`, `cta_click` (todas variações), `lead_submit`, `pdf_download`.  
+- **Eventos**: `page_view`, `modal_open`, `cta_click` (todas variações), `lead_submit`, `pdf_downloaded`.  
 - **QA checklist** (mobile/desktop viewports):
   - ☐ Skip link visível  
   - ☐ Headings corretos  

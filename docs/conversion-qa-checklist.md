@@ -14,11 +14,11 @@
 ## /guia
 - [ ] O formulário básico (Nome, WhatsApp, Email opcional, consentimento) valida client-side e mostra erros com `aria-describedby`.
 - [ ] Após o envio bem-sucedido o formulário é substituído pela mensagem de sucesso e o botão `Baixar agora`.
-- [ ] O botão de download dispara `pdf_download` (ver log via console ou `track.event` stub) e abre `/guia.pdf`.
+- [ ] O botão de download dispara `pdf_downloaded` (ver log via console ou `track.event` stub) e abre `/download/guia?token=` com o token recebido do `/api/leads`.
 
 ## Tracking & eventos
 - [ ] `cta_click` dispara meteado com `cta_id`, `location` e `device_mode` para os PrimaryCTA/ContactCTA principais.
-- [ ] `modal_open` ocorre via card e `lead_submit`/`pdf_download` só após consentimento.
+- [ ] `modal_open` ocorre via card e `lead_submit`/`pdf_downloaded` só após consentimento.
 - [ ] Use `window.track?.event` stub ou console para verificar payloads durante cada ação.
 
 ## Acessibilidade

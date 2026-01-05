@@ -30,7 +30,8 @@ export async function POST() {
     return NextResponse.json({ message: "Falha ao publicar", error: String(error.message) }, { status: 500 });
   }
 
-  // Revalidate listing and each post
+  // Revalidate listing and each post so the Sanity source of truth appears instantly on the public site.
+  // This webhook flow is documented in docs/BLOG_ARCHITECTURE.md.
   try {
     revalidatePath("/blog");
     for (const d of due) revalidatePath(`/blog/${d.slug}`);

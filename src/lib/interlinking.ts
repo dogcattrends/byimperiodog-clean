@@ -4,7 +4,7 @@
  * Desacoplado da UI; retorna estruturas simples para consumo nas páginas.
  */
 
-import type { Puppy } from "@/domain/puppy";
+import type { Puppy } from "../domain/puppy";
 
 // 1) Breadcrumbs globais
 export type Crumb = { name: string; url: string };

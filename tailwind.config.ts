@@ -1,5 +1,5 @@
-import type { Config } from "tailwindcss";
 import typography from "@tailwindcss/typography";
+import type { Config } from "tailwindcss";
 
 export default {
   content: [
@@ -57,9 +57,9 @@ theme: {
     },
   },
 
-  plugins:  [
+    plugins:  [
     typography,
-    function ({ addUtilities, addVariant }: { addUtilities: (utils: Record<string, any>) => void, addVariant: (name: string, def: string) => void }) {
+    function ({ addUtilities, addVariant }: { addUtilities: (utils: Record<string, unknown>) => void, addVariant: (name: string, def: string) => void }) {
       addUtilities({
         '.perspective': { perspective: '1000px' },
         '.preserve-3d': { transformStyle: 'preserve-3d' },

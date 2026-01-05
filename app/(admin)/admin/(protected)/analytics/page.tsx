@@ -227,7 +227,7 @@ function buildAlerts(puppies: PuppyRow[], leads: LeadRow[], forecast: Forecast):
   if (forecast.salesNext30 > available) {
     alerts.push({ title: "Demanda maior que estoque", detail: `Previsao de ${forecast.salesNext30} vendas com ${available} disponiveis. Planeje novos anuncios.`, type: "warning" });
   }
-  const prices = puppies.map((p) => p.price_cents ?? 0).filter(Boolean).sort((a, b) => a - b);
+  const prices = puppies.map((p) => p.price_cents ?? 0).filter((n): n is number => typeof n === "number" && n > 0).sort((a, b) => a - b);
   if (prices.length >= 3) {
     const median = prices[Math.floor(prices.length / 2)];
     const high = prices[prices.length - 1];
@@ -372,7 +372,19 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: { 
     return enriched.sort((a, b) => b.value - a.value).slice(0, 5);
   })();
 
-  const conversionInsights = analyzeConversion(leadsRange as any, puppies as any, interactions as any);
+  const conversionInsights = analyzeConversion(
+    leadsRange.map((l) => ({
+      id: l.id,
+      status: undefined as string | null | undefined,
+      created_at: l.created_at,
+      cor_preferida: l.cor_preferida,
+      sexo_preferido: l.sexo_preferido,
+      page_slug: l.page_slug,
+      utm_source: l.utm_source,
+    })),
+    puppies.map((p) => ({ id: p.id, status: p.status ?? undefined, price_cents: p.price_cents ?? null, color: p.color ?? null })),
+    interactions.map((i) => ({ lead_id: i.lead_id, response_time_minutes: i.response_time_minutes ?? null, messages_sent: i.messages_sent ?? null })),
+  );
   const catalogReorderCtrDelta = (() => {
     const metric = catalogAiMetrics.find((m) => m.eventType === "reorder");
     if (!metric || metric.avgCtrDelta === null) {

@@ -53,13 +53,24 @@ export async function POST(req: Request) {
 
   const filename = `covers/${Date.now()}-${Math.random().toString(36).slice(2)}.png`;
   // fileData is Blob (Edge) or Buffer (Node) — pass directly to Supabase storage
-  const { data: up, error: upErr } = await (sb as any).storage.from(bucket).upload(filename, fileData as any, {
+  type SupaStorage = {
+    storage: {
+      from: (bucket: string) => {
+        upload: (path: string, data: Blob | Buffer, opts?: { contentType?: string; upsert?: boolean }) => Promise<{ data?: any; error?: any }>;
+        getPublicUrl: (path: string) => { data?: { publicUrl?: string; public_url?: string } };
+      };
+    };
+  };
+
+  const storageClient = (sb as unknown as SupaStorage).storage;
+  const { data: up, error: upErr } = await storageClient.from(bucket).upload(filename, fileData as Blob | Buffer, {
     contentType: "image/png",
     upsert: false,
   });
   if (upErr) throw upErr;
-  const { data: pub } = (sb as any).storage.from(bucket).getPublicUrl(filename);
-  const url = (pub as any)?.publicUrl || (pub as any)?.public_url || "";
+  const pubRes = storageClient.from(bucket).getPublicUrl(filename);
+  const pub = pubRes?.data || {};
+  const url = (pub as { publicUrl?: string; public_url?: string }).publicUrl || (pub as { publicUrl?: string; public_url?: string }).public_url || "";
 
     // Persist in media table
   const { data: media, error: mediaErr } = await sb
@@ -72,9 +83,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ url, warning: mediaErr.message }, { status: 200 });
   }
 
-  return NextResponse.json({ url, media_id: (media as any)?.id }, { status: 200 });
-  } catch (err: any) {
-    return NextResponse.json({ error: err?.message || String(err) }, { status: 500 });
+  return NextResponse.json({ url, media_id: (media as Record<string, unknown>)?.id }, { status: 200 });
+  } catch (err: unknown) {
+    const msg = typeof err === 'object' && err !== null && 'message' in err ? String((err as { message?: unknown }).message ?? err) : String(err);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 

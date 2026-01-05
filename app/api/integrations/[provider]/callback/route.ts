@@ -147,8 +147,8 @@ export async function GET(req: NextRequest, { params }: { params: { provider: st
     const to = new URL(origin);
     to.pathname = "/admin/tracking";
     return NextResponse.redirect(to);
-  } catch (err: any) {
-    const msg = err?.message || "callback_failed";
+  } catch (err: unknown) {
+    const msg = typeof err === 'object' && err !== null && 'message' in err ? String((err as { message?: unknown }).message ?? 'callback_failed') : String(err ?? 'callback_failed');
     return NextResponse.json({ ok: false, error: msg }, { status: 500 });
   }
 }

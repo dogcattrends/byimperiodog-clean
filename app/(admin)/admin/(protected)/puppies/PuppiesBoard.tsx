@@ -1,27 +1,31 @@
 "use client";
 /* eslint-disable jsx-a11y/no-redundant-roles */
 
+import { Trash } from "lucide-react";
 import { useMemo } from "react";
 
-import type { AdminPuppyListItem, AdminPuppyStatus } from "./queries";
+import type { AdminPuppyListItem, AdminPuppyStatus } from "@/lib/admin/puppies";
+import { fixMojibake } from "@/lib/text/fixMojibake";
 
 type BoardStatus = Exclude<AdminPuppyStatus, "unavailable">;
 
 const COLUMNS: { key: BoardStatus; label: string; tone: string }[] = [
-  { key: "available", label: "Disponível", tone: "bg-emerald-50 border-emerald-100" },
-  { key: "reserved", label: "Reservado", tone: "bg-amber-50 border-amber-100" },
-  { key: "sold", label: "Vendido", tone: "bg-rose-50 border-rose-100" },
-  { key: "coming_soon", label: "Em breve", tone: "bg-slate-50 border-slate-200" },
+  { key: "available", label: fixMojibake("Disponível") ?? "Disponível", tone: "bg-emerald-50 border-emerald-100" },
+  { key: "reserved", label: fixMojibake("Reservado") ?? "Reservado", tone: "bg-amber-50 border-amber-100" },
+  { key: "sold", label: fixMojibake("Vendido") ?? "Vendido", tone: "bg-rose-50 border-rose-100" },
+  { key: "coming_soon", label: fixMojibake("Em breve") ?? "Em breve", tone: "bg-slate-50 border-slate-200" },
 ];
 
 type Props = {
   items: AdminPuppyListItem[];
   leadCounts: Record<string, number>;
   onStatusChange: (id: string, status: AdminPuppyStatus) => void;
+  onDelete?: (id: string, name: string) => void;
   mutatingId?: string | null;
+  basePath?: string;
 };
 
-export function PuppiesBoard({ items, leadCounts, onStatusChange, mutatingId }: Props) {
+export function PuppiesBoard({ items, leadCounts, onStatusChange, onDelete, mutatingId, basePath = "/admin/filhotes" }: Props) {
   const grouped = useMemo(() => {
     const buckets = new Map<BoardStatus, AdminPuppyListItem[]>();
     COLUMNS.forEach((c) => buckets.set(c.key, []));
@@ -74,13 +78,13 @@ export function PuppiesBoard({ items, leadCounts, onStatusChange, mutatingId }: 
                         <p className="text-xs text-[var(--text-muted)]">
                           {[p.color || "Cor ?", p.sex ? (p.sex === "male" ? "Macho" : "Fêmea") : "Sexo ?"].join(" • ")}
                         </p>
-                        <p className="text-xs text-[var(--text-muted)]">{[p.city, p.state].filter(Boolean).join(", ") || "Local ?"}</p>
+                        <p className="text-xs text-[var(--text-muted)]">{[p.city, p.state].filter((v): v is string => typeof v === "string" && v.length > 0).join(", ") || "Local ?"}</p>
                         <p className="text-[11px] font-semibold text-emerald-700">{leads} lead{leads === 1 ? "" : "s"}</p>
                       </div>
                     </div>
                     <div className="flex items-center justify-between gap-2 border-t border-[var(--border)] px-3 py-2">
                       <a
-                        href={`/admin/puppies/edit/${p.id}`}
+                        href={`${basePath}/${p.id}/editar`}
                         className="text-xs font-semibold text-[var(--text)] hover:text-emerald-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-500"
                       >
                         Editar
@@ -111,6 +115,16 @@ export function PuppiesBoard({ items, leadCounts, onStatusChange, mutatingId }: 
                         >
                           Arquivar
                         </button>
+                        <button
+                          type="button"
+                          onClick={() => onDelete && onDelete(p.id, p.name)}
+                          className="rounded-full px-2 py-1 text-[11px] font-semibold text-red-700 hover:text-red-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-red-500"
+                          aria-label={`Excluir ${p.name}`}
+                          disabled={mutatingId === p.id}
+                        >
+                          <Trash className="h-3 w-3" aria-hidden />
+                          Excluir
+                        </button>
                       </div>
                     </div>
                   </article>
@@ -125,6 +139,8 @@ export function PuppiesBoard({ items, leadCounts, onStatusChange, mutatingId }: 
 }
 
 function formatPrice(cents?: number | null) {
-  if (!cents) return "—";
+  if (!cents) return "Sob consulta";
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(cents / 100);
 }
+
+

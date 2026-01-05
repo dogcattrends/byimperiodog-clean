@@ -17,5 +17,5 @@ export async function GET(req: NextRequest) {
 
   const { data, error } = await supabaseAdmin().rpc("distinct_sources", { tz, days });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ sources: (data || []).map((r: any) => r.source) });
+  return NextResponse.json({ sources: (data || []).map((r: Record<string, unknown>) => String(r.source ?? "")) });
 }

@@ -29,14 +29,14 @@ export async function GET(req: NextRequest){
 // body: { id?, topic?, phase?, progress?, status?, error_message?, post_id? }
 export async function POST(req: NextRequest){
   const auth = requireAdmin(req); if(auth) return auth;
-  const ip = (req as any).ip || '0.0.0.0';
+  const ip = ((req as unknown) as { ip?: string }).ip || '0.0.0.0';
   const rl = rateLimit('session:'+ip, 20, 60_000);
   if(!rl.allowed) return NextResponse.json({ ok:false, error:'rate-limit' }, { status:429 });
   try {
     const body = await req.json();
     const sb = supabaseAdmin();
     if(body.id){
-      const update: Record<string, any> = {};
+        const update: Record<string, unknown> = {};
       for (const k of ['topic','phase','progress','status','error_message','post_id']) if(body[k] !== undefined) update[k]=body[k];
       if(Object.keys(update).length===0) return NextResponse.json({ ok:false, error:'Nada para atualizar' }, { status:400 });
       const { data, error } = await sb.from('ai_generation_sessions').update(update).eq('id', body.id).select('*').maybeSingle();
@@ -50,8 +50,9 @@ export async function POST(req: NextRequest){
     if(error) return NextResponse.json({ ok:false, error: error.message }, { status:500 });
     logAdminAction({ route:'/api/admin/blog/ai/session', method:'POST', action:'session_create', payload:{ topic: body.topic } });
     return NextResponse.json({ ok:true, session: data });
-  } catch(e:any){
-    return NextResponse.json({ ok:false, error: e.message }, { status:500 });
+  } catch (e: unknown) {
+    const msg = typeof e === 'object' && e !== null && 'message' in e ? String((e as { message?: unknown }).message ?? e) : String(e);
+    return NextResponse.json({ ok:false, error: msg }, { status:500 });
   }
 }
 

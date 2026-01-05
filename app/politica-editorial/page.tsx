@@ -1,11 +1,30 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import FAQBlock from "@/components/answer/FAQBlock";
 import SeoJsonLd from "@/components/SeoJsonLd";
 import { pageMetadata } from "@/lib/seo";
 
 const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.byimperiodog.com.br").replace(/\/$/, "");
 const PATH = "/politica-editorial";
+
+const EDITORIAL_SNIPPET =
+  "Esta politica editorial explica como a By Imperio Dog planeja, revisa e atualiza conteudos sobre Spitz Alemao Anao. Resume criterios de fontes, revisoes e correcao de erros, garantindo transparencia para leitores, imprensa e parceiros. Tambem descreve como lidar com IA e feedback.";
+
+const EDITORIAL_FAQ = [
+  {
+    question: "Quem revisa o conteudo?",
+    answer: "A equipe editorial revisa e valida as informacoes antes da publicacao.",
+  },
+  {
+    question: "Como as fontes sao escolhidas?",
+    answer: "Priorizamos fontes reconhecidas e documentos oficiais de entidades do setor.",
+  },
+  {
+    question: "Como solicitar correcao?",
+    answer: "Use o contato oficial para enviar ajustes ou apontar inconsistencias.",
+  },
+];
 
 export function generateMetadata(): Metadata {
   return pageMetadata({
@@ -50,6 +69,13 @@ export default function PoliticaEditorialPage() {
           Pomerânia). Abaixo, documentamos como selecionamos pautas, verificamos informações e revisamos cada material.
         </p>
       </header>
+
+      <section className="rounded-2xl border border-border bg-surface p-4">
+        <h2 className="text-lg font-semibold">Resposta curta</h2>
+        <p className="mt-2 text-sm text-[var(--text-muted)]">{EDITORIAL_SNIPPET}</p>
+      </section>
+
+      <FAQBlock items={EDITORIAL_FAQ} />
 
       <section className="prose prose-zinc max-w-none dark:prose-invert">
         <h2>Quem escreve</h2>

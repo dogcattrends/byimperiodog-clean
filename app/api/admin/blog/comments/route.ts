@@ -14,9 +14,10 @@ export async function GET() {
       .limit(200);
     if (error) throw error;
     return NextResponse.json(data ?? []);
-  } catch (err: any) {
-    console.error(err?.message || err);
-    return NextResponse.json({ error: err?.message || String(err) }, { status: 500 });
+  } catch (err: unknown) {
+    const msg = typeof err === 'object' && err !== null && 'message' in err ? String((err as { message?: unknown }).message ?? err) : String(err);
+    console.error(msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 
@@ -41,9 +42,10 @@ export async function PATCH(req: Request) {
       }
     } catch {}
     return NextResponse.json(data ?? {});
-  } catch (err: any) {
-    console.error(err?.message || err);
-    return NextResponse.json({ error: err?.message || String(err) }, { status: 500 });
+  } catch (err: unknown) {
+    const msg = typeof err === 'object' && err !== null && 'message' in err ? String((err as { message?: unknown }).message ?? err) : String(err);
+    console.error(msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 
@@ -64,9 +66,10 @@ export async function DELETE(req: Request) {
       }
     } catch {}
     return NextResponse.json({ ok: true });
-  } catch (err: any) {
-    console.error(err?.message || err);
-    return NextResponse.json({ error: err?.message || String(err) }, { status: 500 });
+  } catch (err: unknown) {
+    const msg = typeof err === 'object' && err !== null && 'message' in err ? String((err as { message?: unknown }).message ?? err) : String(err);
+    console.error(msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 

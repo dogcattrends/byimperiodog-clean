@@ -32,7 +32,7 @@ export interface Webhook {
 export interface WebhookPayload {
   event: WebhookEvent;
   timestamp: string;
-  data: Record<string, unknown>;
+  data: object;
   metadata?: {
     user_agent?: string;
     ip?: string;

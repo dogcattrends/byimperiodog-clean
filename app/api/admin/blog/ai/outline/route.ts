@@ -33,8 +33,9 @@ export async function POST(req: Request) {
     ];
 
     return NextResponse.json({ ok: true, outline } satisfies AiOutlineResponse);
-  } catch (err: any) {
-    return NextResponse.json({ ok: false, error: String(err?.message || err) } satisfies AiOutlineResponse, { status: 500 });
+  } catch (err: unknown) {
+    const msg = typeof err === 'object' && err !== null && 'message' in err ? String((err as { message?: unknown }).message ?? err) : String(err);
+    return NextResponse.json({ ok: false, error: msg } satisfies AiOutlineResponse, { status: 500 });
   }
 }
 

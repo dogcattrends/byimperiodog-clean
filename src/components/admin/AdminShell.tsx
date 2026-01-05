@@ -14,7 +14,7 @@ type NavItem = { href: string; label: string };
 const nav: NavItem[] = [
   { href: '/admin/dashboard', label: 'Dashboard' },
   { href: '/admin/blog', label: 'Blog' },
-  { href: '/admin/puppies', label: 'Filhotes' },
+  { href: '/admin/filhotes', label: 'Filhotes' },
   { href: '/admin/analytics', label: 'Analytics' },
   { href: '/admin/pixels', label: 'Pixels' },
   { href: '/admin/config', label: 'Configurações' },

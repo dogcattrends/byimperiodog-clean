@@ -3,7 +3,7 @@
 import Script from "next/script";
 import { useEffect, useMemo, useState } from "react";
 
-import { getCurrentConsent } from "@/lib/consent";
+import { getCurrentConsent } from "../lib/consent";
 
 export interface PixelsProps {
   isAdminRoute: boolean;

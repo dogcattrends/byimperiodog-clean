@@ -1,5 +1,15 @@
 import {defineField, defineType} from 'sanity'
 
+type SanityRule = {
+  required: () => SanityRule;
+  unique: () => SanityRule;
+  min: (n: number) => SanityRule;
+  max: (n: number) => SanityRule;
+  custom: (fn: (v: unknown) => string | boolean) => SanityRule;
+  uri: (opts: { allowRelative: boolean }) => SanityRule;
+  optional: () => SanityRule;
+};
+
 export default defineType({
   name: 'author',
   title: 'Author',
@@ -9,20 +19,20 @@ export default defineType({
       name: 'name',
       title: 'Name',
       type: 'string',
-      validation: (Rule: any) => Rule.required(),
+      validation: (Rule: SanityRule) => Rule.required(),
     }),
     defineField({
       name: 'slug',
       title: 'Slug',
       type: 'slug',
       options: { source: 'name' },
-      validation: (Rule: any) => Rule.required().unique(),
+      validation: (Rule: SanityRule) => Rule.required().unique(),
     }),
     defineField({
       name: 'bio',
       title: 'Bio',
       type: 'text',
-      validation: (Rule: any) => Rule.required().min(20),
+      validation: (Rule: SanityRule) => Rule.required().min(20),
     }),
     defineField({
       name: 'experience',

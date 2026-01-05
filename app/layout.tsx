@@ -8,6 +8,7 @@ import "./globals.css";
 import "../design-system/tokens.css";
 
 // Components
+import GeoTracking from "@/components/answer/GeoTracking";
 import Footer from "@/components/common/Footer";
 import Header from "@/components/common/Header";
 import SkipLink from "@/components/common/SkipLink";
@@ -33,6 +34,7 @@ import { dmSans, inter } from "./fonts";
 const FloatingPuppiesCTA = NextDynamic(() => import("@/components/FloatingPuppiesCTA"), { ssr: false });
 const ConsentBanner = NextDynamic(() => import("@/components/ConsentBanner"), { ssr: false });
 const TrackingScripts = NextDynamic(() => import("@/components/TrackingScripts"), { ssr: false });
+const AnalyticsClient = NextDynamic(() => import("@/components/AnalyticsClient"), { ssr: false });
 
 export const metadata: Metadata = baseSiteMetadata({
   // Garantir template consistente; se ja definido em baseSiteMetadata mantem.
@@ -101,6 +103,9 @@ function resolvePathname() {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const pathname = resolvePathname();
   const isAdminRoute = pathname.startsWith("/admin") || pathname.includes("/admin/") || pathname === "/admin";
+  const isPreviewRoute = pathname.includes("/preview") || pathname.includes("/blog/preview");
+  const isApiRoute = pathname.startsWith("/api");
+  const isIndexable = !isAdminRoute && !isPreviewRoute && !isApiRoute;
   // Ajustes dinamicos de canonical/OG URL. Em SSR inicial temos path disponivel.
   const metaRuntime = baseMetaOverrides(pathname);
 
@@ -292,33 +297,21 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <link rel="dns-prefetch" href="https://analytics.tiktok.com" />
         )}
 
-        {/* JSON-LD inline para renderizacao imediata (melhor SEO) */}
-        {!isAdminRoute && organizationLd && (
+        {/* JSON-LD inline único (Entity Graph) */}
+        {isIndexable && (
+          // EntityGraph combina Organization, WebSite, SiteNavigation e LocalBusiness num único script
+          // Import dinâmico para evitar aumentar bundle client
           <script
             type="application/ld+json"
             // eslint-disable-next-line react/no-danger
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationLd) }}
-          />
-        )}
-        {!isAdminRoute && websiteLd && (
-          <script
-            type="application/ld+json"
-            // eslint-disable-next-line react/no-danger
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteLd) }}
-          />
-        )}
-        {!isAdminRoute && siteNavigationLd && (
-          <script
-            type="application/ld+json"
-            // eslint-disable-next-line react/no-danger
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(siteNavigationLd) }}
-          />
-        )}
-        {!isAdminRoute && localBusinessLd && (
-          <script
-            type="application/ld+json"
-            // eslint-disable-next-line react/no-danger
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessLd) }}
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify([
+                organizationLd,
+                websiteLd,
+                siteNavigationLd,
+                localBusinessLd,
+              ].filter(Boolean)),
+            }}
           />
         )}
 
@@ -348,6 +341,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
         {/* Dispara page_view em navegacoes SPA (somente quando os pixels existem) */}
         {!isAdminRoute && <TrackingScripts />}
+        {!isAdminRoute && <AnalyticsClient />}
+        {!isAdminRoute && <GeoTracking />}
 
         <ThemeProvider>
           <div className="flex min-h-screen flex-col">

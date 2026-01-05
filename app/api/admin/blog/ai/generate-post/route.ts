@@ -36,14 +36,14 @@ interface GenerateRequest {
 interface SectionOutline { id: string; heading: string; goal: string; }
 
 interface PersistExtras {
-  contentBlocks: any;
+  contentBlocks: unknown;
   readingTime: number;
   faqItems: { q: string; a: string }[];
 }
 
 export async function POST(req: Request) {
   const auth = requireAdmin(req); if(auth) return auth;
-  const ip = (req as any).ip || '0.0.0.0';
+  const ip = ((req as unknown) as { ip?: string }).ip || '0.0.0.0';
   const rl = rateLimit('gen:'+ip, 10, 60_000); // 10/min
   if(!rl.allowed) return NextResponse.json({ ok:false, error:'rate-limit', retry_at: rl.reset }, { status:429 });
 
@@ -87,8 +87,16 @@ export async function POST(req: Request) {
       if (res.ok) {
         const j = await res.json();
         const raw = j.choices?.[0]?.message?.content || '{}';
-        const parsed = safeJSON(raw);
-        expandedSections = Array.isArray(parsed.sections) ? parsed.sections.map((s:any)=>({ heading: s.heading, content: s.content_mdx || s.content || '' })) : outlineSections.map(s=>({ heading: s.heading, content: s.goal }));
+        const parsed = safeJSON(raw) as unknown;
+        if (parsed && typeof parsed === 'object' && Array.isArray((parsed as Record<string, unknown>).sections)) {
+          const secs = (parsed as Record<string, unknown>).sections as unknown[];
+          expandedSections = secs.map((s) => {
+            const si = s as Record<string, unknown>;
+            return { heading: String(si.heading ?? ''), content: String(si.content_mdx ?? si.content ?? '') };
+          });
+        } else {
+          expandedSections = outlineSections.map(s=>({ heading: s.heading, content: s.goal }));
+        }
       } else {
         expandedSections = outlineSections.map(s=>({ heading: s.heading, content: s.goal }));
       }
@@ -120,14 +128,15 @@ export async function POST(req: Request) {
   await updateSession({ phase:'finalize', progress:85 });
   try {
     const { slug, insertedId, cover_url } = await persistPost({ title, excerpt, mdx, seo_title, seo_description, status: body.status, scheduled_at: body.scheduled_at, generateImage: body.generateImage, coverPrompt: `Foto realista 16:9 filhote Spitz Alemão ${topic}`, coverAlt: `Filhote Spitz Alemão - ${topic}`, extras: { contentBlocks, readingTime, faqItems } });
-    if (tags && tags.length) { try { await persistTags(insertedId, tags); } catch (e) { /* ignored */ } }
+    if (insertedId && tags && tags.length) { try { await persistTags(String(insertedId), tags); } catch (e) { /* ignored */ } }
     await updateSession({ phase:'done', progress:100, status:'completed', post_id: insertedId });
     logAdminAction({ route:'/api/admin/blog/ai/generate-post', method:'POST', action:'generate_post', payload:{ topic, post_id: insertedId } });
     return NextResponse.json({ ok: true, slug, title, excerpt, tags, cover_url, post_id: insertedId, reading_time: readingTime, session_id: sessionId });
-  } catch (e:any) {
-    await updateSession({ status:'error', error_message: e?.message||'erro' });
-    logAdminAction({ route:'/api/admin/blog/ai/generate-post', method:'POST', action:'generate_post_error', payload:{ topic, error: e?.message } });
-    return NextResponse.json({ ok:false, error: e.message, session_id: sessionId });
+  } catch (e: unknown) {
+    const msg = typeof e === 'object' && e !== null && 'message' in e ? String((e as { message?: unknown }).message ?? e) : String(e);
+    await updateSession({ status:'error', error_message: msg || 'erro' });
+    logAdminAction({ route:'/api/admin/blog/ai/generate-post', method:'POST', action:'generate_post_error', payload:{ topic, error: msg } });
+    return NextResponse.json({ ok:false, error: msg, session_id: sessionId });
   }
 }
 
@@ -153,7 +162,7 @@ function buildOutline(scope: string): SectionOutline[] {
   return base;
 }
 
-function safeJSON(str: string): any {
+function safeJSON(str: string): unknown {
   try { return JSON.parse(str); } catch (e) { /* ignored */ }
   const fb = str.match(/\{[\s\S]*\}$/); if (fb) { try { return JSON.parse(fb[0]); } catch (e) { /* ignored */ } }
   return {};
@@ -252,18 +261,18 @@ function ensureFAQMinimum(mdx: string): string {
   return mdx + toAppend.trimEnd();
 }
 
-async function persistPost(opts: { title: string; excerpt: string; mdx: string; seo_title: string; seo_description: string; status?: string; scheduled_at?: string|null; generateImage?: boolean; coverPrompt: string; coverAlt: string; extras?: PersistExtras; }) {
+  async function persistPost(opts: { title: string; excerpt: string; mdx: string; seo_title: string; seo_description: string; status?: string; scheduled_at?: string|null; generateImage?: boolean; coverPrompt: string; coverAlt: string; extras?: PersistExtras; }) {
   const { title, excerpt, mdx, seo_title, seo_description, status, scheduled_at, generateImage, coverPrompt, coverAlt, extras } = opts;
   const sb = supabaseAdmin();
   const slug = slugify(title);
-  let inserted: any = null; let lastErr: any = null;
+  let inserted: { id?: string; slug?: string } | null = null; let lastErr: unknown = null;
   const isPublished = (status||'draft') === 'published';
   const published_at = isPublished ? new Date().toISOString() : null;
   for (let i=0;i<3;i++) {
     const attempt = i===0? slug : `${slug}-${i+1}`;
     const { data, error } = await sb.from('blog_posts').insert([{ slug: attempt, title, excerpt, content_mdx: mdx, seo_title, seo_description, status: status||'draft', scheduled_at: scheduled_at||null, published_at, reading_time: extras?.readingTime || null, content_blocks_json: extras?.contentBlocks || null }]).select('id,slug').single();
-    if (!error && data) { inserted = data; break; }
-    lastErr = error; if (error && !/duplicate|unique/i.test(error.message)) break;
+    if (!error && data) { inserted = data as { id?: string; slug?: string }; break; }
+    lastErr = error; if (error && typeof (error as { message?: unknown }).message === 'string' && !/duplicate|unique/i.test(String((error as { message?: unknown }).message))) break;
   }
   if (!inserted) throw lastErr || new Error('Falha ao inserir post');
 

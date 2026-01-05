@@ -35,7 +35,7 @@
 
 ### 6. **CI Script Banned Words** ✅
 - Script `check-banned-words.mjs` que falha build se encontrar:
-  - adoção, doação, boutique, pet shop
+- aquisição responsável, doação, boutique, pet shop
 - Integrado ao `npm run check:all`
 - Percorre MDX, TSX, JSON (ignora node_modules/sql/docs)
 

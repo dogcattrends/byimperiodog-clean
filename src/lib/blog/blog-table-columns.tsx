@@ -4,9 +4,9 @@ import { ArrowUpDown, Copy, ExternalLink, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { formatDateShort } from '@/lib/format/date';
+import { Badge } from '../../components/ui/badge';
+import { Button } from '../../components/ui/button';
+import { formatDateShort } from '../format/date';
 
 export interface BlogTablePost {
   id: string;

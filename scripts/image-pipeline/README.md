@@ -204,7 +204,7 @@ export function PuppyHero({ slug }: { slug: string }) {
   return (
     <Image
       {...imageProps}
-      alt="Filhote disponível para adoção"
+      alt="Filhote disponível para aquisição"
       priority
     />
   );

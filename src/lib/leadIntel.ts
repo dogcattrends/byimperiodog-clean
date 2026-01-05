@@ -4,9 +4,10 @@ import { createHash } from "node:crypto";
 
 import { z } from "zod";
 
-import { createLogger } from "@/lib/logger";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import type { Database } from "@/types/supabase";
+import type { Database } from "../types/supabase";
+
+import { createLogger } from "./logger";
+import { supabaseAdmin } from "./supabaseAdmin";
 
 type LeadRow = Database["public"]["Tables"]["leads"]["Row"];
 type PuppyRow = Database["public"]["Tables"]["puppies"]["Row"];
@@ -16,6 +17,9 @@ export type LeadRecord = LeadRow & {
   cor_preferida?: string | null;
   sexo_preferido?: string | null;
   estado?: string | null;
+  cidade?: string | null;
+  mensagem?: string | null;
+  page?: string | null;
   page_slug?: string | null;
 };
 
@@ -36,7 +40,7 @@ export type LeadIntelResult = {
   matched_puppy_id?: string | null;
   alerts: string[];
   next_step: string;
-  insights: Record<string, unknown>;
+  insights: import("../types/supabase").Json;
 };
 
 type PuppySuggestion = { puppy_id: string; name: string; reason: string };
@@ -164,7 +168,8 @@ function recommendPuppies(puppies: PuppyRow[], prefs: { color?: string | null; s
         score += 20;
         reasons.push("Sexo desejado");
       }
-      if (prefs.city && normalize(p.city) === normalize(prefs.city)) {
+      const cityVal = (p as any)['city'] ?? (p as any)['cidade'];
+      if (prefs.city && typeof cityVal === 'string' && normalize(cityVal) === normalize(prefs.city)) {
         score += 15;
         reasons.push("Cidade próxima");
       }
@@ -310,7 +315,7 @@ export async function analyzeLead(
     color: ai?.desired_color ?? heuristics.desired_color ?? lead.cor_preferida ?? null,
     sex: ai?.desired_sex ?? heuristics.desired_sex ?? lead.sexo_preferido ?? null,
     city: ai?.desired_city ?? heuristics.desired_city ?? lead.cidade ?? null,
-    budget: parseBudget(ai?.budget_inferred ?? heuristics.budget_inferred ?? lead.preferencia ?? null),
+    budget: parseBudget(ai?.budget_inferred ?? heuristics.budget_inferred ?? null),
   };
 
   const puppies = options.puppies ?? [];
@@ -325,7 +330,7 @@ export async function analyzeLead(
     desired_sex: ai?.desired_sex ?? heuristics.desired_sex ?? lead.sexo_preferido ?? null,
     desired_city: ai?.desired_city ?? heuristics.desired_city ?? lead.cidade ?? null,
     desired_timeframe: ai?.desired_timeframe ?? heuristics.desired_timeframe ?? null,
-    budget_inferred: ai?.budget_inferred ?? heuristics.budget_inferred ?? lead.preferencia ?? null,
+    budget_inferred: ai?.budget_inferred ?? heuristics.budget_inferred ?? null,
     emotional_tone: ai?.emotional_tone ?? heuristics.emotional_tone ?? null,
     suggested_puppies: recommendation.suggestions,
     matched_puppy_id: recommendation.matched,

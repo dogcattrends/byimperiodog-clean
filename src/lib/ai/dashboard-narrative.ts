@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { supabaseAdmin } from "../supabaseAdmin";
 
 type Metrics = {
   leads7d: number;

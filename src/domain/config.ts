@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @module domain/config
  * @description Configurações e constantes de negócio centralizadas
  */
@@ -20,8 +20,8 @@ export const BRAND = {
 
   // Contato
   contact: {
-    phone: "+55 11 98663-3239",
-    whatsapp: "+55 11 98663-3239",
+    phone: process.env.NEXT_PUBLIC_PHONE || "+55 11 9 6863-3239",
+    whatsapp: process.env.NEXT_PUBLIC_WA_LINK || "+55 11 9 6863-3239",
     email: "contato@byimperiodog.com.br",
   },
 
@@ -35,7 +35,7 @@ export const BRAND = {
   // URLs
   urls: {
     site: "https://www.byimperiodog.com.br",
-    whatsappLink: "https://wa.me/5511986633239",
+    whatsappLink: process.env.NEXT_PUBLIC_WA_LINK || "https://wa.me/5511968633239",
   },
 } as const;
 
@@ -101,7 +101,7 @@ export const BUSINESS_RULES = {
 
   // Documentação obrigatória
   requiredDocuments: [
-    "Pedigree CBKC",
+    "Pedigree Pedigree",
     "Carteira de vacinação",
     "Atestado de saúde veterinário",
     "Contrato de compra e venda",
@@ -137,10 +137,10 @@ export const BUSINESS_GOALS = {
 } as const;
 
 /**
- * Configurações de SEO e conteúdo
+  // Configurações de SEO e conteúdo
  */
 export const SEO_CONFIG = {
-  // Templates de título
+  // Templates de tÃ­tulo
   titleTemplates: {
     puppy: "{name} • {color} • {sex} | Spitz Alemão Anão | By Império Dog",
     category: "Filhotes de Spitz Alemão {category} | By Império Dog",
@@ -151,9 +151,9 @@ export const SEO_CONFIG = {
   // Descrições padrão
   defaultDescriptions: {
     puppy:
-      "Conheça {name}, filhote de Spitz Alemão Anão {color} {sex}. Pedigree CBKC, suporte vitalício e entrega segura. By Império Dog - criadora especializada.",
+      "Conheça {name}, filhote de Spitz Alemão Anão {color} {sex}. Pedigree, suporte vitalício e entrega segura. By Império Dog - criadora especializada.",
     catalog:
-      "Filhotes de Spitz Alemão Anão (Lulu da Pomerânia) com pedigree CBKC, garantia de saúde e suporte vitalício. Entrega em todo Brasil. By Império Dog.",
+      "Filhotes de Spitz Alemão Anão (Lulu da Pomerânia) com pedigree, garantia de saúde e suporte vitalício. Entrega em todo o Brasil. By Império Dog.",
   },
 
   // Schema.org types usados
@@ -170,7 +170,7 @@ export const SEO_CONFIG = {
 } as const;
 
 /**
- * Helpers de configuração
+ * Helpers de configuraÃ§Ã£o
  */
 export const ConfigHelpers = {
   /**
@@ -188,7 +188,7 @@ export const ConfigHelpers = {
   },
 
   /**
-   * Calcula data de expiração da reserva
+   * Calcula data de expiraÃ§Ã£o da reserva
    */
   calculateReservationExpiry(reservedAt: Date): Date {
     const expiry = new Date(reservedAt);
@@ -197,7 +197,7 @@ export const ConfigHelpers = {
   },
 
   /**
-   * Verifica se filhote está pronto para adoção (8+ semanas)
+   * Verifica se filhote estÃ¡ pronto para adoÃ§Ã£o (8+ semanas)
    */
   isReadyForAdoption(birthDate: Date): boolean {
     const now = new Date();
@@ -215,7 +215,7 @@ export const ConfigHelpers = {
   },
 
   /**
-   * Gera título SEO para filhote
+   * Gera tÃ­tulo SEO para filhote
    */
   generatePuppyTitle(data: { name: string; color: string; sex: "male" | "female" }): string {
     const sexLabel = data.sex === "male" ? "Macho" : "Fêmea";
@@ -225,3 +225,4 @@ export const ConfigHelpers = {
       .replace("{sex}", sexLabel);
   },
 };
+

@@ -252,7 +252,7 @@ Esta auditoria identificou **problemas críticos e oportunidades de melhoria** n
   - **Ação:** Verificar se `<details>` nativo adiciona `aria-expanded` automaticamente; caso contrário, migrar para Radix Accordion
 
 - [ ] **Seção "Como funciona a jornada" sem `<ol>` semântico:** Passos numerados usam `<li>` dentro de `<ol>`, mas sem `aria-label` descritivo.
-  - **Ação:** Adicionar `aria-label="Passo a passo para adoção responsável"` na `<ol>`
+  - **Ação:** Adicionar `aria-label="Passo a passo para aquisição responsável"` na `<ol>`
 
 #### 🟠 P1 — UX
 - [ ] **Formulário de lead duplicado:** Aparece duas vezes na página (meio e fim) — usuário pode confundir contexto.

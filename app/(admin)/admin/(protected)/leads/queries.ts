@@ -124,6 +124,13 @@ const normalizePhone = (phone?: string | null) => {
   return digits;
 };
 
+const toStringOrNull = (v?: unknown) => {
+  if (v == null) return null;
+  if (typeof v === "string") return v;
+  if (v instanceof Date) return v.toISOString();
+  return null;
+};
+
 const selectCover = (row: PuppyRow): string | null => {
   if (typeof row.image_url === "string" && row.image_url.length) return row.image_url;
 
@@ -163,7 +170,7 @@ function parseList(param?: string | string[] | null) {
   return raw
     .split(/[,|]/)
     .map((chunk) => chunk.trim())
-    .filter(Boolean);
+    .filter((s): s is string => typeof s === "string" && s.length > 0);
 }
 
 function sanitizeDate(value?: string | null) {
@@ -215,9 +222,7 @@ export async function fetchAdminLeads({
 
   let query = supabase
     .from("leads")
-    .select("*, lead_ai_insights!left(risk,score,intent,matched_puppy_id,desired_color,desired_city,desired_sex)", {
-      count: "exact",
-    })
+    .select("*", { count: "exact" })
     .order("created_at", { ascending: false })
     .range(from, to);
 
@@ -256,9 +261,39 @@ export async function fetchAdminLeads({
   if (cityRes.error) throw new Error(cityRes.error.message);
 
   const rows = (listRes.data ?? []) as LeadRow[];
+  const leadIds = rows.map((row) => row.id);
+  const insightsMap = new Map<string, NonNullable<LeadRow["lead_ai_insights"]>>();
+    if (leadIds.length) {
+    type LeadInsightRow = {
+      lead_id?: string | null;
+      risk?: string | null;
+      score?: number | null;
+      intent?: string | null;
+      matched_puppy_id?: string | null;
+      urgency?: string | null;
+      desired_color?: string | null;
+      desired_city?: string | null;
+      desired_sex?: string | null;
+      suggested_puppies?: { puppy_id: string; name?: string | null; reason?: string | null; color?: string | null; sex?: string | null }[] | null;
+    };
+
+    const { data: insightsRowsRaw, error: insightsError } = await supabase
+      .from("lead_ai_insights")
+      .select(
+        "lead_id,risk,score,intent,matched_puppy_id,urgency,desired_color,desired_city,desired_sex,suggested_puppies",
+      )
+      .in("lead_id", leadIds);
+    if (insightsError) throw new Error(insightsError.message);
+    const insightsRows = (insightsRowsRaw as unknown) as LeadInsightRow[];
+    (insightsRows ?? []).forEach((insight: LeadInsightRow | null | undefined) => {
+      if (insight?.lead_id) {
+        insightsMap.set(insight.lead_id, insight);
+      }
+    });
+  }
   const matchedIds = new Set<string>();
   rows.forEach((row) => {
-    const ai = row.lead_ai_insights;
+    const ai = row.lead_ai_insights ?? insightsMap.get(row.id) ?? null;
     if (ai?.matched_puppy_id) matchedIds.add(ai.matched_puppy_id);
     if (typeof row.puppy_id === "string" && row.puppy_id) matchedIds.add(row.puppy_id);
   });
@@ -267,7 +302,7 @@ export async function fetchAdminLeads({
   if (matchedIds.size) {
     const { data: puppyRows, error } = await supabase
       .from("puppies")
-      .select("id,nome,name,slug,status,color,cor,sex,sexo,gender,price_cents,image_url,images,midia")
+      .select("id,nome,name,slug,status,color,cor,sex,sexo,gender,price_cents,images,midia")
       .in("id", Array.from(matchedIds));
     if (error) throw new Error(error.message);
     (puppyRows as PuppyRow[]).forEach((row) => {
@@ -285,22 +320,44 @@ export async function fetchAdminLeads({
   }
 
   const items: LeadListItem[] = rows.map((row) => {
-    const phone = row.telefone ?? (row as any).phone ?? null;
+    const rawPhone = row.telefone ?? row.phone ?? null;
+    let phone: string | null = null;
+    if (rawPhone == null) phone = null;
+    else if (typeof rawPhone === "string") phone = rawPhone;
+    else if (typeof rawPhone === "object") {
+      const r = rawPhone as Record<string, unknown>;
+      if (typeof r.number === 'string') phone = r.number;
+      else if (typeof r.telefone === 'string') phone = r.telefone;
+      else if (typeof r.value === 'string') phone = r.value;
+      else phone = null;
+    }
     const whatsapp = normalizePhone(phone);
     const ai = row.lead_ai_insights;
-    const matchedId = ai?.matched_puppy_id ?? (row.puppy_id as string | null) ?? null;
+    const safeStr = (v: unknown) => {
+      if (v == null) return null;
+      if (typeof v === 'string') return v;
+      if (typeof v === 'object') {
+        const o = v as Record<string, unknown>;
+        if (typeof o.puppy_id === 'string') return o.puppy_id;
+        if (typeof o.id === 'string') return o.id;
+        if (typeof o.slug === 'string') return o.slug;
+      }
+      return null;
+    };
+    const matchedId = safeStr(ai?.matched_puppy_id ?? row.puppy_id ?? null);
     const matchedPuppy = matchedId ? puppyMap.get(matchedId) ?? null : null;
+    const candidateName = typeof row.nome === 'string' && row.nome.length ? row.nome : typeof row.first_name === 'string' && row.first_name.length ? row.first_name : typeof row.name === 'string' && row.name.length ? row.name : 'Lead';
     const advisor = buildLeadAdvisor({
       id: row.id,
-      name: (row as any).nome || (row as any).first_name || "Lead",
+      name: candidateName,
       status: row.status as string,
-      city: (row.cidade ?? (row as any).city ?? null) as string | null,
-      state: (row.estado ?? (row as any).state ?? null) as string | null,
-      preferredColor: (row.cor_preferida ?? (row as any).color ?? null) as string | null,
-      preferredSex: (row.sexo_preferido ?? (row as any).sexo ?? null) as string | null,
-      createdAt: row.created_at,
-      updatedAt: (row as any).updated_at ?? row.created_at,
-      message: (row as any).mensagem ?? (row as any).notes ?? null,
+      city: (row.cidade ?? row.city ?? null) as string | null,
+      state: (row.estado ?? row.state ?? null) as string | null,
+      preferredColor: (row.cor_preferida ?? row.color ?? null) as string | null,
+      preferredSex: (row.sexo_preferido ?? row.sexo ?? null) as string | null,
+      createdAt: toStringOrNull(row.created_at),
+      updatedAt: toStringOrNull(row.updated_at ?? row.created_at),
+      message: toStringOrNull(row.mensagem ?? row.notes ?? null),
       aiScore: ai?.score ?? null,
       aiIntent: ai?.intent ?? null,
       aiUrgency: ai?.urgency ?? null,
@@ -313,19 +370,20 @@ export async function fetchAdminLeads({
         sex: suggestion.sex ?? null,
       })),
     });
+    const displayName = candidateName;
     return {
       id: row.id,
-      name: (row as any).nome || (row as any).first_name || "Lead",
+      name: displayName,
       phone,
       whatsapp,
-      city: (row.cidade ?? (row as any).city ?? null) as string | null,
-      state: (row.estado ?? (row as any).state ?? null) as string | null,
-      color: (row.cor_preferida ?? (row as any).color ?? null) as string | null,
+      city: (row.cidade ?? row.city ?? null) as string | null,
+      state: (row.estado ?? row.state ?? null) as string | null,
+      color: (row.cor_preferida ?? row.color ?? null) as string | null,
       status: normalizeLeadStatus(row.status as string),
-      createdAt: row.created_at,
-      page: (row.page_slug ?? row.page ?? null) as string | null,
-      preferredSex: (row.sexo_preferido ?? (row as any).sexo ?? null) as string | null,
-      source: (row.utm_campaign ?? row.utm_source ?? row.utm_medium ?? row.source ?? row.referer ?? null) as string | null,
+      createdAt: toStringOrNull(row.created_at),
+      page: safeStr(row.page_slug ?? row.page ?? null),
+      preferredSex: (typeof (row.sexo_preferido ?? row.sexo ?? null) === 'string' ? (row.sexo_preferido ?? row.sexo ?? null) as string : null),
+      source: safeStr(row.utm_campaign ?? row.utm_source ?? row.utm_medium ?? row.source ?? row.referer ?? null),
       aiSummary: ai
         ? {
             risk: ai.risk,
@@ -352,7 +410,7 @@ export async function fetchAdminLeads({
   });
 
   const dedupeSorted = (values: (string | null | undefined)[]) =>
-    Array.from(new Set(values.filter((value): value is string => Boolean(value))))
+    Array.from(new Set(values.filter((value): value is string => typeof value === "string" && value.trim().length > 0)))
       .map((value) => value.trim())
       .sort((a, b) => a.localeCompare(b, "pt-BR"));
 

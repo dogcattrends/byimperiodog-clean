@@ -1,14 +1,17 @@
 "use client";
 
-import { Filter, LayoutGrid, Loader2, RotateCcw, SlidersHorizontal, TableProperties } from "lucide-react";
+import { Filter, LayoutGrid, RotateCcw, SlidersHorizontal, TableProperties } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 
+import { LoadingState, EmptyState } from "@/components/ui/states";
 import { useToast } from "@/components/ui/toast";
+import type { AdminPuppyListItem, AdminPuppySort, AdminPuppyStatus, ParsedPuppyFilters } from "@/lib/admin/puppies";
+import { fixMojibake } from "@/lib/text/fixMojibake";
+const sanitizeText = (value: string) => fixMojibake(value) ?? value;
 
 import { PuppiesBoard } from "./PuppiesBoard";
 import { PuppiesTable } from "./PuppiesTable";
-import type { AdminPuppyListItem, AdminPuppySort, AdminPuppyStatus, ParsedPuppyFilters } from "./queries";
 
 type Props = {
   items: AdminPuppyListItem[];
@@ -19,6 +22,7 @@ type Props = {
   hasMore: boolean;
   statusSummary: Record<AdminPuppyStatus, number>;
   colorOptions: string[];
+  basePath?: string;
 };
 
 type FilterFormState = {
@@ -32,24 +36,24 @@ type FilterFormState = {
 };
 
 const STATUS_OPTIONS: { value: AdminPuppyStatus; label: string }[] = [
-  { value: "available", label: "Disponível" },
-  { value: "coming_soon", label: "Em breve" },
-  { value: "reserved", label: "Reservado" },
-  { value: "sold", label: "Vendido" },
-  { value: "unavailable", label: "Arquivado" },
+  { value: "available", label: sanitizeText("Disponível") },
+  { value: "coming_soon", label: sanitizeText("Em breve") },
+  { value: "reserved", label: sanitizeText("Reservado") },
+  { value: "sold", label: sanitizeText("Vendido") },
+  { value: "unavailable", label: sanitizeText("Arquivado") },
 ];
 
 const SEX_OPTIONS = [
-  { value: undefined, label: "Ambos" },
-  { value: "male" as const, label: "Machos" },
-  { value: "female" as const, label: "Fêmeas" },
+  { value: undefined, label: sanitizeText("Ambos") },
+  { value: "male" as const, label: sanitizeText("Machos") },
+  { value: "female" as const, label: sanitizeText("Fêmeas") },
 ];
 
 const SORT_LABELS: Record<AdminPuppySort, string> = {
-  recent: "Mais recentes",
-  "price-asc": "Menor preço",
-  "price-desc": "Maior preço",
-  demand: "Maior demanda (score)",
+  recent: sanitizeText("Mais recentes"),
+  "price-asc": sanitizeText("Menor preço"),
+  "price-desc": sanitizeText("Maior preço"),
+  demand: sanitizeText("Maior demanda (score)"),
 };
 
 const VIEW_STORAGE_KEY = "byimperiodog:admin:puppies:view";
@@ -67,7 +71,48 @@ function buildFormState(filters: ParsedPuppyFilters, sort: AdminPuppySort): Filt
   };
 }
 
-export function PuppiesPageClient({ items, leadCounts, filters, sort, total, hasMore, statusSummary, colorOptions }: Props) {
+type TabId = "available" | "reserved" | "soldArchived";
+
+type TabPreset = {
+  id: TabId;
+  label: string;
+  helper: string;
+  statuses: AdminPuppyStatus[];
+};
+
+const TAB_PRESETS: TabPreset[] = [
+  {
+    id: "available",
+    label: sanitizeText("Disponíveis"),
+    helper: sanitizeText("Estoque liberado para campanha"),
+    statuses: ["available"],
+  },
+  {
+    id: "reserved",
+    label: sanitizeText("Reservados"),
+    helper: sanitizeText("Confirmações aguardando contrato"),
+    statuses: ["reserved"],
+  },
+  {
+    id: "soldArchived",
+    label: sanitizeText("Vendidos / Arquivados"),
+    helper: sanitizeText("Histórico entregue ou inativo"),
+    statuses: ["sold", "unavailable"],
+  },
+];
+
+function getActiveTabId(statuses: Set<AdminPuppyStatus>): TabId | "custom" {
+  const normalized = Array.from(statuses).sort();
+  for (const tab of TAB_PRESETS) {
+    const target = [...tab.statuses].sort();
+    if (normalized.length !== target.length) continue;
+    const matches = target.every((value, index) => value === normalized[index]);
+    if (matches) return tab.id;
+  }
+  return "custom";
+}
+
+export function PuppiesPageClient({ items, leadCounts, filters, sort, total, hasMore, statusSummary, colorOptions, basePath = "/admin/filhotes" }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { push } = useToast();
@@ -113,7 +158,7 @@ export function PuppiesPageClient({ items, leadCounts, filters, sort, total, has
 
     const query = params.toString();
     startTransition(() => {
-      router.push(query ? `/admin/puppies?${query}` : "/admin/puppies");
+      router.push(query ? `${basePath}?${query}` : basePath);
     });
   };
 
@@ -124,7 +169,7 @@ export function PuppiesPageClient({ items, leadCounts, filters, sort, total, has
 
   const handleReset = () => {
     setFormState(buildFormState(EMPTY_FILTERS, "recent"));
-    startTransition(() => router.push("/admin/puppies"));
+    startTransition(() => router.push(basePath));
   };
 
   const handleSortChange = (nextSort: AdminPuppySort) => {
@@ -142,6 +187,16 @@ export function PuppiesPageClient({ items, leadCounts, filters, sort, total, has
     });
   };
 
+  const activeTabId = useMemo(() => getActiveTabId(formState.statuses), [formState.statuses]);
+
+  const handleTabChange = (tabId: TabId) => {
+    const nextTab = TAB_PRESETS.find((tab) => tab.id === tabId);
+    if (!nextTab) return;
+    const nextState: FilterFormState = { ...formState, statuses: new Set(nextTab.statuses) };
+    setFormState(nextState);
+    applyFilters(nextState);
+  };
+
   const toggleColor = (color: string) => {
     setFormState((prev) => {
       const next = new Set(prev.colors);
@@ -154,7 +209,7 @@ export function PuppiesPageClient({ items, leadCounts, filters, sort, total, has
   const handleStatusChange = async (id: string, status: AdminPuppyStatus) => {
     const isDestructive = status === "sold" || status === "unavailable";
     if (isDestructive && typeof window !== "undefined") {
-      const confirmed = window.confirm("Tem certeza? Esta ação altera o status de forma definitiva.");
+      const confirmed = window.confirm("Tem certeza? Esta a��o altera o status de forma definitiva.");
       if (!confirmed) return;
     }
     setMutatingId(id);
@@ -177,6 +232,31 @@ export function PuppiesPageClient({ items, leadCounts, filters, sort, total, has
     }
   };
 
+  const handleDelete = async (id: string, name: string) => {
+    if (typeof window !== "undefined") {
+      const confirmed = window.confirm("Excluir " + name + " permanentemente? Esta a��o n�o pode ser revertida.");
+      if (!confirmed) return;
+    }
+    setMutatingId(id);
+    try {
+      const res = await fetch("/api/admin/puppies/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) {
+        const payload = await res.json().catch(() => ({}));
+        throw new Error(payload?.error || "Erro ao excluir o filhote");
+      }
+      push({ type: "success", message: "Filhote exclu�do com sucesso." });
+      router.refresh();
+    } catch (error) {
+      push({ type: "error", message: error instanceof Error ? error.message : "Erro ao excluir o filhote" });
+    } finally {
+      setMutatingId(null);
+    }
+  };
+
   const activeFilters = useMemo(() => {
     let count = 0;
     if (formState.statuses.size) count++;
@@ -192,6 +272,39 @@ export function PuppiesPageClient({ items, leadCounts, filters, sort, total, has
 
   return (
     <div className="space-y-4">
+      <section className="space-y-2 rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-semibold text-[var(--text)]">Filtrar por status</p>
+          <p className="text-xs text-[var(--text-muted)]">Aba ativa guia o estoque principal.</p>
+        </div>
+        <div role="tablist" aria-label="Visões rápidas por status" className="flex flex-wrap gap-2">
+          {TAB_PRESETS.map((tab) => {
+            const count = tab.statuses.reduce((acc, status) => acc + (statusSummary[status] ?? 0), 0);
+            const isActive = activeTabId === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => handleTabChange(tab.id)}
+                className={`flex flex-col gap-1 rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition ${
+                  isActive
+                    ? "border-emerald-600 bg-emerald-600 text-white"
+                    : "border-[var(--border)] bg-white text-[var(--text)] hover:border-emerald-300"
+                } focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-500`}
+              >
+                <span>{tab.label}</span>
+                <span className="text-xs font-normal text-[color:inherit]">{tab.helper}</span>
+                <span className="text-xs font-normal text-[var(--text-muted)]" aria-live="polite">
+                  {count} filhote{count === 1 ? "" : "s"}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
       <form
         onSubmit={handleSubmit}
         className="space-y-4 rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm"
@@ -371,22 +484,40 @@ export function PuppiesPageClient({ items, leadCounts, filters, sort, total, has
         ))}
       </div>
 
-      {isPending && (
-        <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800" role="status" aria-live="polite">
-          <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Atualizando dados...
-        </div>
-      )}
+      {isPending && <LoadingState message="Atualizando dados..." />}
 
       {items.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface)] px-6 py-12 text-center">
-          <p className="text-sm font-semibold text-[var(--text)]">Nenhum filhote encontrado para este filtro.</p>
-          <p className="text-xs text-[var(--text-muted)]">Ajuste os filtros ou limpe para visualizar todo o estoque.</p>
-        </div>
+        <EmptyState title="Nenhum filhote encontrado" description="Ajuste os filtros ou limpe para visualizar todo o estoque." actionLabel="Limpar filtros" onAction={handleReset} />
       ) : view === "board" ? (
-        <PuppiesBoard items={items} leadCounts={leadCounts} onStatusChange={handleStatusChange} mutatingId={mutatingId} />
+        <PuppiesBoard items={items} leadCounts={leadCounts} onStatusChange={handleStatusChange} onDelete={handleDelete} mutatingId={mutatingId} basePath={basePath} />
       ) : (
-        <PuppiesTable items={items} leadCounts={leadCounts} onStatusChange={handleStatusChange} mutatingId={mutatingId} />
+        <PuppiesTable
+          items={items}
+          leadCounts={leadCounts}
+          onStatusChange={handleStatusChange}
+          onDelete={handleDelete}
+          mutatingId={mutatingId}
+          basePath={basePath}
+          sort={formState.sort}
+          onRequestSort={handleSortChange}
+        />
       )}
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 import { CITIES, PUPPY_COLORS } from "@/domain/taxonomies";
-import { getAllPosts } from "@/lib/content";
+import { listPublicPosts } from "@/lib/sanity/publicPosts";
 import { supabaseAnon } from "@/lib/supabaseAnon";
 
 // const COLORS = Object.values(PUPPY_COLORS); // unused — kept commented to document available taxonomy
@@ -34,6 +34,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/filhotes`, lastModified, changeFrequency: "daily", priority: 0.9 },
     { url: `${SITE_URL}/blog`, lastModified, changeFrequency: "daily", priority: 0.8 },
     { url: `${SITE_URL}/sobre`, lastModified, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${SITE_URL}/about/source`, lastModified, changeFrequency: "yearly", priority: 0.3 },
     { url: `${SITE_URL}/contato`, lastModified, changeFrequency: "monthly", priority: 0.6 },
     { url: `${SITE_URL}/reserve-seu-filhote`, lastModified, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE_URL}/faq-do-tutor`, lastModified, changeFrequency: "weekly", priority: 0.6 },
@@ -76,38 +77,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // ============================================================================
   let blogPosts: MetadataRoute.Sitemap = [];
   try {
-    const sb = supabaseAnon();
-    const { data, error } = await sb
-      .from("blog_posts")
-      .select("slug, updated_at, published_at")
-      .eq("status", "published")
-      .order("published_at", { ascending: false });
-
-    if (!error && data) {
-      blogPosts = data.map((post: { slug: string; updated_at?: string | null; published_at?: string | null }) => ({
-        url: `${SITE_URL}/blog/${post.slug}`,
-        lastModified: post.updated_at || post.published_at || lastModified,
-        changeFrequency: "monthly" as const,
-        priority: 0.6,
-      }));
-    }
+    const { posts } = await listPublicPosts({ page: 1, pageSize: 200 });
+    blogPosts = posts.map((post) => ({
+      url: `${SITE_URL}/blog/${post.slug}`,
+      lastModified: post.updated_at || post.published_at || lastModified,
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    }));
   } catch (err) {
     console.error("Erro ao buscar blog posts para sitemap:", err);
-  }
-
-  // Fallback: se não houver posts do Supabase, inclui posts do Contentlayer
-  if (blogPosts.length === 0) {
-    try {
-      const { items } = await getAllPosts({ page: 1, pageSize: 200 });
-      blogPosts = items.map((p) => ({
-        url: `${SITE_URL}/blog/${p.slug}`,
-        lastModified: p.updated || p.date || lastModified,
-        changeFrequency: "monthly" as const,
-        priority: 0.6,
-      }));
-    } catch (err) {
-      console.error("Fallback Contentlayer falhou no sitemap do blog:", err);
-    }
   }
 
   // ============================================================================

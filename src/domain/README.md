@@ -240,7 +240,7 @@ PuppyHelpers.generateSeoTitle(puppy);
 // → "Thor • Spitz Alemão Anão Macho Laranja | By Império Dog"
 
 PuppyHelpers.generateSeoDescription(puppy);
-// → "Conheça Thor, filhote de Spitz Alemão Anão laranja macho. R$ 3.500,00. Pedigree CBKC..."
+// → "Conheça Thor, filhote de Spitz Alemão Anão laranja macho. R$ 3.500,00. Pedigree Pedigree..."
 
 PuppyHelpers.generateSeoKeywords(puppy);
 // → ["spitz alemão laranja", "lulu da pomerânia macho", ...]
@@ -249,8 +249,8 @@ PuppyHelpers.generateSeoKeywords(puppy);
 PuppyHelpers.needsAttention(puppy);
 // → { needsAttention: true, reasons: ["Mais de 6 meses sem venda", "Poucas visualizações"] }
 
-// Adoção
-PuppyHelpers.getAdoptionAvailability(birthDate);
+// Aquisi��o
+PuppyHelpers.getAcquisitionAvailability(birthDate);
 // → { isReady: true, readyDate: Date(...), daysUntilReady: 0 }
 ```
 
@@ -305,7 +305,7 @@ const PUPPY_STATUS = {
   reserved: { label: "Reservado", color: "yellow", ... },
   sold: { label: "Vendido", color: "gray", ... },
   "coming-soon": { label: "Em Breve", color: "blue", ... },
-  unavailable: { label: "Indisponível", color: "red", ... },
+  unavailable: { label: "Indispon�vel", color: "red", ... },
 } as const;
 
 type PuppyStatus = keyof typeof PUPPY_STATUS;
@@ -375,8 +375,8 @@ const BRAND = {
   },
 
   contact: {
-    phone: "+55 11 98663-3239",
-    whatsapp: "+55 11 98663-3239",
+    phone: "+55 11 96863-3239",
+    whatsapp: "+55 11 96863-3239",
     email: "contato@byimperiodog.com.br",
   },
 
@@ -388,7 +388,7 @@ const BRAND = {
 
   urls: {
     site: "https://www.byimperiodog.com.br",
-    whatsappLink: "https://wa.me/5511986633239",
+    whatsappLink: "https://wa.me/5511968633239",
   },
 };
 ```
@@ -448,7 +448,7 @@ const BUSINESS_RULES = {
   },
 
   requiredDocuments: [
-    "Pedigree CBKC",
+    "Pedigree Pedigree",
     "Carteira de vacinação",
     "Atestado de saúde veterinário",
     "Contrato de compra e venda",
@@ -497,7 +497,7 @@ ConfigHelpers.isReadyForAdoption(new Date("2024-10-01")); // true (8+ semanas)
 
 // WhatsApp
 ConfigHelpers.getWhatsAppLink("Olá! Gostaria de informações sobre filhotes.");
-// → "https://wa.me/5511986633239?text=..."
+// → "https://wa.me/5511968633239?text=..."
 
 // SEO
 ConfigHelpers.generatePuppyTitle({ name: "Thor", color: "Laranja", sex: "male" });
@@ -660,3 +660,4 @@ type PuppySource = "own-breeding" | "external-breeder";
 
 **Mantido por**: By Império Dog Tech Team  
 **Última atualização**: 30/11/2024
+

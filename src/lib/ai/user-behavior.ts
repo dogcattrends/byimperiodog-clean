@@ -79,7 +79,7 @@ export function generateBehaviorRecommendations(events: BehaviorEvent[]): Behavi
 }
 
 function mapActionToHref(action: string): string {
-  if (action.includes("puppy")) return "/admin/puppies";
+  if (action.includes("puppy")) return "/admin/filhotes";
   if (action.includes("lead")) return "/admin/leads";
   if (action.includes("analytics")) return "/admin/analytics";
   return "";

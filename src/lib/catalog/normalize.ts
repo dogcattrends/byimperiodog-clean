@@ -6,8 +6,8 @@
 
 import { z } from "zod";
 
-import { PuppyHelpers, type Puppy } from "@/domain/puppy";
-import { PUPPY_COLORS, type City, type Color, type PuppyStatus } from "@/domain/taxonomies";
+import { PuppyHelpers, type Puppy } from "../../domain/puppy";
+import { PUPPY_COLORS, type City, type Color, type PuppyStatus } from "../../domain/taxonomies";
 
 // Paleta controlada; evita valores fora da taxonomia
 const COLOR_VALUES: Color[] = Object.keys(PUPPY_COLORS) as Color[];
@@ -42,7 +42,17 @@ export type RawPuppyFromDB = z.infer<typeof RawPuppySchema>;
 
 function coerceColor(input?: string): Color {
   const val = (input || "").toLowerCase();
-  return (COLOR_VALUES.includes(val as Color) ? (val as Color) : "creme");
+  const COLOR_SYNONYMS: Record<string, Color> = {
+    orange: "laranja",
+    "grey-white": "particolor",
+    "gray-white": "particolor",
+    white: "branco",
+    black: "preto",
+    "grey": "sable",
+    "gray": "sable",
+  };
+  const mapped = (COLOR_SYNONYMS[val] as string) || val;
+  return (COLOR_VALUES.includes(mapped as Color) ? (mapped as Color) : "creme");
 }
 
 function coerceCity(input?: string): City {
@@ -93,13 +103,23 @@ export function normalizePuppyFromDB(rawInput: unknown): Puppy {
   }
 
   // Mapeia campo 'midia' do banco para 'images'
-  const midiaArray = (b.midia as unknown) || (b.images as unknown) || [];
-  const images = Array.isArray(midiaArray)
-    ? (midiaArray as unknown[])
-      .filter((item) => item && (typeof item === 'string' || ((item as Record<string, unknown>)?.url)))
-      .map((item) => (typeof item === 'string' ? (item as string) : ((item as Record<string, unknown>).url as string)))
-        .filter((u: string) => URL_REGEX.test(u))
-    : [];
+  const rawMidia = (b.midia as unknown) || (b.images as unknown) || [];
+  let parsedMidia: unknown[] = [];
+  if (Array.isArray(rawMidia)) parsedMidia = rawMidia as unknown[];
+  else if (typeof rawMidia === "string") {
+    try {
+      const maybe = rawMidia.trim();
+      if (maybe === "" || maybe === "[]") parsedMidia = [];
+      else parsedMidia = JSON.parse(maybe) as unknown[];
+    } catch {
+      parsedMidia = [];
+    }
+  }
+
+  const images = parsedMidia
+    .filter((item) => item && (typeof item === "string" || ((item as Record<string, unknown>)?.url)))
+    .map((item) => (typeof item === "string" ? (item as string) : ((item as Record<string, unknown>).url as string)))
+    .filter((u: string) => URL_REGEX.test(u));
   const thumbnail = images.length > 0 ? images[0] : undefined;
 
   // Descrição em português ou inglês

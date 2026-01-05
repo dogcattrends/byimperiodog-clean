@@ -34,7 +34,7 @@ export async function POST(req: Request) {
   const scope = body.scope || 'guia-completo';
 
   // 1) Generate structured content (sempre incluir seções fixas e CTA final)
-    let content: any;
+    let content: Record<string, unknown> = {};
     if (!openaiKey) {
       // Stronger local stub: deterministic long-form MDX with FAQ and CTA
       const heading = `Guia completo: ${topic} (Spitz Alemão / Lulu da Pomerânia)`;
@@ -100,13 +100,13 @@ export async function POST(req: Request) {
       const j = await res.json();
       const raw = j.choices?.[0]?.message?.content || "{}";
       // Parser tolerante a JSON possivelmente com lixo antes/depois
-      const safeParse = (str: string): any => {
-        try { return JSON.parse(str); } catch (e) { /* ignore */ }
+      const safeParse = (str: string): Record<string, unknown> => {
+        try { return JSON.parse(str) as Record<string, unknown>; } catch (e) { /* ignore */ }
         const firstBrace = str.indexOf('{');
         const lastBrace = str.lastIndexOf('}');
         if (firstBrace >=0 && lastBrace > firstBrace) {
           const slice = str.substring(firstBrace, lastBrace+1);
-          try { return JSON.parse(slice); } catch (e) { /* ignore */ }
+          try { return JSON.parse(slice) as Record<string, unknown>; } catch (e) { /* ignore */ }
         }
         return { title: topic, excerpt: str.slice(0,155), content_mdx: str };
       };
@@ -120,13 +120,13 @@ export async function POST(req: Request) {
       const heading = content?.title || `Guia de ${body.category || 'cuidados'} com filhotes de Spitz Alemão (Lulu da Pomerânia)`;
       const mdx = `# ${heading}\n\nEste guia cobre ${body.category || 'cuidados essenciais'} para filhotes de Spitz Alemão (Lulu da Pomerânia).\n\n## Perfil da raça\nVivo, inteligente e apegado à família.\n\n## Socialização\nIntroduza estímulos de forma gradual a partir da 8ª semana.\n\n## Alimentação e saúde\nRação premium para raças pequenas e calendário de vacinas em dia.\n\n## Higiene e pelagem\nEscovação regular e banhos espaçados mantêm a pelagem saudável.\n\n## FAQ\n### Quando começar a socialização?\nA partir da 8ª semana, reforço positivo.\n\n### Qual a quantidade de ração?\nConforme orientação do veterinário, ajustando ao peso.`;
       content = {
-        ...content,
-        title: heading,
-        excerpt: content?.excerpt || `Tudo sobre ${primaryKw} com foco na raça Spitz Alemão (Lulu da Pomerânia).`,
-        content_mdx: mdx,
-        seo_title: (content?.seo_title || heading).slice(0, 60),
-        seo_description: (content?.seo_description || `Guia para filhotes de Spitz Alemão.`).slice(0, 155),
-      };
+          ...content,
+          title: heading,
+          excerpt: content?.excerpt || `Tudo sobre ${primaryKw} com foco na raça Spitz Alemão (Lulu da Pomerânia).`,
+          content_mdx: mdx,
+          seo_title: String(content?.seo_title ?? heading).slice(0, 60),
+          seo_description: String(content?.seo_description ?? `Guia para filhotes de Spitz Alemão.`).slice(0, 155),
+        };
       txt0 = String(content.content_mdx || '');
     }
   if (!content?.cover_prompt || !/spitz|lulu|pomer/iu.test(String(content.cover_prompt))) {
@@ -134,7 +134,7 @@ export async function POST(req: Request) {
       content.cover_alt = `Filhote de Spitz Alemão (Lulu da Pomerânia)`;
     }
     // Garantir tags de SEO relacionadas
-    const baseTags = Array.from(new Set(["Spitz Alemão", "Lulu da Pomerânia", "filhote", "adulto", "guia", ...(content?.tags || []), ...(body.keywords || [])]));
+    const baseTags = Array.from(new Set(["Spitz Alemão", "Lulu da Pomerânia", "filhote", "adulto", "guia", ...(Array.isArray(content?.tags) ? (content.tags as string[]) : []), ...(body.keywords || [])]));
     content.tags = baseTags.slice(0, 8);
 
     // Pós-processador para garantir seções obrigatórias faltantes
@@ -179,14 +179,14 @@ export async function POST(req: Request) {
     content.content_mdx = mdxWithLinks;
 
   // 2) Persist post (draft by default); persist tags depois
-    const slug = slugify(content.title || topic);
+    const slug = slugify(String((content as Record<string, unknown>).title || topic));
     const sb = supabaseAdmin();
     const faqItems = extractFAQ(String(content.content_mdx||''));
     const readingTime = calcReadingTime(String(content.content_mdx||''));
     const contentBlocks = buildContentBlocks(String(content.content_mdx||''), faqItems);
     const authorId = await getOrCreateDefaultAuthor(sb);
     // tentativa de slug único (até 3 tentativas com sufixo)
-    let inserted: any = null; let attemptError: any = null;
+    let inserted: { id?: string; slug?: string } | null = null; let attemptError: unknown = null;
   const isPublished = (body.status || 'draft') === 'published';
   const publishedAtValue = isPublished ? new Date().toISOString() : null;
   for (let attempt = 0; attempt < 3; attempt++) {
@@ -212,25 +212,25 @@ export async function POST(req: Request) {
         ])
         .select("id,slug")
         .single();
-      if (!error && data) { inserted = data; break; }
+      if (!error && data) { inserted = data as { id?: string; slug?: string }; break; }
       attemptError = error;
-      if (error?.message && !/duplicate|unique/i.test(error.message)) break;
+      if (error && typeof (error as { message?: unknown }).message === 'string' && !/duplicate|unique/i.test(String((error as { message?: unknown }).message))) break;
     }
     if (!inserted) throw attemptError || new Error("Falha ao inserir post");
 
     // Revisão inicial
     try {
-      await sb.from('blog_post_revisions').insert([{ post_id: inserted.id, snapshot: { title: content.title, excerpt: content.excerpt, seo_title: content.seo_title, seo_description: content.seo_description, content_mdx: content.content_mdx, content_blocks_json: contentBlocks, reading_time: readingTime, faq: faqItems }, reason: 'initial-create' }]);
+      await sb.from('blog_post_revisions').insert([{ post_id: (inserted as { id?: string }).id, snapshot: { title: (content.title as unknown) as string, excerpt: (content.excerpt as unknown) as string, seo_title: (content.seo_title as unknown) as string, seo_description: (content.seo_description as unknown) as string, content_mdx: (content.content_mdx as unknown) as string, content_blocks_json: contentBlocks, reading_time: readingTime, faq: faqItems }, reason: 'initial-create' }]);
     } catch {}
 
     // Localização base (pt-BR)
     try {
-      await sb.from('blog_post_localizations').insert([{ post_id: inserted.id, lang: 'pt-BR', slug: inserted.slug, title: content.title, subtitle: null, content_mdx: content.content_mdx, seo_title: content.seo_title, seo_description: content.seo_description, og_image_url: null }]);
+      await sb.from('blog_post_localizations').insert([{ post_id: (inserted as { id?: string }).id, lang: 'pt-BR', slug: (inserted as { slug?: string }).slug, title: (content.title as unknown) as string, subtitle: null, content_mdx: (content.content_mdx as unknown) as string, seo_title: (content.seo_title as unknown) as string, seo_description: (content.seo_description as unknown) as string, og_image_url: null }]);
     } catch {}
 
     let cover_url: string | undefined;
     // 3) Optionally create cover image with AI (calls our own endpoint for uniform upload)
-  if (body.generateImage) {
+    if (body.generateImage) {
       try {
     const selfUrl = new URL(req.url);
     const baseOrigin = `${selfUrl.protocol}//${selfUrl.host}`;
@@ -275,11 +275,11 @@ export async function POST(req: Request) {
           const linkRows: { post_id: string; tag_id: string }[] = [];
             for (const t of tagRows) {
               const id = tagMap.get(t.slug);
-              if (id) linkRows.push({ post_id: inserted.id, tag_id: id });
+              if (id) linkRows.push({ post_id: (inserted as { id?: string }).id as string, tag_id: id });
             }
           if (linkRows.length) {
-            const exist = await sb2.from('blog_post_tags').select('post_id,tag_id').eq('post_id', inserted.id);
-            const existingSet = new Set((exist.data||[]).map((x:any)=>x.tag_id));
+            const exist = await sb2.from('blog_post_tags').select('post_id,tag_id').eq('post_id', (inserted as { id?: string }).id);
+            const existingSet = new Set(((exist.data||[]) as unknown[]).map((x: unknown)=>String((x as Record<string, unknown>).tag_id)));
             const toInsert = linkRows.filter(l=>!existingSet.has(l.tag_id));
             if (toInsert.length) await sb2.from('blog_post_tags').insert(toInsert);
           }
@@ -288,8 +288,10 @@ export async function POST(req: Request) {
     } catch {}
 
   return NextResponse.json({ ok: true, post: { ...inserted, reading_time: readingTime }, cover_url });
-  } catch (err: any) {
-    return NextResponse.json({ ok: false, error: String(err?.message || err), stack: process.env.NODE_ENV !== 'production' ? err?.stack : undefined }, { status: 500 });
+  } catch (err: unknown) {
+    const msg = typeof err === 'object' && err !== null && 'message' in err ? String((err as { message?: unknown }).message ?? err) : String(err);
+    const stack = typeof err === 'object' && err !== null && 'stack' in err ? (err as { stack?: unknown }).stack : undefined;
+    return NextResponse.json({ ok: false, error: msg, stack: process.env.NODE_ENV !== 'production' ? stack : undefined }, { status: 500 });
   }
 }
 

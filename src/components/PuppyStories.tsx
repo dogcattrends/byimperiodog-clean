@@ -5,10 +5,10 @@ import Image from 'next/image';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-import { optimizePuppyGalleryImage } from '@/lib/optimize-image';
-import passthroughImageLoader from '@/lib/passthrough-image-loader';
-import track from '@/lib/track';
-import { buildWhatsAppLink } from '@/lib/whatsapp';
+import { optimizePuppyGalleryImage } from '../lib/optimize-image';
+import passthroughImageLoader from '../lib/passthrough-image-loader';
+import track from '../lib/track';
+import { buildWhatsAppLink } from '../lib/whatsapp';
 
 // Tipagem básica (pode ser estendida conforme o backend evoluir)
 export interface PuppyStoryItem {

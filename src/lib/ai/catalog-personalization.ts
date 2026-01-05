@@ -1,4 +1,4 @@
-import type { RankedPuppy } from "@/lib/ai/catalog-ranking";
+import type { RankedPuppy } from "./catalog-ranking";
 
 export type UserSignals = {
   filters?: { color?: string; sex?: string; priceMin?: number; priceMax?: number };

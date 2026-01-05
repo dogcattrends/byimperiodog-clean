@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import FAQBlock from "@/components/answer/FAQBlock";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 interface WebStoryPage {
@@ -10,6 +11,15 @@ interface WebStoryPage {
   text?: string;
   duration?: number;
 }
+
+const STORY_SNIPPET =
+  "As web stories resumem conteudos visuais sobre Spitz Alemao Anao (Lulu da Pomerania) em formato rapido. Use esta pagina para assistir ao story e voltar ao site quando quiser se aprofundar. O objetivo e oferecer uma experiencia leve, com links para conteudos completos.";
+
+const STORY_FAQ = [
+  { question: "Como assistir ao story?", answer: "Basta rolar a pagina e tocar para avancar os slides." },
+  { question: "O story tem links extras?", answer: "O conteudo principal fica no site e no blog." },
+  { question: "Posso compartilhar?", answer: "Sim, envie o link da pagina para outros tutores." },
+];
 
 interface WebStory {
   id: string;
@@ -153,9 +163,18 @@ export default async function WebStoryPage({
 </html>`;
 
   return (
-    <div
-      dangerouslySetInnerHTML={{ __html: ampHtml }}
-      suppressHydrationWarning
-    />
+    <div className="mx-auto max-w-3xl px-4 py-8">
+      <section className="rounded-2xl border border-zinc-200 bg-white p-4">
+        <h2 className="text-lg font-semibold">Resposta curta</h2>
+        <p className="mt-2 text-sm text-zinc-600">{STORY_SNIPPET}</p>
+      </section>
+
+      <FAQBlock items={STORY_FAQ} />
+
+      <div
+        dangerouslySetInnerHTML={{ __html: ampHtml }}
+        suppressHydrationWarning
+      />
+    </div>
   );
 }

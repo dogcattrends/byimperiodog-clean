@@ -12,18 +12,24 @@ type Props = {
 const LABEL_MAP: Record<string, string> = {
   admin: "Admin",
   dashboard: "Dashboard",
-  puppies: "Estoque de Filhotes",
-  leads: "Leads & Funil",
-  relatorios: "Analytics",
-  analytics: "Analytics",
-  tracking: "Configuracoes & Tracking",
+  puppies: "Filhotes (Legado)",
+  filhotes: "Filhotes",
+  novo: "Novo",
+  editar: "Editar",
+  leads: "Leads",
+  relatorios: "Metricas",
+  analytics: "Metricas",
+  blog: "Blog",
+  config: "Config",
+  tracking: "Config",
+  settings: "Config",
 };
 
 export function AdminTopbar({ environment, userName = "Admin" }: Props) {
   const pathname = usePathname();
 
   const crumbs = useMemo(() => {
-    const parts = (pathname || "/").split("/").filter(Boolean);
+    const parts = (pathname || "/").split("/").filter((p): p is string => typeof p === "string" && p.length > 0);
     const entries: { href: string; label: string }[] = [];
     let acc = "";
     parts.forEach((part) => {

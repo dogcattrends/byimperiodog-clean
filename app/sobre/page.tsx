@@ -1,27 +1,49 @@
-﻿
+
 import { CheckCircle, Heart, Home, PawPrint, Shield, Users } from "lucide-react";
-import type { Metadata } from "next";
 import Link from "next/link";
 import Script from "next/script";
 
+import FAQBlock from "@/components/answer/FAQBlock";
 import { WhatsAppIcon as WAIcon } from "@/components/icons/WhatsAppIcon";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { routes } from "@/lib/route";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Sobre a By Império Dog | Criadora especialista em Spitz Alemão Anão Lulu da Pomerânia",
+export const metadata = pageMetadata({
+  title: "Sobre a By Imperio Dog | Criadora especialista em Spitz Alemao Anao (Lulu da Pomerania)",
   description:
-    "Conheça a história da By Império Dog, nossa estrutura familiar e a metodologia responsável de criação do Spitz Alemão Anão Lulu da Pomerânia em Bragança Paulista.",
-  alternates: { canonical: "/sobre" },
+    "Conheca a historia da By Imperio Dog, nossa estrutura familiar e a metodologia responsavel de criacao do Spitz Alemao Anao (Lulu da Pomerania) em Braganca Paulista.",
+  path: "/sobre",
   openGraph: {
-    type: "website",
-    url: "/sobre",
-    title: "Sobre a By Império Dog",
+    title: "Sobre a By Imperio Dog",
     description:
-      "Nossa história, estrutura e valores na criação responsável do Spitz Alemão Anão Lulu da Pomerânia.",
+      "Nossa historia, estrutura e valores na criacao responsavel do Spitz Alemao Anao (Lulu da Pomerania).",
   },
-};
+});
+
+const SOBRE_SNIPPET =
+  "A pagina Sobre apresenta quem e a By Imperio Dog e como funciona a criacao do Spitz Alemao Anao (Lulu da Pomerania). Resume historia, estrutura, criterios de selecao de familias, socializacao e suporte ao tutor. Serve para entender o metodo e avaliar se ele atende sua realidade.";
+
+const SOBRE_FAQ = [
+  {
+    question: "Qual o foco da criacao?",
+    answer: "Priorizar bem-estar, socializacao e orientacao completa ao tutor.",
+  },
+  {
+    question: "Como funciona a selecao das familias?",
+    answer: "Realizamos entrevista, alinhamento de rotina e acompanhamento antes da reserva.",
+  },
+  {
+    question: "Existe suporte apos a entrega?",
+    answer: "Sim. Ha mentoria e acompanhamento continuo via canais oficiais.",
+  },
+];
+
+const SOBRE_SOURCES = [
+  { label: "FCI - German Spitz", url: "https://www.fci.be/en/nomenclature/GERMAN-SPITZ-97.html" },
+  { label: "AKC - Pomeranian breed overview", url: "https://www.akc.org/dog-breeds/pomeranian/" },
+];
 
 const timeline = [
   {
@@ -34,7 +56,7 @@ const timeline = [
     year: "2016",
     title: "Certificações e planejamento genético",
     description:
-      "A criação foi homologada pela CBKC, com matrizes e padreadors testados para garantir saúde e temperamento equilibrado.",
+      "A criação foi homologada pela pedigree, com matrizes e padreadors testados para garantir saúde e temperamento equilibrado.",
   },
   {
     year: "2019",
@@ -124,6 +146,7 @@ export default function SobrePage() {
     <main className="space-y-20 bg-[var(--bg)] pb-24 pt-16 text-[var(--text)]">
       <Script id="ld-breadcrumb-sobre" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
       <Script id="ld-webpage-sobre" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageLd) }} />
+
       <section className="mx-auto max-w-6xl px-5 text-center sm:text-left">
         <span className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-[var(--brand)]">
           Sobre a criadora
@@ -155,6 +178,76 @@ export default function SobrePage() {
           >
             Falar com a criadora
           </a>
+        </div>
+      </section>
+      <section className="mx-auto max-w-6xl px-5">
+        <div data-geo-answer="sobre" className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
+          <h2 className="text-2xl font-semibold text-[var(--text)]">AnswerSnippet</h2>
+          <p className="mt-3 text-sm text-[var(--text-muted)]">{SOBRE_SNIPPET}</p>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-5">
+
+        <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+          <section className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
+            <h2 className="text-2xl font-semibold text-[var(--text)]">Resumo para IA</h2>
+            <div className="mt-4">
+              <h3 className="text-sm font-semibold text-[var(--text)]">Definicao rapida</h3>
+              <p className="mt-2 text-sm text-[var(--text-muted)]">
+                Esta criacao familiar foca em socializacao, transparencia e suporte ao tutor.
+              </p>
+            </div>
+            <div className="mt-4">
+              <h3 className="text-sm font-semibold text-[var(--text)]">Pontos principais</h3>
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-[var(--text-muted)]">
+                <li>A pagina explica a historia e a estrutura de criacao em detalhes.</li>
+                <li>O processo de selecao de familias e rotina de socializacao e descrito.</li>
+                <li>O suporte continuo ao tutor segue apos a entrega.</li>
+              </ul>
+            </div>
+            <div className="mt-4">
+              <h3 className="text-sm font-semibold text-[var(--text)]">Tabela comparativa</h3>
+              <div className="mt-2 overflow-hidden rounded-2xl border border-[var(--border)]">
+                <table className="w-full text-left text-sm text-[var(--text-muted)]">
+                  <thead className="bg-[var(--surface-2)] text-xs uppercase tracking-[0.2em] text-[var(--text-soft)]">
+                    <tr>
+                      <th className="px-4 py-3">Fase</th>
+                      <th className="px-4 py-3">O que acontece</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-t border-[var(--border)]">
+                      <td className="px-4 py-3 font-medium text-[var(--text)]">Selecao</td>
+                      <td className="px-4 py-3">Entrevista e alinhamento de rotina.</td>
+                    </tr>
+                    <tr className="border-t border-[var(--border)]">
+                      <td className="px-4 py-3 font-medium text-[var(--text)]">Socializacao</td>
+                      <td className="px-4 py-3">Rotina de convivencia e estimulos positivos.</td>
+                    </tr>
+                    <tr className="border-t border-[var(--border)]">
+                      <td className="px-4 py-3 font-medium text-[var(--text)]">Suporte</td>
+                      <td className="px-4 py-3">Mentoria e acompanhamento continuo.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div className="mt-4">
+              <h3 className="text-sm font-semibold text-[var(--text)]">Fontes</h3>
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-[var(--text-muted)]">
+                {SOBRE_SOURCES.map((item) => (
+                  <li key={item.url}>
+                    <a className="underline decoration-dotted" href={item.url} target="_blank" rel="noreferrer">
+                      {item.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+
+          <FAQBlock items={SOBRE_FAQ} />
         </div>
       </section>
 

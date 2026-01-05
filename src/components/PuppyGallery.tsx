@@ -4,8 +4,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState, useMemo } from "react";
 
-import { BLUR_DATA_URL } from "@/lib/placeholders";
-import track from "@/lib/track";
+import { BLUR_DATA_URL } from "../lib/placeholders";
+import track from "../lib/track";
 
 export type Slide = { type: "image" | "video"; url: string };
 

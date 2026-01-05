@@ -8,14 +8,14 @@ import type { Puppy } from "@/domain/puppy";
 import { PuppiesBoard } from "./PuppiesBoard";
 import { PuppiesTable } from "./PuppiesTable";
 
-import type { AdminPuppyListItem, AdminPuppyStatus } from "./queries";
+import type { AdminPuppyListItem, AdminPuppyStatus } from "@/lib/admin/puppies";
 
 type Props = { items: AdminPuppyListItem[] | Puppy[] };
 
 export function PuppiesView({ items }: Props) {
   const [view, setView] = useState<"board" | "table">("board");
   const [leadCounts, setLeadCounts] = useState<Record<string, number>>({});
-  const [localItems, setLocalItems] = useState<AdminPuppyListItem[] | Puppy[] | any[]>(items as any[]);
+  const [localItems, setLocalItems] = useState<(AdminPuppyListItem | Puppy)[]>(items as (AdminPuppyListItem | Puppy)[]);
   const slugs = useMemo(
     () =>
       Array.from(
@@ -51,7 +51,14 @@ export function PuppiesView({ items }: Props) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, status }),
     });
-    setLocalItems((prev) => prev.map((p) => (p.id === id ? { ...p, status: status } : p)));
+    // `status` can contain values (ex: "coming_soon") that aren't in the
+    // strict `Puppy['status']` union. Assert via `unknown` -> `Puppy['status']`
+    // to keep runtime behavior while satisfying TypeScript here.
+    setLocalItems((prev) =>
+      prev.map((p) =>
+        p.id === id ? { ...p, status: status as unknown as Puppy['status'] } : p
+      )
+    );
   };
 
   const toAdminItem = (p: unknown) => {
@@ -73,7 +80,7 @@ export function PuppiesView({ items }: Props) {
       status: (String(r.status ?? r.rawStatus ?? 'available') as AdminPuppyStatus),
       rawStatus: String(r.rawStatus ?? r.status ?? ''),
       color: r.color ? String(r.color) : null,
-      sex: r.sex ? (String(r.sex) as any) : null,
+      sex: r.sex ? String(r.sex) : null,
       city: r.city ? String(r.city) : null,
       state: r.state ? String(r.state) : null,
       priceCents: Number(r.priceCents ?? r.price_cents ?? 0) || 0,

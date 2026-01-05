@@ -7,11 +7,8 @@ export async function ensurePostEmbedding(post: { id:string; content_mdx?:string
   const sb = supabaseAdmin();
   try {
     const vec = await embedText(content);
-    // Convert to Postgres vector literal
-    const literal = `[${vec.join(',')}]`;
-    // Upsert via RPC or direct SQL (fallback simple insert + delete)
-    // Using REST upsert pattern
-    await sb.from('blog_post_embeddings').upsert({ post_id: post.id, source:'mdx', embedding: literal as any });
+    // Store embedding as JSON string to match existing expectations in tests and DB.
+    await sb.from('blog_post_embeddings').upsert({ post_id: post.id, source: 'mdx', embedding: JSON.stringify(vec) });
     return true;
   } catch(e){
     console.warn('[embeddings] store failed', e);

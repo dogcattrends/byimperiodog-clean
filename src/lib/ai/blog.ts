@@ -2,9 +2,9 @@
  * Módulo AI para o blog do admin.
  * Responsável por gerar títulos, texto completo, imagens (DALL·E), alt text, metadata de SEO e schema Article JSON-LD.
  */
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { sanityBlogRepo } from "@/lib/sanity/blogRepo";
 // Assumindo existência de cliente OpenAI ou similar. Ajuste para seu provider.
-// import { openai } from "@/lib/openai";
+// import { openai } from "../openai";
 
 export type BlogAIInput = {
   topic: string;
@@ -98,18 +98,34 @@ export async function generateBlogPost(input: BlogAIInput): Promise<BlogAIOutput
   return result;
 }
 
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
 async function saveAsDraftOrPublish(post: BlogAIOutput, status: "draft" | "published") {
-  const sb = supabaseAdmin();
-  await sb.from("blog_posts").insert({
+  await sanityBlogRepo.upsertPost({
     title: post.title,
-    seo_title: post.seoTitle,
-    seo_description: post.seoDescription,
+    slug: slugify(post.title || `ai-${Date.now().toString(36)}`),
     content: post.contentMarkdown,
-    image_url: post.imageUrl,
-    image_alt: post.imageAlt,
-    keywords: post.keywords,
-    json_ld: post.jsonLd,
     status,
+    seoTitle: post.seoTitle,
+    seoDescription: post.seoDescription,
+    ogImageUrl: post.imageUrl ?? undefined,
+    coverUrl: post.imageUrl ?? undefined,
+    coverAlt: post.imageAlt ?? undefined,
+    category: "ai",
+    tags: ["ai-generated"],
+    excerpt: post.seoDescription,
+    publishedAt: status === "published" ? new Date().toISOString() : null,
+    scheduledAt: null,
   });
 }
 

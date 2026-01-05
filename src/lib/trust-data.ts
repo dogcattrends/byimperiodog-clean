@@ -1,22 +1,33 @@
-export const TRUST_BLOCK_ITEMS = [
+﻿export const TRUST_BLOCK_ITEMS = [
   {
-    label: "Processo guiado",
-    value: "3 passos claros",
-    meta: "Triagem + contrato + acompanhamento pós-entrega",
+    label: "Processo desenhado",
+    value: "Aquisição segura",
+    meta: "Fluxo: triagem, contrato e suporte até a entrega",
   },
   {
-    label: "Pedigree e laudos",
-    value: "CBKC + exames",
-    meta: "Documentos entregues antes da reserva",
+    label: "Reserva segura",
+    value: "7 dias",
+    meta: "Sinal de 30% garante a vaga",
+  },
+  {
+    label: "Garantia de saúde",
+    value: "90 dias",
+    meta: "Cobertura veterinária pós-entrega",
+  },
+  {
+    label: "Suporte vitalício",
+    value: "Apoio contínuo",
+    meta: "Orientação e acompanhamento por WhatsApp",
   },
   {
     label: "Entrega assistida",
     value: "Logística premium",
-    meta: "Fotos e check-in antes do envio",
+    meta: "Coordenação com concierge e check-in",
   },
   {
-    label: "Suporte vitalício",
-    value: "Mentoria 24h",
-    meta: "WhatsApp direto com a criadora",
+    label: "Envio nacional",
+    value: "Cobertura Brasil",
+    meta: "Rastreamento e assistência dedicada",
   },
 ];
+

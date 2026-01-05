@@ -67,7 +67,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     title: 'Dominios',
     items: [
-      { href: '/admin/puppies', label: 'Filhotes', icon: RocketIcon },
+      { href: '/admin/filhotes', label: 'Filhotes', icon: RocketIcon },
       { href: '/admin/contracts', label: 'Contratos', icon: LightningBoltIcon, disabled: true },
     ],
   },

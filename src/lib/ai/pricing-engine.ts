@@ -3,7 +3,7 @@
  * PricingAIEngine
  * Heurística inicial + placeholders para regressão futura.
  */
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { supabaseAdmin } from "../supabaseAdmin";
 
 type PuppyRow = {
   id: string;

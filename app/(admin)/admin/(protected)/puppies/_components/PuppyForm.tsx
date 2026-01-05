@@ -2,7 +2,7 @@
 
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useToast } from "@/components/ui/toast";
 import type { Puppy } from "@/domain/puppy";
@@ -256,7 +256,7 @@ function parseLegacyArray(input: unknown): string[] {
         .split(/\n|;|,|\|/)
         .map((chunk) => chunk.replace(/^"|"$/g, "").trim())
         .map(normalizeUrl)
-        .filter(Boolean)
+        .filter((u): u is string => typeof u === "string" && u.length > 0)
     );
   }
 
@@ -382,7 +382,7 @@ export default function PuppyForm({
     const legacyVideos = legacyMedia.filter((url) => inferTypeFromUrl(url) === "video");
 
     const imageLibrary = Array.isArray(record.images)
-      ? record.images.map(normalizeUrl).filter(Boolean)
+      ? record.images.map(normalizeUrl).filter((u): u is string => typeof u === "string" && u.length > 0)
       : [];
 
     let photoUrls = structuredPhotos.length ? structuredPhotos : imageLibrary.length ? imageLibrary : legacyPhotos;
@@ -438,6 +438,8 @@ export default function PuppyForm({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [copySeed, setCopySeed] = useState(1);
+  const inputRefs = useRef<Record<string, HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null>>({});
+  const [statusMessage, setStatusMessage] = useState<string>("");
 
   const mainImage = photos[0]?.url || record?.imageUrl || "";
 
@@ -571,6 +573,20 @@ export default function PuppyForm({
     if (!values.priceCents || values.priceCents <= 0) e.priceCents = "Preço deve ser > 0";
     if (photos.length === 0) e.photos = "Adicione pelo menos 1 foto";
     setErrors(e);
+    setStatusMessage(Object.keys(e).length ? "Corrija os campos destacados." : "");
+    // focus first error field for accessibility
+    if (Object.keys(e).length > 0) {
+      const first = Object.keys(e)[0];
+      const el = inputRefs.current[first];
+      if (el) {
+        try {
+          el.focus();
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+        } catch {
+          // ignore
+        }
+      }
+    }
     return e;
   }
 
@@ -578,7 +594,9 @@ export default function PuppyForm({
     e.preventDefault();
     const eMap = validate();
     if (Object.keys(eMap).length) {
-      push({ type: "error", message: "Corrija os campos destacados." });
+      const msg = "Corrija os campos destacados.";
+      push({ type: "error", message: msg });
+      setStatusMessage(msg);
       return;
     }
     try {
@@ -603,6 +621,9 @@ export default function PuppyForm({
       formData.append("sex", normalizedSex);
       formData.append("city", normalizedCity);
       formData.append("state", normalizedState);
+      // Also include PT-BR aliases for compatibility during migration rollout
+      formData.append("cidade", normalizedCity);
+      formData.append("estado", normalizedState);
       formData.append("priceCents", normalizedPrice.toString());
       formData.append("status", normalizedStatus);
       formData.append("description", normalizedDescription);
@@ -662,15 +683,55 @@ export default function PuppyForm({
       const res = await fetch("/api/admin/puppies/manage", {
         method: "POST",
         body: formData,
+        credentials: "same-origin",
       });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json?.error || "Erro ao salvar");
-      push({ type: "success", message: isEdit ? "Filhote atualizado." : "Filhote criado." });
-      onCompleted?.();
-      router.refresh();
+
+      let json: any = null;
+      let responseText = "";
+      const contentType = (res.headers.get("content-type") || "").toLowerCase();
+      if (contentType.includes("application/json")) {
+        json = await res.json().catch(() => null);
+      } else {
+        responseText = await res.text().catch(() => "");
+        try {
+          json = responseText ? JSON.parse(responseText) : null;
+        } catch {
+          json = null;
+        }
+      }
+
+      if (!res.ok) {
+        if (json?.fieldErrors && typeof json.fieldErrors === "object") {
+          setErrors(json.fieldErrors as Record<string, string>);
+          setStatusMessage("Corrija os campos destacados.");
+          const first = Object.keys(json.fieldErrors)[0];
+          const el = inputRefs.current[first];
+          if (el) {
+            try {
+              el.focus();
+              el.scrollIntoView({ behavior: "smooth", block: "center" });
+            } catch {
+              // ignore
+            }
+          }
+        }
+        const errorMsg = json?.error || responseText || res.statusText || "Erro ao salvar";
+        throw new Error(errorMsg);
+      }
+
+      const successMsg = isEdit ? "Filhote atualizado." : "Filhote criado.";
+      push({ type: "success", message: successMsg });
+      setStatusMessage(successMsg);
+      if (onCompleted) {
+        onCompleted();
+        router.refresh();
+      } else {
+        router.push("/admin/filhotes");
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Erro ao salvar";
       push({ type: "error", message });
+      setStatusMessage(message);
     } finally {
       setSubmitting(false);
     }
@@ -680,23 +741,29 @@ export default function PuppyForm({
 
   return (
     <form onSubmit={onSubmit} className="space-y-[var(--space-6)]">
+      <div className="sr-only" role="status" aria-live="polite">
+        {statusMessage}
+      </div>
       <div className="grid gap-[var(--space-6)] md:grid-cols-2">
         <div className="space-y-[var(--space-4)] rounded-[var(--radius-2xl)] border border-[var(--border)] bg-white p-[var(--space-4)] shadow-[var(--elevation-2)]">
           <h2 className="text-lg font-semibold text-[var(--text)]">Dados principais</h2>
 
-          <Field label="Nome *" value={values.name} onChange={(v) => set("name", v)} error={errors.name} />
-          <Field label="Slug *" value={values.slug} onChange={(v) => set("slug", v)} error={errors.slug} placeholder="spitz-lulu-fofo" />
+          <Field name="name" label="Nome *" value={values.name} onChange={(v) => set("name", v)} error={errors.name} inputRef={(el) => (inputRefs.current["name"] = el)} />
+          <Field name="slug" label="Slug *" value={values.slug} onChange={(v) => set("slug", v)} error={errors.slug} placeholder="spitz-lulu-fofo" inputRef={(el) => (inputRefs.current["slug"] = el)} />
 
           <div className="grid grid-cols-2 gap-[var(--space-3)]">
             <Select
+              name="color"
               label="Cor *"
               value={values.color}
               onChange={(v) => set("color", v as Color)}
               options={COLOR_OPTIONS}
               error={errors.color}
+              inputRef={(el) => (inputRefs.current["color"] = el)}
             />
 
             <Select
+              name="sex"
               label="Sexo *"
               value={values.sex}
               onChange={(v) => set("sex", v as "male" | "female")}
@@ -705,30 +772,36 @@ export default function PuppyForm({
                 { value: "female", label: "Fêmea" },
               ]}
               error={errors.sex}
+              inputRef={(el) => (inputRefs.current["sex"] = el)}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-[var(--space-3)]">
-            <Field label="Cidade *" value={values.city} onChange={(v) => set("city", v as City)} error={errors.city} />
+            <Field name="city" label="Cidade *" value={values.city} onChange={(v) => set("city", v as City)} error={errors.city} inputRef={(el) => (inputRefs.current["city"] = el)} />
             <Field
+              name="state"
               label="UF *"
               value={values.state}
               onChange={(v) => set("state", v.toUpperCase().slice(0, 2))}
               error={errors.state}
               placeholder="SP"
+              inputRef={(el) => (inputRefs.current["state"] = el)}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-[var(--space-3)]">
             <Field
+              name="priceCents"
               label="Preço (centavos) *"
               type="number"
               value={values.priceCents.toString()}
               onChange={(v) => set("priceCents", Number(v) || 0)}
               error={errors.priceCents}
+              inputRef={(el) => (inputRefs.current["priceCents"] = el)}
             />
 
             <Select
+              name="status"
               label="Status *"
               value={values.status}
               onChange={(v) => set("status", v as PuppyStatus)}
@@ -740,6 +813,7 @@ export default function PuppyForm({
                 { value: "unavailable", label: "Indisponível" },
               ]}
               error={errors.status}
+              inputRef={(el) => (inputRefs.current["status"] = el)}
             />
           </div>
 
@@ -924,56 +998,79 @@ export default function PuppyForm({
 }
 
 function Field({
+  name,
   label,
   value,
   onChange,
   type = "text",
   placeholder,
   error,
+  inputRef,
 }: {
+  name?: string;
   label: string;
   value: string;
   onChange: (v: string) => void;
   type?: string;
   placeholder?: string;
   error?: string;
+  inputRef?: (el: HTMLInputElement | null) => void;
 }) {
   return (
     <label className="block text-sm font-semibold text-[var(--text)]">
-      {label}
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className={`mt-2 w-full rounded-[var(--radius-lg)] border px-[var(--space-3)] py-[var(--space-2)] text-sm text-[var(--text)] shadow-[var(--elevation-1)] focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 ${
-          error ? "border-rose-300 bg-rose-50" : "border-[var(--border)] bg-[var(--surface)]"
-        }`}
-      />
-      {error && <p className="mt-1 text-xs text-rose-600">{error}</p>}
-    </label>
+        {label}
+        <input
+          id={name}
+          name={name}
+          ref={inputRef}
+          type={type}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          aria-invalid={error ? "true" : "false"}
+          aria-required={type !== "number" ? true : undefined}
+          aria-describedby={error && name ? `${name}-error` : undefined}
+          className={`mt-2 w-full rounded-[var(--radius-lg)] border px-[var(--space-3)] py-[var(--space-2)] text-sm text-[var(--text)] shadow-[var(--elevation-1)] focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 ${
+            error ? "border-rose-300 bg-rose-50" : "border-[var(--border)] bg-[var(--surface)]"
+          }`}
+        />
+        {error && (
+          <p id={name ? `${name}-error` : undefined} className="mt-1 text-xs text-rose-600">
+            {error}
+          </p>
+        )}
+      </label>
   );
 }
 
 function Select({
+  name,
   label,
   value,
   onChange,
   options,
   error,
+  inputRef,
 }: {
+  name?: string;
   label: string;
   value: string;
   onChange: (v: string) => void;
   options: Array<string | { value: string; label: string }>;
   error?: string;
+  inputRef?: (el: HTMLSelectElement | null) => void;
 }) {
   return (
     <label className="block text-sm font-semibold text-[var(--text)]">
       {label}
       <select
+        id={name}
+        name={name}
+        ref={inputRef}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        aria-invalid={error ? "true" : "false"}
+        aria-describedby={error && name ? `${name}-error` : undefined}
         className={`mt-2 h-10 w-full rounded-[var(--radius-lg)] border px-[var(--space-3)] text-sm text-[var(--text)] shadow-[var(--elevation-1)] focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 ${
           error ? "border-rose-300 bg-rose-50" : "border-[var(--border)] bg-[var(--surface)]"
         }`}
@@ -988,7 +1085,11 @@ function Select({
           );
         })}
       </select>
-      {error && <p className="mt-1 text-xs text-rose-600">{error}</p>}
+      {error && (
+        <p id={name ? `${name}-error` : undefined} className="mt-1 text-xs text-rose-600">
+          {error}
+        </p>
+      )}
     </label>
   );
 }

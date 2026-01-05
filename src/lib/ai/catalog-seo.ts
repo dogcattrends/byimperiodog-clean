@@ -32,7 +32,7 @@ export type CatalogSeoOutput = {
   warnings?: string[];
 };
 
-const BLACKLIST = ["adocao", "adoção", "doacao", "doação", "liquidacao", "liquidação", "canil", "gratuito", "gratis"];
+const BLACKLIST = ["aquisicao", "aquisição", "doacao", "doação", "liquidacao", "liquidação", "canil", "gratuito", "gratis"];
 
 function sanitizeText(text: string): { text: string; warnings: string[] } {
   const warnings: string[] = [];

@@ -12,7 +12,7 @@ import { computeCoverage, TOPIC_CLUSTERS } from '@/lib/topicClusters';
 */
 export async function POST(req: Request){
   const auth = requireAdmin(req); if(auth) return auth;
-  const ip = (req as any).ip || '0.0.0.0';
+  const ip = ((req as unknown) as { ip?: string }).ip || '0.0.0.0';
   const rl = rateLimit('gen-missing:'+ip, 3, 60_000); // 3/min
   if(!rl.allowed) return NextResponse.json({ ok:false, error:'rate-limit', retry_at: rl.reset }, { status:429 });
   const url = new URL(req.url);
@@ -24,7 +24,7 @@ export async function POST(req: Request){
     const coverage = computeCoverage(posts||[]);
     let targets = coverage.missing; // array de titles
     if(limit>0) targets = targets.slice(0, limit);
-    const results: any[] = [];
+    const results: Array<Record<string, unknown>> = [];
     for (const title of targets){
       // cria sessão
       let sessionId: string | null = null;
@@ -35,12 +35,13 @@ export async function POST(req: Request){
         const j = await res.json();
         if(res.ok && j?.ok){ results.push({ title, ok:true, post_id: j.post_id, session_id: j.session_id || sessionId }); }
         else { results.push({ title, ok:false, error: j?.error || 'erro' }); if(sessionId) await sb.from('ai_generation_sessions').update({ status:'error', error_message: j?.error||'erro'}).eq('id', sessionId); }
-      } catch(e:any){ results.push({ title, ok:false, error: e.message }); if(sessionId) await sb.from('ai_generation_sessions').update({ status:'error', error_message: e.message}).eq('id', sessionId); }
+      } catch (e: unknown) { const msg = typeof e === 'object' && e !== null && 'message' in e ? String((e as { message?: unknown }).message ?? e) : String(e); results.push({ title, ok:false, error: msg }); if(sessionId) await sb.from('ai_generation_sessions').update({ status:'error', error_message: msg}).eq('id', sessionId); }
     }
     return NextResponse.json({ ok:true, results, total_requested: targets.length });
-  } catch(e:any){
-    logAdminAction({ route:'/api/admin/blog/ai/generate-missing', method:'POST', action:'generate_missing_error', payload:{ error: e.message } });
-    return NextResponse.json({ ok:false, error: e.message }, { status:500 });
+  } catch (e: unknown) {
+    const msg = typeof e === 'object' && e !== null && 'message' in e ? String((e as { message?: unknown }).message ?? e) : String(e);
+    logAdminAction({ route:'/api/admin/blog/ai/generate-missing', method:'POST', action:'generate_missing_error', payload:{ error: msg } });
+    return NextResponse.json({ ok:false, error: msg }, { status:500 });
   }
 }
 

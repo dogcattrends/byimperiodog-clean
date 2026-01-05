@@ -14,7 +14,8 @@ export async function POST(req: NextRequest){
     }
     // Aqui futuramente poderemos persistir em DB (Supabase)
     return new NextResponse(null, { status:204 });
-  } catch (e:any){
-    return NextResponse.json({ error: String(e?.message||e) }, { status:500 });
+  } catch (e: unknown) {
+    const msg = typeof e === "object" && e !== null && "message" in e ? String((e as { message?: unknown }).message ?? e) : String(e);
+    return NextResponse.json({ error: msg }, { status:500 });
   }
 }

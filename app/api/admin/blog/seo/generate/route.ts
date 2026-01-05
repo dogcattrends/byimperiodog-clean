@@ -35,8 +35,9 @@ export async function POST(req: Request) {
     const { error: ins } = await sb.from("seo_suggestions").insert([{ entity_type: "post", entity_id: postId, data_json: suggestions }]);
     if (ins) throw ins;
     return NextResponse.json({ ok: true, suggestions });
-  } catch (err: any) {
-    return NextResponse.json({ error: err?.message || String(err) }, { status: 500 });
+  } catch (err: unknown) {
+    const msg = typeof err === 'object' && err !== null && 'message' in err ? String((err as { message?: unknown }).message ?? err) : String(err);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 

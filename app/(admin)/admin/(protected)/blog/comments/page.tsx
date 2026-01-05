@@ -4,7 +4,7 @@
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 
-import { BlogSubnav } from '@/components/admin/BlogSubnav';
+import { BlogSubnav } from '../../../../../../src/components/admin/BlogSubnav';
 
 interface CommentRow { id:string; post_id:string; author?:string|null; content?:string|null; status?:string|null; created_at?:string; }
 

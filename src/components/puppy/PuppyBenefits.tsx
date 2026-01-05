@@ -1,11 +1,11 @@
-/**
+﻿/**
  * PuppyBenefits v2.0 - Design System Refactor
- * Lista de benefícios e diferenciais do criador
- * UX: Visual claro com ícones, hierarquia de informação
- * A11y: Lista semântica, ícones decorativos
+ * Lista de benefÃ­cios e diferenciais do criador
+ * UX: Visual claro com Ã­cones, hierarquia de informaÃ§Ã£o
+ * A11y: Lista semÃ¢ntica, Ã­cones decorativos
  * 
  * Migrado para usar componentes do Design System:
- * - Card para cada benefício
+ * - Card para cada benefÃ­cio
  */
 
 import { Award, Heart, Shield, Sparkles, Stethoscope, Video } from "lucide-react";
@@ -16,33 +16,33 @@ export function PuppyBenefits() {
   const benefits = [
     {
       icon: Stethoscope,
-      title: "Acompanhamento veterinário completo",
-      description: "Exames genéticos, cardiológicos e protocolo de vacinação com laudos digitais.",
+      title: "Acompanhamento veterinÃ¡rio completo",
+      description: "Exames genÃ©ticos, cardiolÃ³gicos e protocolo de vacinaÃ§Ã£o com laudos digitais.",
     },
     {
       icon: Heart,
-      title: "Socialização guiada desde o nascimento",
-      description: "Exposição controlada a estímulos, pessoas e ambientes para filhote equilibrado.",
+      title: "SocializaÃ§Ã£o guiada desde o nascimento",
+      description: "ExposiÃ§Ã£o controlada a estÃ­mulos, pessoas e ambientes para filhote equilibrado.",
     },
     {
       icon: Sparkles,
-      title: "Mentoria vitalícia para tutores",
-      description: "Suporte contínuo via WhatsApp com orientações sobre rotina, nutrição e comportamento.",
+      title: "Mentoria vitalÃ­cia para tutores",
+      description: "Suporte contÃ­nuo via WhatsApp com orientaÃ§Ãµes sobre rotina, nutriÃ§Ã£o e comportamento.",
     },
     {
       icon: Shield,
-      title: "Garantia de saúde e procedência",
-      description: "Contrato detalhado, pedigree CBKC e rastreabilidade completa da linhagem.",
+      title: "Garantia de saÃºde e procedÃªncia",
+      description: "Contrato detalhado, pedigree Pedigree e rastreabilidade completa da linhagem.",
     },
     {
       icon: Video,
-      title: "Chamadas de vídeo antes da adoção",
-      description: "Conheça o filhote, veja sua personalidade e tire todas as dúvidas online.",
+      title: "Chamadas de vÃ­deo antes da adoÃ§Ã£o",
+      description: "ConheÃ§a o filhote, veja sua personalidade e tire todas as dÃºvidas online.",
     },
     {
       icon: Award,
       title: "Entrega segura e humanizada",
-      description: "Transporte especializado ou retirada presencial com orientação completa.",
+      description: "Transporte especializado ou retirada presencial com orientaÃ§Ã£o completa.",
     },
   ];
 
@@ -50,7 +50,7 @@ export function PuppyBenefits() {
     <section aria-labelledby="benefits-heading" className="space-y-6">
       <div>
         <h2 id="benefits-heading" className="text-2xl font-bold text-zinc-900">
-          O que você recebe
+          O que vocÃª recebe
         </h2>
         <p className="mt-2 text-base text-zinc-600">
           Muito mais que um filhote: um processo completo pensado para famílias responsáveis
@@ -86,3 +86,4 @@ export function PuppyBenefits() {
     </section>
   );
 }
+

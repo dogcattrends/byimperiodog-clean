@@ -22,7 +22,7 @@ import { buildWhatsAppLink } from "@/lib/whatsapp";
 const NAV_ITEMS = [
   { label: "Dashboard", href: "/admin/dashboard", icon: BarChart3 },
   { label: "Blog", href: "/admin/blog", icon: FileText },
-  { label: "Filhotes", href: "/admin/puppies", icon: Dog },
+  { label: "Filhotes", href: "/admin/filhotes", icon: Dog },
   { label: "Mídia", href: "/admin/media", icon: ImageIcon },
   { label: "Comentários", href: "/admin/blog/comments", icon: MessageSquare },
   { label: "Analytics", href: "/admin/analytics", icon: TrendingUp },

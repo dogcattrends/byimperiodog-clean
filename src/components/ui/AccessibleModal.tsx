@@ -3,7 +3,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import classNames from "classnames";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useId } from "react";
 
 type AccessibleModalProps = {
   open: boolean;
@@ -47,11 +47,38 @@ export default function AccessibleModal({
   className,
 }: AccessibleModalProps) {
   const firstRender = useRef(true);
+  const closeBtnRef = useRef<HTMLButtonElement | null>(null);
+  const contentRef = useRef<HTMLDivElement | null>(null);
   const reducedMotion =
     typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   useScrollLock(open);
 
+  const titleId = useId();
+  const descId = useId();
+
   useEffect(() => {
+    if (open) {
+      // Ao abrir, tente focar o primeiro elemento interativo dentro do modal.
+      // Se não houver, foca o botão de fechar como fallback.
+      requestAnimationFrame(() => {
+        try {
+          const root = contentRef.current;
+          if (root) {
+            const focusable = root.querySelector<HTMLElement>(
+              'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            );
+            if (focusable) {
+              focusable.focus();
+              return;
+            }
+          }
+          if (closeBtnRef.current) closeBtnRef.current.focus();
+        } catch (e) {
+          /* ignore */
+        }
+      });
+    }
+
     if (!open && !firstRender.current && restoreFocusRef?.current) {
       restoreFocusRef.current.focus();
     }
@@ -85,25 +112,29 @@ export default function AccessibleModal({
                   exit={{ opacity: 0, y: 12, scale: 0.98 }}
                   transition={{ duration: reducedMotion ? 0 : 0.2 }}
                   className={panelClass}
+                  ref={contentRef}
                   role="dialog"
                   aria-modal="true"
+                  aria-labelledby={titleId}
+                  aria-describedby={descId}
                 >
                   <div className="sticky top-0 z-10 border-b border-[var(--border)] bg-[var(--surface)] px-6 py-4">
                     {title && (
-                      <Dialog.Title className="text-base font-semibold tracking-tight text-[var(--text)]">
+                      <Dialog.Title id={titleId} className="text-base font-semibold tracking-tight text-[var(--text)]">
                         {title}
                       </Dialog.Title>
                     )}
                     {description && (
-                      <Dialog.Description className="mt-1 text-xs text-[var(--text-muted)]">
+                      <Dialog.Description id={descId} className="mt-1 text-xs text-[var(--text-muted)]">
                         {description}
                       </Dialog.Description>
                     )}
                     <Dialog.Close asChild>
                       <button
+                        ref={closeBtnRef}
                         type="button"
-                        className="absolute top-4 right-4 inline-flex h-8 w-8 items-center justify-center rounded-full border border-transparent bg-white text-[var(--text)] shadow-sm transition hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2"
-                        aria-label="Fechar modal"
+                        className="absolute top-4 right-4 inline-flex h-10 w-10 sm:h-8 sm:w-8 items-center justify-center rounded-full border border-transparent bg-white text-[var(--text)] shadow-sm transition hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2"
+                        aria-label="Fechar modal (Esc)"
                       >
                         <span aria-hidden>×</span>
                       </button>

@@ -15,6 +15,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Script from "next/script";
 
+import FAQBlock from "@/components/answer/FAQBlock";
 import PageViewPing from "@/components/PageViewPing";
 import { PuppyActionsClient } from "@/components/puppy/PuppyActionsClient";
 import { PuppyBenefits } from "@/components/puppy/PuppyBenefits";
@@ -27,10 +28,32 @@ import type { Puppy } from "@/domain/puppy";
 import { normalizePuppyFromDB } from "@/lib/catalog/normalize";
 import { buildDetailCrumbs } from "@/lib/interlinking";
 import { buildBreadcrumbLD, buildProductLD } from "@/lib/schema";
+import { canonical } from "@/lib/seo.core";
 import { supabaseAnon } from "@/lib/supabaseAnon";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 
 type Props = { params: { slug: string } };
+
+const PUPPY_SNIPPET =
+  "Perfil completo do filhote com fotos, detalhes de saude, orientacoes de cuidado, rotina recomendada e etapas da reserva. A pagina ajuda a comparar disponibilidade, entender o que ja esta incluso e planejar a chegada, com informacoes claras sobre suporte e proximos passos.";
+
+const PUPPY_FAQ = [
+  {
+    question: "O que encontro na pagina do filhote?",
+    answer:
+      "Voce ve fotos, status, informacoes de saude, orientacoes de cuidado, beneficios e formas de contato para reserva.",
+  },
+  {
+    question: "Como confirmar disponibilidade e valores?",
+    answer:
+      "Fale com o time pelo WhatsApp no botao principal para validar disponibilidade, valores e agenda de visita.",
+  },
+  {
+    question: "O que acontece apos a reserva?",
+    answer:
+      "Voce recebe orientacoes de acompanhamento, documentos e alinhamento sobre entrega e suporte pos-reserva.",
+  },
+];
 
 // SEO: Metadados dinâmicos por filhote
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -43,29 +66,39 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const location = [puppy.city, puppy.state].filter(Boolean).join(", ");
   const sex = translateSex(puppy.sex);
+  const slugOrId = puppy.slug ?? puppy.id;
+  const detailUrl = canonical(`/filhotes/${slugOrId}`);
+  const ogImage = canonical(`/filhotes/${slugOrId}/opengraph-image`);
   const title = `${puppy.name} - Spitz Alemão Anão (Lulu da Pomerânia) ${puppy.color} ${sex} ${location ? `em ${location}` : ""}`;
   const description =
     puppy.description ||
-    `Filhote Spitz Alemão Anão (Lulu da Pomerânia) ${puppy.color}, ${sex}. Pedigree CBKC, acompanhamento veterinário completo e mentoria vitalícia. ${location}`;
+    `Filhote Spitz Alemão Anão (Lulu da Pomerânia) ${puppy.color}, ${sex}. Pedigree, acompanhamento veterinário completo e mentoria vitalícia. ${location}`;
 
   return {
     title: `${title} | By Império Dog`,
     description: description.slice(0, 160),
     alternates: {
-      canonical: `/filhotes/${puppy.slug}`,
+      canonical: detailUrl,
     },
     openGraph: {
       title,
       description,
       type: "website",
-      url: `/filhotes/${puppy.slug}`,
-      images: puppy.images?.[0] ? [{ url: puppy.images[0], alt: puppy.name }] : [],
+      url: detailUrl,
+      images: [
+        {
+          url: ogImage,
+          alt: `${puppy.name} | By Império Dog`,
+          width: 1200,
+          height: 630,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: puppy.images?.[0] ? [puppy.images[0]] : [],
+      images: [ogImage],
     },
   };
 }
@@ -143,6 +176,11 @@ export default async function PuppyDetailPage({ params }: Props) {
       <PageViewPing pageType="puppy" slug={puppy.slug} color={puppy.color} />
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <section className="mb-8 rounded-2xl border border-border bg-surface p-4">
+          <h2 className="text-lg font-semibold">Resposta curta</h2>
+          <p className="mt-2 text-sm text-text-muted">{PUPPY_SNIPPET}</p>
+        </section>
+        <FAQBlock items={PUPPY_FAQ} />
         {/* Breadcrumb de navegação */}
         <nav className="mb-6" aria-label="Navegação estrutural">
           <ol className="flex flex-wrap items-center gap-2 text-sm text-zinc-600">
@@ -235,7 +273,11 @@ async function fetchPuppyBySlug(slug: string): Promise<Puppy | null> {
       .eq("slug", slug)
       .maybeSingle();
 
-    if (error || !data) return null;
+    if (error || !data) {
+      const { data: fallback } = await sb.from("puppies").select("*").eq("id", slug).maybeSingle();
+      if (fallback) return normalizePuppyFromDB(fallback);
+      return null;
+    }
     return normalizePuppyFromDB(data);
   } catch {
     return null;
@@ -277,9 +319,9 @@ async function fetchRelatedPuppies(current: Puppy): Promise<Puppy[]> {
 // Helper: traduzir sexo
 function translateSex(sex?: string | null): string {
   if (!sex) return "";
-  const lower = sex.toLowerCase();
-  if (lower === "male" || lower === "macho") return "Macho";
-  if (lower === "female" || lower === "femea" || lower === "fêmea") return "Fêmea";
+  const normalized = sex.normalize("NFC").toLowerCase();
+  if (normalized.includes("male") || normalized.includes("macho")) return "Macho";
+  if (normalized.includes("female") || normalized.includes("femea") || normalized.includes("fêmea")) return "Fêmea";
   return sex;
 }
 

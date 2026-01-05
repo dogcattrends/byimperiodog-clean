@@ -23,6 +23,12 @@ Operacoes de By Imperio Dog combinam scripts locais (`scripts/*`), workflows em 
 - **`seo-audit.yml`**: dispara `npm run seo:audit` em todos os pushes/PRs (non-blocking). Resultados indicam issues no SEO score.
 - **Metas essenciais**: `npm run lint`, `npm run typecheck`, `npm run test`, `npm run seo:audit`. Registrar falhas no GitHub Actions e no `reports` associado.
 
+## Preflight verification
+- `npm run preflight` orchestrates env validation, lint, typecheck, test, `seo:audit`, `check:all`, `npm run build` and a smoke test (Next.js start + GET `/`, `/filhotes`, `/blog`, `/guia` when present).
+- The command emits a structured report at `reports/preflight-vercel.md` listing per-stage PASS/FAIL/WARN durations, the first useful error, and the final GO/NO-GO verdict.
+- GO means all blocking gates succeeded and the smoke checks succeeded; NO-GO means a blocking stage failed and the report explains which stage. Warnings (e.g., missing `OPENAI_API_KEY`) are recorded but do not block.
+- After fixing the blocking issue or restoring required env vars, rerun `npm run preflight` and await GO before pushing or deploying.
+
 ## Alertas e incidentes
 - **Analytics/Tracking**: se `/api/analytics` com `service role` falhar (422, 500 ou network error), o endpoint retorna 202 e escreve `console.error`. Use os logs do worker (ver `dev.log`, `dev.err`) para ver erros repetidos.
 - **IA**: `scripts/ai-tasks-worker.mjs` atualiza `ai_tasks`. Quando ocorrerem varios erros, redesigne a secao `AIInsightsPanel` e use `OperationalAlertsPanel` para avisar o time.

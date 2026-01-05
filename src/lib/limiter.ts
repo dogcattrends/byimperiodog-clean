@@ -1,4 +1,4 @@
-import { AppError } from "@/lib/errors";
+import { AppError } from "./errors";
 
 type RateLimitState = {
   count: number;

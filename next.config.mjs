@@ -26,6 +26,7 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   
+  
   // ============================================================================
   // PERFORMANCE: Images optimization (AVIF/WebP autom�tico)
   // ============================================================================

@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { supabaseAdmin } from "./supabaseAdmin";
 
 export type SiteSettings = {
   gtm_id?: string | null;
@@ -11,6 +11,8 @@ export type SiteSettings = {
   hotjar_id?: string | null;           // Ex.: 1234567
   clarity_id?: string | null;          // Ex.: a1b2c3d4e5
   meta_domain_verify?: string | null;  // meta code p/ verificação de domínio
+  contact_phone?: string | null;
+  whatsapp_number?: string | null;
   // tokens CAPI **não** são expostos no client:
   fb_capi_token?: string | null;
   tiktok_api_token?: string | null;

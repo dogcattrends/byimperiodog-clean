@@ -4,9 +4,9 @@
  * REGRA: NUNCA acesse Supabase diretamente de componentes.
  */
 
-import type { Puppy, PuppyFilters, PuppySearchResult, PuppySortBy } from "@/domain/puppy";
-import type { City, Color } from "@/domain/taxonomies";
-import { supabaseAnon } from "@/lib/supabaseAnon";
+import type { Puppy, PuppyFilters, PuppySearchResult, PuppySortBy } from "../../domain/puppy";
+import type { City, Color } from "../../domain/taxonomies";
+import { supabaseAnon } from "../supabaseAnon";
 
 import { normalizePuppyFromDB } from "./normalize";
 

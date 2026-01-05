@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { AlertCircle, Dog, Loader2, Sparkles } from "lucide-react";
 import { useState, useTransition } from "react";
@@ -69,7 +69,7 @@ export function LeadPuppyRecommenderCard({ leadId }: { leadId: string }) {
             <p className="mt-1">{rec.reasoningText}</p>
             <p className="mt-1 text-xs text-[var(--text-muted)]">
               Score: <span className="font-semibold text-[var(--text)]">{rec.score}</span>
-              {rec.upsellOpportunity && " • Oportunidade de upsell"}
+              {rec.upsellOpportunity && " â€¢ Oportunidade de upsell"}
             </p>
           </div>
           <div className="space-y-2">
@@ -86,7 +86,7 @@ export function LeadPuppyRecommenderCard({ leadId }: { leadId: string }) {
                   <div className="text-right text-xs text-[var(--text-muted)]">
                     <p className="font-semibold text-[var(--text)]">{m.score} pts</p>
                     <a
-                      href={`/admin/puppies/${m.id}`}
+                      href={`/admin/filhotes/${m.id}`}
                       className="text-emerald-700 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-500"
                     >
                       Abrir filhote
@@ -94,7 +94,9 @@ export function LeadPuppyRecommenderCard({ leadId }: { leadId: string }) {
                   </div>
                 </li>
               ))}
-              {rec.top3Matches.length === 0 && <li className="text-sm text-[var(--text-muted)]">Nenhuma sugestão disponível.</li>}
+              {rec.top3Matches.length === 0 && (
+                <li className="text-sm text-[var(--text-muted)]">Nenhuma sugestão disponível.</li>
+              )}
             </ul>
           </div>
         </div>
@@ -104,3 +106,4 @@ export function LeadPuppyRecommenderCard({ leadId }: { leadId: string }) {
     </section>
   );
 }
+

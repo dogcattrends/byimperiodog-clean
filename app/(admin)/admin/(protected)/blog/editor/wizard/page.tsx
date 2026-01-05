@@ -7,8 +7,9 @@ import Image from "next/image";
 import Link from "next/link";
 import React, { useMemo, useState } from "react";
 
-import { BlogSubnav } from "@/components/admin/BlogSubnav";
 import { adminFetch } from "@/lib/adminFetch";
+
+import { BlogSubnav } from "../../../../../../../src/components/admin/BlogSubnav";
 
 type Step = 0|1|2|3|4|5;
 

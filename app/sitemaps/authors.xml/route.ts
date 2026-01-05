@@ -1,13 +1,19 @@
+
 import { NextResponse } from 'next/server';
 
 import { supabasePublic } from '@/lib/supabasePublic';
-export const revalidate = 600;
+
+// import type { Database } from '../../../src/types/supabase'; (unused)
+
+export const revalidate = 300;
 const site = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.byimperiodog.com.br').replace(/\/$/, '');
 export async function GET(){
   const sb = supabasePublic();
+  // Supabase rows may include selected fields not present on the strict DB type.
+  // Cast via unknown -> explicit shape to avoid `any` while remaining safe.
   const { data } = await sb.from('blog_authors').select('slug,updated_at,created_at').limit(2000);
-  const urls = (data || []).map((a: unknown) => {
-    const row = a as unknown as Record<string, unknown>;
+  const rows = (data as unknown) as Array<{ slug?: string | null; updated_at?: string | null; created_at?: string | null }>;
+  const urls = (rows || []).map((row) => {
     const lastmod = String(row.updated_at ?? row.created_at ?? new Date().toISOString());
     return { loc: `${site}/autores/${String(row.slug ?? '')}`, lastmod, changefreq: 'weekly', priority: '0.5' };
   });

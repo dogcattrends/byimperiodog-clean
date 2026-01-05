@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { supabaseAdmin } from "./supabaseAdmin";
 
 const TABLE = "pixels_settings";
 const SINGLETON_ID = "pixels";

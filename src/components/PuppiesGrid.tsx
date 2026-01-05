@@ -1,11 +1,13 @@
+
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 
-import type { Puppy } from "@/domain/puppy";
-import { listPuppiesCatalog } from "@/lib/data/supabase";
 import track from "@/lib/track";
-import { buildWhatsAppLink } from "@/lib/whatsapp";
+
+import type { Puppy } from "../domain/puppy";
+import { listPuppiesCatalog } from "../lib/data/supabase";
+import { buildWhatsAppLink } from "../lib/whatsapp";
 
 import PuppiesFilterBar from "./PuppiesFilterBar";
 import PuppyCard from "./PuppyCard";

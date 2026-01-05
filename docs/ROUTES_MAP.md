@@ -8,7 +8,7 @@
 | `/filhotes` | Catálogo premium com filtros, IA ranking (`src/lib/ai/catalog-ranking.ts`), CTA “Quero esse filhote” para modal conectado ao `PuppyDetailsModal`. | `Quero esse filhote` (um botão por card) | Supabase `catalog` + `api/catalog/ranked`; modal lê ficha `supabasePublic` e `ai` badges | Se modal falhar (focus/tracking) quebra funil; filtros não podem carregar JS extra |
 | `/blog` | Hub editorial (BlogList) com hero, guias categorizados, CTA para `/filhotes` e `/guia`, schema JSON-LD (`app/blog/page.tsx`). | `Ler artigo completo` + “Guia do Tutor” CTA | Supabase `listPostsWithMeta`, fallback Contentlayer e `listPostsWithMeta`. | Misclassificação de status, canonical, e fallback precisam manter JSON-LD; search precisa accessible message |
 | `/blog/[slug]` | Post com TL;DR, TOC, FAQ, JSON-LD (Article/Breadcrumb/FAQ), relacionados por tag (`app/blog/[slug]/page.tsx`). | `Ver filhotes` + `Baixar guia` | Supabase `blog_posts`, `contentlayer` fallback, `relatedPosts`. | Schema, canonical e OG image (dynamic) devem ser absolutos; share/related mantêm performance |
-| `/guia` | Lead magnet e formulário acessível (GuiaLeadForm) com PDF `/guia.pdf`. | `Enviar e baixar o guia` | `app/api/leads` (Supabase `leads`) e `public/guia.pdf` com tracking `pdf_download`. | Consentimento obrigatório, rate limit API, download só após validação |
+| `/guia` | Lead magnet e formulário acessível (GuiaLeadForm) com tokens (`lead_download_tokens`) e fluxo de download seguro (`app/api/leads` → `/download/guia?token=`). | `Enviar e baixar o guia` | `app/api/leads` (Supabase `leads` + `lead_download_tokens`) | Consentimento obrigatório, rate limit API, novo evento `pdf_downloaded` e tokens expiram |
 | `/contato`, `/sobre`, `/faq-do-tutor`, `/reserve-seu-filhote`, `/autores/[slug]`, `/web-stories`, `/topico`, `/preco-spitz-anao` | Conteúdo marketing e confiança, cada um orientado a funil (ex: CTA “Falar agora” p/ WhatsApp) | Depende da página (convidar para WhatsApp, guia ou filhotes) | Conteúdo estático + event tracking leve | CTA duplicados ou scripts extras podem poluir; todas devem manter focus e contrastes |
 
 ## Público noindex / utilitários
@@ -17,6 +17,7 @@
 | --- | --- | --- | --- | --- |
 | `/api/og/*`, `/app/og/...` | Geração de OpenGraph dinâmico (`app/og`); não indexável | N/A (meta only) | Consulta a cover images | Cache/imagem quebrada afeta share |
 | `/search` | Busca simples (SPA) com formulários e fallback de posts | `Pesquisar` | Local filters (client-only) | Sem canonicalântico, deve retornar 200 e `aria-live` |
+| `/download/guia` | Valida tokens emitidos do lead magnet, marca `pdf_downloaded` e redireciona para o PDF versionado (`lead_download_tokens`). | N/A (redirect) | `lead_download_tokens`, `analytics_events` | Tokens inv�lidos/expirados direcionam para `/guia`; consentimento + rate limit no submit |
 
 ## Internas / Admin (protected `app/(admin)/*`)
 

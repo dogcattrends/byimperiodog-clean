@@ -70,7 +70,7 @@ export default async function LeadDetailPage({ params }: { params: { id: string 
   if (matchedId) {
     const { data: puppyRow } = await sb
       .from("puppies")
-      .select("id,nome,name,slug,color,cor,sex,sexo,gender,price_cents,status,image_url,images,midia")
+      .select("id,nome,name,slug,color,cor,sex,sexo,gender,price_cents,status,images,midia")
       .eq("id", matchedId)
       .maybeSingle();
     if (puppyRow) {

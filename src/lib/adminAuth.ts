@@ -2,7 +2,7 @@
 import { redirect } from "next/navigation";
 import { NextRequest, NextResponse } from "next/server";
 
-import { createLogger } from "@/lib/logger";
+import { createLogger } from "./logger";
 import {
   DEFAULT_ROLE,
   getRoleFromCookies,
@@ -10,8 +10,8 @@ import {
   hasPermission,
   type AdminPermission,
   type AdminRole,
-} from "@/lib/rbac";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+} from "./rbac";
+import { supabaseAdmin } from "./supabaseAdmin";
 
 type LayoutGuardOptions = {
   permission?: AdminPermission;

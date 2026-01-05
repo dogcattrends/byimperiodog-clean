@@ -16,9 +16,10 @@ export async function POST(req:Request){
     const outline = buildOutline(topic, body.scope||'guia-completo');
     await updateAiTask(taskId,{ status:'done', progress:100, result:{ outline }, finished_at: new Date().toISOString() });
     return NextResponse.json({ ok:true, outline, task_id: taskId });
-  } catch(e:any){
-    await updateAiTask(taskId,{ status:'error', progress:100, error_message:e?.message||'erro' });
-    return NextResponse.json({ ok:false, error:e?.message||'erro', task_id: taskId },{ status:500 });
+  } catch (e: unknown) {
+    const msg = typeof e === 'object' && e !== null && 'message' in e ? String((e as { message?: unknown }).message ?? e) : String(e);
+    await updateAiTask(taskId,{ status:'error', progress:100, error_message: msg || 'erro' });
+    return NextResponse.json({ ok:false, error: msg || 'erro', task_id: taskId },{ status:500 });
   }
 }
 

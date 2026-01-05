@@ -1,18 +1,18 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import "server-only";
 
-import { analyzeLead, type LeadIntelResult, type LeadRecord } from "@/lib/leadIntel";
-import { createLogger } from "@/lib/logger";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { generateWhatsAppMessage, type WhatsAppMessageTone } from "@/lib/whatsapp";
-import type { Database } from "@/types/supabase";
+import type { Database } from "../../types/supabase";
+import { analyzeLead, type LeadIntelResult, type LeadRecord } from "../leadIntel";
+import { createLogger } from "../logger";
+import { supabaseAdmin } from "../supabaseAdmin";
+import { generateWhatsAppMessage, type WhatsAppMessageTone } from "../whatsapp";
 
 const logger = createLogger("autosales:engine");
 
 export type AutoSalesStepType = "intro" | "follow_up_light" | "follow_up_strong" | "follow_up_final";
 
 type PuppyRow = Database["public"]["Tables"]["puppies"]["Row"];
-type SequenceRow = Database["public"]["Tables"]["autosales_sequences"]["Row"];
+type SequenceRow = Record<string, unknown>;
 
 type AutoSalesPlanStep = {
   type: AutoSalesStepType;
@@ -68,7 +68,6 @@ const OBJECTION_RESPONSES: Record<string, string> = {
 const LEAD_COLUMNS = [
   "id",
   "nome",
-  "first_name",
   "cidade",
   "estado",
   "telefone",
@@ -76,7 +75,6 @@ const LEAD_COLUMNS = [
   "mensagem",
   "cor_preferida",
   "sexo_preferido",
-  "preferencia",
   "page",
   "page_slug",
   "created_at",
@@ -119,7 +117,7 @@ export async function createAutoSalesSequence(
     bypass_human: options.bypassHuman ?? false,
     metrics: buildInitialMetrics(intel, strategy.objections),
     strategy,
-  } satisfies Database["public"]["Tables"]["autosales_sequences"]["Insert"];
+  };
 
   const { data: sequence, error } = await sb
     .from("autosales_sequences")
@@ -299,11 +297,11 @@ function buildStepMessage({
   strategy: AutoSalesStrategy;
 }) {
   const waPayload = generateWhatsAppMessage(
-    { nome: lead.nome, first_name: lead.first_name, cidade: lead.cidade, estado: lead.estado },
+    { nome: lead.nome, cidade: lead.cidade, estado: lead.estado },
     {
       name: puppy?.name ?? "Spitz exclusivo",
       color: puppy?.color ?? strategy.triggers.find((t) => t.startsWith("cor:"))?.split(":")[1] ?? lead.cor_preferida ?? null,
-         sex: (puppy as any)?.sex ?? puppy?.sexo ?? strategy.triggers.find((t) => t.startsWith("sexo:"))?.split(":")[1] ?? lead.sexo_preferido ?? null,
+      sex: (puppy as any)?.sex ?? puppy?.sexo ?? strategy.triggers.find((t) => t.startsWith("sexo:"))?.split(":")[1] ?? lead.sexo_preferido ?? null,
       price_cents: puppy?.price_cents ?? undefined,
     },
     step.tone,
@@ -342,13 +340,14 @@ function detectObjections(message?: string | null) {
 }
 
 function buildTriggers(intel: LeadIntelResult, objections: string[]) {
+  const isString = (v: unknown): v is string => typeof v === 'string' && v.trim() !== '';
   return [
     intel.urgency === "alta" ? "urgencia:alta" : null,
     intel.desired_color ? `cor:${intel.desired_color}` : null,
     intel.desired_sex ? `sexo:${intel.desired_sex}` : null,
     intel.score >= 70 ? "prioridade:vip" : "prioridade:nutrir",
     objections.length ? `objection:${objections[0]}` : null,
-  ].filter(Boolean) as string[];
+  ].filter(isString);
 }
 
 function mapTone(emotionalTone?: string | null): WhatsAppMessageTone {

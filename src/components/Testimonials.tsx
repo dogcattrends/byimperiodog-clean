@@ -1,32 +1,84 @@
-﻿"use client";
+"use client";
 
-import Image from 'next/image';
-import Script from 'next/script';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Image from "next/image";
+import Script from "next/script";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { cn } from '@/lib/cn';
-import { BLUR_DATA_URL } from '@/lib/placeholders';
+import { cn } from "@/lib/cn";
+import { BLUR_DATA_URL } from "@/lib/placeholders";
 
-import CLIENT_PHOTOS from './clientPhotos';
+import CLIENT_PHOTOS from "./clientPhotos";
 
-type Variant = 'carousel' | 'grid';
+type Variant = "carousel" | "grid";
 
 interface TestimonialsProps {
   title?: string;
   photos?: string[];
   autoplayDelay?: number;
-  fit?: 'cover' | 'contain';
+  fit?: "cover" | "contain";
   bgPattern?: boolean;
   cities?: string[];
   jsonLd?: boolean;
   debug?: boolean;
   variant?: Variant;
-  showCount?: number; // usado no grid
-  navigationStyle?: 'dots' | 'counter' | 'progress'; // estilo de navegação
+  showCount?: number;
+  navigationStyle?: "dots" | "counter" | "progress";
 }
 
-  const DEFAULT_CITY_POOL = [
-  'Bragança Paulista','Atibaia','Itatiba','Valinhos','Vinhedo','Campinas','Indaiatuba','Jundiaí','Louveira','Barueri - Alphaville','Santana de Parnaíba','São Paulo - Jardins','São Paulo - Vila Olímpia','São Paulo - Morumbi','Holambra','Jaguariúna','Joanópolis','Socorro','Morungaba','Extrema (MG)'
+const DEFAULT_CITY_POOL = [
+  "Bragança Paulista",
+  "Atibaia",
+  "Itatiba",
+  "Valinhos",
+  "Vinhedo",
+  "Campinas",
+  "Indaiatuba",
+  "Jundiaí",
+  "Louveira",
+  "Barueri - Alphaville",
+  "Santana de Parnaíba",
+  "São Paulo - Jardins",
+  "São Paulo - Vila Olímpia",
+  "São Paulo - Morumbi",
+  "Holambra",
+  "Jaguariúna",
+  "Joanópolis",
+  "Socorro",
+  "Morungaba",
+  "Extrema (MG)",
+];
+
+const TESTIMONIAL_DETAILS = [
+  {
+    quote: "A equipe acompanhou cada etapa da socialização e manteve nosso grupo no WhatsApp com vídeo semanal.",
+    author: "Marina & Otto",
+  },
+  {
+    quote: "O Spitz chegou com pedigree pronto e já se adaptou à rotina graças ao plano de entrega.",
+    author: "Thiago & Lila",
+  },
+  {
+    quote: "Mentoria em tempo real me deu confiança para receber o filhote à distância.",
+    author: "Elaine & Luca",
+  },
+  {
+    quote: "A criadora explicou tudo com transparência e respondeu rápido no WhatsApp.",
+    author: "Pedro & Clara",
+  },
+  {
+    quote: "O suporte pós-entrega é humanizado e entregou checklist personalizado.",
+    author: "Camila & Samuel",
+  },
+  {
+    quote: "Cada passo foi documentado e o filhote chegou saudável como prometido.",
+    author: "Rafael & Bento",
+  },
+];
+
+const TESTIMONIAL_STATS = [
+  { value: "96%", label: "checklist aprovado" },
+  { value: "24h", label: "resposta média no WhatsApp" },
+  { value: "4x", label: "vídeos semanais de socialização" },
 ];
 
 export default function Testimonials({
@@ -64,6 +116,7 @@ export default function Testimonials({
 
   const current = useMemo(() => list[index % total], [index, list, total]);
   const city = CITY_POOL[index % CITY_POOL.length];
+  const testimonialDetail = TESTIMONIAL_DETAILS[index % TESTIMONIAL_DETAILS.length];
 
   const altFor = useCallback((p: string, i: number) => {
     const base = p.split('/').pop() || '';
@@ -235,6 +288,18 @@ export default function Testimonials({
                   </button>
                 </>
               )}
+            </div>
+            <div className="mt-6 space-y-2 text-center text-zinc-700" aria-live="polite">
+              <p className="text-lg font-semibold text-zinc-900">{`“${testimonialDetail.quote}”`}</p>
+              <p className="text-sm text-zinc-500">— {testimonialDetail.author}</p>
+            </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              {TESTIMONIAL_STATS.map((stat) => (
+                <div key={stat.label} className="rounded-2xl border border-emerald-100 bg-white/90 p-3 text-center shadow-sm">
+                  <p className="text-base font-semibold text-emerald-600">{stat.value}</p>
+                  <p className="text-[0.65rem] uppercase tracking-[0.35em] text-zinc-500">{stat.label}</p>
+                </div>
+              ))}
             </div>
             {total > 1 && navigationStyle === 'progress' && (
               <div className="mt-4 space-y-3" aria-label="Navegação do carrossel">

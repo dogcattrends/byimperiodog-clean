@@ -2,6 +2,8 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { createLeadDownloadToken } from "@/lib/leadDownloadTokens";
+import { createLogger } from "@/lib/logger";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 // Schema de validação server-side alinhado com o funil de leads (contato + contexto + LGPD)
@@ -48,6 +50,7 @@ function checkRateLimit(ip: string): boolean {
 }
 
 export async function POST(req: NextRequest) {
+  const logger = createLogger("api:leads");
   try {
     const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
     if (!checkRateLimit(ip)) {
@@ -70,7 +73,7 @@ export async function POST(req: NextRequest) {
     const utm_content = url.searchParams.get("utm_content") ?? body.utm_content ?? null;
     const utm_term = url.searchParams.get("utm_term") ?? body.utm_term ?? null;
 
-    const { error } = await supabaseAdmin()
+    const insertResult = await supabaseAdmin()
       .from("leads")
       .insert({
         nome: data.nome,
@@ -104,17 +107,30 @@ export async function POST(req: NextRequest) {
         utm_term,
         source: utm_source || "site_org",
         status: "novo",
-      });
+      })
+      .select("id")
+      .maybeSingle();
 
-    if (error) {
-      console.error("[API /leads] Supabase error:", error);
-      return NextResponse.json({ error: error.message }, { status: 400 });
+    if (insertResult.error) {
+      logger.error("Supabase error on lead insert", { error: insertResult.error });
+      return NextResponse.json({ error: insertResult.error.message }, { status: 400 });
     }
 
-    return NextResponse.json({ ok: true });
+    const leadId = insertResult.data?.id;
+    let downloadToken: string | null = null;
+    if (leadId && (data.page_slug === "guia" || data.page_type === "guia")) {
+      const tokenResult = await createLeadDownloadToken(leadId, {
+        version: process.env.GUIDE_CURRENT_VERSION,
+        ipAddress: ip,
+        userAgent: req.headers.get("user-agent"),
+      });
+      downloadToken = tokenResult?.token ?? null;
+    }
+
+    return NextResponse.json({ ok: true, leadId, downloadToken });
   } catch (e: unknown) {
     const errorMessage = e instanceof Error ? e.message : "Erro desconhecido";
-    console.error("[API /leads] Unexpected error:", errorMessage);
+    logger.error("Unexpected error inserting lead", { error: errorMessage });
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

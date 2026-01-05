@@ -4,12 +4,11 @@ import { NextResponse } from "next/server";
 
 import { requireAdmin } from "@/lib/adminAuth";
 import {
-  blogRepo,
-  commentRepo,
   postContentSchema,
   type BulkActionInput,
   type PostContentInput,
 } from "@/lib/db";
+import { sanityBlogRepo } from "@/lib/sanity/blogRepo";
 
 function badRequest(message: string, details?: unknown) {
   return NextResponse.json({ error: message, details }, { status: 400 });
@@ -37,16 +36,16 @@ export async function GET(req: Request) {
     const offset = (page - 1) * perPage;
 
     if (id) {
-      const post = await blogRepo.getPostById(id);
+      const post = await sanityBlogRepo.getPostById(id);
       return NextResponse.json(post ?? {});
     }
 
     if (slug) {
-      const post = await blogRepo.getPostBySlug(slug);
+      const post = await sanityBlogRepo.getPostBySlug(slug);
       return NextResponse.json(post ?? {});
     }
 
-    const list = await blogRepo.listSummaries({
+    const list = await sanityBlogRepo.listSummaries({
       search: search || undefined,
       status: status === "all" ? undefined : (status as PostContentInput["status"]),
       limit: perPage,
@@ -74,7 +73,7 @@ export async function POST(req: Request) {
     const payload = (await req.json()) as Partial<PostContentInput> & { duplicateFrom?: string };
 
     if (payload.duplicateFrom) {
-      const duplicated = await blogRepo.duplicatePost(payload.duplicateFrom);
+      const duplicated = await sanityBlogRepo.duplicatePost(payload.duplicateFrom);
       if (!duplicated) return serverError("Não foi possível duplicar o post.");
       await revalidatePath("/blog");
       return NextResponse.json(duplicated);
@@ -86,59 +85,21 @@ export async function POST(req: Request) {
     }
     const data = parsed.data;
 
-    const existing = data.id ? await blogRepo.getPostById(data.id) : null;
+    const existing = data.id ? await sanityBlogRepo.getPostById(data.id) : null;
 
     if (!data.id) {
-      const slugConflict = await blogRepo.getPostBySlug(data.slug);
+      const slugConflict = await sanityBlogRepo.getPostBySlug(data.slug);
       if (slugConflict) {
         return NextResponse.json({ error: "slug_exists" }, { status: 409 });
       }
     } else if (existing && existing.slug !== data.slug) {
-      const conflict = await blogRepo.getPostBySlug(data.slug);
+      const conflict = await sanityBlogRepo.getPostBySlug(data.slug);
       if (conflict && conflict.id !== data.id) {
         return NextResponse.json({ error: "slug_exists" }, { status: 409 });
       }
     }
 
-    if (existing) {
-      await blogRepo.recordRevision(existing.id, existing as unknown as Record<string, unknown>, "manual-update");
-    }
-
-    const saved = await blogRepo.upsertPost({
-      id: data.id,
-      slug: data.slug,
-      title: data.title,
-      subtitle: data.subtitle ?? null,
-      excerpt: data.excerpt ?? null,
-      content: data.content,
-      status: data.status,
-      coverUrl: data.coverUrl ?? null,
-      coverAlt: data.coverAlt ?? null,
-      category: data.category
-        ? {
-            id: data.category,
-            slug: data.category,
-            title: data.category,
-            description: null,
-            createdAt: null,
-            updatedAt: null,
-          }
-        : null,
-      tags: (data.tags ?? []).map((slug) => ({
-        id: slug,
-        slug,
-        name: slug,
-        createdAt: null,
-      })),
-      seo: {
-        title: data.seoTitle ?? null,
-        description: data.seoDescription ?? null,
-        ogImageUrl: data.ogImageUrl ?? null,
-        score: null,
-      },
-      scheduledAt: data.scheduledAt ?? null,
-      publishedAt: data.publishedAt ?? null,
-    });
+    const saved = await sanityBlogRepo.upsertPost(data);
 
     if (!saved) {
       return serverError("Falha ao salvar o post.");
@@ -164,7 +125,7 @@ export async function PATCH(req: Request) {
 
   try {
     const payload = (await req.json()) as BulkActionInput;
-    const result = await blogRepo.bulkAction(payload);
+    const result = await sanityBlogRepo.bulkAction(payload);
     await revalidatePath("/blog");
     return NextResponse.json(result);
   } catch (error) {
@@ -180,7 +141,7 @@ export async function DELETE(req: Request) {
     const url = new URL(req.url);
     const id = url.searchParams.get("id");
     if (!id) return badRequest("missing_id");
-    const success = await blogRepo.bulkAction({ action: "delete", postIds: [id] });
+    const success = await sanityBlogRepo.bulkAction({ action: "delete", postIds: [id] });
     await revalidatePath("/blog");
     return NextResponse.json(success);
   } catch (error) {

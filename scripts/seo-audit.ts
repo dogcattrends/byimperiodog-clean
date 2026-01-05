@@ -1,4 +1,5 @@
 #!/usr/bin/env tsx
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
 

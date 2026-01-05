@@ -336,31 +336,56 @@ function coerceAssetsResult(payload: unknown): AssetsResult {
   };
 }
 
-function arrayOfStrings(input: unknown): string[] {
-  if (!Array.isArray(input)) return [];
-  return input
-    .map((value) => (typeof value === "string" ? value.trim() : ""))
-    .filter(Boolean);
+function isString(v: unknown): v is string {
+  return typeof v === "string" && v.trim().length > 0;
 }
 
-function arrayOfLinks(
-  input: unknown,
-): { href: string; anchor: string; reason?: string }[] {
+type LinkEntry = { href: string; anchor: string; reason?: string };
+
+function isLink(v: unknown): v is LinkEntry {
+  return (
+    v !== null &&
+    typeof v === "object" &&
+    typeof (v as any).href === "string" &&
+    typeof (v as any).anchor === "string"
+  );
+}
+
+function isSection(
+  v: unknown,
+): v is { id: string; heading: string; goal: string; key_points: string[] } {
+  return (
+    v !== null &&
+    typeof v === "object" &&
+    typeof (v as any).heading === "string" &&
+    (Array.isArray((v as any).key_points) || (v as any).key_points === undefined)
+  );
+}
+
+function isFaq(v: unknown): v is { question: string; answer: string } {
+  return (
+    v !== null &&
+    typeof v === "object" &&
+    typeof (v as any).question === "string" &&
+    typeof (v as any).answer === "string"
+  );
+}
+
+function arrayOfStrings(input: unknown): string[] {
+  if (!Array.isArray(input)) return [];
+  return input.map((value) => (typeof value === "string" ? value.trim() : "")).filter(isString);
+}
+
+function arrayOfLinks(input: unknown): LinkEntry[] {
   if (!Array.isArray(input)) return [];
   return input
-    .map((value) => {
-      if (!value || typeof value !== "object") return null;
-      const entry = value as Record<string, unknown>;
-      const href = String(entry.href || "").trim();
-      const anchor = String(entry.anchor || "").trim();
-      if (!href || !anchor) return null;
-      return {
-        href,
-        anchor,
-        reason: entry.reason ? String(entry.reason) : undefined,
-      };
-    })
-    .filter(Boolean) as { href: string; anchor: string; reason?: string }[];
+    .filter(isLink)
+    .map((entry) => ({
+      href: entry.href.trim(),
+      anchor: entry.anchor.trim(),
+      reason: entry.reason ? entry.reason.trim() : undefined,
+    }))
+    .filter((entry) => entry.href && entry.anchor);
 }
 
 function arrayOfSections(
@@ -378,12 +403,7 @@ function arrayOfSections(
       if (!heading) return null;
       return { id, heading, goal, key_points };
     })
-    .filter(Boolean) as {
-    id: string;
-    heading: string;
-    goal: string;
-    key_points: string[];
-  }[];
+    .filter(isSection);
 }
 
 function arrayOfFaq(
@@ -399,5 +419,5 @@ function arrayOfFaq(
       if (!question || !answer) return null;
       return { question, answer };
     })
-    .filter(Boolean) as { question: string; answer: string }[];
+    .filter(isFaq);
 }

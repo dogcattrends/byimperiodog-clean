@@ -6,7 +6,7 @@ import { promises as fs } from "node:fs";
 import sharp from "sharp";
 import { z } from "zod";
 
-import { createLogger } from "@/lib/logger";
+import { createLogger } from "../logger";
 
 const logger = createLogger("ai:puppy-image-quality");
 

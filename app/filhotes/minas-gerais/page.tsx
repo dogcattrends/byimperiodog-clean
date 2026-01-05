@@ -13,16 +13,19 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "https:
 const WA_PHONE = process.env.NEXT_PUBLIC_WA_PHONE?.replace(/\D/g, "") || "5511968633239";
 const WA_LINK = `https://wa.me/${WA_PHONE}`;
 
+const MG_SNIPPET =
+  "Guia rapido para tutores de Minas Gerais que buscam filhotes de Spitz Alemao Anao (Lulu da Pomerania). Mostra como funciona a entrega, cidades atendidas e contato direto para confirmar disponibilidade, valores e proximos passos. Tambem reforca suporte pos-entrega e orientacoes iniciais.";
+
 export const metadata: Metadata = {
   title: "Filhotes de Spitz Alemão Anão (Lulu da Pomerânia) em Minas Gerais (MG) | By Imperio Dog",
   description:
-    "Compre filhotes de Spitz Alemão Anão (Lulu da Pomerânia) em Minas Gerais com entrega segura em BH, Uberlândia, Juiz de Fora e todo o estado. Pedigree CBKC e suporte vitalício.",
+    "Compre filhotes de Spitz Alemão Anão (Lulu da Pomerânia) em Minas Gerais com entrega segura em BH, Uberlândia, Juiz de Fora e todo o estado. Pedigree e suporte vitalício.",
   alternates: { canonical: canonical("/filhotes/minas-gerais") },
   openGraph: {
     type: "website",
     url: canonical("/filhotes/minas-gerais"),
     title: "Filhotes de Spitz Alemão (Lulu da Pomerânia) em Minas Gerais",
-    description: "Compre Spitz Alemão (Lulu da Pomerânia) com entrega em todo MG. Criadora certificada CBKC.",
+    description: "Compre Spitz Alemão (Lulu da Pomerânia) com entrega em todo MG. Criadora com pedigree documentado.",
     images: [{ url: "/spitz-hero-desktop.webp", width: 1200, height: 630 }],
   },
 };
@@ -61,7 +64,7 @@ const faqMG = [
   {
     question: "O que está incluso na compra do filhote?",
     answer:
-      "Todos os filhotes vêm com pedigree CBKC, primeira dose da vacina V10, vermifugação completa, atestado veterinário, contrato, manual do tutor e suporte vitalício via WhatsApp. Também fornecemos orientação sobre alimentação e cuidados.",
+      "Todos os filhotes vêm com Pedigree, primeira dose da vacina V10, vermifugação completa, atestado veterinário, contrato, manual do tutor e suporte vitalício via WhatsApp. Também fornecemos orientação sobre alimentação e cuidados.",
   },
   {
     question: "Qual o tamanho e peso do Spitz Alemão (Lulu da Pomerânia) adulto?",
@@ -82,7 +85,7 @@ export default function FilhotesMinasGeraisPage() {
     name: "By Imperio Dog - Filhotes em Minas Gerais",
     url: `${SITE_URL}/filhotes/minas-gerais`,
     image: `${SITE_URL}/spitz-hero-desktop.webp`,
-    telephone: "+55 11 98663-3239",
+    telephone: "+55 11 9 6863-3239",
     address: {
       "@type": "PostalAddress",
       addressRegion: "MG",
@@ -156,9 +159,14 @@ export default function FilhotesMinasGeraisPage() {
           </h1>
           <p className="mx-auto mt-6 max-w-3xl text-lg text-[var(--text-secondary)]">
             Compre seu Spitz Alemão Anão (Lulu da Pomerânia) com segurança e entrega em BH, Uberlândia, Juiz de Fora e
-            todo o estado de Minas Gerais. Criadora certificada CBKC com suporte vitalício.
+            todo o estado de Minas Gerais. Criadora com pedigree documentado com suporte vitalício.
           </p>
-          <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <div className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 text-left">
+  <h2 className="text-lg font-semibold text-[var(--text)]">Resposta curta</h2>
+  <p className="mt-2 text-sm text-[var(--text-secondary)]">{MG_SNIPPET}</p>
+</div>
+
+<div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <a
               href={waLink}
               target="_blank"
@@ -208,7 +216,7 @@ export default function FilhotesMinasGeraisPage() {
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--brand)]/10">
                 <Shield className="h-8 w-8 text-[var(--brand)]" />
               </div>
-              <h3 className="mb-2 font-bold text-[var(--text)]">Pedigree CBKC</h3>
+              <h3 className="mb-2 font-bold text-[var(--text)]">Pedigree</h3>
               <p className="text-sm text-[var(--text-secondary)]">Todos os filhotes com registro oficial</p>
             </div>
             <div className="text-center">

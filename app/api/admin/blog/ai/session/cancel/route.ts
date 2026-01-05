@@ -11,7 +11,8 @@ export async function POST(req:Request){
     const sb = supabaseAdmin();
     await sb.from('ai_generation_sessions').update({ status:'canceled', phase:'canceled', progress:100, error_message:'cancelled' }).eq('id', id);
     return NextResponse.json({ ok:true });
-  } catch(e:any){
-    return NextResponse.json({ ok:false, error:e?.message||'error' },{ status:500 });
+  } catch (e: unknown) {
+    const msg = typeof e === 'object' && e !== null && 'message' in e ? String((e as { message?: unknown }).message ?? e) : String(e);
+    return NextResponse.json({ ok:false, error: msg || 'error' },{ status:500 });
   }
 }

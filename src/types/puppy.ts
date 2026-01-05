@@ -34,12 +34,18 @@ export interface RawPuppy {
   preco?: number | string | null;
   nascimento?: string | null;
   image_url?: string | null;
+  cover_url?: string | null;
   descricao?: string | null;
   description?: string | null; // legacy alias
   notes?: string | null;
   video_url?: string | null;
   midia?: MediaValue[];
   media?: MediaValue[]; // legacy alias
+  // Common timestamp aliases returned by DB
+  updated_at?: string | null;
+  updatedAt?: string | null;
+  created_at?: string | null;
+  createdAt?: string | null;
 }
 
 export interface PuppyDTO {
@@ -58,9 +64,25 @@ export interface PuppyDTO {
   midia: string[];
 }
 
-function normalizeMediaList(source: MediaValue[] | undefined): string[] {
+function normalizeMediaList(source: MediaValue[] | string | undefined): string[] {
   if (!source) return [];
-  return source
+  let list: MediaValue[] | undefined;
+  if (typeof source === "string") {
+    try {
+      const parsed = JSON.parse(source);
+      if (Array.isArray(parsed)) {
+        list = parsed as MediaValue[];
+      } else {
+        return [];
+      }
+    } catch (e) {
+      return [];
+    }
+  } else {
+    list = source;
+  }
+
+  return (list || [])
     .map((item) => {
       if (!item) return null;
       if (typeof item === "string") return item;
@@ -71,8 +93,8 @@ function normalizeMediaList(source: MediaValue[] | undefined): string[] {
 
 export function normalizePuppy(raw: RawPuppy): PuppyDTO {
   const nome = (raw.nome ?? raw.name ?? "").trim();
-  const midia = normalizeMediaList((raw.midia as MediaValue[]) || (raw.media as MediaValue[]));
-  const cover = raw.image_url || midia[0] || null;
+  const midia = normalizeMediaList((raw.midia as any) || (raw.media as any));
+  const cover = raw.image_url || (raw as any).cover_url || midia[0] || null;
   const ordered = cover ? [cover, ...midia.filter((u) => u !== cover)] : midia;
   return {
     id: raw.id,
@@ -80,8 +102,17 @@ export function normalizePuppy(raw: RawPuppy): PuppyDTO {
     nome,
     gender: (raw.gender || raw.sex) === "male" ? "male" : "female",
     status: ((): PuppyDTO['status'] => {
-      const s = typeof raw.status === 'string' ? raw.status : '';
-      return ['disponivel', 'reservado', 'vendido'].includes(s) ? (s as PuppyDTO['status']) : 'disponivel';
+      const s = (typeof raw.status === 'string' ? raw.status : "").toLowerCase().trim();
+      const map: Record<string, PuppyDTO['status']> = {
+        disponivel: 'disponivel',
+        reservado: 'reservado',
+        vendido: 'vendido',
+        available: 'disponivel',
+        reserved: 'reservado',
+        sold: 'vendido',
+        pending: 'reservado',
+      };
+      return map[s] ?? 'disponivel';
     })(),
     color: (raw.color || raw.cor || "").trim(),
     price_cents:

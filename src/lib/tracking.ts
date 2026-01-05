@@ -1,16 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unused-vars, no-empty */
 type TrackingEvent = "page_view" | "view_form" | "submit_start" | "submit_success" | "submit_error";
 
-function safePushToDataLayer(event: string, payload: Record<string, unknown> = {}) {
+function safePushToDataLayer(event: string, payload: object = {}) {
   try {
     // GTM/GA4 via dataLayer
     const w = window as unknown as {
-      dataLayer?: Array<Record<string, unknown>>;
+      dataLayer?: Array<object>;
       fbq?: (...args: unknown[]) => void;
       ttq?: { track?: (...args: unknown[]) => void };
     };
     w.dataLayer = w.dataLayer || [];
-    w.dataLayer.push({ event, ...(payload as Record<string, unknown>) });
+    w.dataLayer.push({ event, ...(payload as any) });
   } catch (_) {}
   try {
     // Facebook Pixel
@@ -28,30 +28,31 @@ function safePushToDataLayer(event: string, payload: Record<string, unknown> = {
   } catch (_) {}
 }
 
-export function track(event: TrackingEvent, payload: Record<string, unknown> = {}) {
+export function track(event: TrackingEvent, payload: object = {}) {
   safePushToDataLayer(event, payload);
 }
 
-export function trackPageView(context: Record<string, unknown>) {
+export function trackPageView(context: object) {
   track("page_view", context);
 }
 
-export function trackFormView(context: Record<string, unknown>) {
+export function trackFormView(context: object) {
   track("view_form", context);
 }
 
-export function trackSubmitStart(context: Record<string, unknown>) {
+export function trackSubmitStart(context: object) {
   track("submit_start", context);
 }
 
-export function trackSubmitSuccess(context: Record<string, unknown>) {
+export function trackSubmitSuccess(context: object) {
   track("submit_success", context);
 }
 
-export function trackSubmitError(context: Record<string, unknown>) {
+export function trackSubmitError(context: object) {
   track("submit_error", context);
 }
 
+import { BRAND } from "@/domain/config";
 import type { PixelEnvironmentConfig } from "@/lib/pixels";
 
 export interface CustomPixelConfig {
@@ -86,37 +87,37 @@ function norm(v: unknown): string {
 }
 
 export function resolveTracking(
-  settings: Record<string, unknown> | null | undefined,
+  settings: object | null | undefined,
   pixelConfig: PixelEnvironmentConfig | null | undefined = null,
   env = process.env,
 ): TrackingIDs {
   const config = pixelConfig ?? null;
-
-  const rawCustom = Array.isArray(settings?.custom_pixels) ? settings?.custom_pixels : [];
+  const s = settings as Record<string, unknown> | null;
+  const rawCustom = Array.isArray(s?.custom_pixels as unknown) ? (s?.custom_pixels as unknown as unknown[]) : [];
   const custom: CustomPixelConfig[] = rawCustom
-    .map((item: Record<string, unknown>, index: number): CustomPixelConfig | undefined => {
-      if (!item) return undefined;
-      const id = typeof item.id === 'string' && item.id.trim() ? item.id.trim() : `custom-${index + 1}`;
-      const label = typeof item.label === 'string' ? item.label.trim() : `Pixel ${index + 1}`;
-      const slot = item.slot === 'body' ? 'body' as const : 'head' as const;
-      const enabled = item.enabled === false ? false : true;
-      const code = typeof item.code === 'string' ? item.code.trim() : '';
-      const noscript = typeof item.noscript === 'string' ? item.noscript.trim() : undefined;
+    .map((item: unknown, index: number): CustomPixelConfig | undefined => {
+      const it = item as Record<string, unknown> | undefined;
+      if (!it) return undefined;
+      const id = typeof it.id === 'string' && it.id.trim() ? it.id.trim() : `custom-${index + 1}`;
+      const label = typeof it.label === 'string' ? it.label.trim() : `Pixel ${index + 1}`;
+      const slot = (it.slot as string) === 'body' ? 'body' as const : 'head' as const;
+      const enabled = it.enabled === false ? false : true;
+      const code = typeof it.code === 'string' ? it.code.trim() : '';
+      const noscript = typeof it.noscript === 'string' ? it.noscript.trim() : undefined;
       if (!enabled || !code || !label) return undefined;
       return { id, label, slot, enabled, code, noscript } as CustomPixelConfig;
     })
     .filter((item): item is CustomPixelConfig => item !== undefined);
-
   return {
-    gtm: norm(config?.gtmId ?? settings?.gtm_id ?? env.NEXT_PUBLIC_GTM_ID),
-    ga4: norm(config?.ga4Id ?? settings?.ga4_id ?? env.NEXT_PUBLIC_GA4_ID),
-    fb: norm(config?.metaPixelId ?? settings?.meta_pixel_id ?? env.NEXT_PUBLIC_META_PIXEL_ID),
-    tiktok: norm(config?.tiktokPixelId ?? settings?.tiktok_pixel_id ?? env.NEXT_PUBLIC_TIKTOK_PIXEL_ID),
-    pinterest: norm(config?.pinterestId ?? settings?.pinterest_tag_id ?? env.NEXT_PUBLIC_PINTEREST_TAG_ID),
-    hotjar: norm(config?.hotjarId ?? settings?.hotjar_id ?? env.NEXT_PUBLIC_HOTJAR_ID),
-    clarity: norm(config?.clarityId ?? settings?.clarity_id ?? env.NEXT_PUBLIC_CLARITY_ID),
-    metaVerify: norm(config?.metaDomainVerification ?? settings?.meta_domain_verify ?? env.NEXT_PUBLIC_META_DOMAIN_VERIFY),
-    googleVerify: norm((settings as Record<string, unknown>)?.google_site_verify ?? env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION),
+    gtm: norm(config?.gtmId ?? (s?.gtm_id as string | undefined) ?? env.NEXT_PUBLIC_GTM_ID),
+    ga4: norm(config?.ga4Id ?? (s?.ga4_id as string | undefined) ?? env.NEXT_PUBLIC_GA4_ID),
+    fb: norm(config?.metaPixelId ?? (s?.meta_pixel_id as string | undefined) ?? env.NEXT_PUBLIC_META_PIXEL_ID),
+    tiktok: norm(config?.tiktokPixelId ?? (s?.tiktok_pixel_id as string | undefined) ?? env.NEXT_PUBLIC_TIKTOK_PIXEL_ID),
+    pinterest: norm(config?.pinterestId ?? (s?.pinterest_tag_id as string | undefined) ?? env.NEXT_PUBLIC_PINTEREST_TAG_ID),
+    hotjar: norm(config?.hotjarId ?? (s?.hotjar_id as string | undefined) ?? env.NEXT_PUBLIC_HOTJAR_ID),
+    clarity: norm(config?.clarityId ?? (s?.clarity_id as string | undefined) ?? env.NEXT_PUBLIC_CLARITY_ID),
+    metaVerify: norm(config?.metaDomainVerification ?? (s?.meta_domain_verify as string | undefined) ?? env.NEXT_PUBLIC_META_DOMAIN_VERIFY),
+    googleVerify: norm((s?.google_site_verify as string | undefined) ?? env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION),
     siteUrl: norm(env.NEXT_PUBLIC_SITE_URL) || "https://www.byimperiodog.com.br",
     custom,
   };
@@ -134,12 +135,12 @@ export function buildOrganizationLD(siteUrl: string) {
     url: `${base}/`,
     logo: `${base}/byimperiologo.png`,
     image: `${base}/spitz-hero-desktop.webp`,
-    telephone: "+55 11 98663-3239",
+    telephone: BRAND.contact.phone,
     publishingPrinciples: `${base}/politica-editorial`,
     contactPoint: [
       {
         "@type": "ContactPoint",
-        telephone: "+55 11 98663-3239",
+        telephone: BRAND.contact.phone,
         contactType: "customer service",
         areaServed: "BR",
         availableLanguage: ["pt-BR"],
@@ -226,7 +227,7 @@ export function buildLocalBusinessLD(siteUrl: string) {
     url: `${base}/`,
     image: `${base}/spitz-hero-desktop.webp`,
     logo: `${base}/byimperiologo.png`,
-    telephone: "+55 11 98663-3239",
+    telephone: BRAND.contact.phone,
     email: "contato@byimperiodog.com.br",
     address: {
       "@type": "PostalAddress",

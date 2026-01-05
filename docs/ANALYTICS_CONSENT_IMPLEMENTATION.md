@@ -280,7 +280,7 @@ Visualização → CTA Click → WhatsApp → Lead
 
 - [ ] Adicionar tracking em `LeadForm.tsx`
 - [ ] Tracking de abertura de modal de filhotes
-- [ ] Script no CI para verificar banned words ("adoção", "doação", "boutique")
+- [ ] Script no CI para verificar banned words ("aquisição", "doação", "boutique")
 - [ ] Dashboard de analytics (página `/admin/analytics`)
 
 ### P2 (Melhorias Futuras)

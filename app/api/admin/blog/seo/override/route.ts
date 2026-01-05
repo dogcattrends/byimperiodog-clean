@@ -26,8 +26,9 @@ export async function POST(req: Request) {
       .select("entity_type,entity_id").maybeSingle();
     if (upErr) throw upErr;
     return NextResponse.json({ ok: true, entity: upserted });
-  } catch (err: any) {
-    return NextResponse.json({ error: err?.message || String(err) }, { status: 500 });
+  } catch (err: unknown) {
+    const msg = typeof err === 'object' && err !== null && 'message' in err ? String((err as { message?: unknown }).message ?? err) : String(err);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 

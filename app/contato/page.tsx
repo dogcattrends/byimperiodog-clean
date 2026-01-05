@@ -1,13 +1,14 @@
-﻿import { Clock, Instagram, Mail, MapPin, MessageCircle, Phone, Youtube } from "lucide-react";
-import type { Metadata } from "next";
+import { Clock, Instagram, Mail, MapPin, MessageCircle, Phone, Youtube } from "lucide-react";
 import Link from "next/link";
 import Script from "next/script";
 
+import FAQBlock from "@/components/answer/FAQBlock";
 import { WhatsAppIcon as WAIcon } from "@/components/icons/WhatsAppIcon";
 import LeadForm from "@/components/LeadForm";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { routes } from "@/lib/route";
+import { pageMetadata } from "@/lib/seo";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.byimperiodog.com.br";
 
@@ -37,11 +38,16 @@ const EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "byimperiodog@gmail.com";
 const INSTAGRAM = process.env.NEXT_PUBLIC_INSTAGRAM_URL ?? "https://instagram.com/byimperiodog";
 const YOUTUBE = process.env.NEXT_PUBLIC_YOUTUBE_URL ?? "https://youtube.com/@byimperiodog";
 
-export const metadata: Metadata = {
-  title: "Contato | By Império Dog",
-  description: "Fale com a By Império Dog por WhatsApp, e-mail ou formulário. Resposta rápida e acompanhamento direto com a criadora do Spitz Alemão Anão Lulu da Pomerânia.",
-  alternates: { canonical: `${SITE_URL}/contato` },
-};
+export const metadata = pageMetadata({
+  title: "Contato | By Imperio Dog",
+  description:
+    "Fale com a By Imperio Dog por WhatsApp, e-mail ou formulario. Resposta rapida e acompanhamento direto com a criadora do Spitz Alemao Anao (Lulu da Pomerania).",
+  path: "/contato",
+});
+
+const CONTATO_SNIPPET =
+  "A pagina de contato indica os canais oficiais da By Imperio Dog e como falar com a criadora. Reune WhatsApp, e-mail, formulario e redes para tirar duvidas sobre disponibilidade, processo de compra e suporte. Use para enviar informacoes completas e receber orientacao adequada.";
+
 
 const quickFaq = [
   {
@@ -60,26 +66,9 @@ const quickFaq = [
     question: "Como funciona a reserva?",
     answer: "Após conhecer a família, enviamos contrato digital e sinal para garantir prioridade de escolha da ninhada.",
   },
-] as const;
+];
 
 export default function ContatoPage() {
-  const orgLd = {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    name: "By Império Dog",
-    url: SITE_URL,
-    contactPoint: [
-      {
-        "@type": "ContactPoint",
-        contactType: "customer support",
-  // Preferimos E.164 completo; se já vier com 55 não duplicamos.
-  telephone: RAW_FULL ? (RAW_FULL.startsWith("55") ? `+${RAW_FULL}` : `+55${RAW_FULL}`) : undefined,
-        email: EMAIL,
-        areaServed: "BR",
-        availableLanguage: ["Portuguese"],
-      },
-    ].filter(Boolean),
-  };
 
   const breadcrumbLd = {
     "@context": "https://schema.org",
@@ -102,9 +91,10 @@ export default function ContatoPage() {
 
   return (
     <main className="mx-auto max-w-6xl space-y-16 px-5 pb-24 pt-16 text-[var(--text)]">
-      <Script id="ld-contact" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd) }} />
       <Script id="ld-breadcrumb-contact" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
       <Script id="ld-webpage-contact" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageLd) }} />
+
+
 
       <header className="text-center sm:text-left">
         <span className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-[var(--brand)]">
@@ -138,6 +128,30 @@ export default function ContatoPage() {
           </Link>
         </div>
       </header>
+      <section data-geo-answer="contato" className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-8 shadow-sm">
+        <h2 className="text-2xl font-semibold text-[var(--text)]">AnswerSnippet</h2>
+        <p className="mt-3 text-sm text-[var(--text-muted)]">{CONTATO_SNIPPET}</p>
+      </section>
+      <section className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-8 shadow-sm">
+        <h2 className="text-2xl font-semibold text-[var(--text)]">Resumo para IA</h2>
+        <div className="mt-4">
+          <h3 className="text-sm font-semibold text-[var(--text)]">Definicao rapida</h3>
+          <p className="mt-2 text-sm text-[var(--text-muted)]">
+            Esta pagina organiza os canais oficiais de contato da By Imperio Dog e orienta quando usar cada um deles.
+          </p>
+        </div>
+        <div className="mt-4">
+          <h3 className="text-sm font-semibold text-[var(--text)]">Pontos principais</h3>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-[var(--text-muted)]">
+            <li>O WhatsApp e o canal mais rapido para disponibilidade e duvidas iniciais.</li>
+            <li>O formulario ajuda a enviar contexto completo antes do retorno.</li>
+            <li>O e-mail e indicado para documentos, contratos e confirmacoes.</li>
+          </ul>
+        </div>
+      </section>
+
+
+      <FAQBlock items={quickFaq} />
 
       <section className="grid gap-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
         <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm sm:p-8">
@@ -246,3 +260,8 @@ export default function ContatoPage() {
     </main>
   );
 }
+
+
+
+
+

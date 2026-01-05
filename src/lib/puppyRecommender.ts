@@ -1,15 +1,8 @@
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
-type PuppyRecord = {
-  id: string;
-  name: string;
-  color?: string | null;
-  sex?: string | null;
-  price_cents?: number | null;
-  city?: string | null;
-  state?: string | null;
-  status?: string | null;
-};
+import type { Database } from '../types/supabase';
+
+import { supabaseAdmin } from "./supabaseAdmin";
+type PuppyRecord = Database['public']['Tables']['puppies']['Row'];
 
 export type PuppyRecommendation = {
   puppyIdIdeal: string | null;
@@ -19,7 +12,7 @@ export type PuppyRecommendation = {
   upsellOpportunity: boolean;
 };
 
-type ScoredRow = Record<string, unknown> & { score: number; reason: string };
+type ScoredRow = PuppyRecord & { score: number; reason: string };
 
 function normalize(value?: string | null) {
   return (value ?? "").toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "").trim();
@@ -40,11 +33,14 @@ function scorePuppy(p: PuppyRecord, prefs: { color?: string; sex?: string; city?
     score += 30;
     reasons.push("Cor desejada");
   }
-  if (prefs.sex && normalize(p.sex) === normalize(prefs.sex)) {
+  const pupSex = typeof (p as unknown as Record<string, unknown>).sex === 'string' ? (p as unknown as Record<string, unknown>).sex as string : typeof (p as unknown as Record<string, unknown>).sexo === 'string' ? (p as unknown as Record<string, unknown>).sexo as string : null;
+  const pupCity = typeof (p as unknown as Record<string, unknown>).city === 'string' ? (p as unknown as Record<string, unknown>).city as string : typeof (p as unknown as Record<string, unknown>).cidade === 'string' ? (p as unknown as Record<string, unknown>).cidade as string : null;
+
+  if (prefs.sex && pupSex && normalize(pupSex) === normalize(prefs.sex)) {
     score += 20;
     reasons.push("Sexo desejado");
   }
-  if (prefs.city && normalize(p.city) && normalize(p.city) === normalize(prefs.city)) {
+  if (prefs.city && pupCity && normalize(pupCity) === normalize(prefs.city)) {
     score += 15;
     reasons.push("Cidade próxima");
   }
@@ -101,7 +97,7 @@ export async function recommendPuppiesForLead(leadId: string): Promise<PuppyReco
     ?.map((p: unknown) => {
       const rec = p as PuppyRecord;
       const { score, reason } = scorePuppy(rec, prefs);
-      return { ...(p as Record<string, unknown>), score, reason } as ScoredRow;
+      return { ...rec, score, reason } as ScoredRow;
     })
     .sort((a: ScoredRow, b: ScoredRow) => b.score - a.score)
     .slice(0, 3)) as ScoredRow[] | undefined ?? [];
@@ -112,7 +108,7 @@ export async function recommendPuppiesForLead(leadId: string): Promise<PuppyReco
     ? `Recomendado "${top.name}" pela combinação de ${top.reason}.`
     : "Nenhum filhote ideal encontrado, sugira opções amplas.";
 
-  const topPriceCents = top ? (typeof (top as Record<string, unknown>).price_cents === 'number' ? (top as Record<string, unknown>).price_cents as number : Number((top as Record<string, unknown>).price_cents ?? NaN)) : NaN;
+  const topPriceCents = top ? (typeof top.price_cents === 'number' ? top.price_cents as number : Number(top.price_cents ?? NaN)) : NaN;
   const upsellOpportunity = Boolean(prefs.budget && Number.isFinite(topPriceCents) && topPriceCents / 100 > (prefs.budget ?? 0) * 1.1);
 
   return {

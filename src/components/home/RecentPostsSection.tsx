@@ -3,11 +3,21 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 
 import { buttonVariants } from '@/components/ui/button';
+import { estimateReadingTime } from '@/lib/blog/reading-time';
 import { cn } from '@/lib/cn';
-import { getAllPosts } from '@/lib/content';
-import { supabasePublic } from '@/lib/supabasePublic';
+import { sanityBlogRepo } from '@/lib/sanity/blogRepo';
 
 import RecentPostsSkeleton from './RecentPostsSkeleton';
+
+type RecentPostItem = {
+	id: string | number;
+	slug: string;
+	title: string;
+	cover_url?: string | null;
+	excerpt?: string | null;
+	published_at?: string | null;
+	reading_time?: number | null;
+};
 
 // Deferir animações não-críticas para reduzir JS inicial
 const RecentPostsListAnimated = dynamic(() => import('./RecentPostsListAnimated'), {
@@ -16,31 +26,23 @@ const RecentPostsListAnimated = dynamic(() => import('./RecentPostsListAnimated'
 });
 
 export async function RecentPostsSection() {
-	const supa = supabasePublic();
-	const { data: recentPostsRaw, error } = await supa
-		.from('blog_posts')
-		.select('id,slug,title,cover_url,excerpt,published_at,reading_time')
-		.eq('status','published')
-		.order('published_at', { ascending:false })
-		.limit(3);
-
-	if (error) {
-		console.error('Erro posts home:', error.message);
-	}
-	let recentPosts = recentPostsRaw ?? [];
-
-	// Fallback para Contentlayer quando não houver posts publicados no Supabase
-	if (!recentPosts || recentPosts.length === 0) {
-		const { items } = await getAllPosts({ page: 1, pageSize: 3 });
-		recentPosts = items.map((p) => ({
-			id: p.slug,
-			slug: p.slug,
-			title: p.title,
-			cover_url: p.cover || null,
-			excerpt: p.excerpt || null,
-			published_at: p.date || null,
-			reading_time: p.readingTime || null,
+	let recentPosts: RecentPostItem[] = [];
+	try {
+		const list = await sanityBlogRepo.listSummaries({ limit: 3, status: "published" });
+		recentPosts = list.items.map((post) => ({
+			id: post.id,
+			slug: post.slug,
+			title: post.title ?? "Post",
+			cover_url: post.coverUrl ?? null,
+			excerpt: post.excerpt || null,
+			published_at: post.publishedAt || null,
+			reading_time: estimateReadingTime(post.content ?? post.excerpt ?? ""),
 		}));
+	} catch (error) {
+		if (process.env.NODE_ENV !== "production") {
+			// eslint-disable-next-line no-console
+			console.error("[home] falha ao carregar posts do Sanity", error);
+		}
 	}
 
 	return (

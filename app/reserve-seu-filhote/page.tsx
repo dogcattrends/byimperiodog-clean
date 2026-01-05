@@ -8,17 +8,20 @@ import LeadForm from "@/components/LeadForm";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { routes } from "@/lib/route";
+import { canonical } from "@/lib/seo.core";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "https://www.byimperiodog.com.br";
 
+const RESERVA_SNIPPET =
+  "A reserva garante prioridade na ninhada e organiza cada etapa antes da entrega. Esta pagina explica entrevista, sinal, acompanhamento da gestacao e escolha do filhote, com orientacoes sobre preparo do lar e suporte continuo. Use para entender prazos e alinhar expectativas.";
 export const metadata: Metadata = {
   title: "Reserve seu Filhote de Spitz Alemão Anão | By Império Dog",
   description:
-    "Garanta prioridade de escolha na próxima ninhada de Spitz Alemão Anão com pedigree CBKC, socialização guiada e mentoria vitalícia. Processo transparente e suporte direto com a criadora.",
-  alternates: { canonical: "/reserve-seu-filhote" },
+    "Garanta prioridade de escolha na próxima ninhada de Spitz Alemão Anão com pedigree , socialização guiada e mentoria vitalícia. Processo transparente e suporte direto com a criadora.",
+  alternates: { canonical: canonical("/reserve-seu-filhote") },
   openGraph: {
     type: "website",
-    url: "/reserve-seu-filhote",
+    url: canonical("/reserve-seu-filhote"),
     title: "Reserve seu Filhote de Spitz Alemão Anão | By Império Dog",
     description:
       "Processo de reserva transparente: entrevista, sinal de garantia, socialização acompanhada e entrega humanizada com suporte vitalício.",
@@ -29,7 +32,7 @@ const benefits = [
   {
     icon: Shield,
     title: "Garantia de Saúde",
-    description: "Exames genéticos, laudos veterinários, pedigree CBKC e protocolo vacinal completo entregues antes da reserva final.",
+    description: "Exames genéticos, laudos veterinários, pedigree  e protocolo vacinal completo entregues antes da reserva final.",
   },
   {
     icon: HeartHandshake,
@@ -96,7 +99,7 @@ const faqEntries = [
   },
   {
     question: "O que está incluso na reserva?",
-    answer: "Pedigree CBKC, carteira de vacinação, vermifugação, exames laboratoriais, microchip opcional, kit de boas-vindas, contrato digital e mentoria vitalícia.",
+    answer: "Pedigree , carteira de vacinação, vermifugação, exames laboratoriais, microchip opcional, kit de boas-vindas, contrato digital e mentoria vitalícia.",
   },
   {
     question: "E se eu desistir após a reserva?",
@@ -184,7 +187,14 @@ export default function ReserveSeuFilhotePage() {
         </div>
       </section>
 
-      {/* Benefits */}
+      {<section className="mx-auto max-w-6xl px-5">
+  <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
+    <h2 className="text-2xl font-semibold text-[var(--text)]">Resposta curta</h2>
+    <p className="mt-3 text-sm text-[var(--text-muted)]">{RESERVA_SNIPPET}</p>
+  </div>
+</section>
+
+/* Benefits */}
       <section className="mx-auto max-w-6xl space-y-6 px-5 py-16">
         <h2 className="text-2xl font-semibold text-[var(--text)]">Por que reservar com a By Império Dog?</h2>
         <div className="grid gap-4 md:grid-cols-2">
@@ -277,3 +287,12 @@ export default function ReserveSeuFilhotePage() {
     </main>
   );
 }
+
+
+
+
+
+
+
+
+

@@ -1,4 +1,4 @@
-import { AppError } from "@/lib/errors";
+import { AppError } from "./errors";
 
 export type AdminRole = "owner" | "editor" | "viewer";
 

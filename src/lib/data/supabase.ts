@@ -1,9 +1,12 @@
-import type { PuppyFilters, PuppySearchResult, PuppySortBy } from "@/domain/puppy";
-import type { City, Color, PuppyStatus } from "@/domain/taxonomies";
 import { normalizePuppyFromDB } from "@/lib/catalog/normalize";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { supabaseAnon } from "@/lib/supabaseAnon";
-import type { Database } from "@/types/supabase";
+
+import type { PuppyFilters, PuppySearchResult, PuppySortBy } from "../../domain/puppy";
+import type { City, Color, PuppyStatus } from "../../domain/taxonomies";
+import type { Database } from "../../types/supabase";
+import { supabaseAdmin } from "../supabaseAdmin";
+
+
 
 // _LeadsRow = Database["public"]["Tables"]["leads"]["Row"] (alias removed — previously unused)
 type LeadsInsert = Database["public"]["Tables"]["leads"]["Insert"];
@@ -13,11 +16,11 @@ type PuppiesRow = Database["public"]["Tables"]["puppies"]["Row"];
 // Para evitar erros de coluna inexistente quando o schema variar, usamos select("*") e normalizamos depois.
 const PUBLIC_COLUMNS = "*";
 
-export async function saveLead(payload: Omit<LeadsInsert, "id" | "created_at">) {
+export async function saveLead(payload: Record<string, any>) {
   const sb = supabaseAnon();
   const { data, error } = await sb
     .from("leads")
-    .insert(payload as any)
+    .insert(payload as unknown as LeadsInsert)
     .select()
     .maybeSingle();
   if (error) throw new Error(error.message);
@@ -47,7 +50,7 @@ export async function listPuppiesCatalog(
   if (filters.status) {
     const statuses = Array.isArray(filters.status) ? filters.status : [filters.status];
     if (statuses.length === 1) query = query.eq("status", statuses[0] as PuppiesRow["status"]);
-    else query = query.in("status", statuses as any);
+    else query = query.in("status", statuses as unknown as PuppiesRow["status"][]);
   } else {
     query = query.in("status", ["disponivel", "reservado"]);
   }

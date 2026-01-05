@@ -37,7 +37,8 @@ export async function POST(req:Request){
     const rows = (data||[]) as BlogPostRow[];
     const results = rows.map((p)=> ({ id:p.id, ...compute(p.content_mdx||'', {seo_title:p.seo_title,seo_description:p.seo_description,excerpt:p.excerpt}) }));
     return NextResponse.json({ ok:true, items: results });
-  } catch(e:any){
-    return NextResponse.json({ ok:false, error:e?.message||'erro' },{ status:500 });
+  } catch (e: unknown) {
+    const msg = typeof e === 'object' && e !== null && 'message' in e ? String((e as { message?: unknown }).message ?? e) : String(e);
+    return NextResponse.json({ ok: false, error: msg || 'erro' }, { status: 500 });
   }
 }

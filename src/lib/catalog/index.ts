@@ -14,5 +14,5 @@ export {
 } from "./service";
 
 // Exponha tipos do domínio para consumo em componentes/rotas
-export type { PuppySearchResult, PuppyFilters, PuppySortBy } from "@/domain/puppy";
+export type { PuppySearchResult, PuppyFilters, PuppySortBy } from "../../domain/puppy";
 export type { RawPuppyFromDB } from "./normalize";

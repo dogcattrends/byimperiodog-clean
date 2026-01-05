@@ -25,7 +25,7 @@ interface DispatchOptions {
  */
 export async function dispatchWebhookEvent(
   event: WebhookEvent,
-  data: Record<string, unknown>,
+  data: object,
   metadata?: WebhookPayload['metadata'],
   options: DispatchOptions = {}
 ): Promise<void> {

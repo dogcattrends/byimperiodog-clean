@@ -8,36 +8,6 @@
     "jsx": "preserve",
     "module": "esnext",
     "moduleResolution": "bundler",
-    "baseUrl": ".",
-    "paths": {
-      "@/components/*": [
-        "src/components/*"
-      ],
-      "@/lib/*": [
-        "src/lib/*"
-      ],
-      "@/hooks/*": [
-        "src/hooks/*"
-      ],
-      "@/types/*": [
-        "src/types/*"
-      ],
-      "@/app/*": [
-        "src/app/*"
-      ],
-      "@/domain": [
-        "src/domain"
-      ],
-      "@/domain/*": [
-        "src/domain/*"
-      ],
-      "@/public/*": [
-        "public/*"
-      ],
-      "contentlayer/generated": [
-        ".contentlayer/generated"
-      ]
-    },
     "strict": true,
     "skipLibCheck": true,
     "noEmit": true,
@@ -47,6 +17,10 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
     "plugins": [
       {
         "name": "next"
@@ -58,16 +32,12 @@
     "**/*.ts",
     "**/*.tsx",
     "**/*.d.ts",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "app/**/*"
   ],
+  
   "exclude": [
     "node_modules",
-    "contentlayer.config.ts",
-    "tests",
-    "**/*.test.ts",
-    "**/*.test.tsx",
-    "**/*.spec.ts",
-    "**/*.spec.tsx",
-    "vitest.config.ts"
+    "tests"
   ]
 }

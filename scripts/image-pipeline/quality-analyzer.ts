@@ -4,6 +4,7 @@
  */
 
 import sharp from 'sharp';
+
 import { IMAGE_CONFIG } from './config';
 
 export interface QualityReport {

@@ -41,6 +41,7 @@ export function GuiaLeadForm() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [status, setStatus] = useState<SubmitStatus>("idle");
   const [message, setMessage] = useState("");
+  const [downloadToken, setDownloadToken] = useState<string | null>(null);
 
   const hasConsent = fields.consent;
   const isSubmitting = status === "loading";
@@ -85,14 +86,15 @@ export function GuiaLeadForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+      const result = await response.json().catch(() => ({}));
       if (!response.ok) {
-        const result = await response.json();
         setStatus("error");
         setMessage(result?.error ?? "Erro ao enviar. Tente novamente.");
         return;
       }
       setStatus("success");
       setMessage("Obrigado! O guia já está pronto para download.");
+      setDownloadToken(result?.downloadToken ?? null);
       if (hasConsent) {
         track.event?.("lead_submit", { page: "guia", whatsapp: fields.whatsapp, email_provided: Boolean(fields.email) });
       }
@@ -103,7 +105,7 @@ export function GuiaLeadForm() {
   };
 
   const downloadTracker = useMemo(
-    () => () => track.event?.("pdf_download", { page: "guia", format: "pdf" }),
+    () => () => track.event?.("pdf_downloaded", { page: "guia", format: "pdf" }),
     [],
   );
 
@@ -113,7 +115,7 @@ export function GuiaLeadForm() {
         <p className="text-lg font-semibold text-[var(--text)]">Guia pronto!</p>
         <p className="text-sm text-[var(--text-muted)]">{message}</p>
         <PrimaryCTA
-          href="/guia.pdf"
+          href={downloadToken ? `/download/guia?token=${downloadToken}` : "/guia.pdf"}
           tracking={{ location: "guia_page", ctaId: "guia_pdf_download" }}
           onClick={downloadTracker}
         >

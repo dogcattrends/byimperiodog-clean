@@ -1,5 +1,4 @@
-﻿import type { Metadata } from "next";
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 
 import { ToastProvider } from "@/components/ui/toast";
 import { requireAdminLayout } from "@/lib/adminAuth";
@@ -7,10 +6,7 @@ import { requireAdminLayout } from "@/lib/adminAuth";
 import { AdminNav } from "./AdminNav";
 import { AdminTopbar } from "./AdminTopbar";
 
-export const metadata: Metadata = {
-  title: "Admin | By Imperio Dog",
-  robots: { index: false, follow: false },
-};
+
 
 export default function AdminProtectedLayout({ children }: { children: React.ReactNode }) {
   const adminIdentity = (() => {
@@ -22,6 +18,7 @@ export default function AdminProtectedLayout({ children }: { children: React.Rea
   })();
 
   const environment = process.env.NODE_ENV === "production" ? "Producao" : "Desenvolvimento";
+
 
   return (
     <ToastProvider>

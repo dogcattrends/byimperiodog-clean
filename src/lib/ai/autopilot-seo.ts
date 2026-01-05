@@ -1,8 +1,12 @@
-import { buildArticleLD } from "@/lib/schemas/article";
-import { buildBreadcrumbLD } from "@/lib/schemas/breadcrumb";
-import { buildFAQPageLD } from "@/lib/schemas/faq";
-import { buildProductLD } from "@/lib/schemas/product";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+
+
+import { sanityClient } from "@/lib/sanity/client";
+
+import { buildArticleLD } from "../schemas/article";
+import { buildBreadcrumbLD } from "../schemas/breadcrumb";
+import { buildFAQPageLD } from "../schemas/faq";
+import { buildProductLD } from "../schemas/product";
+import { supabaseAdmin } from "../supabaseAdmin";
 
 type BlogRow = {
   id: string;
@@ -68,18 +72,61 @@ export type AutopilotSeoResult = {
   jsonld: { slug: string; kind: "article" | "product" | "breadcrumb" | "faq"; payload: Record<string, unknown> | null }[];
 };
 
-async function safeSelect<T>(table: string, columns: string) {
+type SanityBlogForSeo = {
+  _id: string;
+  slug?: { current?: string };
+  title?: string | null;
+  seo_title?: string | null;
+  seo_description?: string | null;
+  meta_description?: string | null;
+  category?: string | null;
+  tags?: string[];
+  faq?: { question: string; answer: string }[];
+};
+
+async function fetchSanityBlogPosts() {
+  return sanityClient.fetch<SanityBlogForSeo[]>(
+    `*[_type == "post"] | order(publishedAt desc) { _id, slug, title, seo_title, seo_description, meta_description, category, tags, faq }`,
+  );
+}
+
+async function safeSelect<T>(table: string, columns: string): Promise<T[]> {
   try {
-    const { data } = await supabaseAdmin().from(table).select(columns);
-    return (data ?? []) as T[];
-  } catch {
-    return [] as T[];
+    const sb = supabaseAdmin();
+    const { data, error } = await sb.from(table).select(columns as any);
+    if (error || !data) return [];
+    return data as unknown as T[];
+  } catch (e) {
+    return [];
   }
 }
 
+async function patchSanityPostBySlug(slug: string, updates: Record<string, unknown>) {
+  if (!slug) return false;
+  const record = await sanityClient.fetch<{ _id: string } | null>(
+    `*[_type == "post" && slug.current == $slug][0]{_id}`,
+    { slug },
+  );
+  if (!record?._id) return false;
+  await sanityClient.patch(record._id).set(updates).commit({ autoGenerateArrayKeys: true });
+  return true;
+}
+
 export async function runAutopilotSeo(): Promise<AutopilotSeoResult> {
-  const [posts, puppies, leads] = await Promise.all([
-    safeSelect<BlogRow>("blog_posts", "id,slug,title,seo_title,seo_description,meta_description,category,tags,faq"),
+  const [posts, puppies, leads]: [BlogRow[], PuppyRow[], LeadRow[]] = await Promise.all([
+    fetchSanityBlogPosts().then((rows) =>
+      rows.map((doc) => ({
+        id: doc._id,
+        slug: doc.slug?.current ?? null,
+        title: doc.title ?? null,
+        seo_title: doc.seo_title ?? null,
+        seo_description: doc.seo_description ?? null,
+        meta_description: doc.meta_description ?? null,
+        category: doc.category ?? null,
+        tags: doc.tags ?? null,
+        faq: doc.faq ?? null,
+      })),
+    ),
     safeSelect<PuppyRow>("puppies", "id,name,slug,color,gender,status,price_cents,descricao,city,state"),
     safeSelect<LeadRow>("leads", "id,page_slug,page,cor_preferida,sexo_preferido,created_at").then((rows) =>
       rows.filter((l) => !!l.page || !!l.page_slug),
@@ -309,14 +356,11 @@ export async function applyAutopilotSeo() {
 
   for (const meta of result.generatedMeta) {
     if (meta.kind === "blog") {
-      await sb
-        .from("blog_posts")
-        .update({
-          seo_title: meta.title,
-          seo_description: meta.description,
-          meta_description: meta.description,
-        })
-        .eq("slug", meta.slug);
+      await patchSanityPostBySlug(meta.slug, {
+        seo_title: meta.title,
+        seo_description: meta.description,
+        meta_description: meta.description,
+      });
     } else {
       await sb.from("puppies").update({ seo_title: meta.title, seo_description: meta.description }).eq("slug", meta.slug);
     }
@@ -324,7 +368,7 @@ export async function applyAutopilotSeo() {
 
   for (const faq of result.generatedFaqs) {
     if (faq.kind === "blog") {
-      await sb.from("blog_posts").update({ faq: faq.faqs }).eq("slug", faq.slug);
+      await patchSanityPostBySlug(faq.slug, { faq: faq.faqs });
     } else if (faq.kind === "puppy") {
       await sb.from("puppies").update({ faq: faq.faqs }).eq("slug", faq.slug);
     }

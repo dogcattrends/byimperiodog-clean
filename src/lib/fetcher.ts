@@ -1,6 +1,6 @@
 import type { ZodTypeAny, infer as ZodInfer } from "zod";
 
-import { AppError } from "@/lib/errors";
+import { AppError } from "./errors";
 
 export interface FetcherOptions<TSchema extends ZodTypeAny | undefined = undefined> extends RequestInit {
   timeoutMs?: number;

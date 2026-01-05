@@ -77,12 +77,54 @@ type StatusAggRow = { status: string | null; count: number };
 
 type ColorRow = { color: string | null };
 
-type LeadAggRow = { page_slug: string | null; count: number };
+type LeadAggRow = { page_slug?: string | null; count: number };
+
+async function fetchLeadCounts(
+  supabase: ReturnType<typeof supabaseAdmin>,
+  slugList: string[],
+): Promise<Record<string, number>> {
+  const { data, error } = await supabase
+    .from("leads")
+    .select("page_slug, count:page_slug", { group: "page_slug" })
+    .in("page_slug", slugList);
+
+  if (error) {
+    const message = error.message?.toLowerCase() ?? "";
+    if (message.includes("column") || message.includes("page_slug")) {
+      return {};
+    }
+    throw error;
+  }
+
+  const counts: Record<string, number> = {};
+  (data as LeadAggRow[]).forEach((row) => {
+    const value = row.page_slug;
+    if (!value) return;
+    const normalized = value.replace(/^filhotes\//, "");
+    counts[normalized] = Number(row.count) || 0;
+  });
+  return counts;
+}
 
 const DEFAULT_LIMIT = 200;
 const NUMBER_REGEX = /^\d+(?:[.,]\d+)?$/;
 
 const normalizeSearch = (value?: string) => value?.normalize("NFD").replace(/[`´~^]/g, "").trim();
+
+const slugifyValue = (value?: string | null) => {
+  if (!value) return null;
+  return value
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+};
+
+const buildSlug = (row: PuppyRow) => {
+  if (typeof row.codigo === "string" && row.codigo.trim()) return row.codigo.trim();
+  return slugifyValue(row.nome ?? row.name ?? null);
+};
 
 function parseList(param?: string | string[] | null): string[] {
   if (!param) return [];
@@ -90,7 +132,7 @@ function parseList(param?: string | string[] | null): string[] {
   return value
     .split(/[,|]/)
     .map((chunk) => chunk.trim())
-    .filter(Boolean);
+    .filter((s): s is string => typeof s === "string" && s.length > 0);
 }
 
 function parseNumber(param?: string | string[] | null): number | undefined {
@@ -132,28 +174,24 @@ function normalizePrice(row: PuppyRow): number {
 }
 
 function selectCover(row: PuppyRow): string | null {
-  if (typeof row.image_url === "string" && row.image_url.length) return row.image_url;
+  if (typeof row.cover_url === "string" && row.cover_url.length) return row.cover_url;
 
-  const images = Array.isArray(row.images) ? (row.images as unknown[]) : [];
-  for (const entry of images) {
+  const mediaSources = Array.isArray(row.media) ? row.media : [];
+  for (const entry of mediaSources) {
     if (typeof entry === "string" && entry.length) return entry;
-    if (entry && typeof entry === "object") {
-      const url = (entry as { url?: unknown }).url;
-      if (typeof url === "string" && url.length) return url;
-    }
   }
 
-  const media = Array.isArray(row.midia) ? (row.midia as unknown[]) : [];
-  for (const item of media) {
-    if (!item || typeof item !== "object") continue;
-    const mediaItem = item as { url?: unknown; type?: unknown };
+  const midiaEntries = Array.isArray(row.midia) ? row.midia : [];
+  for (const entry of midiaEntries) {
+    if (!entry || typeof entry !== "object") continue;
+    const mediaItem = entry as { url?: unknown; type?: unknown };
     if (mediaItem.type === "image" && typeof mediaItem.url === "string" && mediaItem.url.length) {
       return mediaItem.url;
     }
   }
-  for (const item of media) {
-    if (!item || typeof item !== "object") continue;
-    const mediaItem = item as { url?: unknown };
+  for (const entry of midiaEntries) {
+    if (!entry || typeof entry !== "object") continue;
+    const mediaItem = entry as { url?: unknown };
     if (typeof mediaItem.url === "string" && mediaItem.url.length) {
       return mediaItem.url;
     }
@@ -192,7 +230,7 @@ export async function fetchAdminPuppies({
   let query = supabase
     .from("puppies")
     .select(
-      "id,slug,nome,name,status,color,cor,gender,sex,sexo,city,cidade,state,estado,price_cents,priceCents,preco,created_at,image_url,images,midia,catalog_ranking(score,flag,reason)",
+      "id,nome,name,status,color,cor,gender,sexo,price_cents,price,preco,created_at,cover_url,media,midia,catalog_ranking(score,flag,reason)",
       { count: "exact" },
     )
     .limit(limit);
@@ -258,13 +296,13 @@ export async function fetchAdminPuppies({
   const items: AdminPuppyListItem[] = rows.map((row) => ({
     id: row.id!,
     name: row.nome ?? row.name ?? "Sem nome",
-    slug: row.slug ?? null,
+    slug: buildSlug(row),
     status: normalizeStatus(row.status),
     rawStatus: row.status ?? "",
     color: (row.color ?? row.cor ?? null) as string | null,
     sex: normalizeSex(row),
-    city: (row.city ?? row.cidade ?? null) as string | null,
-    state: (row.state ?? row.estado ?? null) as string | null,
+    city: null,
+    state: null,
     priceCents: normalizePrice(row),
     createdAt: typeof row.created_at === "string" ? row.created_at : row.created_at ? new Date(row.created_at).toISOString() : new Date().toISOString(),
     imageUrl: selectCover(row),
@@ -284,20 +322,12 @@ export async function fetchAdminPuppies({
   const leadCounts: Record<string, number> = {};
   if (slugSet.size) {
     const slugList = Array.from(slugSet);
-    const { data: leadRows, error } = await supabase
-      .from("leads")
-      .select("page_slug, count:page_slug", { group: "page_slug" })
-      .in("page_slug", slugList);
-    if (error) throw new Error(error.message);
-    (leadRows as LeadAggRow[]).forEach((row) => {
-      if (!row.page_slug) return;
-      const normalized = row.page_slug.replace(/^filhotes\//, "");
-      leadCounts[normalized] = Number(row.count) || 0;
-    });
+    const fetched = await fetchLeadCounts(supabase, slugList);
+    Object.assign(leadCounts, fetched);
   }
 
   const colorOptions = Array.from(
-    new Set((colorRes.data as ColorRow[]).map((row) => row.color).filter((value): value is string => Boolean(value))),
+    new Set((colorRes.data as ColorRow[]).map((row) => row.color).filter((value): value is string => typeof value === "string" && value.length > 0)),
   ).sort();
 
   const initialSummary: Record<AdminPuppyStatus, number> = {

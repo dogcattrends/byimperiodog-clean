@@ -1,7 +1,7 @@
-/**
- * Informações detalhadas do filhote em tabela/ficha
+﻿/**
+ * InformaÃ§Ãµes detalhadas do filhote em tabela/ficha
  * UX: Dados organizados em pares chave-valor
- * A11y: Semântico com divs, tempo em time, ícones decorativos
+ * A11y: SemÃ¢ntico com divs, tempo em time, Ã­cones decorativos
  */
 
 import { Calendar, Palette, PawPrint, Ruler } from "lucide-react";
@@ -85,13 +85,13 @@ export function PuppyDetails({ puppy }: Props) {
           <div className="flex items-start gap-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50">
               <span className="text-xl" aria-hidden="true">
-                📜
+                ðŸ“œ
               </span>
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-medium text-zinc-600">Pedigree CBKC</div>
+              <div className="text-sm font-medium text-zinc-600">Pedigree Pedigree</div>
               <div className="mt-0.5 text-base font-semibold text-zinc-900">
-                {puppy.hasPedigree ? "Sim" : "Não"}
+                {puppy.hasPedigree ? "Sim" : "NÃ£o"}
               </div>
             </div>
           </div>
@@ -104,15 +104,15 @@ export function PuppyDetails({ puppy }: Props) {
 function translateSex(sex: string): string {
   const lower = sex.toLowerCase();
   if (lower === "male" || lower === "macho") return "Macho";
-  if (lower === "female" || lower === "femea" || lower === "fêmea") return "Fêmea";
+  if (lower === "female" || lower === "femea" || lower === "fÃªmea") return "FÃªmea";
   return sex;
 }
 
 function translateSize(size: string): string {
   const lower = size.toLowerCase();
-  if (lower === "mini" || lower === "miniatura") return "Miniatura (até 22 cm)";
+  if (lower === "mini" || lower === "miniatura") return "Miniatura (atÃ© 22 cm)";
   if (lower === "small" || lower === "pequeno") return "Pequeno (22-28 cm)";
-  if (lower === "medium" || lower === "médio") return "Médio (28-35 cm)";
+  if (lower === "medium" || lower === "mÃ©dio") return "MÃ©dio (28-35 cm)";
   return size;
 }
 
@@ -120,10 +120,11 @@ function formatAge(days: number): string {
   if (days < 30) return `${days} dia${days !== 1 ? "s" : ""}`;
   if (days < 365) {
     const months = Math.floor(days / 30);
-    return `${months} ${months === 1 ? "mês" : "meses"}`;
+    return `${months} ${months === 1 ? "mÃªs" : "meses"}`;
   }
   const years = Math.floor(days / 365);
   const remainingMonths = Math.floor((days % 365) / 30);
   if (remainingMonths === 0) return `${years} ano${years !== 1 ? "s" : ""}`;
-  return `${years} ano${years !== 1 ? "s" : ""} e ${remainingMonths} ${remainingMonths === 1 ? "mês" : "meses"}`;
+  return `${years} ano${years !== 1 ? "s" : ""} e ${remainingMonths} ${remainingMonths === 1 ? "mÃªs" : "meses"}`;
 }
+

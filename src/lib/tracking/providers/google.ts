@@ -85,8 +85,7 @@ async function listGoogleAnalyticsResources(tokens: OAuthTokens): Promise<Resour
     }
     const json = await res.json();
     const properties = json.properties || [];
-    return properties.map((p: unknown) => {
-      const row = p as Record<string, unknown>;
+    return properties.map((row: any) => {
       const id = String((row.name as string | undefined)?.split("/").pop() ?? row.name ?? "");
       return {
         id,
@@ -129,8 +128,7 @@ async function listGoogleTagManagerResources(tokens: OAuthTokens): Promise<Resou
     }
     const containersJson = await containersRes.json();
     const containers = containersJson.container || [];
-    return containers.map((c: unknown) => {
-      const row = c as Record<string, unknown>;
+    return containers.map((row: any) => {
       return {
         id: String(row.publicId ?? row.containerId ?? ""),
         name: String(row.name ?? row.publicId ?? ""),

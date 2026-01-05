@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
+import FAQBlock from "@/components/answer/FAQBlock";
+import SearchAssist from "@/components/search/SearchAssist";
 import { baseSiteMetadata, canonical } from "@/lib/seo.core";
 
 export const metadata: Metadata = baseSiteMetadata({
@@ -9,6 +11,15 @@ export const metadata: Metadata = baseSiteMetadata({
   alternates: { canonical: canonical("/search") },
   robots: { index: false },
 });
+
+const SEARCH_SNIPPET =
+  "Use a busca para encontrar guias, paginas e filhotes disponiveis. O objetivo e agilizar o acesso a conteudos sobre Spitz Alemao Anao (Lulu da Pomerania), filtrando por temas de rotina, saude ou localidade. Resultados dependem do termo pesquisado e sao atualizados quando novas paginas sao publicadas.";
+
+const SEARCH_FAQ = [
+  { question: "Por que nao vejo resultados?", answer: "Tente termos mais curtos ou verifique a grafia." },
+  { question: "A busca inclui filhotes?", answer: "Sim, quando o termo coincide com o catalogo." },
+  { question: "Posso buscar por cidade?", answer: "Sim, use o nome da cidade ou estado." },
+];
 
 interface SearchItem {
   id: string | number;
@@ -63,31 +74,14 @@ export default function SearchPage({ searchParams }: { searchParams: { q?: strin
   return (
     <main className="mx-auto max-w-3xl px-5 py-16 md:py-20">
       <h1 className="text-2xl font-bold tracking-tight">Busca</h1>
-      <form
-        className="mt-6 flex gap-3"
-        action="/search"
-        method="get"
-        role="search"
-        aria-label="Buscar no site"
-      >
-        <label htmlFor="site-search" className="sr-only">
-          Buscar no site
-        </label>
-        <input
-          type="search"
-          name="q"
-          id="site-search"
-          defaultValue={q}
-          placeholder="Pesquisar..."
-          className="flex-1 rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-        />
-        <button
-          className="rounded-md bg-emerald-600 px-5 py-2 text-sm font-semibold text-white shadow hover:bg-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
-          type="submit"
-        >
-          Buscar
-        </button>
-      </form>
+      <section className="mt-6 rounded-2xl border border-zinc-200 bg-white p-4">
+        <h2 className="text-lg font-semibold">Resposta curta</h2>
+        <p className="mt-2 text-sm text-zinc-600">{SEARCH_SNIPPET}</p>
+      </section>
+
+      <FAQBlock items={SEARCH_FAQ} />
+
+      <SearchAssist defaultQuery={q} />
       <Suspense fallback={<p className="mt-6 text-sm text-zinc-500">Carregando...</p>}>
         <SearchResults q={q} />
       </Suspense>

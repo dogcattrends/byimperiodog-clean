@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import FAQBlock from "@/components/answer/FAQBlock";
 import { LastUpdated } from "@/components/common/LastUpdated";
 import { TOC } from "@/components/common/TOC";
 import { pageMetadata } from "@/lib/seo";
@@ -14,6 +15,15 @@ const tocItems = [
   { id: "condicoes", label: "Condições comerciais e materiais" },
   { id: "alteracoes", label: "Alterações destes termos" },
   { id: "foro", label: "Foro aplicável" },
+];
+
+const TERMS_SNIPPET =
+  "Os termos de uso descrevem regras de acesso ao site, responsabilidade sobre conteudo e uso dos canais de contato. O objetivo e definir limites, direitos e obrigacoes do usuario ao navegar, baixar materiais e solicitar informacoes sobre filhotes. Leia antes de enviar dados.";
+
+const TERMS_FAQ = [
+  { question: "Posso usar o conteudo do site?", answer: "O conteudo e informativo e nao deve ser reproduzido sem autorizacao." },
+  { question: "Como funcionam os links externos?", answer: "Links externos sao fornecidos para referencia, sem controle direto." },
+  { question: "Posso solicitar remocao de dados?", answer: "Sim, pelo contato oficial informado na pagina." },
 ];
 
 export function generateMetadata(): Metadata {
@@ -109,7 +119,14 @@ export default function TermosDeUsoPage() {
         </p>
       </section>
 
-      <LastUpdated buildTime={process.env.NEXT_PUBLIC_BUILD_TIME} contentTime={lastUpdated} />
+      <section className="rounded-2xl border border-border bg-surface p-4">
+  <h2 className="text-lg font-semibold">Resposta curta</h2>
+  <p className="mt-2 text-sm text-[var(--text-muted)]">{TERMS_SNIPPET}</p>
+</section>
+
+<FAQBlock items={TERMS_FAQ} />
+
+<LastUpdated buildTime={process.env.NEXT_PUBLIC_BUILD_TIME} contentTime={lastUpdated} />
     </main>
   );
 }

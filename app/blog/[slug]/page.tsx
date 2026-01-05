@@ -1,203 +1,208 @@
-import type { Metadata } from "next";
+// Conteúdo vem do Sanity. Supabase armazena apenas eventos/IA.
+// NÃO copie o corpo do post para Supabase — Sanity é a Source of Truth.
+
+import { PortableText } from "@portabletext/react";
+import type { TypedObject } from "@portabletext/types";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { MDXRemote } from "next-mdx-remote/rsc";
-import React from "react";
-import rehypeAutolinkHeadings from "rehype-autolink-headings";
-import rehypeSlug from "rehype-slug";
-import remarkGfm from "remark-gfm";
 
+
+import FAQBlock from "@/components/answer/FAQBlock";
 import BlogCTAs from "@/components/blog/BlogCTAs";
 import Comments from "@/components/blog/Comments";
 import PostCard from "@/components/blog/PostCard";
 import Prose from "@/components/blog/Prose";
-import ReadingProgress from "@/components/blog/ReadingProgress";
 import ScrollAnalytics from "@/components/blog/ScrollAnalytics";
 import ShareButtons from "@/components/blog/ShareButtons";
-import TocNav from "@/components/blog/Toc";
+import Toc from "@/components/blog/Toc";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import LeadForm from "@/components/LeadForm";
-import { mdxComponents } from "@/components/MDXContent";
 import PageViewPing from "@/components/PageViewPing";
 import SeoJsonLd from "@/components/SeoJsonLd";
-import { compileBlogMdx } from "@/lib/blog/mdx/compile";
-import { estimateReadingTime } from "@/lib/blog/reading-time";
-import { getRelatedUnified } from "@/lib/blog/related";
-import { buildBlogMetadata, buildArticleJsonLd } from "@/lib/blog/seo";
+import { buildAnswerSnippet } from "@/lib/ai-readiness";
+import type { TocItem } from "@/lib/blog/mdx/toc";
 import { BLUR_DATA_URL } from "@/lib/placeholders";
-import { blogPostingSchema } from "@/lib/schema";
-import { supabaseAnon } from "@/lib/supabaseAnon";
+import { sanityBlogRepo } from "@/lib/sanity/blogRepo";
+import { blogPostingSchema } from "@/lib/seo.core";
 import { whatsappLeadUrl } from "@/lib/utm";
 
-interface Post {
-  id: string;
-  slug: string;
-  title: string;
-  subtitle?: string | null;
-  excerpt?: string | null;
-  content_mdx?: string | null;
-  cover_url?: string | null;
-  cover_alt?: string | null;
-  published_at?: string | null;
-  created_at?: string | null;
-  updated_at?: string | null;
-  status?: string | null;
-  author_id?: string | null;
-  seo_title?: string | null;
-  seo_description?: string | null;
-  category?: string | null;
-  tags?: string[] | null;
-  lang?: string | null;
+// Função utilitária local para formatar datas
+function formatDate(value?: string | null) {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(date);
 }
 
-interface Author {
-  name: string;
-  slug?: string;
-  avatar_url?: string | null;
+function firstSentence(value?: string | null) {
+  if (!value) return "";
+  const match = value.match(/[^.!?]+[.!?]/);
+  return match ? match[0].trim() : value.trim();
 }
 
-interface RelatedAny {
-  slug: string;
-  title: string;
-  excerpt?: string | null;
-  published_at?: string | null;
-  cover_url?: string | null;
+function ensureSentence(value?: string | null) {
+  const trimmed = value?.trim();
+  if (!trimmed) return "";
+  return /[.!?]$/.test(trimmed) ? trimmed : `${trimmed}.`;
 }
 
-type MDXComponentsMap = Record<string, React.ComponentType<Record<string, unknown>>>;
-
-async function fetchPost(slug: string, opts: { preview: boolean }): Promise<Post | null> {
-  try {
-    const sb = supabaseAnon();
-    // Try extended select (new editorial fields). If the DB doesn't have these columns,
-    // fall back to the legacy select to remain compatible.
-    let res: { data: Post | null; error: any } | null = null;
-    try {
-      res = await sb
-        .from("blog_posts")
-        .select(
-          `id,slug,title,subtitle,excerpt,tldr,key_takeaways: key_takeaways,faq,sources,content_mdx,cover_url,cover_alt,published_at,created_at,updated_at,status,author_id,seo_title,seo_description,category,tags,lang,last_reviewed_at,reviewed_by`
-        )
-        .eq("slug", slug)
-        .maybeSingle();
-    } catch (e) {
-      // fallback for older schemas
-      res = await sb
-        .from("blog_posts")
-        .select(
-          "id,slug,title,subtitle,excerpt,content_mdx,cover_url,cover_alt,published_at,created_at,updated_at,status,author_id,seo_title,seo_description,category,tags,lang"
-        )
-        .eq("slug", slug)
-        .maybeSingle();
-    }
-
-    const { data, error } = res || ({ data: null, error: null } as any);
-
-    if (error) throw error;
-    if (!data) return null;
-    if (data.status === "published") return data as Post;
-    if (opts.preview && (data.status === "review" || data.status === "draft")) return data as Post;
-    return null;
-  } catch {
-    return null;
-  }
+function splitSentences(value?: string | null) {
+  if (!value) return [] as string[];
+  return value
+    .replace(/\s+/g, " ")
+    .split(/(?<=[.!?])\s+/)
+    .map((sentence) => sentence.trim())
+    .filter(Boolean);
 }
 
-async function fetchAuthor(authorId: string | null | undefined): Promise<Author | null> {
-  if (!authorId) return null;
-  try {
-    const sb = supabaseAnon();
-    const { data } = await sb.from("blog_authors").select("name,slug,avatar_url").eq("id", authorId).maybeSingle();
-    return (data as Author) || null;
-  } catch {
-    return null;
-  }
-}
-
-async function fetchAuthorBySlug(slug: string | null | undefined): Promise<Author | null> {
-  if (!slug) return null;
-  try {
-    const sb = supabaseAnon();
-    const { data } = await sb.from("blog_authors").select("id,name,slug,avatar_url").eq("slug", slug).maybeSingle();
-    return (data as unknown as Author) || null;
-  } catch {
-    return null;
-  }
-}
-
-async function fetchReviewer(reviewerId: string | null | undefined): Promise<Author | null> {
-  // reviewer stored as author id (same table)
-  return fetchAuthor(reviewerId);
-}
-
-export async function generateStaticParams() {
-  return [];
-}
-
-export const revalidate = 300;
-
-export async function generateMetadata({
-  params,
-  searchParams,
-}: {
+type PageProps = {
   params: { slug: string };
-  searchParams?: { preview?: string };
-}): Promise<Metadata> {
-  const preview = process.env.NODE_ENV !== "production" && searchParams?.preview === "1";
-  const post = await fetchPost(params.slug, { preview });
-  if (!post) return {};
-  return buildBlogMetadata(post as Post & { content_mdx?: string | null });
-}
+  searchParams?: Record<string, string>;
+};
 
-export default async function BlogPostPage({
-  params,
-  searchParams,
-}: {
-  params: { slug: string };
-  searchParams?: { preview?: string };
-}) {
-  const preview = process.env.NODE_ENV !== "production" && searchParams?.preview === "1";
-  const post = await fetchPost(params.slug, { preview });
 
+export default async function Page({ params }: PageProps) {
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.byimperiodog.com.br").replace(/\/$/, "");
+  // Buscar o post pelo slug
+  const post = await sanityBlogRepo.getPostBySlug(params.slug);
   if (!post) return notFound();
+  type Author = { name?: string; slug?: string; avatar_url?: string };
+  type Reviewer = { name?: string };
+  type Source = { url?: string; label?: string };
+  type BlogPost = {
+    id?: string;
+    slug?: string;
+    title?: string;
+    description?: string | null;
+    seo_description?: string | null;
+    seoDescription?: string | null;
+    excerpt?: string | null;
+    subtitle?: string | null;
+    answerSnippet?: string | null;
+    tldr?: string | null;
+    reading_time?: number | null;
+    readingTime?: number | null;
+    toc?: TocItem[] | null;
+    tableOfContents?: TocItem[] | null;
+    related?: BlogPost[] | null;
+    status?: string | null;
+    faq?: Array<{ question?: string; answer?: string }> | null;
+    key_takeaways?: string[] | null;
+    keyTakeaways?: string[] | null;
+    sources?: Source[] | null;
+    coverUrl?: string | null;
+    cover_url?: string | null;
+    coverAlt?: string | null;
+    cover_alt?: string | null;
+    publishedAt?: string | null;
+    published_at?: string | null;
+    updatedAt?: string | null;
+    updated_at?: string | null;
+    createdAt?: string | null;
+    created_at?: string | null;
+    tags?: string[] | null;
+    category?: string | null;
+    section?: string | null;
+    author?: Author | string | null;
+    reviewer?: Reviewer | null;
+    content_blocks?: TypedObject | TypedObject[] | null;
+  };
 
-  const author = await fetchAuthor(post.author_id);
-  const reviewer = await fetchReviewer((post as any).reviewed_by || null);
-  const compiled = post.content_mdx ? await compileBlogMdx(post.content_mdx) : null;
-  const minutes = compiled?.readingTimeMinutes || estimateReadingTime(post.content_mdx || "");
-  const related = (await getRelatedUnified(post.slug, 6)) as RelatedAny[];
-  const faqFromPost = Array.isArray((post as any).faq) ? ((post as any).faq as { question?: string; answer?: string }[]) : undefined;
-  const faqExtras = faqFromPost
-    ? faqFromPost
-        .filter(Boolean)
-        .map((f) => ({ q: f.question || (f as any).q || '', a: f.answer || (f as any).a || '' }))
-        .filter((x) => x.q && x.a)
-    : undefined;
+  const p = post as unknown as BlogPost;
 
-  const { article, breadcrumb, faqBlock } = buildArticleJsonLd(
-    post as Post & { content_mdx?: string | null },
-    author,
-    { toc: compiled?.toc, faq: faqExtras }
-  );
+  // Normalizações locais
+  const rawAuthor = p.author;
+  const author = typeof rawAuthor === "object" && rawAuthor !== null ? (rawAuthor as Author) : undefined;
+  const reviewer = p.reviewer ? (p.reviewer as Reviewer) : undefined;
+  const minutes = (p.reading_time ?? p.readingTime) ?? undefined;
+  const toc = Array.isArray(p.toc) ? p.toc : Array.isArray(p.tableOfContents) ? p.tableOfContents! : [];
+  const related = (p.related ?? []) as BlogPost[];
+  const preview = p.status !== "published";
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.byimperiodog.com.br";
-  const description =
-    (article?.description as string | undefined) || post.seo_description || post.excerpt || post.subtitle || "";
-  const blogSchema = blogPostingSchema(siteUrl, {
-    slug: post.slug,
-    title: post.title,
+  // SEO e dados estruturados
+  const description = String(p.seo_description ?? p.seoDescription ?? p.excerpt ?? p.subtitle ?? "");
+  const answerSnippet = buildAnswerSnippet([
+    p.answerSnippet ?? undefined,
+    p.tldr ?? undefined,
     description,
-    publishedAt: post.published_at || post.created_at || new Date().toISOString(),
-    modifiedAt: post.updated_at || undefined,
-    image: post.cover_url ? { url: post.cover_url, alt: post.cover_alt } : undefined,
-    author: author ? { name: author.name, url: author.slug ? `${siteUrl.replace(/\/$/, "")}/autores/${author.slug}` : undefined } : undefined,
-    keywords: post.tags || undefined,
-    articleSection: post.category || null,
+    p.excerpt ?? undefined,
+    p.subtitle ?? undefined,
+  ]);
+  // Garantir que o trecho de resposta tenha entre 40 e 70 palavras e seja estritamente factual.
+  function normalizeTextLocal(v?: string | null) {
+    if (!v) return "";
+    return String(v).replace(/\s+/g, " ").trim();
+  }
+  function clampWordsLocal(text: string, minWords = 40, maxWords = 70) {
+    const words = normalizeTextLocal(text).split(" ").filter(Boolean);
+    if (!words.length) return "";
+    if (words.length > maxWords) return words.slice(0, maxWords).join(" ");
+    if (words.length >= minWords) return words.join(" ");
+    return words.join(" ");
+  }
+  function ensureSnippetBounds(base: string) {
+    const normalized = normalizeTextLocal(base);
+    const count = normalized ? normalized.split(" ").filter(Boolean).length : 0;
+    if (count >= 40 && count <= 70) return clampWordsLocal(normalized);
+    // Complementos factuais (sem marketing) para alcançar mínimo de palavras
+    const extras: string[] = [];
+    if (p.publishedAt ?? p.published_at) {
+      const fd = formatDate(String(p.publishedAt ?? p.published_at));
+      if (fd) extras.push(`Publicado em ${fd}`);
+    }
+    if (minutes !== undefined) extras.push(`${minutes} min de leitura`);
+    if (author && author.name) extras.push(`Por ${String(author.name)}`);
+    if (p.category) extras.push(String(p.category));
+    const augmented = [normalized, ...extras.filter(Boolean)].filter(Boolean).join('. ');
+    const clamped = clampWordsLocal(augmented);
+    // Se ainda for muito curto, incluir primeira frase da descrição (factual)
+    if (clamped.split(" ").filter(Boolean).length < 40) {
+      const extraDef = firstSentence(description || "");
+      return clampWordsLocal([clamped, extraDef].filter(Boolean).join('. '));
+    }
+    return clamped;
+  }
+  const finalAnswerSnippet = ensureSnippetBounds(answerSnippet);
+  const keyTakeaways = Array.isArray(p.key_takeaways)
+    ? p.key_takeaways
+    : Array.isArray(p.keyTakeaways)
+      ? p.keyTakeaways
+      : [];
+  const sources = Array.isArray(p.sources) ? p.sources : [];
+  const definition = firstSentence(description || finalAnswerSnippet);
+  const normalizedDefinition = ensureSentence(definition);
+  const fallbackSentences = Array.from(new Set([
+    ...splitSentences(description),
+    ...splitSentences(finalAnswerSnippet),
+  ].map((sentence) => ensureSentence(sentence)).filter(Boolean))).filter((sentence) => sentence !== normalizedDefinition);
+  const summaryPoints = keyTakeaways.length ? keyTakeaways : fallbackSentences.slice(0, 3);
+  const fallbackFaq = [
+    { question: "Como este guia ajuda o tutor?", answer: "Ele resume os pontos essenciais e orienta os proximos passos." },
+    { question: "O conteudo e atualizado?", answer: "Revisamos o material conforme surgem novas duvidas de tutores." },
+    { question: "Posso falar com a equipe?", answer: "Sim, use o formulario de contato para orientacao personalizada." },
+  ];
+  const faqItems = Array.isArray(p.faq) && p.faq.length
+    ? (p.faq as Array<{ question?: string; answer?: string }>)
+        .map((f) => ({ question: f.question ?? "", answer: f.answer ?? "" }))
+        .filter((q) => q.question.trim() && q.answer.trim())
+    : fallbackFaq;
+  const blogSchema = blogPostingSchema(siteUrl, {
+    slug: String(p.slug ?? (post as unknown as Record<string, unknown>).slug ?? ""),
+    title: String(p.title ?? ""),
+    description: String(description ?? ""),
+    publishedAt: String(p.publishedAt ?? p.published_at ?? p.createdAt ?? p.created_at ?? new Date().toISOString()),
+    modifiedAt: p.updatedAt ?? p.updated_at ?? p.publishedAt ?? p.published_at ?? undefined,
+    image: (p.coverUrl ?? p.cover_url) ? { url: String(p.coverUrl ?? p.cover_url), alt: p.coverAlt ?? p.cover_alt ?? undefined } : undefined,
+    author: author ? { name: String(author.name ?? ""), url: author.slug ? `${siteUrl}/autores/${String(author.slug)}` : undefined } : undefined,
+    keywords: Array.isArray(p.tags) ? p.tags.map((t: unknown) => (typeof t === "string" ? t : String((t as Record<string, unknown>)?.name ?? t))) : undefined,
+    articleSection: typeof p.category === "string" ? p.category : null,
   });
-
-  const structuredData = [article, breadcrumb, faqBlock, blogSchema].filter(Boolean);
+  const structuredData = [blogSchema];
 
   const interlinks = [
     {
@@ -221,16 +226,18 @@ export default async function BlogPostPage({
     <div className="relative mx-auto w-full max-w-6xl px-4 py-10">
       <PageViewPing pageType="blog" />
       <SeoJsonLd data={structuredData} />
-      <ReadingProgress />
-
-      {preview && post.status !== "published" ? (
+      {preview ? (
         <div className="mb-6 flex flex-wrap items-center gap-3 rounded-md border border-amber-400 bg-amber-50 p-3 text-sm text-amber-800">
           <span className="font-medium">Pré-visualização</span>
           <span>
-            Status atual: <strong>{post.status}</strong>
+            Status atual: <strong>{p.status}</strong>
           </span>
-          <PublishButton slug={post.slug} />
-          <a href={`/blog/${post.slug}`} className="underline decoration-dotted">
+          <form method="POST" action={`/api/admin/blog/publish?slug=${p.slug}`} style={{ display: 'inline' }}>
+            <button type="submit" className="inline-flex items-center gap-1 rounded bg-amber-600 px-3 py-1 text-xs font-medium text-white shadow hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-1">
+              Publicar agora
+            </button>
+          </form>
+          <a href={`/blog/${p.slug}`} className="underline decoration-dotted">
             Sair do modo preview
           </a>
         </div>
@@ -241,27 +248,28 @@ export default async function BlogPostPage({
         items={[
           { label: "Início", href: "/" },
           { label: "Blog", href: "/blog" },
-          { label: post.title, href: `/blog/${post.slug}` },
+          { label: String(p.title ?? ""), href: `/blog/${p.slug}` },
         ]}
       />
 
       <article className="flex flex-col gap-10 lg:flex-row lg:items-start lg:gap-12">
         <div className="w-full flex-1 space-y-10">
+
           <header className="space-y-4">
             <span className="inline-flex items-center gap-2 rounded-pill bg-brand/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-brand">
-              {post.category || "Conteúdo premium"}
+              {p.category || p.section || "Conteúdo premium"}
             </span>
-            <h1 className="text-3xl font-serif text-text sm:text-4xl">{post.title}</h1>
-            {post.subtitle ? <p className="text-base text-text-muted">{post.subtitle}</p> : null}
+            <h1 className="text-3xl font-serif text-text sm:text-4xl">{p.title}</h1>
+            {p.subtitle ? <p className="text-base text-text-muted">{p.subtitle}</p> : null}
             <div className="flex flex-wrap items-center gap-3 text-xs text-text-soft">
-              {post.published_at ? <span>Publicado em {formatDate(post.published_at)}</span> : null}
-              {post.updated_at && post.updated_at !== post.published_at ? (
-                <span className="rounded-pill bg-surface-subtle px-3 py-1 font-medium text-text">Atualizado em {formatDate(post.updated_at)}</span>
+              { (p.publishedAt ?? p.published_at) ? <span>Publicado em {formatDate(String(p.publishedAt ?? p.published_at))}</span> : null}
+              { (p.updatedAt ?? p.updated_at) && (p.updatedAt ?? p.updated_at) !== (p.publishedAt ?? p.published_at) ? (
+                <span className="rounded-pill bg-surface-subtle px-3 py-1 font-medium text-text">Atualizado em {formatDate(String(p.updatedAt ?? p.updated_at))}</span>
               ) : null}
               {reviewer ? (
-                <span className="rounded-pill bg-surface-subtle px-3 py-1 font-medium text-text">Revisado por {reviewer.name}</span>
+                <span className="rounded-pill bg-surface-subtle px-3 py-1 font-medium text-text">Revisado por {String(reviewer.name)}</span>
               ) : null}
-              {minutes ? (
+              {minutes !== undefined ? (
                 <span className="rounded-pill bg-surface-subtle px-3 py-1 font-semibold text-text">
                   {minutes} min de leitura
                 </span>
@@ -269,10 +277,10 @@ export default async function BlogPostPage({
             </div>
             {author ? (
               <div className="mt-2 flex items-center gap-3 text-sm text-text">
-                {author.avatar_url ? (
+                {author?.avatar_url ? (
                   <Image
-                    src={author.avatar_url}
-                    alt={author.name}
+                    src={String(author.avatar_url)}
+                    alt={String(author.name ?? "")}
                     width={36}
                     height={36}
                     className="h-9 w-9 rounded-full border object-cover"
@@ -282,23 +290,66 @@ export default async function BlogPostPage({
                 )}
                 <div>
                   <span className="text-text-muted">Por </span>
-                  {author.slug ? (
-                    <Link href={`/autores/${author.slug}`} className="font-medium underline-offset-2 hover:underline">
-                      {author.name}
+                  {author?.slug ? (
+                    <Link href={`/autores/${String(author.slug)}`} className="font-medium underline-offset-2 hover:underline">
+                      {String(author.name)}
                     </Link>
                   ) : (
-                    <span className="font-medium">{author.name}</span>
+                    <span className="font-medium">{String(author?.name ?? "")}</span>
                   )}
                 </div>
               </div>
             ) : null}
           </header>
 
-          {post.cover_url ? (
+          {finalAnswerSnippet ? (
+            <section data-geo-answer={String(p.slug ?? "blog-post")} aria-labelledby="resposta-curta" className="rounded-2xl border border-border bg-surface p-4">
+              <h2 id="resposta-curta" className="text-lg font-semibold">Resposta curta</h2>
+              <p className="mt-2 text-sm text-text-muted">{finalAnswerSnippet}</p>
+            </section>
+          ) : null}
+
+          {(normalizedDefinition || summaryPoints.length || sources.length) ? (
+            <section aria-labelledby="resumo-ia" className="rounded-2xl border border-border bg-surface p-4">
+              <h2 id="resumo-ia" className="text-lg font-semibold">Resumo para IA</h2>
+              {normalizedDefinition ? (
+                <div className="mt-3">
+                  <h3 className="text-sm font-semibold">Definição rápida</h3>
+                  <p className="mt-2 text-sm text-text-muted">{normalizedDefinition}</p>
+                </div>
+              ) : null}
+              {summaryPoints.length ? (
+                <div className="mt-4">
+                  <h3 className="text-sm font-semibold">Principais pontos</h3>
+                  <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-text-muted">
+                    {summaryPoints.slice(0, 5).map((item: string, idx: number) => (
+                      <li key={idx}>{ensureSentence(item)}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+              {sources.length ? (
+                <div className="mt-4">
+                  <h3 className="text-sm font-semibold">Fontes</h3>
+                  <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-text-muted">
+                    {sources.slice(0, 4).map((source: { url?: string; label?: string }, idx: number) => (
+                      <li key={idx}>
+                        <a className="underline decoration-dotted" href={source.url} rel="noreferrer" target="_blank">
+                          {source.label || source.url}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </section>
+          ) : null}
+
+          {(p.coverUrl ?? p.cover_url) ? (
             <figure className="overflow-hidden rounded-3xl border border-border bg-surface-subtle shadow-soft">
               <Image
-                src={post.cover_url}
-                alt={post.cover_alt || post.title}
+                src={String(p.coverUrl ?? p.cover_url)}
+                alt={String(p.coverAlt ?? p.cover_alt ?? p.title ?? "")}
                 width={1280}
                 height={720}
                 priority
@@ -310,68 +361,61 @@ export default async function BlogPostPage({
                 decoding="async"
                 draggable={false}
               />
-              {post.cover_alt ? (
-                <figcaption className="px-5 py-3 text-xs text-text-soft">{post.cover_alt}</figcaption>
+              {(p.coverAlt ?? p.cover_alt) ? (
+                <figcaption className="px-5 py-3 text-xs text-text-soft">{p.coverAlt ?? p.cover_alt}</figcaption>
               ) : null}
             </figure>
           ) : null}
 
-            {/* TL;DR and Key Takeaways (render early for citability) */}
-            {(post as any).tldr ? (
-              <section className="mt-6 rounded-md border border-border bg-surface p-4">
-                <h3 className="mb-2 text-sm font-semibold">TL;DR</h3>
-                <p className="text-sm text-text-muted">{(post as any).tldr}</p>
-              </section>
-            ) : null}
+          {/* resposta curta já renderizada acima; evitar duplicação */}
 
-            {Array.isArray((post as any).key_takeaways) && (post as any).key_takeaways.length ? (
-              <section className="mt-4 rounded-md border border-border bg-surface p-4">
-                <h3 className="mb-2 text-sm font-semibold">Principais insights</h3>
-                <ul className="list-inside list-disc text-sm text-text-muted">
-                  {((post as any).key_takeaways as string[]).map((t: string, i: number) => (
-                    <li key={i}>{t}</li>
-                  ))}
-                </ul>
-              </section>
-            ) : null}
+          {Array.isArray(p.key_takeaways) && p.key_takeaways.length ? (
+            <section className="mt-4 rounded-md border border-border bg-surface p-4">
+              <h2 className="mb-2 text-sm font-semibold">Principais insights</h2>
+              <ul className="list-inside list-disc text-sm text-text-muted">
+                {p.key_takeaways.map((t: string, i: number) => (
+                  <li key={i}>{t}</li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
 
-            {/* Table of contents (compact) */}
-            {compiled?.toc ? (
-              <div className="mt-4">
-                <TocNav toc={compiled.toc} />
-              </div>
-            ) : null}
+          {toc.length ? (
+            <div className="mt-4">
+              <Toc toc={toc} />
+            </div>
+          ) : null}
 
           <div className="flex flex-col gap-4 rounded-2xl border-y border-border py-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-1">
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand">Compartilhe</p>
               <p className="text-sm text-text-muted">Leve conhecimento premium para outros tutores responsáveis.</p>
             </div>
-            <ShareButtons title={post.title} url={`${siteUrl.replace(/\/$/, "")}/blog/${post.slug}`} />
+            <ShareButtons title={p.title ?? ""} url={`${siteUrl}/blog/${p.slug}`} />
           </div>
 
           <Prose>
-            {post.content_mdx ? (
-              <MDXRemote
-                source={post.content_mdx}
-                components={mdxComponents as MDXComponentsMap}
-                options={{ mdxOptions: { remarkPlugins: [remarkGfm], rehypePlugins: [rehypeSlug, rehypeAutolinkHeadings] } }}
-              />
+            {p.content_blocks && (Array.isArray(p.content_blocks) ? p.content_blocks.length : true) ? (
+              <PortableText value={p.content_blocks as TypedObject | TypedObject[]} components={portableTextComponents} />
             ) : (
               <p className="italic text-text-muted">Conteúdo em atualização.</p>
             )}
           </Prose>
 
+          <FAQBlock items={faqItems} />
           <section className="mt-10">
             <h2 className="text-xl font-semibold">Quero receber recomendações</h2>
-            <LeadForm context={{ pageType: "blog", slug: post.slug }} />
+            <LeadForm context={{ pageType: "blog", slug: p.slug }} />
             {process.env.NEXT_PUBLIC_WA_PHONE && (
               <div className="pt-2">
                 <a
                   className="inline-block rounded bg-green-600 px-4 py-2 text-white"
                   target="_blank"
                   rel="noreferrer"
-                  href={whatsappLeadUrl(process.env.NEXT_PUBLIC_WA_PHONE.replace(/\D/g, ""), { pageType: "blog", url: `${siteUrl.replace(/\/$/, "")}/blog/${post.slug}` })}
+                  href={whatsappLeadUrl(process.env.NEXT_PUBLIC_WA_PHONE.replace(/\D/g, ""), {
+                    pageType: "blog",
+                    url: `${siteUrl}/blog/${p.slug}`,
+                  })}
                 >
                   Falar no WhatsApp
                 </a>
@@ -393,82 +437,69 @@ export default async function BlogPostPage({
             ))}
           </aside>
 
-          <BlogCTAs postTitle={post.title} category={post.category} />
+          <BlogCTAs postTitle={p.title ?? ""} category={p.category ?? null} />
 
           <div className="mt-16 border-t border-border pt-12">
-            <Comments postId={post.id} />
+            <Comments postId={String(post.id ?? p.id ?? "")} />
           </div>
 
           {related?.length ? (
             <aside className="mt-20 border-t border-border pt-12">
               <h2 className="mb-6 text-2xl font-serif text-text">Artigos relacionados</h2>
               <ul className="grid gap-6 sm:grid-cols-2">
-                {related.slice(0, 4).map((relatedPost) => (
-                  <PostCard
-                    key={relatedPost.slug}
-                    href={`/blog/${relatedPost.slug}`}
-                    title={relatedPost.title}
-                    coverUrl={relatedPost.cover_url}
-                    excerpt={relatedPost.excerpt}
-                    date={relatedPost.published_at}
-                    readingTime={null}
-                  />
-                ))}
+                {related.slice(0, 4).map((relatedPost) => {
+                  const fallbackFields = relatedPost as unknown as Record<string, string | null | undefined>;
+                  const cardCoverUrl = relatedPost.coverUrl ?? fallbackFields["cover_url"] ?? null;
+                  const cardDate = relatedPost.publishedAt ?? fallbackFields["published_at"] ?? null;
+                  return (
+                    <PostCard
+                      key={relatedPost.slug}
+                      href={`/blog/${relatedPost.slug}`}
+                      title={relatedPost.title ?? "Artigo relacionado"}
+                      coverUrl={cardCoverUrl}
+                      excerpt={relatedPost.excerpt}
+                      date={cardDate}
+                      readingTime={null}
+                    />
+                  );
+                })}
               </ul>
             </aside>
           ) : null}
         </div>
 
         <div className="hidden w-full max-w-xs shrink-0 lg:block">
-          {compiled?.toc ? <TocNav toc={compiled.toc} /> : null}
+          {toc.length ? <Toc toc={toc} /> : null}
         </div>
       </article>
 
-      <ScrollAnalytics postId={post.id} readingTimeMin={minutes} />
+      <ScrollAnalytics postId={String(post.id ?? p.id ?? "")} readingTimeMin={minutes ?? undefined} />
     </div>
   );
 }
 
-function formatDate(value?: string | null) {
-  if (!value) return null;
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return null;
-  return new Intl.DateTimeFormat("pt-BR", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(date);
-}
 
-function PublishButton({ slug }: { slug: string }) {
-  return (
-    <form
-      action={async () => {
-        "use server";
-        await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || ""}/api/admin/blog/publish`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-admin-token": process.env.ADMIN_TOKEN || process.env.DEBUG_TOKEN || "",
-          },
-          body: JSON.stringify({ slug }),
-        });
-
-        try {
-          const mod = await import("next/cache");
-          mod.revalidatePath(`/blog/${slug}`);
-          mod.revalidatePath("/blog");
-        } catch {
-          // ignore cache errors
-        }
-      }}
-    >
-      <button
-        type="submit"
-        className="inline-flex items-center gap-1 rounded bg-amber-600 px-3 py-1 text-xs font-medium text-white shadow hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-1"
-      >
-        Publicar agora
-      </button>
-    </form>
-  );
-}
+const portableTextComponents = {
+  types: {
+    image: ({ value }: { value?: { asset?: { url?: string }; caption?: string } }) => {
+      const url = value?.asset?.url;
+      if (!url) return null;
+      return (
+        <figure className="my-10 overflow-hidden rounded-3xl border border-border bg-surface-subtle shadow-soft">
+          <Image src={url} alt={value?.caption || "Imagem do post"} width={1280} height={720} className="w-full object-cover" />
+          {value?.caption ? (
+            <figcaption className="px-5 py-3 text-xs text-text-soft">{value.caption}</figcaption>
+          ) : null}
+        </figure>
+      );
+    },
+    code: ({ value }: { value?: { code?: string } }) => {
+      if (!value?.code) return null;
+      return (
+        <pre className="my-6 overflow-auto rounded-2xl border border-border bg-surface p-4 text-sm text-text">
+          <code>{value.code}</code>
+        </pre>
+      );
+    },
+  },
+};

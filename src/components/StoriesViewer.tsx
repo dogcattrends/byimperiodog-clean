@@ -4,9 +4,9 @@ import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 
-import { cn } from "@/lib/cn";
-import passthroughImageLoader from "@/lib/passthrough-image-loader";
-import { BLUR_DATA_URL } from "@/lib/placeholders";
+import { cn } from "../lib/cn";
+import passthroughImageLoader from "../lib/passthrough-image-loader";
+import { BLUR_DATA_URL } from "../lib/placeholders";
 
 export type StorySlide = {
   id: string;

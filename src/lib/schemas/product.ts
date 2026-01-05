@@ -1,6 +1,6 @@
-/**
- * Gera JSON-LD de Product para páginas de filhotes
- * Melhora aparência nos resultados de busca e Google Shopping
+﻿/**
+ * Gera JSON-LD de Product para pÃ¡ginas de filhotes
+ * Melhora aparÃªncia nos resultados de busca e Google Shopping
  */
 
 import type { Puppy } from '@/domain/puppy';
@@ -21,7 +21,7 @@ export function buildProductLD(puppy: Puppy, baseUrl: string = 'https://byimperi
     image: puppy.images?.[0] || puppy.thumbnailUrl,
     brand: {
       '@type': 'Brand',
-      name: 'By Império Dog',
+      name: 'By ImpÃ©rio Dog',
     },
     offers: {
       '@type': 'Offer',
@@ -33,7 +33,7 @@ export function buildProductLD(puppy: Puppy, baseUrl: string = 'https://byimperi
       itemCondition: condition,
       seller: {
         '@type': 'Organization',
-        name: 'By Império Dog',
+        name: 'By ImpÃ©rio Dog',
       },
     },
     aggregateRating: puppy.reviewCount > 0 ? {
@@ -43,24 +43,25 @@ export function buildProductLD(puppy: Puppy, baseUrl: string = 'https://byimperi
       bestRating: 5,
       worstRating: 1,
     } : undefined,
-    category: 'Spitz Alemão Anão',
+    category: 'Spitz AlemÃ£o AnÃ£o',
     color: puppy.color,
     additionalProperty: [
       {
         '@type': 'PropertyValue',
         name: 'Sexo',
-        value: puppy.sex === 'male' ? 'Macho' : 'Fêmea',
+        value: puppy.sex === 'male' ? 'Macho' : 'FÃªmea',
       },
       {
         '@type': 'PropertyValue',
-        name: 'Pedigree CBKC',
-        value: puppy.hasPedigree ? 'Sim' : 'Não',
+        name: 'Pedigree Pedigree',
+        value: puppy.hasPedigree ? 'Sim' : 'NÃ£o',
       },
       {
         '@type': 'PropertyValue',
-        name: 'Vacinação',
+        name: 'VacinaÃ§Ã£o',
         value: puppy.vaccinationStatus === 'up-to-date' ? 'Em dia' : 'Parcial',
       },
     ],
   };
 }
+

@@ -1,7 +1,8 @@
 "use client";
 
-import ModernEditorWrapper from "@/components/blog/ModernEditorWrapper";
 import type { Post } from "@/lib/db/types";
+
+import ModernEditorWrapper from "../../../../../../src/components/blog/ModernEditorWrapper";
 
 interface EditorWrapperProps {
   post: Post | null;

@@ -30,7 +30,7 @@
 ## DoD por PR
 - **PR1:** navegação responsiva, menu mobile via `Dialog`, layout usa `Header`/`Main`, `noindex` setado.  
 - **PR2:** dashboards usam dados reais (`supabaseAdmin()`), health cards com status, `AIInsightsPanel` e alerts com skeletons.  
-- **PR3:** Lead detail mostra logs de eventos (`analytics_events`), CTA de PDF rastreia `pdf_download`, filtros persistem, rate limit respeitado.  
+- **PR3:** Lead detail mostra logs de eventos (`analytics_events`), CTA de PDF rastreia `pdf_downloaded`, filtros persistem, rate limit respeitado e tokens (`lead_download_tokens`) acompanhados.  
 - **PR4:** bloco editorial exibe TL;DR/Key takeaways, IA pipeline visualiza `ai_generation_sessions`, `scripts/seo-audit` detecta missing fields.  
 - **PR5:** `tracking` diagnostics valida IDs, `TrackingSettingsForm` salva com toast/log, `webhooks` CRUD seguro, `admin_actions` registra.
 

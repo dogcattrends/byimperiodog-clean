@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
   const source = searchParams.get("source") || null;
 
   const fn = by === "source" ? "source_breakdown_v1" : "campaign_breakdown_v1";
-  const args: any = by === "source" ? { tz, days } : { tz, days, source };
+  const args = by === "source" ? { tz, days } : { tz, days, source };
 
   const { data, error } = await supa().rpc(fn, args);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

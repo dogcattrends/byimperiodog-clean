@@ -3,9 +3,9 @@
 import Image from "next/image";
 import { useMemo, useState } from "react";
 
-import { cn } from "@/lib/cn";
-import passthroughImageLoader from "@/lib/passthrough-image-loader";
-import { BLUR_DATA_URL } from "@/lib/placeholders";
+import { cn } from "../lib/cn";
+import passthroughImageLoader from "../lib/passthrough-image-loader";
+import { BLUR_DATA_URL } from "../lib/placeholders";
 
 import { StoriesViewer, type Story } from "./StoriesViewer";
 

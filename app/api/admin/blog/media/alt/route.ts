@@ -17,7 +17,8 @@ export async function POST(req:Request){
     const alt = ('Spitz Alemão '+ base).slice(0,140);
     await sb.from('media_assets').update({ alt }).eq('id', media_id);
     return NextResponse.json({ ok:true, alt });
-  } catch(e:any){
-    return NextResponse.json({ ok:false, error:e?.message||'erro' },{ status:500 });
+  } catch (e: unknown) {
+    const msg = typeof e === 'object' && e !== null && 'message' in e ? String((e as { message?: unknown }).message ?? e) : String(e);
+    return NextResponse.json({ ok: false, error: msg || 'erro' }, { status: 500 });
   }
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import FAQBlock from "@/components/answer/FAQBlock";
 import { LastUpdated } from "@/components/common/LastUpdated";
 import { TOC } from "@/components/common/TOC";
 import { pageMetadata } from "@/lib/seo";
@@ -15,6 +16,15 @@ const tocItems = [
   { id: "retencao", label: "Retenção e segurança" },
   { id: "direitos", label: "Direitos do titular" },
   { id: "contato", label: "Contato do controlador" },
+];
+
+const PRIVACY_SNIPPET =
+  "Esta pagina resume como tratamos dados pessoais, quais informacoes coletamos e quais sao os direitos do tutor. O objetivo e dar transparencia sobre contato, consentimento e armazenamento, explicando como solicitar ajustes ou exclusao de dados. Consulte esta politica antes de enviar formularios.";
+
+const PRIVACY_FAQ = [
+  { question: "Quais dados sao coletados?", answer: "Coletamos dados enviados pelo formulario e preferencia de contato." },
+  { question: "Como solicitar exclusao?", answer: "Use o canal de contato e informe o e-mail cadastrado." },
+  { question: "Ha compartilhamento com terceiros?", answer: "Somente quando necessario para entrega e suporte." },
 ];
 
 export function generateMetadata(): Metadata {
@@ -166,7 +176,14 @@ export default function PoliticaDePrivacidadePage() {
         </p>
       </section>
 
-      <LastUpdated buildTime={process.env.NEXT_PUBLIC_BUILD_TIME} contentTime={lastUpdated} />
+      <section className="rounded-2xl border border-border bg-surface p-4">
+  <h2 className="text-lg font-semibold">Resposta curta</h2>
+  <p className="mt-2 text-sm text-[var(--text-muted)]">{PRIVACY_SNIPPET}</p>
+</section>
+
+<FAQBlock items={PRIVACY_FAQ} />
+
+<LastUpdated buildTime={process.env.NEXT_PUBLIC_BUILD_TIME} contentTime={lastUpdated} />
     </main>
   );
 }

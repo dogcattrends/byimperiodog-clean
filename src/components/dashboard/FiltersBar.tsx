@@ -5,7 +5,10 @@ export type DashboardFilters = { q: string; status: string; date: string };
 
 export function FiltersBar({ value, onChange }:{ value:DashboardFilters; onChange:(next:DashboardFilters)=>void }){
   const { q, status, date } = value;
-  const active = [q? {k:'q',v:q}:null, status? {k:'status',v:status}:null, date? {k:'date',v:date}:null].filter(Boolean) as {k:string;v:string}[];
+  type FilterItem = { k: string; v: string };
+  const active = [q ? { k: 'q', v: q } : null, status ? { k: 'status', v: status } : null, date ? { k: 'date', v: date } : null].filter(
+    (x): x is FilterItem => x !== null,
+  );
   function clear(){ onChange({ q:'', status:'', date:'' }); }
   return (
     <div className="flex flex-wrap items-center gap-2">

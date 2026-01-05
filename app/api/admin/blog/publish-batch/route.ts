@@ -43,7 +43,8 @@ export async function POST(req: Request) {
       for (const p of data) revalidatePath(`/blog/${p.slug}`);
     } catch {}
     return NextResponse.json({ ok: true, updated: data.length });
-  } catch (err:any) {
-    return NextResponse.json({ ok:false, error: err?.message || String(err) }, { status: 500 });
+  } catch (err: unknown) {
+    const msg = typeof err === 'object' && err !== null && 'message' in err ? String((err as { message?: unknown }).message ?? err) : String(err);
+    return NextResponse.json({ ok: false, error: msg }, { status: 500 });
   }
 }

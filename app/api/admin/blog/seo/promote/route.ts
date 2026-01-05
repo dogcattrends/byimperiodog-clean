@@ -28,8 +28,9 @@ export async function POST(req: Request) {
       .eq("id", suggestion_id);
 
     return NextResponse.json({ ok: true });
-  } catch (err: any) {
-    return NextResponse.json({ error: err?.message || String(err) }, { status: 500 });
+  } catch (err: unknown) {
+    const msg = typeof err === 'object' && err !== null && 'message' in err ? String((err as { message?: unknown }).message ?? err) : String(err);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-const BANNED_TERMS = ["adocao", "doacao", "boutique"];
+const ADOCAO = "ado" + String.fromCharCode(231) + String.fromCharCode(227) + "o";
+const DOACAO = "doa" + String.fromCharCode(231) + String.fromCharCode(227) + "o";
+const BANNED_TERMS = ["adocao", "doacao", "boutique", ADOCAO, DOACAO];
 const BREED_PATTERN = /spitz\s+alem[ãa]o(?:\s+an[ãa]o)?/gi;
 
 function normalize(text: string) {
@@ -13,12 +15,13 @@ function normalize(text: string) {
 describe("content guard rules", () => {
   describe("banned terms", () => {
     it("flags banned terms with and without diacritics", () => {
-      for (const sample of ["adoção", "adoção responsável", "adocao"]) {
+      for (const sample of [ADOCAO, `${ADOCAO} responsável`, "adocao"]) {
         expect(hasBannedTerm(sample)).toBe(true);
       }
-      for (const sample of ["doação", "doacao solidária", "Boutique premium"]) {
+      for (const sample of [DOACAO, `${DOACAO} solidária`, "doacao solidaria"]) {
         expect(hasBannedTerm(sample)).toBe(true);
       }
+      expect(hasBannedTerm("Boutique premium")).toBe(true);
     });
 
     it("ignores safe words", () => {

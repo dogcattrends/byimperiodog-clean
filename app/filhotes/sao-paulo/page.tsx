@@ -13,16 +13,19 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "https:
 const WA_PHONE = process.env.NEXT_PUBLIC_WA_PHONE?.replace(/\D/g, "") || "5511968633239";
 const WA_LINK = `https://wa.me/${WA_PHONE}`;
 
+const SP_SNIPPET =
+  "Pagina com informacoes sobre filhotes de Spitz Alemao Anao (Lulu da Pomerania) para Sao Paulo, com detalhes de entrega segura, atendimento local e contato direto. Ajuda a entender disponibilidade, suporte pos-entrega e como agendar visita ou conversa antes da reserva.";
+
 export const metadata: Metadata = {
   title: "Filhotes de Spitz Alemão Anão (Lulu da Pomerânia) em São Paulo (SP) | By Imperio Dog",
   description:
-    "Compre filhotes de Spitz Alemão Anão (Lulu da Pomerânia) em São Paulo com entrega segura na capital, Grande SP e interior. Pedigree CBKC, suporte vitalício e criadora de referência.",
+    "Compre filhotes de Spitz Alemão Anão (Lulu da Pomerânia) em São Paulo com entrega segura na capital, Grande SP e interior. Pedigree, suporte vitalício e criadora de referência.",
   alternates: { canonical: canonical("/filhotes/sao-paulo") },
   openGraph: {
     type: "website",
     url: canonical("/filhotes/sao-paulo"),
     title: "Filhotes de Spitz Alemão (Lulu da Pomerânia) em São Paulo",
-    description: "Compre Spitz Alemão (Lulu da Pomerânia) com entrega em toda São Paulo. Criadora certificada CBKC.",
+    description: "Compre Spitz Alemão (Lulu da Pomerânia) com entrega em toda São Paulo. Criadora com pedigree documentado.",
     images: [{ url: "/spitz-hero-desktop.webp", width: 1200, height: 630 }],
   },
 };
@@ -81,7 +84,7 @@ export default function FilhotesSaoPauloPage() {
     name: "By Imperio Dog - Filhotes em São Paulo",
     url: `${SITE_URL}/filhotes/sao-paulo`,
     image: `${SITE_URL}/spitz-hero-desktop.webp`,
-    telephone: "+55 11 98663-3239",
+    telephone: "+55 11 9 6863-3239",
     address: {
       "@type": "PostalAddress",
       addressRegion: "SP",
@@ -155,8 +158,12 @@ export default function FilhotesSaoPauloPage() {
           </h1>
           <p className="mx-auto mt-6 max-w-3xl text-lg text-[var(--text-secondary)]">
             Compre seu Spitz Alemão Anão (Lulu da Pomerânia) com segurança e entrega em toda capital paulista, Grande SP
-            e interior. Criadora certificada CBKC com suporte vitalício.
+            e interior. Criadora com pedigree documentado com suporte vitalício.
           </p>
+          <div className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 text-left">
+            <h2 className="text-lg font-semibold text-[var(--text)]">Resposta curta</h2>
+            <p className="mt-2 text-sm text-[var(--text-secondary)]">{SP_SNIPPET}</p>
+          </div>
           <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <a
               href={waLink}
@@ -207,7 +214,7 @@ export default function FilhotesSaoPauloPage() {
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--brand)]/10">
                 <Shield className="h-8 w-8 text-[var(--brand)]" />
               </div>
-              <h3 className="mb-2 font-bold text-[var(--text)]">Pedigree CBKC</h3>
+              <h3 className="mb-2 font-bold text-[var(--text)]">Pedigree</h3>
               <p className="text-sm text-[var(--text-secondary)]">Todos os filhotes com registro oficial</p>
             </div>
             <div className="text-center">

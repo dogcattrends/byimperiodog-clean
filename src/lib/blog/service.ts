@@ -1,4 +1,7 @@
-import { supabaseAnon } from "@/lib/supabaseAnon";
+// LEGADO: este módulo acessa a tabela `blog_posts` em Supabase (legado).
+// Atenção: O corpo editorial completo deve vir do Sanity. Supabase aqui é
+// apenas para metadados, eventos e features IA; NÃO armazene o corpo do post.
+import { supabaseAnon } from "../supabaseAnon";
 
 export type BlogPost = {
   id: string;

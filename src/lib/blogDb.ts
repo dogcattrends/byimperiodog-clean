@@ -1,4 +1,4 @@
-import { supabasePublic } from "@/lib/supabasePublic";
+import { supabasePublic } from "./supabasePublic";
 
 export type DbPost = {
   slug: string;

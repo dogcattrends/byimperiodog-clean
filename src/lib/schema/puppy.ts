@@ -7,7 +7,7 @@
  * Não expomos informações de criadores parceiros ao público
  */
 
-import { BRAND } from "@/domain/config";
+import { BRAND } from "../../domain/config";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || BRAND.urls.site;
 const BUSINESS_NAME = BRAND.name;

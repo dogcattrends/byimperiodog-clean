@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
+import { BRAND } from "@/domain/config";
 import { routes } from "@/lib/route";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 
@@ -96,8 +97,8 @@ export default function Footer() {
             Atendimento sob consulta a partir de São Paulo — conversas individuais para alinhar rotina, investimento e socialização antes da reserva.
           </p>
           <address className="not-italic space-y-1 text-emerald-100/60">
-            <p>E-mail: contato@byimperiodog.com.br</p>
-            <p>WhatsApp: (11) 98663-3239</p>
+            <p>E-mail: {BRAND.contact.email}</p>
+            <p>WhatsApp: {BRAND.contact.phone}</p>
           </address>
         </div>
       </div>

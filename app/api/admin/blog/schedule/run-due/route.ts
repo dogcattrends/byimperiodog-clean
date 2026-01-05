@@ -38,9 +38,10 @@ export async function POST(req: Request){
       }
     }
     return NextResponse.json({ ok:true, processed: results.length, results });
-  } catch(e:any){
-    logAdminAction({ route:'/api/admin/blog/schedule/run-due', method:'POST', action:'run_due_error', payload:{ error: e.message } });
-     return NextResponse.json({ ok:false, error: e.message }, { status:500 });
+  } catch (e: unknown) {
+    const msg = typeof e === 'object' && e !== null && 'message' in e ? String((e as { message?: unknown }).message ?? e) : String(e);
+    logAdminAction({ route: '/api/admin/blog/schedule/run-due', method: 'POST', action: 'run_due_error', payload: { error: msg } });
+    return NextResponse.json({ ok: false, error: msg }, { status: 500 });
   }
 }
 

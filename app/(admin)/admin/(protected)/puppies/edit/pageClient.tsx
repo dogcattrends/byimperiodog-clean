@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { ArrowRight, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -19,7 +19,7 @@ export function PuppyEditLauncher() {
     }
     setError(null);
     startTransition(() => {
-      router.push(`/admin/puppies/edit/${encodeURIComponent(target)}`);
+      router.push(`/admin/filhotes/${encodeURIComponent(target)}/editar`);
     });
   }
 
@@ -44,7 +44,7 @@ export function PuppyEditLauncher() {
           className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
           disabled={isPending}
         >
-          {isPending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <ArrowRight className="h-4 w-4" aria-hidden />} Ir para edição
+          {isPending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <ArrowRight className="h-4 w-4" aria-hidden />} Ir para ediÃ§Ã£o
         </button>
         <button
           type="button"
@@ -60,3 +60,4 @@ export function PuppyEditLauncher() {
     </form>
   );
 }
+

@@ -53,8 +53,9 @@ export async function GET(req: Request) {
     }
 
     return NextResponse.json({ ok: true, topics, missingCount: missing.length, total: topics.length, coveragePercent, suggestion: random });
-  } catch (err: any) {
-    return NextResponse.json({ ok: false, error: String(err?.message || err) }, { status: 500 });
+  } catch (err: unknown) {
+    const msg = typeof err === 'object' && err !== null && 'message' in err ? String((err as { message?: unknown }).message ?? err) : String(err);
+    return NextResponse.json({ ok: false, error: msg }, { status: 500 });
   }
 }
 

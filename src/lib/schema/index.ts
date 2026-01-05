@@ -9,7 +9,7 @@
  * - Nunca expõe origem externa
  */
 
-import { BRAND } from "@/domain/config";
+import { BRAND } from "../../domain/config";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || BRAND.urls.site;
 const CURRENCY = "BRL";
@@ -46,6 +46,9 @@ export type ArticleInput = {
   datePublished: string; // YYYY-MM-DD
   dateModified?: string; // YYYY-MM-DD
   authorName?: string; // default BRAND.name
+  reviewerName?: string;
+  lastReviewedAt?: string; // ISO
+  authorIsPerson?: boolean;
 };
 
 function availabilityFromStatus(status: PuppyForSchema["status"]): string {
@@ -234,7 +237,13 @@ export function buildFAQPageLD(items: FAQItem[]): Record<string, unknown> {
 
 // 6) Article (Blog)
 export function buildArticleLD(article: ArticleInput): Record<string, unknown> {
-  return {
+  const author = article.authorName
+    ? article.authorIsPerson
+      ? { "@type": "Person", name: article.authorName }
+      : { "@type": "Organization", "@id": `${SITE_URL}#organization`, name: article.authorName }
+    : { "@type": "Organization", "@id": `${SITE_URL}#organization`, name: BRAND.name };
+
+  const ld: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: article.title,
@@ -242,10 +251,19 @@ export function buildArticleLD(article: ArticleInput): Record<string, unknown> {
     image: article.image ? [article.image] : undefined,
     datePublished: article.datePublished,
     dateModified: article.dateModified || article.datePublished,
-    author: { "@type": "Organization", name: article.authorName || BRAND.name },
-    publisher: { "@type": "Organization", name: BRAND.name },
+    author,
+    publisher: { "@type": "Organization", "@id": `${SITE_URL}#organization`, name: BRAND.name },
     mainEntityOfPage: { "@type": "WebPage", "@id": article.url },
   };
+
+  if (article.reviewerName) {
+    ld.reviewedBy = { "@type": "Person", name: article.reviewerName };
+  }
+  if (article.lastReviewedAt) {
+    ld.lastReviewedAt = article.lastReviewedAt;
+  }
+
+  return ld;
 }
 
 // 7) Breadcrumb (comum)
@@ -257,7 +275,7 @@ export function buildBreadcrumbLD(items: Array<{ name: string; url: string }>): 
       "@type": "ListItem",
       position: index + 1,
       name: item.name,
-      item: item.url,
+      item: item.url && /^https?:\/\//.test(item.url) ? item.url : `${SITE_URL}${item.url.startsWith('/') ? item.url : `/${item.url}`}`,
     })),
   };
 }

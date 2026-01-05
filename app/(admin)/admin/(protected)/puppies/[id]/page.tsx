@@ -63,7 +63,7 @@ export default function PuppyFormPage() {
   }, [fetchRecord, isNew]);
 
   const handleCompleted = useCallback(() => {
-    router.push("/admin/puppies");
+    router.push("/admin/filhotes");
   }, [router]);
 
   const handleRefresh = async () => {
@@ -78,7 +78,7 @@ export default function PuppyFormPage() {
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
             <button
               type="button"
-              onClick={() => router.push("/admin/puppies")}
+              onClick={() => router.push("/admin/filhotes")}
               className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] px-3 py-1 text-xs font-semibold text-[var(--text)] hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
             >
               <ChevronLeft className="h-3.5 w-3.5" aria-hidden />

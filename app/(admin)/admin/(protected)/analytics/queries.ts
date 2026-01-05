@@ -47,7 +47,7 @@ const parseList = (param?: string | string[] | null) => {
   return raw
     .split(/[,|]/)
     .map((chunk) => chunk.trim())
-    .filter(Boolean);
+    .filter((s): s is string => typeof s === "string" && s.length > 0);
 };
 
 export function parseAnalyticsFilters(searchParams: Record<string, string | string[] | undefined>) {
@@ -71,9 +71,15 @@ type LeadsByDayRow = { day: string | null; total: number | null };
 type LeadsAggRow = { label?: string | null; value?: number | null };
 type StatusAggRow = { status: string | null; total: number | null };
 
-// Supabase client type helpers are environment-dependent; remove unused
-// local helper type to avoid lint noise.
-type LeadsQueryBuilder = any;
+// Minimal supabase-like query shape used for local typing in applyFilters.
+type LeadsQueryBuilder = {
+  gte: (col: string, val: unknown) => LeadsQueryBuilder;
+  lte: (col: string, val: unknown) => LeadsQueryBuilder;
+  in: (col: string, vals: unknown[]) => LeadsQueryBuilder;
+  select: (...args: unknown[]) => LeadsQueryBuilder;
+  not: (...args: unknown[]) => LeadsQueryBuilder;
+  order: (...args: unknown[]) => LeadsQueryBuilder;
+};
 
 const applyFilters = <T extends LeadsQueryBuilder>(query: T, filters: AnalyticsFilters) => {
   let next = query as LeadsQueryBuilder;
@@ -191,8 +197,14 @@ export async function fetchLeadsAnalytics({ filters }: { filters: AnalyticsFilte
   const totalLeads = totalRes.count ?? 0;
   const conversionRate = totalLeads > 0 ? (statusCounts.fechado / totalLeads) * 100 : 0;
 
+  const isString = (v: unknown): v is string => typeof v === "string" && v.trim().length > 0;
+
   const colorOptions = Array.from(
-    new Set((colorOptionsRes.data ?? []).map((row: any) => (row as { cor_preferida?: string | null }).cor_preferida).filter(Boolean) as string[]),
+    new Set(
+      ((colorOptionsRes.data ?? []) as unknown[])
+        .map((row) => (row as { cor_preferida?: string | null }).cor_preferida)
+        .filter(isString),
+    ),
   ).sort((a, b) => a.localeCompare(b, "pt-BR"));
 
   return {

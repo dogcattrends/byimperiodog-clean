@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
 
   const header = ["id","created_at","first_name","last_name","phone","source","utm_source","utm_campaign","first_responded_at"];
   const csv = [header.join(",")]
-    .concat((leads||[]).map(r => header.map(h => JSON.stringify((r as any)[h] ?? "")).join(","))).join("\n");
+    .concat((leads||[]).map((r: Record<string, unknown>) => header.map(h => JSON.stringify((r[h] ?? "") as string)).join(","))).join("\n");
 
   return new NextResponse(csv, {
     headers: { "Content-Type":"text/csv; charset=utf-8", "Content-Disposition": `attachment; filename="leads_${days}d.csv"` }

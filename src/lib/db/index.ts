@@ -1,5 +1,5 @@
-import { createLogger } from "@/lib/logger";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { createLogger } from "../logger";
+import { supabaseAdmin } from "../supabaseAdmin";
 
 import {
   bulkActionSchema,
@@ -300,7 +300,7 @@ function applyPagination(query: any, params?: ListParams) {
   return query.range(offset, offset + limit - 1);
 }
 
-async function fetchPostMetrics(client: SupabaseClient, postIds: string[]): Promise<Record<string, PostMetrics>> {
+export async function fetchPostMetrics(client: SupabaseClient, postIds: string[]): Promise<Record<string, PostMetrics>> {
   if (!client || postIds.length === 0) return {};
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -319,7 +319,7 @@ async function fetchPostMetrics(client: SupabaseClient, postIds: string[]): Prom
   }
 }
 
-async function fetchPendingComments(client: SupabaseClient, postIds: string[]): Promise<Record<string, number>> {
+export async function fetchPendingComments(client: SupabaseClient, postIds: string[]): Promise<Record<string, number>> {
   if (!client || postIds.length === 0) return {};
   try {
     const { data, error } = await client

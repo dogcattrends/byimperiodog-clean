@@ -13,16 +13,19 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "https:
 const WA_PHONE = process.env.NEXT_PUBLIC_WA_PHONE?.replace(/\D/g, "") || "5511968633239";
 const WA_LINK = `https://wa.me/${WA_PHONE}`;
 
+const RJ_SNIPPET =
+  "Resumo para tutores do Rio de Janeiro com orientacoes sobre entrega, visita e disponibilidade de filhotes de Spitz Alemao Anao (Lulu da Pomerania). A pagina explica o atendimento local, prazos e como falar com a equipe oficial antes de reservar.";
+
 export const metadata: Metadata = {
   title: "Filhotes de Spitz Alemão Anão (Lulu da Pomerânia) no Rio de Janeiro (RJ) | By Imperio Dog",
   description:
-    "Compre filhotes de Spitz Alemão Anão (Lulu da Pomerânia) no Rio de Janeiro com entrega segura na capital, Niterói, região metropolitana e interior. Pedigree CBKC e suporte vitalício.",
+    "Compre filhotes de Spitz Alemão Anão (Lulu da Pomerânia) no Rio de Janeiro com entrega segura na capital, Niterói, região metropolitana e interior. Pedigree e suporte vitalício.",
   alternates: { canonical: canonical("/filhotes/rio-de-janeiro") },
   openGraph: {
     type: "website",
     url: canonical("/filhotes/rio-de-janeiro"),
     title: "Filhotes de Spitz Alemão (Lulu da Pomerânia) no Rio de Janeiro",
-    description: "Compre Spitz Alemão (Lulu da Pomerânia) com entrega em todo RJ. Criadora certificada CBKC.",
+    description: "Compre Spitz Alemão (Lulu da Pomerânia) com entrega em todo RJ. Criadora com pedigree documentado.",
     images: [{ url: "/spitz-hero-desktop.webp", width: 1200, height: 630 }],
   },
 };
@@ -60,7 +63,7 @@ const faqRJ = [
   {
     question: "O filhote vem com documentação e vacinas?",
     answer:
-      "Sim! Todos os filhotes vêm com pedigree CBKC, primeira dose da vacina V10, vermifugação completa, atestado veterinário e contrato. Fornecemos orientação completa sobre o calendário de vacinas.",
+      "Sim! Todos os filhotes vêm com Pedigree, primeira dose da vacina V10, vermifugação completa, atestado veterinário e contrato. Fornecemos orientação completa sobre o calendário de vacinas.",
   },
   {
     question: "Spitz Alemão (Lulu da Pomerânia) se adapta bem ao clima do Rio?",
@@ -82,7 +85,7 @@ export default function FilhotesRioDeJaneiroPage() {
     name: "By Imperio Dog - Filhotes no Rio de Janeiro",
     url: `${SITE_URL}/filhotes/rio-de-janeiro`,
     image: `${SITE_URL}/spitz-hero-desktop.webp`,
-    telephone: "+55 11 98663-3239",
+    telephone: "+55 11 9 6863-3239",
     address: {
       "@type": "PostalAddress",
       addressRegion: "RJ",
@@ -156,9 +159,14 @@ export default function FilhotesRioDeJaneiroPage() {
           </h1>
           <p className="mx-auto mt-6 max-w-3xl text-lg text-[var(--text-secondary)]">
             Compre seu Spitz Alemão Anão (Lulu da Pomerânia) com segurança e entrega em toda a capital, Niterói, região
-            metropolitana e interior do RJ. Criadora certificada CBKC com suporte vitalício.
+            metropolitana e interior do RJ. Criadora com pedigree documentado com suporte vitalício.
           </p>
-          <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <div className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 text-left">
+  <h2 className="text-lg font-semibold text-[var(--text)]">Resposta curta</h2>
+  <p className="mt-2 text-sm text-[var(--text-secondary)]">{RJ_SNIPPET}</p>
+</div>
+
+<div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <a
               href={waLink}
               target="_blank"
@@ -208,7 +216,7 @@ export default function FilhotesRioDeJaneiroPage() {
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--brand)]/10">
                 <Shield className="h-8 w-8 text-[var(--brand)]" />
               </div>
-              <h3 className="mb-2 font-bold text-[var(--text)]">Pedigree CBKC</h3>
+              <h3 className="mb-2 font-bold text-[var(--text)]">Pedigree</h3>
               <p className="text-sm text-[var(--text-secondary)]">Todos os filhotes com registro oficial</p>
             </div>
             <div className="text-center">

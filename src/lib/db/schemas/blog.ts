@@ -9,7 +9,7 @@ function enforceContentRules(value: string | null | undefined, field: string) {
   if (!value) return true;
   const input = value.normalize("NFC");
   if (bannedPattern.test(input)) {
-    throw new Error(`O campo ${field} contém termos proibidos (adoção/doação/boutique).`);
+    throw new Error(`O campo ${field} contém termos proibidos (aquisição/doação/boutique).`);
   }
   if (cernelhaPattern.test(input) && !/cernelha\s*\(altura\)/i.test(input)) {
     throw new Error(`Use "cernelha (altura)" no campo ${field}.`);

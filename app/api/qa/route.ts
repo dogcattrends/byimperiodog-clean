@@ -2,10 +2,11 @@ import { NextResponse } from "next/server";
 
 import { embedText, lexicalFallback, rankChunks } from "@/lib/rag";
 import { rateLimit } from "@/lib/rateLimit";
-import { supabasePublic } from "@/lib/supabasePublic";
+import { blocksToPlainText, slugFromSanity } from "@/lib/sanity/blocks";
+import { sanityClient } from "@/lib/sanity/client";
 
 interface QaRequestBody { q?: string }
-interface BlogPostRow { id: string; slug: string; title: string; content_mdx?: string | null; excerpt?: string | null }
+interface BlogPostRow { id: string; slug: string; title: string; content: string }
 interface ChunkCandidate { id: string; slug: string; title: string; content: string; anchor?: string; offset: number; embedding?: number[] }
 
 export const runtime = "edge";
@@ -20,17 +21,46 @@ export async function POST(req: Request){
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'anon';
   const rl = rateLimit(`qa:${ip}`, { capacity: 8, refillPerSec: 0.05 }); // ~1 nova a cada 20s além do burst
   if(!rl.allowed) return NextResponse.json({ ok:false, error:'rate_limited', retryAfterSec: Math.ceil((1)/0.05) }, { status:429 });
-  // Fetch latest published posts (limit for performance)
-  const sb = supabasePublic();
-  const { data } = await sb.from('blog_posts')
-    .select('id,slug,title,content_mdx,excerpt')
-    .eq('status','published')
-    .order('published_at', { ascending:false })
-    .limit(40);
-  const posts: BlogPostRow[] = (data as BlogPostRow[]) || [];
+  const query = `
+    *[_type == "post" && status == "published"]
+      | order(coalesce(publishedAt, _createdAt) desc)[0...40] {
+        _id,
+        slug { current },
+        title,
+        excerpt,
+        description,
+        content
+      }
+  `;
+
+  const sanityPosts = await sanityClient.fetch<Array<{
+    _id?: string;
+    slug?: { current?: string };
+    title?: string;
+    excerpt?: string | null;
+    description?: string | null;
+    content?: Array<{ children?: Array<{ text?: string }> }>;
+  }>>(query);
+  const posts: BlogPostRow[] = (sanityPosts ?? [])
+    .filter((post): post is { _id: string; slug?: { current?: string }; title?: string; excerpt?: string | null; description?: string | null; content?: Array<{ children?: Array<{ text?: string }> }> } => Boolean(post._id))
+    .map((post) => {
+      const content = [
+        post.excerpt ?? "",
+        post.description ?? "",
+        blocksToPlainText(post.content),
+      ]
+        .filter(Boolean)
+        .join("\n\n");
+      return {
+        id: post._id,
+        slug: slugFromSanity(post.slug, post._id),
+        title: post.title || "Sem título",
+        content,
+      };
+    });
   // Build chunks (very naive: split paragraphs)
   const chunks: ChunkCandidate[] = posts.flatMap((p: BlogPostRow) => {
-    const raw = (p.content_mdx || '');
+    const raw = (p.content || '');
     // Split by double newline; capture heading anchors (# or ##...) to build fragment id references
     const parts = raw.split(/\n{2,}/).slice(0,40);
     let charOffset = 0;

@@ -1,36 +1,36 @@
-/**
+﻿/**
  * @module domain/puppy
- * @description Entidade central do domínio: Filhote de Spitz Alemão (By Império Dog)
+ * @description Entidade central do domÃ­nio: Filhote de Spitz AlemÃ£o (By ImpÃ©rio Dog)
  * 
- * REGRA DE NEGÓCIO:
- * - Todos os filhotes são comercializados sob a marca "By Império Dog"
- * - A origem (própria ou externa) é APENAS para controle interno
+ * REGRA DE NEGÃ“CIO:
+ * - Todos os filhotes sÃ£o comercializados sob a marca "By ImpÃ©rio Dog"
+ * - A origem (prÃ³pria ou externa) Ã© APENAS para controle interno
  * - NUNCA expor "criador parceiro" ao cliente final
  */
 
 import type { City, Color, PuppyStatus } from "./taxonomies";
 
 /**
- * Origem interna do filhote (NÃO EXIBIR AO PÚBLICO)
+ * Origem interna do filhote (NÃƒO EXIBIR AO PÃšBLICO)
  */
 export type PuppySource = "own-breeding" | "external-breeder";
 
 /**
- * Entidade Puppy - Filhote de Spitz Alemão Anão (Lulu da Pomerânia)
- * Comercializado 100% sob a marca "By Império Dog"
+ * Entidade Puppy - Filhote de Spitz AlemÃ£o AnÃ£o (Lulu da PomerÃ¢nia)
+ * Comercializado 100% sob a marca "By ImpÃ©rio Dog"
  */
 export interface Puppy {
   // ==========================================
-  // IDENTIFICAÇÃO
+  // IDENTIFICAÃ‡ÃƒO
   // ==========================================
   id: string;
   slug: string; // URL-friendly (ex: "thor-spitz-alemao-macho-laranja")
   name: string; // Nome do filhote (ex: "Thor")
 
   // ==========================================
-  // CARACTERÍSTICAS FÍSICAS
+  // CARACTERÃSTICAS FÃSICAS
   // ==========================================
-  breed: "Spitz Alemão Anão" | "Lulu da Pomerânia"; // Raça oficial
+  breed: "Spitz Alemão Anão" | "Spitz AlemÃ£o AnÃ£o" | "Lulu da Pomerânia" | "Lulu da PomerÃ¢nia"; // Raça oficial
   color: Color; // Cor da pelagem
   sex: "male" | "female";
   birthDate: Date; // Data de nascimento
@@ -38,91 +38,91 @@ export interface Puppy {
   
   // Medidas e porte
   currentWeight?: number; // Peso atual em kg
-  expectedAdultWeight?: number; // Peso adulto esperado (1.5 - 3.5 kg para Spitz Anão)
+  expectedAdultWeight?: number; // Peso adulto esperado (1.5 - 3.5 kg para Spitz AnÃ£o)
   currentHeight?: number; // Altura atual em cm
   expectedAdultHeight?: number; // Altura adulta esperada (18-22cm na cernelha)
-  size: "toy" | "mini" | "standard"; // Classificação de porte
+  size: "toy" | "mini" | "standard"; // ClassificaÃ§Ã£o de porte
 
   // ==========================================
-  // COMERCIAL (BY IMPÉRIO DOG)
+  // COMERCIAL (BY IMPÃ‰RIO DOG)
   // ==========================================
   title: string; // Título comercial SEO (ex: "Spitz Alemão Anão Macho Laranja - Thor")
   description: string; // Descrição voltada à venda
   priceCents: number; // Preço em centavos (ex: 350000 = R$ 3.500,00)
   currency: "BRL"; // Moeda (sempre BRL)
-  status: PuppyStatus; // Disponível, reservado, vendido, em breve
+  status: PuppyStatus; // DisponÃ­vel, reservado, vendido, em breve
   
-  // Destaque e promoção
-  isHighlighted: boolean; // Destaque no catálogo
+  // Destaque e promoÃ§Ã£o
+  isHighlighted: boolean; // Destaque no catÃ¡logo
   isFeatured: boolean; // Vitrine principal (homepage)
   isBestSeller: boolean; // Mais vendido
-  isNewArrival: boolean; // Recém-chegado
+  isNewArrival: boolean; // RecÃ©m-chegado
   discountPercentage?: number; // Desconto percentual (ex: 10 = 10% off)
-  originalPriceCents?: number; // Preço original se houver desconto
+  originalPriceCents?: number; // PreÃ§o original se houver desconto
 
   // ==========================================
-  // LOCALIZAÇÃO E ENTREGA
+  // LOCALIZAÃ‡ÃƒO E ENTREGA
   // ==========================================
-  city: City; // Cidade de anúncio/entrega principal
+  city: City; // Cidade de anÃºncio/entrega principal
   state: string; // UF (SP, RJ, MG, etc)
   availableForShipping: boolean; // Aceita envio para outras cidades
-  shippingCities?: City[]; // Cidades específicas que atende
+  shippingCities?: City[]; // Cidades especÃ­ficas que atende
   shippingNotes?: string; // Ex: "Entrega gratuita na Grande SP"
   
   // ==========================================
-  // MÍDIA E CONTEÚDO
+  // MÃDIA E CONTEÃšDO
   // ==========================================
   images: string[]; // URLs das imagens (primeira = thumbnail principal)
-  videoUrl?: string; // URL do vídeo de apresentação (YouTube, Vimeo)
-  captionUrl?: string; // URL de legendas/captions do vídeo (opcional)
+  videoUrl?: string; // URL do vÃ­deo de apresentaÃ§Ã£o (YouTube, Vimeo)
+  captionUrl?: string; // URL de legendas/captions do vÃ­deo (opcional)
   galleryImages?: string[]; // Galeria adicional de imagens
   thumbnailUrl?: string; // Thumbnail customizado (se diferente da primeira image)
 
   // SEO e ranqueamento
   seoTitle?: string; // Meta title customizado
   seoDescription?: string; // Meta description customizada
-  seoKeywords: string[]; // ["spitz alemão macho", "lulu pomerania creme sp", etc]
-  canonicalUrl?: string; // URL canônica (se houver duplicatas)
+  seoKeywords: string[]; // ["spitz alemÃ£o macho", "lulu pomerania creme sp", etc]
+  canonicalUrl?: string; // URL canÃ´nica (se houver duplicatas)
 
   // ==========================================
-  // SAÚDE E DOCUMENTAÇÃO
+  // SAÃšDE E DOCUMENTAÃ‡ÃƒO
   // ==========================================
-  hasPedigree: boolean; // Tem pedigree CBKC
-  pedigreeNumber?: string; // Número do pedigree CBKC
+  hasPedigree: boolean; // Tem pedigree Pedigree
+  pedigreeNumber?: string; // NÃºmero do pedigree Pedigree
   pedigreeUrl?: string; // URL do PDF do pedigree
   
-  vaccinationStatus: "up-to-date" | "partial" | "pending"; // Status de vacinação
+  vaccinationStatus: "up-to-date" | "partial" | "pending"; // Status de vacinaÃ§Ã£o
   vaccinationDates?: Date[]; // Datas das vacinas aplicadas
-  nextVaccinationDate?: Date; // Próxima vacina programada
+  nextVaccinationDate?: Date; // PrÃ³xima vacina programada
   
   hasMicrochip: boolean; // Tem microchip
   microchipId?: string; // ID do microchip
   
-  healthCertificateUrl?: string; // Atestado de saúde veterinário
-  healthNotes?: string; // Observações de saúde (alergias, cuidados especiais)
+  healthCertificateUrl?: string; // Atestado de saÃºde veterinÃ¡rio
+  healthNotes?: string; // ObservaÃ§Ãµes de saÃºde (alergias, cuidados especiais)
   
   // Linhagem
   parentsMale?: string; // Nome do pai
-  parentsFemale?: string; // Nome da mãe
+  parentsFemale?: string; // Nome da mÃ£e
   parentsImages?: { male?: string; female?: string }; // Fotos dos pais
 
   // ==========================================
   // SOCIAL PROOF E ENGAJAMENTO
   // ==========================================
-  reviewCount: number; // Total de avaliações
-  averageRating: number; // Média de avaliação (0-5)
-  viewCount: number; // Visualizações da página
-  favoriteCount: number; // Favoritações
+  reviewCount: number; // Total de avaliaÃ§Ãµes
+  averageRating: number; // MÃ©dia de avaliaÃ§Ã£o (0-5)
+  viewCount: number; // VisualizaÃ§Ãµes da pÃ¡gina
+  favoriteCount: number; // FavoritaÃ§Ãµes
   shareCount: number; // Compartilhamentos
-  inquiryCount: number; // Consultas via formulário
+  inquiryCount: number; // Consultas via formulÃ¡rio
 
   // ==========================================
-  // CONTROLE INTERNO (NÃO EXIBIR AO PÚBLICO)
+  // CONTROLE INTERNO (NÃƒO EXIBIR AO PÃšBLICO)
   // ==========================================
-  source: PuppySource; // Origem: criação própria ou externa
-  internalSourceId?: string; // ID do criador externo (se aplicável) - APENAS INTERNO
+  source: PuppySource; // Origem: criaÃ§Ã£o prÃ³pria ou externa
+  internalSourceId?: string; // ID do criador externo (se aplicÃ¡vel) - APENAS INTERNO
   internalNotes?: string; // Notas administrativas internas
-  costCents?: number; // Custo de aquisição (se externo) - APENAS INTERNO
+  costCents?: number; // Custo de aquisiÃ§Ã£o (se externo) - APENAS INTERNO
   profitMarginPercentage?: number; // Margem de lucro - APENAS INTERNO
 
   // ==========================================
@@ -130,7 +130,7 @@ export interface Puppy {
   // ==========================================
   createdAt: Date;
   updatedAt: Date;
-  publishedAt?: Date; // Data de publicação no site
+  publishedAt?: Date; // Data de publicaÃ§Ã£o no site
   soldAt?: Date; // Data da venda
   reservedAt?: Date; // Data da reserva
   reservedBy?: string; // ID ou email do cliente que reservou
@@ -138,17 +138,17 @@ export interface Puppy {
 
   // Auditoria
   createdBy?: string; // ID do admin que criou
-  updatedBy?: string; // ID do admin da última atualização
+  updatedBy?: string; // ID do admin da Ãºltima atualizaÃ§Ã£o
 }
 
 // ==========================================
 // VALUE OBJECTS
 // ==========================================
-// VALUE OBJECTS (definidos mais abaixo após interfaces auxiliares)
+// VALUE OBJECTS (definidos mais abaixo apÃ³s interfaces auxiliares)
 
 /**
  * Value Object: Idade do filhote
- * Encapsula cálculos de idade e validações
+ * Encapsula cÃ¡lculos de idade e validaÃ§Ãµes
  */
 export class PuppyAge {
   constructor(private readonly birthDate: Date) {}
@@ -185,7 +185,7 @@ export class PuppyAge {
     const weeks = this.getWeeks();
 
     if (months >= 1) {
-      return months === 1 ? "1 mês" : `${months} meses`;
+      return months === 1 ? "1 mÃªs" : `${months} meses`;
     }
     return weeks === 1 ? "1 semana" : `${weeks} semanas`;
   }
@@ -202,7 +202,7 @@ export class PuppyAge {
 // ==========================================
 
 /**
- * DTO para criação de novo filhote
+ * DTO para criaÃ§Ã£o de novo filhote
  */
 export interface CreatePuppyDTO {
   name: string;
@@ -215,12 +215,12 @@ export interface CreatePuppyDTO {
   title: string;
   description: string;
   images: string[];
-  source: PuppySource; // próprio ou externo (interno)
-  internalSourceId?: string; // ID do criador externo (se aplicável)
+  source: PuppySource; // prÃ³prio ou externo (interno)
+  internalSourceId?: string; // ID do criador externo (se aplicÃ¡vel)
 }
 
 /**
- * DTO para atualização de filhote
+ * DTO para atualizaÃ§Ã£o de filhote
  */
 export type UpdatePuppyDTO = Partial<CreatePuppyDTO> & {
   id: string;
@@ -245,28 +245,28 @@ export interface PuppyFilters {
   source?: PuppySource; // Filtro interno (admin)
   isHighlighted?: boolean;
   isFeatured?: boolean;
-  search?: string; // Busca textual (nome, descrição)
+  search?: string; // Busca textual (nome, descriÃ§Ã£o)
 }
 
 /**
- * DTO para ordenação
+ * DTO para ordenaÃ§Ã£o
  */
 export type PuppySortBy =
   | "recent" // Mais recentes primeiro
-  | "price-asc" // Menor preço
-  | "price-desc" // Maior preço
+  | "price-asc" // Menor preÃ§o
+  | "price-desc" // Maior preÃ§o
   | "popular" // Mais visualizados
   | "rating" // Melhor avaliados
   | "name-asc" // A-Z
   | "name-desc"; // Z-A
 
 // ==========================================
-// HELPERS E UTILITÁRIOS
+// HELPERS E UTILITÃRIOS
 // ==========================================
 
 export const PuppyHelpers = {
   /**
-   * Gera slug amigável para URL
+   * Gera slug amigÃ¡vel para URL
    */
   generateSlug(name: string, color: Color, sex: "male" | "female"): string {
     const sexLabel = sex === "male" ? "macho" : "femea";
@@ -275,13 +275,13 @@ export const PuppyHelpers = {
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "") // Remove acentos
       .replace(/[^a-z0-9]+/g, "-") // Remove caracteres especiais
-      .replace(/^-+|-+$/g, ""); // Remove hífens nas pontas
+      .replace(/^-+|-+$/g, ""); // Remove hÃ­fens nas pontas
 
     return `${normalized}-spitz-alemao-${sexLabel}-${color}`;
   },
 
   /**
-   * Verifica se filhote está disponível para venda
+  * Verifica se filhote está disponível para venda
    */
   isAvailable(puppy: Puppy): boolean {
     if (puppy.status !== "available") return false;
@@ -315,44 +315,44 @@ export const PuppyHelpers = {
   },
 
   /**
-   * Gera título SEO otimizado
+   * Gera tÃ­tulo SEO otimizado
    */
   generateSeoTitle(puppy: Puppy): string {
-    const sexLabel = puppy.sex === "male" ? "Macho" : "Fêmea";
+    const sexLabel = puppy.sex === "male" ? "Macho" : "FÃªmea";
     const colorCapitalized = puppy.color.charAt(0).toUpperCase() + puppy.color.slice(1);
 
-    return `${puppy.name} • Spitz Alemão Anão ${sexLabel} ${colorCapitalized} | By Império Dog`;
+    return `${puppy.name} â€¢ Spitz AlemÃ£o AnÃ£o ${sexLabel} ${colorCapitalized} | By ImpÃ©rio Dog`;
   },
 
   /**
-   * Gera descrição SEO otimizada
+   * Gera descriÃ§Ã£o SEO otimizada
    */
   generateSeoDescription(puppy: Puppy): string {
-    const sexLabel = puppy.sex === "male" ? "macho" : "fêmea";
+    const sexLabel = puppy.sex === "male" ? "macho" : "fÃªmea";
     const price = PuppyPrice.fromCents(puppy.priceCents).format();
 
-    return `Conheça ${puppy.name}, filhote de Spitz Alemão Anão ${puppy.color} ${sexLabel}. ${price}. Pedigree CBKC, entrega segura e suporte vitalício. By Império Dog.`;
+    return `ConheÃ§a ${puppy.name}, filhote de Spitz AlemÃ£o AnÃ£o ${puppy.color} ${sexLabel}. ${price}. Pedigree Pedigree, entrega segura e suporte vitalÃ­cio. By ImpÃ©rio Dog.`;
   },
 
   /**
    * Gera keywords SEO
    */
   generateSeoKeywords(puppy: Puppy): string[] {
-    const sexLabel = puppy.sex === "male" ? "macho" : "fêmea";
+    const sexLabel = puppy.sex === "male" ? "macho" : "fÃªmea";
 
     return [
-      `spitz alemão ${puppy.color}`,
-      `lulu da pomerânia ${sexLabel}`,
+      `spitz alemÃ£o ${puppy.color}`,
+      `lulu da pomerÃ¢nia ${sexLabel}`,
       `filhote spitz ${puppy.city}`,
-      `spitz alemão anão ${puppy.color}`,
-      `comprar spitz alemão ${puppy.state.toLowerCase()}`,
-      `by império dog ${puppy.color}`,
+      `spitz alemÃ£o anÃ£o ${puppy.color}`,
+      `comprar spitz alemÃ£o ${puppy.state.toLowerCase()}`,
+      `by impÃ©rio dog ${puppy.color}`,
       `spitz ${sexLabel} pedigree`,
     ];
   },
 
   /**
-   * Identifica filhotes que precisam de atenção (marketing)
+   * Identifica filhotes que precisam de atenÃ§Ã£o (marketing)
    */
   needsAttention(puppy: Puppy): { needsAttention: boolean; reasons: string[] } {
     const reasons: string[] = [];
@@ -386,7 +386,7 @@ export const PuppyHelpers = {
   },
 
   /**
-   * Formata data de nascimento para exibição
+   * Formata data de nascimento para exibiÃ§Ã£o
    */
   formatBirthDate(birthDate: Date, locale: string = "pt-BR"): string {
     return new Intl.DateTimeFormat(locale, {
@@ -397,9 +397,9 @@ export const PuppyHelpers = {
   },
 
   /**
-   * Calcula disponibilidade para adoção
+   * Calcula disponibilidade para aquisição
    */
-  getAdoptionAvailability(birthDate: Date): {
+  getAcquisitionAvailability(birthDate: Date): {
     isReady: boolean;
     readyDate: Date;
     daysUntilReady: number;
@@ -418,7 +418,7 @@ export const PuppyHelpers = {
 };
 
 /**
- * DTO para criação de filhote (campos obrigatórios mínimos)
+ * DTO para criaÃ§Ã£o de filhote (campos obrigatÃ³rios mÃ­nimos)
  */
 export interface CreatePuppyDTO {
   name: string;
@@ -462,7 +462,7 @@ export type PuppyEvent =
  */
 
 /**
- * Preço com formatação e validação
+ * PreÃ§o com formataÃ§Ã£o e validaÃ§Ã£o
  */
 export class PuppyPrice {
   private constructor(private readonly cents: number) {
@@ -497,3 +497,5 @@ export class PuppyPrice {
     return this.cents >= min.cents && this.cents <= max.cents;
   }
 }
+
+

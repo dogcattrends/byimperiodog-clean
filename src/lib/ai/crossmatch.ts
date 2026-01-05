@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { supabaseAdmin } from "../supabaseAdmin";
 
 type LeadRow = {
   id: string;
@@ -80,8 +80,10 @@ export async function runCrossMatch(leadId: string): Promise<CrossMatchSuggestio
     };
   }
 
-  const prices = (puppies.map((p: any) => p.price_cents || 0).filter(Boolean) as number[]);
-  const medianPrice = prices.sort((a, b) => a - b)[Math.floor(prices.length / 2)] || 0;
+  const prices = puppies
+    .map((p: any) => (typeof p.price_cents === "number" ? p.price_cents : 0))
+    .filter((n: number): n is number => typeof n === "number" && n > 0);
+  const medianPrice = prices.sort((a: number, b: number) => a - b)[Math.floor(prices.length / 2)] ?? 0;
 
   const scored = puppies.map((p: any) => {
     const { score, type } = scorePuppy(lead, p, medianPrice);

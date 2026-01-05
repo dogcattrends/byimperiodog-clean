@@ -50,8 +50,9 @@ export async function POST(req: Request){
     if(locErr) throw locErr;
 
     return NextResponse.json({ ok:true, localization_id: loc.id, slug: loc.slug });
-  } catch(e:any){
-    return NextResponse.json({ ok:false, error: e.message }, { status:500 });
+  } catch (e: unknown) {
+    const msg = typeof e === 'object' && e !== null && 'message' in e ? String((e as { message?: unknown }).message ?? e) : String(e);
+    return NextResponse.json({ ok: false, error: msg }, { status: 500 });
   }
 }
 

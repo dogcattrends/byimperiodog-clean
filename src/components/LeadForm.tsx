@@ -147,8 +147,8 @@ export default function LeadForm({ context, className }: Props) {
       {/* Nome e WhatsApp */}
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="contato-nome" className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">
-            Nome completo *
+          <label htmlFor="contato-nome" className="text-sm font-medium text-[var(--text-muted)]">
+            Nome completo <span aria-hidden="true" className="text-rose-600">*</span>
           </label>
           <input
             id="contato-nome"
@@ -170,9 +170,9 @@ export default function LeadForm({ context, className }: Props) {
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="contato-telefone"
-            className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]"
+            className="text-sm font-medium text-[var(--text-muted)]"
           >
-            WhatsApp *
+            WhatsApp <span aria-hidden="true" className="text-rose-600">*</span>
           </label>
           <input
             id="contato-telefone"
@@ -202,8 +202,8 @@ export default function LeadForm({ context, className }: Props) {
       {/* Cidade e Estado */}
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="contato-cidade" className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">
-            Cidade *
+          <label htmlFor="contato-cidade" className="text-sm font-medium text-[var(--text-muted)]">
+            Cidade <span aria-hidden="true" className="text-rose-600">*</span>
           </label>
           <input
             id="contato-cidade"
@@ -222,8 +222,8 @@ export default function LeadForm({ context, className }: Props) {
           )}
         </div>
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="contato-estado" className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">
-            UF *
+          <label htmlFor="contato-estado" className="text-sm font-medium text-[var(--text-muted)]">
+            UF <span aria-hidden="true" className="text-rose-600">*</span>
           </label>
           <input
             id="contato-estado"
@@ -247,7 +247,7 @@ export default function LeadForm({ context, className }: Props) {
       {/* Preferências */}
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="contato-sexo" className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">
+          <label htmlFor="contato-sexo" className="text-sm font-medium text-[var(--text-muted)]">
             Sexo do filhote
           </label>
           <select
@@ -267,7 +267,7 @@ export default function LeadForm({ context, className }: Props) {
           )}
         </div>
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="contato-cor" className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">
+          <label htmlFor="contato-cor" className="text-sm font-medium text-[var(--text-muted)]">
             Cor preferida
           </label>
           <input
@@ -282,7 +282,7 @@ export default function LeadForm({ context, className }: Props) {
 
       {/* Prazo de aquisição */}
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="contato-prazo" className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">
+        <label htmlFor="contato-prazo" className="text-sm font-medium text-[var(--text-muted)]">
           Prazo para aquisição
         </label>
         <select
@@ -305,7 +305,7 @@ export default function LeadForm({ context, className }: Props) {
 
       {/* Mensagem */}
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="contato-mensagem" className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">
+        <label htmlFor="contato-mensagem" className="text-sm font-medium text-[var(--text-muted)]">
           Conte-nos mais
         </label>
         <textarea
@@ -336,7 +336,7 @@ export default function LeadForm({ context, className }: Props) {
             className="mt-0.5 h-4 w-4 rounded border-[var(--border)] text-[var(--brand)] focus:ring-2 focus:ring-[var(--brand)]/40"
           />
           <label htmlFor="contato-consent" className="text-xs leading-relaxed text-[var(--text-muted)]" id="consent-description">
-            Li e aceito a{" "}
+            Li e aceito a
             <a
               href="/politica-de-privacidade"
               target="_blank"
@@ -344,8 +344,8 @@ export default function LeadForm({ context, className }: Props) {
               className="text-[var(--brand)] underline hover:no-underline"
             >
               Política de Privacidade
-            </a>{" "}
-            e autorizo o uso dos meus dados para contato sobre os filhotes. *
+            </a>
+            e autorizo o uso dos meus dados para contato sobre os filhotes. <span aria-hidden="true" className="text-rose-600">*</span>
           </label>
         </div>
         {errors.consent_lgpd && (
@@ -362,20 +362,29 @@ export default function LeadForm({ context, className }: Props) {
           disabled={isSubmitting}
           className={cn(
             buttonVariants({ variant: "solid", size: "lg" }),
-            "w-full justify-center rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] shadow-md hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
+            "w-full justify-center rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] shadow-md hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70 flex items-center gap-2"
           )}
+          aria-busy={isSubmitting}
         >
+          {isSubmitting && (
+            <svg className="h-5 w-5 animate-spin text-[var(--accent-foreground)]" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+            </svg>
+          )}
           {isSubmitting ? "Enviando..." : "Quero receber orientação personalizada"}
         </button>
 
         <div className="text-xs text-[var(--text-muted)]" aria-live="polite">
           {status === "success" && (
-            <p className="rounded-xl bg-emerald-50 px-3 py-2 text-emerald-900">
+            <p className="flex items-center gap-2 rounded-xl bg-emerald-50 px-3 py-2 text-emerald-900">
+              <svg className="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
               Tudo certo. Recebemos seu contato! Você será redirecionado ao WhatsApp em instantes.
             </p>
           )}
           {status === "error" && errorMessage && (
-            <p className="rounded-xl bg-rose-50 px-3 py-2 text-rose-600">
+            <p className="flex items-center gap-2 rounded-xl bg-rose-50 px-3 py-2 text-rose-600">
+              <svg className="h-4 w-4 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
               Ops, não conseguimos enviar. {errorMessage}
             </p>
           )}

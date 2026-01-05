@@ -1,11 +1,11 @@
-/**
+﻿/**
  * PuppyTrust v2.0 - Design System Refactor
- * Bloco de confiança: garantias, transparência, processo
- * UX: Redução de fricção no funil de conversão
- * A11y: Estrutura semântica clara
+ * Bloco de confianÃ§a: garantias, transparÃªncia, processo
+ * UX: ReduÃ§Ã£o de fricÃ§Ã£o no funil de conversÃ£o
+ * A11y: Estrutura semÃ¢ntica clara
  * 
  * Migrado para usar componentes do Design System:
- * - Card para cada elemento de confiança
+ * - Card para cada elemento de confianÃ§a
  */
 
 import { CheckCircle2, FileText, ShieldCheck, Users } from "lucide-react";
@@ -17,10 +17,10 @@ export function PuppyTrust() {
     <section aria-labelledby="trust-heading" className="space-y-6">
       <div className="text-center">
         <h2 id="trust-heading" className="text-2xl font-bold text-zinc-900">
-          Por que escolher a By Império Dog?
+          Por que escolher a By ImpÃ©rio Dog?
         </h2>
         <p className="mt-2 text-base text-zinc-600">
-          Transparência total em cada etapa do processo
+          TransparÃªncia total em cada etapa do processo
         </p>
       </div>
 
@@ -32,7 +32,7 @@ export function PuppyTrust() {
             </div>
             <h3 className="mt-4 text-base font-semibold text-zinc-900">Garantia de 30 dias</h3>
             <p className="mt-2 text-sm text-zinc-600">
-              Cobertura completa para problemas congênitos com suporte veterinário
+              Cobertura completa para problemas congÃªnitos com suporte veterinÃ¡rio
             </p>
           </CardContent>
         </Card>
@@ -44,7 +44,7 @@ export function PuppyTrust() {
             </div>
             <h3 className="mt-4 text-base font-semibold text-zinc-900">Contrato detalhado</h3>
             <p className="mt-2 text-sm text-zinc-600">
-              Todos os direitos e deveres documentados com clareza e segurança jurídica
+              Todos os direitos e deveres documentados com clareza e seguranÃ§a jurÃ­dica
             </p>
           </CardContent>
         </Card>
@@ -54,9 +54,9 @@ export function PuppyTrust() {
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-purple-100">
               <CheckCircle2 className="h-7 w-7 text-purple-600" aria-hidden="true" />
             </div>
-            <h3 className="mt-4 text-base font-semibold text-zinc-900">Origem rastreável</h3>
+            <h3 className="mt-4 text-base font-semibold text-zinc-900">Origem rastreÃ¡vel</h3>
             <p className="mt-2 text-sm text-zinc-600">
-              Pedigree CBKC com histórico completo da linhagem e exames dos pais
+              Pedigree Pedigree com histÃ³rico completo da linhagem e exames dos pais
             </p>
           </CardContent>
         </Card>
@@ -66,9 +66,9 @@ export function PuppyTrust() {
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-rose-100">
               <Users className="h-7 w-7 text-rose-600" aria-hidden="true" />
             </div>
-            <h3 className="mt-4 text-base font-semibold text-zinc-900">Suporte vitalício</h3>
+            <h3 className="mt-4 text-base font-semibold text-zinc-900">Suporte vitalÃ­cio</h3>
             <p className="mt-2 text-sm text-zinc-600">
-              Grupo exclusivo de tutores com check-ins mensais e orientação contínua
+              Grupo exclusivo de tutores com check-ins mensais e orientaÃ§Ã£o contÃ­nua
             </p>
           </CardContent>
         </Card>
@@ -77,31 +77,31 @@ export function PuppyTrust() {
       <Card variant="outline" className="border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-white">
         <CardContent className="p-6">
           <h3 className="text-lg font-semibold text-emerald-900">
-            ✓ Processo completo de adoção responsável
+            ✓ Processo completo de aquisição responsável
           </h3>
           <ol className="mt-4 space-y-2 text-sm text-zinc-700">
           <li className="flex items-start gap-2">
             <span className="font-semibold text-emerald-700">1.</span>
             <span>
-              <strong>Entrevista inicial:</strong> conhecemos sua rotina, expectativas e preparamos você para a chegada
+              <strong>Entrevista inicial:</strong> conhecemos sua rotina, expectativas e preparamos vocÃª para a chegada
             </span>
           </li>
           <li className="flex items-start gap-2">
             <span className="font-semibold text-emerald-700">2.</span>
             <span>
-              <strong>Visita online:</strong> chamadas de vídeo para ver o filhote, tirar dúvidas e criar vínculo
+              <strong>Visita online:</strong> chamadas de vÃ­deo para ver o filhote, tirar dÃºvidas e criar vÃ­nculo
             </span>
           </li>
           <li className="flex items-start gap-2">
             <span className="font-semibold text-emerald-700">3.</span>
             <span>
-              <strong>Contrato e reserva:</strong> documentação clara, pagamento seguro e cronograma definido
+              <strong>Contrato e reserva:</strong> documentaÃ§Ã£o clara, pagamento seguro e cronograma definido
             </span>
           </li>
           <li className="flex items-start gap-2">
             <span className="font-semibold text-emerald-700">4.</span>
             <span>
-              <strong>Acompanhamento pré-entrega:</strong> updates semanais com fotos, vídeos e orientações
+              <strong>Acompanhamento prÃ©-entrega:</strong> updates semanais com fotos, vÃ­deos e orientaÃ§Ãµes
             </span>
           </li>
           <li className="flex items-start gap-2">
@@ -113,7 +113,7 @@ export function PuppyTrust() {
           <li className="flex items-start gap-2">
             <span className="font-semibold text-emerald-700">6.</span>
             <span>
-              <strong>Suporte pós-adoção:</strong> WhatsApp direto, grupo de tutores e check-ins mensais
+            <strong>Suporte pós-compra:</strong> WhatsApp direto, grupo de tutores e check-ins mensais
             </span>
           </li>
           </ol>

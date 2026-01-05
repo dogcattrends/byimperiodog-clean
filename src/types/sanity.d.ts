@@ -1,19 +1,5 @@
-declare module 'part:@sanity/base/schema-creator' {
-  const createSchema: unknown;
-  export default createSchema;
-}
+// Legacy Sanity ambient declarations removed.
+// Use the safer shims in /types/sanity-shims.d.ts instead.
 
-declare module 'all:part:@sanity/base/schema-type' {
-  const types: unknown;
-  export default types;
-}
+export {}
 
-declare module '@sanity/desk-tool/structure-builder' {
-  const S: unknown;
-  export default S;
-}
-
-declare module '@sanity/client' {
-  const client: unknown;
-  export default client;
-}

@@ -61,6 +61,7 @@ export default makeSource({
       rehypeSlug,
       [rehypeAutolinkHeadings, { behavior: 'wrap' }],
   // Wrapper para evitar erro de tipo entre múltiplas versões de vfile
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [rehypePrettyCode as unknown as any, { theme: 'github-dark' }],
     ],
   },

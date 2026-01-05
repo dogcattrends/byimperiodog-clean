@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { supabaseAdmin } from "../supabaseAdmin";
 
 type EventType = "reorder" | "badge_click" | "personalization" | "seo_title" | "seo_description";
 
@@ -46,6 +46,10 @@ export type CatalogAiMetrics = {
 export async function getCatalogAiMetrics(): Promise<CatalogAiMetrics[]> {
   const sb = supabaseAdmin();
   const { data, error } = await sb.from("catalog_ai_metrics").select("*");
+  const missingSchema =
+    error &&
+    (error.code === "42P01" || /could not find the table|relation/i.test(error.message ?? ""));
+  if (missingSchema) return [];
   if (error) throw new Error(error.message);
   return (data ?? []).map((row: any) => ({
     eventType: row.event_type as EventType,

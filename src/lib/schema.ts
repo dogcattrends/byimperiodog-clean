@@ -1,4 +1,4 @@
-type JsonLd = Record<string, unknown>;
+type JsonLd = object;
 
 const DEFAULT_SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.byimperiodog.com.br";
@@ -8,7 +8,7 @@ export function organizationSchema(siteUrl: string = DEFAULT_SITE_URL): JsonLd {
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "@id": `${baseUrl}/#organization`,
+    "@id": `${baseUrl}#organization`,
     name: "By Imperio Dog",
     url: baseUrl,
     logo: `${baseUrl}/byimperiologo.svg`,
@@ -21,7 +21,7 @@ export function organizationSchema(siteUrl: string = DEFAULT_SITE_URL): JsonLd {
     contactPoint: [
       {
         "@type": "ContactPoint",
-        telephone: "+55 11 98663-3239",
+        telephone: "+55 11 96863-3239",
         contactType: "customer service",
         availableLanguage: ["pt-BR"],
         areaServed: ["BR"],
@@ -35,7 +35,7 @@ export function websiteSchema(siteUrl: string = DEFAULT_SITE_URL): JsonLd {
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "@id": `${baseUrl}/#website`,
+    "@id": `${baseUrl}#website`,
     name: "By Imperio Dog",
     url: baseUrl,
     potentialAction: {
@@ -155,6 +155,7 @@ export function blogPostingSchema(
         },
     publisher: {
       "@type": "Organization",
+      "@id": `${baseUrl}#organization`,
       name: "By Imperio Dog",
       url: baseUrl,
       logo: {
@@ -347,11 +348,15 @@ export function buildBreadcrumbLD(items: Array<{ name: string; url: string }>) {
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
-    itemListElement: items.map((item, index) => ({
-      "@type": "ListItem",
-      position: index + 1,
-      name: item.name,
-      item: item.url,
-    })),
+    itemListElement: items.map((item, index) => {
+      const base = normalizeSiteUrl(DEFAULT_SITE_URL);
+      const url = item.url && /^https?:\/\//.test(item.url) ? item.url : `${base}${item.url.startsWith('/') ? item.url : `/${item.url}`}`;
+      return {
+        "@type": "ListItem",
+        position: index + 1,
+        name: item.name,
+        item: url,
+      };
+    }),
   };
 }

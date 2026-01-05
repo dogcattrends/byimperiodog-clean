@@ -102,7 +102,8 @@ Inclua título, um excerpt curto e conteúdo estruturado com headings (Introduç
   const recommended_internal_links = suggestInternalLinks(title, (body.topic ? [body.topic] : []), 3).map(l => ({ title: l.anchor, href: l.href }));
 
     return NextResponse.json({ ok: true, post: { title, excerpt, content_mdx, og_image_url, seo_title, seo_description, suggested_ctas, recommended_internal_links } });
-  } catch (err: any) {
-    return NextResponse.json({ ok: false, error: String(err?.message || err) }, { status: 500 });
+  } catch (err: unknown) {
+    const msg = typeof err === 'object' && err !== null && 'message' in err ? String((err as { message?: unknown }).message ?? err) : String(err);
+    return NextResponse.json({ ok: false, error: msg }, { status: 500 });
   }
 }

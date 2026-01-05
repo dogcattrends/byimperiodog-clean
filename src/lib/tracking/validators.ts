@@ -3,7 +3,7 @@
  * By Império Dog - Sistema de Pixels/Analytics
  */
 
-import type { ValidationResult } from '@/types/tracking';
+import type { ValidationResult } from '../../types/tracking';
 
 /**
  * Valida Facebook/Meta Pixel ID

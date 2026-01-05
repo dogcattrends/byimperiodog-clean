@@ -43,14 +43,21 @@ export const toast = Object.assign(showToast, {
 });
 
 export function dismissToast(id: string) {
-  listeners.forEach((l) => l({ id, message: "__dismiss__" } as any));
+  listeners.forEach((l) => l({ id, message: "__dismiss__" } as ToastItem));
 }
 
 export default function ToastContainer({ max = 4 }: { max?: number }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const timeouts = useRef<Map<string, number>>(new Map());
 
-  const variantStyles = useMemo(
+  type VarStyle = {
+    icon: React.ReactNode;
+    box: string;
+    text: string;
+    role: "status" | "alert";
+  };
+
+  const variantStyles = useMemo<Record<ToastVariant, VarStyle>>(
     () => ({
       success: {
         icon: <CheckCircle2 className="h-4 w-4 text-emerald-600" aria-hidden />,
@@ -115,7 +122,7 @@ export default function ToastContainer({ max = 4 }: { max?: number }) {
     <div aria-live="polite" className="fixed right-4 bottom-6 z-50 flex flex-col gap-2">
       {toasts.map((t) => {
         const v = t.variant ?? "info";
-        const vs = (variantStyles as any)[v];
+        const vs = variantStyles[v];
         return (
           <div
             key={t.id}

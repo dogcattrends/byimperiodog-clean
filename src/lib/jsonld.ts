@@ -38,8 +38,8 @@ export function getPostJsonLd(opts: { siteUrl: string; slug: string; title: stri
     description,
     datePublished,
     dateModified: dateModified || datePublished,
-    author: authorName ? { '@type': 'Person', name: authorName } : undefined,
-    mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+    author: authorName ? { '@type': 'Person', name: authorName } : { '@type': 'Organization', '@id': `${siteUrl.replace(/\/$/, '')}#organization` },
+    mainEntityOfPage: { '@type': 'WebPage', '@id': `${url}#webpage` },
     image: image ? [image] : undefined,
     url,
   };
@@ -81,6 +81,7 @@ export function getWebPageJsonLd(opts: {
     description: opts.description,
     isPartOf: {
       '@type': 'WebSite',
+      '@id': `${base}#website`,
       url: base,
       name: 'By Imperio Dog',
     },

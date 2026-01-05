@@ -83,7 +83,8 @@ export async function POST(req: NextRequest) {
     const seo_description = jDesc.choices?.[0]?.message?.content?.trim() || "";
 
     return NextResponse.json({ ok: true, suggestions: { seo_title, seo_description } });
-  } catch (err: any) {
-    return NextResponse.json({ ok: false, error: String(err?.message || err) }, { status: 500 });
+  } catch (err: unknown) {
+    const msg = typeof err === 'object' && err !== null && 'message' in err ? String((err as { message?: unknown }).message ?? err) : String(err);
+    return NextResponse.json({ ok: false, error: msg }, { status: 500 });
   }
 }

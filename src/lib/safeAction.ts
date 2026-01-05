@@ -1,7 +1,7 @@
 import type { ZodTypeAny, infer as ZodInfer } from "zod";
 
-import { AppError, toAppError } from "@/lib/errors";
-import { createLogger, type Logger } from "@/lib/logger";
+import { AppError, toAppError } from "./errors";
+import { createLogger, type Logger } from "./logger";
 
 type SafeActionHandler<TSchema extends ZodTypeAny, TResult> = (
   input: ZodInfer<TSchema>,

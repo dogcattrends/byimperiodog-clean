@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+
 import { environmentSchema } from '../../app/(admin)/admin/(protected)/pixels/schema';
 
 function baseEnv(overrides: Partial<any> = {}) {

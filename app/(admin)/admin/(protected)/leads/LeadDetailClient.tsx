@@ -1,11 +1,16 @@
-"use client";
+﻿"use client";
 
+// External imports
 import { BadgeCheck, Copy, Flame, Gauge, Loader2, MessageCircle, Sparkles } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
+// Internal imports (aliases)
 import { useToast } from "@/components/ui/toast";
 import type { LeadAdvisorSnapshot, AdvisorMessageStyle } from "@/lib/ai/leadAdvisor";
+import track from "@/lib/track";
 
+// Relative imports
 import type { LeadPuppyMatch, LeadStatus } from "./queries";
 import { LeadAiSummaryCard, LeadLossCard, LeadMessageStyles, LeadStatusSuggestionCard } from "./ui/LeadAdvisorCards";
 import { LeadCrossMatchCard } from "./ui/LeadCrossMatchCard";
@@ -50,7 +55,7 @@ const STATUS_OPTIONS: { value: LeadStatus; label: string }[] = [
 
 const PRIORITY_LABELS = {
   alta: "Alta",
-  media: "Média",
+  media: "MÃ©dia",
   baixa: "Baixa",
 } as const;
 
@@ -69,7 +74,7 @@ const STATUS_SUGGESTION_TO_STATUS: Record<string, LeadStatus | null> = {
   perdido: "perdido",
 };
 
-const EMPTY_VALUE = "—";
+const EMPTY_VALUE = "â€”";
 
 const formatDateTime = (value?: string | null) => {
   if (!value) return EMPTY_VALUE;
@@ -85,9 +90,9 @@ const valueOrDash = (value?: string | null) => {
 
 const buildFallbackMessage = (lead: LeadDetailData, puppy?: LeadPuppyMatch | null) => {
   const firstName = (lead.name || "").split(" ")[0] ?? "";
-  const desired = [lead.preferredColor, lead.preferredSex].filter(Boolean).join(" • ");
-  return `Olá ${firstName || ""}! Somos da By Império Dog. Vimos seu interesse${desired ? ` (${desired})` : ""}${
-    puppy ? ` e o ${puppy.name} combina muito com o que você procura` : ""
+  const desired = [lead.preferredColor, lead.preferredSex].filter((v): v is string => typeof v === "string" && v.length > 0).join(" â€¢ ");
+  return `OlÃ¡ ${firstName || ""}! Somos da By ImpÃ©rio Dog. Vimos seu interesse${desired ? ` (${desired})` : ""}${
+    puppy ? ` e o ${puppy.name} combina muito com o que vocÃª procura` : ""
   }. Podemos te enviar fotos e detalhes agora?`;
 };
 
@@ -123,6 +128,8 @@ export function LeadDetailClient({
   const { push } = useToast();
   const [mutating, setMutating] = useState<LeadStatus | null>(null);
   const [copyingStyle, setCopyingStyle] = useState<string | null>(null);
+  const [reanalyzing, setReanalyzing] = useState(false);
+  const router = useRouter();
   const suggestedStatus = STATUS_SUGGESTION_TO_STATUS[advisor.status.suggestion] ?? null;
 
   const primaryStyle = advisor.messages[0]?.id;
@@ -158,18 +165,46 @@ export function LeadDetailClient({
       await navigator.clipboard.writeText(text);
       push({ type: "success", message: `Mensagem ${label.toLowerCase()} copiada` });
     } catch {
-      push({ type: "error", message: "Não foi possível copiar" });
+      push({ type: "error", message: "NÃ£o foi possÃ­vel copiar" });
     } finally {
       setCopyingStyle(null);
     }
   };
 
+  const insightTimestamp = insight?.processed_at ?? insight?.updated_at;
+  const insightLabel = insightTimestamp
+    ? new Date(insightTimestamp as string).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })
+    : "Ainda nÃ£o analisado";
+
   const openWhatsApp = () => {
     if (!whatsappLink) {
-      push({ type: "error", message: "Telefone sem WhatsApp válido" });
+      push({ type: "error", message: "Telefone sem WhatsApp vÃ¡lido" });
       return;
     }
     window.open(whatsappLink, "_blank", "noopener,noreferrer");
+  };
+
+  const handleReanalyze = async () => {
+    if (reanalyzing) return;
+    setReanalyzing(true);
+    try {
+      const response = await fetch("/api/admin/leads/intel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ leadId: lead.id, force: true }),
+      });
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload?.error || "Erro ao disparar reanÃ¡lise");
+      }
+      track.event?.("cta_click", { ctaId: "lead_reanalyze", location: "admin_lead_detail", leadId: lead.id });
+      push({ type: "success", message: "ReanÃ¡lise solicitada. Atualize os dados em instantes." });
+      router.refresh();
+    } catch (error) {
+      push({ type: "error", message: error instanceof Error ? error.message : "NÃ£o foi possÃ­vel reanalisar" });
+    } finally {
+      setReanalyzing(false);
+    }
   };
 
   return (
@@ -212,15 +247,30 @@ export function LeadDetailClient({
         </div>
       </header>
 
-      <section className="grid gap-4 lg:grid-cols-[2fr,1fr]">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[var(--border)] bg-white/80 p-4 text-sm text-[var(--text-muted)] shadow-sm">
+        <p>
+          Ãšltima anÃ¡lise: <span className="font-semibold text-[var(--text)]">{insightLabel}</span>
+        </p>
+        <button
+          type="button"
+          onClick={handleReanalyze}
+          disabled={reanalyzing}
+          className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white px-4 py-2 text-xs font-semibold text-[var(--text)] shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50 disabled:cursor-wait disabled:opacity-60"
+        >
+          {reanalyzing ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Sparkles className="h-4 w-4" aria-hidden />}
+          {reanalyzing ? "Reanalisando..." : "Reanalisar IA"}
+        </button>
+      </div>
+
+        <section className="grid gap-4 lg:grid-cols-[2fr,1fr]">
         <div className="space-y-4 rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm">
           <div className="grid gap-3 md:grid-cols-2">
             <Info label="Telefone" value={valueOrDash(lead.phone)} />
-            <Info label="Cidade" value={valueOrDash([lead.city, lead.state].filter(Boolean).join(", "))} />
+            <Info label="Cidade" value={valueOrDash([lead.city, lead.state].filter((v): v is string => typeof v === "string" && v.length > 0).join(", "))} />
             <Info label="Cor desejada" value={valueOrDash(lead.preferredColor)} />
             <Info label="Sexo" value={valueOrDash(lead.preferredSex)} />
             <Info label="Origem" value={valueOrDash(lead.origin)} />
-            <Info label="Página" value={valueOrDash(lead.page)} />
+            <Info label="PÃ¡gina" value={valueOrDash(lead.page)} />
             <Info label="Criado em" value={formatDateTime(lead.createdAt)} />
             <Info label="Atualizado em" value={formatDateTime(lead.updatedAt)} />
           </div>
@@ -239,7 +289,7 @@ export function LeadDetailClient({
 
         <div className="space-y-4 rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm">
           <div>
-            <p className="text-sm font-semibold text-[var(--text)]">Status rápido</p>
+            <p className="text-sm font-semibold text-[var(--text)]">Status rÃ¡pido</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {STATUS_OPTIONS.map((option) => (
                 <button
@@ -276,7 +326,7 @@ export function LeadDetailClient({
         <LeadLossCard
           loss={advisor.loss}
           copying={copyingStyle === "reactivation"}
-          onCopy={() => handleCopyMessage(advisor.loss.reactivationMessage, "reativação", "reactivation")}
+          onCopy={() => handleCopyMessage(advisor.loss.reactivationMessage, "reativaÃ§Ã£o", "reactivation")}
         />
       </section>
 
@@ -294,14 +344,14 @@ export function LeadDetailClient({
             <div className="rounded-xl bg-[var(--surface)] p-3 text-sm text-[var(--text)]">
               <p className="text-base font-semibold">{matchedPuppy.name}</p>
               <p className="text-xs text-[var(--text-muted)]">{matchedPuppy.color || EMPTY_VALUE}</p>
-              <a href={`/admin/puppies/${matchedPuppy.id}`} className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:underline">
+              <a href={`/admin/filhotes/${matchedPuppy.id}`} className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:underline">
                 Abrir ficha
               </a>
             </div>
           </div>
         ) : (
           <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface)] p-4 text-sm text-[var(--text-muted)]">
-            Nenhum filhote associado. Use o card de recomendação para sugerir matches.
+            Nenhum filhote associado. Use o card de recomendaÃ§Ã£o para sugerir matches.
           </div>
         )}
         <LeadPuppyRecommenderCard leadId={lead.id} />
@@ -315,8 +365,8 @@ export function LeadDetailClient({
       <section className="rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm">
         <header className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-semibold text-[var(--text)]">Histórico de interações</p>
-            <p className="text-xs text-[var(--text-muted)]">Mensagens automáticas e registros manuais</p>
+            <p className="text-sm font-semibold text-[var(--text)]">HistÃ³rico de interaÃ§Ãµes</p>
+            <p className="text-xs text-[var(--text-muted)]">Mensagens automÃ¡ticas e registros manuais</p>
           </div>
           <Sparkles className="h-5 w-5 text-[var(--text-muted)]" aria-hidden />
         </header>
@@ -329,7 +379,7 @@ export function LeadDetailClient({
                 <span>{entry.type || EMPTY_VALUE}</span>
               </div>
               <p className="mt-1 font-semibold">{entry.status || "Evento"}</p>
-              <p className="text-sm text-[var(--text-muted)]">{entry.preview || "(sem conteúdo)"}</p>
+              <p className="text-sm text-[var(--text-muted)]">{entry.preview || "(sem conteÃºdo)"}</p>
             </li>
           ))}
         </ul>
@@ -346,3 +396,4 @@ function Info({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+

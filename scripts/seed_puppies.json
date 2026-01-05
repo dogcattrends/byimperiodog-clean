@@ -1,0 +1,329 @@
+[
+  {
+    "id": "43f9ffd1-4f01-4601-ac05-6ca27ff56fc4",
+    "created_at": "2025-10-07 09:41:02.276+00",
+    "updated_at": "2025-10-07 11:27:38.60541+00",
+    "codigo": "BYIMPDOG01",
+    "nome": "Filhote Spitz Alemão Anão Branco Fêmea (Lulu da Pomerânia)",
+    "sexo": "femea",
+    "cor": "Branco",
+    "nascimento": null,
+    "pedigree": null,
+    "microchip": null,
+    "preco": "7500.00",
+    "status": "disponivel",
+    "reserved_at": null,
+    "sold_at": null,
+    "customer_id": null,
+    "midia": [
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-07/20251007_0738_New_Video_simple_compose_01k6z3zpsrf529frsn0htmvd0q-mggh6nm5-7tz5zg.gif",
+        "type": "image"
+      },
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-07/ChatGPT_Image_7_10_2025__06_24_19-mggczgmo-e0qbqa.png",
+        "type": "image"
+      },
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-07/ChatGPT_Image_26_de_ago._de_2025__15_04_20__1_-mggczjo3-nipa7o.png",
+        "type": "image"
+      },
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-07/ChatGPT_Image_7_10_2025__06_24_14-mggczi4s-tm2ed6.png",
+        "type": "image"
+      },
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-07/ChatGPT_Image_7_10_2025__06_21_36-mggczl72-2h3ooz.png",
+        "type": "image"
+      },
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-07/ChatGPT_Image_7_10_2025__06_24_23-mggczerc-1hk1kz.png",
+        "type": "image"
+      }
+    ],
+    "notes": "Fêmea branca, dócil e peludinha. Lulu da Pomerânia (Spitz Alemão Anão). Vacinada e vermifugada. Contrato digital com garantia de saúde, carteira de vacinação, RG Pet e nota fiscal se desejar. Entrega segura em SP/RJ/MG. Chame para fotos e vídeo.",
+    "name": "Filhote Spitz Alemão Anão Branco Fêmea (Lulu da Pomerânia)",
+    "color": "Branco",
+    "gender": "female",
+    "price_cents": 750000,
+    "descricao": "Fêmea branca, dócil e peludinha. Lulu da Pomerânia (Spitz Alemão Anão). Vacinada e vermifugada. Contrato digital com garantia de saúde, carteira de vacinação, RG Pet e nota fiscal se desejar. Entrega segura em SP/RJ/MG. Chame para fotos e vídeo."
+  },
+  {
+    "id": "1a59fc19-012b-4d9e-a4f1-4faf28f8ecc4",
+    "created_at": "2025-10-07 12:28:12.987+00",
+    "updated_at": "2025-10-07 12:28:12.987+00",
+    "codigo": "BYIMPDOG0",
+    "nome": "Filhote Spitz Alemão Anão Preto Fêmea (Lulu da Pomerânia)",
+    "sexo": "femea",
+    "cor": "Preto",
+    "nascimento": null,
+    "pedigree": null,
+    "microchip": null,
+    "preco": "7500.00",
+    "status": "disponivel",
+    "reserved_at": null,
+    "sold_at": null,
+    "customer_id": null,
+    "midia": [
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-07/20251007_0908_New_Video_simple_compose_01k6z9498ce6ptmshwbqdwvctd-mggizgjg-at6arc.gif",
+        "type": "image"
+      },
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-07/ChatGPT_Image_7_10_2025__09_06_34-mggiy2wh-qkhu1a.png",
+        "type": "image"
+      },
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-07/ChatGPT_Image_7_10_2025__09_06_30-mggiy453-akl867.png",
+        "type": "image"
+      },
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-07/ChatGPT_Image_7_10_2025__09_06_22-mggiy523-i9pkgp.png",
+        "type": "image"
+      },
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-07/ChatGPT_Image_7_10_2025__09_03_52-mggiy5vj-62eypp.png",
+        "type": "image"
+      }
+    ],
+    "notes": "Filhote fêmea 100% black, compacta e muito meiga. Entrego com contrato digital, vacinação em dia e suporte total. Atendo SP interior e envio combinado. Chame no WhatsApp para ver vídeo e disponibilidade.",
+    "name": "Filhote Spitz Alemão Anão Preto Fêmea (Lulu da Pomerânia)",
+    "color": "Preto",
+    "gender": "female",
+    "price_cents": 750000,
+    "descricao": "Fêmea preta (Spitz Alemão Anão/Lulu da Pomerânia), pelagem black intensa e expressão super doce. Acompanha contrato digital, carteira de vacinação, orientação pós-venda e opção de entrega segura. Fale comigo e diga a cor e a data desejada."
+  },
+  {
+    "id": "dee9dbdf-26ef-461a-a607-9bf1fa527c97",
+    "created_at": "2025-10-07 17:24:14.92+00",
+    "updated_at": "2025-10-07 18:21:43.678801+00",
+    "codigo": "BYIMPDOG02",
+    "nome": "Spitz Alemão Anão Fêmea Laranja (Lulu da Pomerânia)",
+    "sexo": "femea",
+    "cor": "Laranja",
+    "nascimento": null,
+    "pedigree": null,
+    "microchip": null,
+    "preco": "7000.00",
+    "status": "disponivel",
+    "reserved_at": null,
+    "sold_at": null,
+    "customer_id": null,
+    "midia": [
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-07/20251007_1513_New_Video_simple_compose_01k6zy15xweg59gggpyncv7b4q-mggvyuzc-94ktwh.gif",
+        "type": "image"
+      },
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-07/ChatGPT_Image_7_10_2025__11_36_03-mggtw5th-xbh2bl.png",
+        "type": "image"
+      },
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-07/ChatGPT_Image_7_10_2025__11_35_57-mggtw79w-vg7aw6.png",
+        "type": "image"
+      },
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-07/ChatGPT_Image_7_10_2025__11_35_51-mggtw8qa-0eb6he.png",
+        "type": "image"
+      },
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-07/ChatGPT_Image_7_10_2025__11_35_45-mggtwa9z-y12nm3.png",
+        "type": "image"
+      },
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-07/ChatGPT_Image_7_10_2025__11_35_40-mggtwbtv-gou6zq.png",
+        "type": "image"
+      }
+    ],
+    "notes": "Fêmea laranja (Spitz Alemão Anão/Lulu da Pomerânia), carinha de ursinho e temperamento dócil. Entrego com contrato digital, carteira de vacinação e orientação pós-venda. Atendo Bragança Paulista e envio combinado. Chame no WhatsApp para ver vídeo ao vivo.",
+    "name": "Spitz Alemão Anão Fêmea Laranja (Lulu da Pomerânia)",
+    "color": "Laranja",
+    "gender": "female",
+    "price_cents": 700000,
+    "descricao": "Fêmea laranja (Spitz Alemão Anão/Lulu da Pomerânia), carinha de ursinho e temperamento dócil. Entrego com contrato digital, carteira de vacinação e orientação pós-venda. Atendo Bragança Paulista e envio combinado. Chame no WhatsApp para ver vídeo ao vivo."
+  },
+  {
+    "id": "206e7d33-0a3a-41fe-85df-5791b50cef2a",
+    "created_at": "2025-10-27 20:18:33.185+00",
+    "updated_at": "2025-10-27 21:29:12.08801+00",
+    "codigo": "C3EE0D",
+    "nome": "Spitz Alemão Anão (Lulu da Pomerânia)",
+    "sexo": "macho",
+    "cor": "Laranja",
+    "nascimento": null,
+    "pedigree": null,
+    "microchip": null,
+    "preco": "6500.00",
+    "status": "disponivel",
+    "reserved_at": null,
+    "sold_at": null,
+    "customer_id": null,
+    "midia": [
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-27/20251027_1716_New_Video_simple_compose_01k8kn0wyhe9pv8hhw03k4w2hm_1_-mh9nh7mm-u4wsww.gif",
+        "type": "image"
+      },
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-27/ChatGPT_Image_27_10_2025_13_02_03-mh9ktlxw-jwciqu.png",
+        "type": "image"
+      },
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-27/ChatGPT_Image_27_10_2025_13_56_49-mh9kt3st-qbobjd.png",
+        "type": "image"
+      },
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-27/ChatGPT_Image_27_10_2025_13_56_42-mh9kt828-1wg2tt.png",
+        "type": "image"
+      },
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-27/ChatGPT_Image_27_10_2025_13_56_26-mh9ktd1u-xrrq25.png",
+        "type": "image"
+      },
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-27/ChatGPT_Image_27_10_2025_13_16_42-mh9kthe6-3dw4ba.png",
+        "type": "image"
+      }
+    ],
+    "notes": "Spitz Alemão Anão (Lulu da Pomerânia) macho laranja, super peludinho e dócil. Tamanho pet (até 22 cm), vacinas e vermifugação em dia, microchip e pedigree. Entrega segura para SP/RJ/MG. Chame no WhatsApp para vídeos e condições.",
+    "name": "Spitz Alemão Anão (Lulu da Pomerânia)",
+    "color": "Laranja",
+    "gender": "male",
+    "price_cents": 650000,
+    "descricao": "Spitz Alemão Anão (Lulu da Pomerânia) macho laranja, super peludinho e dócil. Tamanho pet (até 22 cm), vacinas e vermifugação em dia, microchip e pedigree. Entrega segura para SP/RJ/MG. Chame no WhatsApp para vídeos e condições."
+  },
+  {
+    "id": "87a0a4b8-e279-4b8f-a85d-efa8e88288f8",
+    "created_at": "2025-10-28 07:45:27.165+00",
+    "updated_at": "2025-10-28 07:45:27.165+00",
+    "codigo": "7D72D5",
+    "nome": "Spitz Alemão Anão (Lulu da Pomerânia)",
+    "sexo": "macho",
+    "cor": "Preto",
+    "nascimento": null,
+    "pedigree": null,
+    "microchip": null,
+    "preco": "6000.00",
+    "status": "disponivel",
+    "reserved_at": null,
+    "sold_at": null,
+    "customer_id": null,
+    "midia": [
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-28/20251027_1758_New_Video_simple_compose_01k8kqdde1e2qbpkz37j3b707k_1_-mha9fk4z-w8k3kq.gif",
+        "type": "image"
+      },
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-28/ChatGPT_Image_27_10_2025_17_11_32-mha9eauv-w6x5vg.png",
+        "type": "image"
+      },
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-28/ChatGPT_Image_27_10_2025_17_02_59-mha9eee5-r0409x.png",
+        "type": "image"
+      },
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-28/ChatGPT_Image_27_10_2025_15_23_51-mha9ehb1-76b8z0.png",
+        "type": "image"
+      },
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-28/ChatGPT_Image_27_10_2025_15_04_39-mha9ekef-d8eder.png",
+        "type": "image"
+      }
+    ],
+    "notes": "filhote Spitz Alemão Anão Preto Macho (Lulu da Pomerânia). Pelagem abundante, temperamento dócil e ótimo para família. Orientação completa ao novo tutor e entrega combinada para SP/RJ/MG. Pergunte disponibilidade.",
+    "name": "Spitz Alemão Anão (Lulu da Pomerânia)",
+    "color": "Preto",
+    "gender": "male",
+    "price_cents": 600000,
+    "descricao": "filhote Spitz Alemão Anão Preto Macho (Lulu da Pomerânia). Pelagem abundante, temperamento dócil e ótimo para família. Orientação completa ao novo tutor e entrega combinada para SP/RJ/MG. Pergunte disponibilidade."
+  },
+  {
+    "id": "54ed5806-c1ad-41de-9379-c5e5b0cea70b",
+    "created_at": "2025-10-28 07:57:57.861+00",
+    "updated_at": "2025-10-28 07:57:57.861+00",
+    "codigo": "276ECF",
+    "nome": "Filhote Lulu da Pomerânia Anão",
+    "sexo": "macho",
+    "cor": "Branco",
+    "nascimento": null,
+    "pedigree": null,
+    "microchip": null,
+    "preco": "8500.00",
+    "status": "disponivel",
+    "reserved_at": null,
+    "sold_at": null,
+    "customer_id": null,
+    "midia": [
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-28/20251028_0456_New_Video_simple_compose_01k8mx24xne8ftn07vb0z4d7km_1_-mha9xrkt-498ygm.gif",
+        "type": "image"
+      },
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-28/ChatGPT_Image_28_10_2025_04_29_15-mha9mwwf-r2jsin.png",
+        "type": "image"
+      },
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-28/ChatGPT_Image_28_10_2025_04_29_09-mha9n0tc-sojbqx.png",
+        "type": "image"
+      },
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-28/ChatGPT_Image_28_10_2025_04_29_04-mha9n3fq-1ucdx7.png",
+        "type": "image"
+      },
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-27/ChatGPT_Image_27_10_2025_18_02_44-mha9n6vu-3jag1n.png",
+        "type": "image"
+      }
+    ],
+    "notes": "Encanto em forma de filhote: Lulu da Pomerânia, Spitz Alemão Anão Branco Macho. Criação familiar, socializado, pronto para encantar seu lar. Suporte ao tutor e condições facilitadas. Fale conosco.",
+    "name": "Filhote Lulu da Pomerânia Anão",
+    "color": "Branco",
+    "gender": "male",
+    "price_cents": 850000,
+    "descricao": "Encanto em forma de filhote: Lulu da Pomerânia, Spitz Alemão Anão Branco Macho. Criação familiar, socializado, pronto para encantar seu lar. Suporte ao tutor e condições facilitadas. Fale conosco."
+  },
+  {
+    "id": "6d072f47-0f65-4972-a4ef-8a430be5df79",
+    "created_at": "2025-10-28 08:07:35.179+00",
+    "updated_at": "2025-12-01 13:37:51.910707+00",
+    "codigo": "F5339C",
+    "nome": "Filhote Lulu da Pomerânia Spitz Alemão",
+    "sexo": "macho",
+    "cor": "Creme",
+    "nascimento": "2025-10-25",
+    "pedigree": null,
+    "microchip": null,
+    "preco": "6800.00",
+    "status": "disponivel",
+    "reserved_at": null,
+    "sold_at": null,
+    "customer_id": null,
+    "midia": [
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-28/20251028_0502_New_Video_simple_compose_01k8mxdb0af4rtjczwmq657x21_1_-mhaa9ria-9nrxav.gif",
+        "type": "image"
+      },
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-28/ChatGPT_Image_27_10_2025_17_50_02-mhaa9zde-d75um7.png",
+        "type": "image"
+      },
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-28/ChatGPT_Image_27_10_2025_17_49_57-mhaaa2xz-outv9m.png",
+        "type": "image"
+      },
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-28/ChatGPT_Image_27_10_2025_17_49_48-mhaaa5ra-hxnc27.png",
+        "type": "image"
+      },
+      {
+        "url": "https://npmnuihgydadihktglrd.supabase.co/storage/v1/object/public/puppies/2025-10-28/ChatGPT_Image_27_10_2025_17_34_06-mhaaa8nf-mptfwh.png",
+        "type": "image"
+      }
+    ],
+    "notes": "Spitz Alemão Anão Creme Macho (Lulu da Pomerânia). Pelagem linda e personalidade doce. Atendimento humanizado e orientação ao tutor. Consulte.",
+    "name": "Filhote Lulu da Pomerânia Spitz Alemão",
+    "color": "Creme",
+    "gender": "male",
+    "price_cents": 680000,
+    "descricao": "Spitz Alemão Anão Creme Macho (Lulu da Pomerânia). Pelagem linda e personalidade doce. Atendimento humanizado e orientação ao tutor. Consulte."
+  }
+]

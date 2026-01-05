@@ -7,7 +7,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-import type { PublicTrackingSettings, TrackingSettings, UpdateTrackingPayload } from '@/types/tracking';
+import type { PublicTrackingSettings, TrackingSettings, UpdateTrackingPayload } from '../types/tracking';
 
 interface UseTrackingOptions {
   /**

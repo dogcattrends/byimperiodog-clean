@@ -1,5 +1,5 @@
-import { vi } from 'vitest';
 import * as React from 'react';
+import { vi } from 'vitest';
 
 // Ensure React is available globally for environments that expect it
 (globalThis as any).React = React;

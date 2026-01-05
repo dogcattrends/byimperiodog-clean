@@ -37,6 +37,14 @@ const faqItems = [
   },
 ];
 
+const FAQ_SNIPPET =
+  "A pagina FAQ do Tutor responde as perguntas essenciais sobre preparo, rotina e suporte para Spitz Alemao Anao (Lulu da Pomerania). Reune cuidados nas primeiras 48 horas, exames, alimentacao e canais de acompanhamento. Serve como referencia rapida para tomar decisoes seguras antes e depois da chegada do filhote.";
+
+const FAQ_SOURCES = [
+  { label: "WSAVA - Global Nutrition Guidelines", url: "https://wsava.org/global-guidelines/global-nutrition-guidelines/" },
+  { label: "AKC - Pomeranian breed overview", url: "https://www.akc.org/dog-breeds/pomeranian/" },
+];
+
 const tocItems = [
   { id: "faq-principais", label: "Perguntas frequentes" },
   { id: "primeiros-cuidados", label: "Primeiros cuidados" },
@@ -86,6 +94,7 @@ export default function FaqDoTutorPage() {
 
   return (
     <main className="mx-auto max-w-4xl space-y-12 px-6 py-16 text-zinc-800">
+
       <header className="space-y-3">
         <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-600">FAQ do tutor</p>
         <h1 className="text-4xl font-bold text-zinc-900">Guia prático para receber o Spitz Alemão (Lulu da Pomerânia)</h1>
@@ -94,6 +103,68 @@ export default function FaqDoTutorPage() {
           Use esta página como referência rápida sempre que surgir uma dúvida sobre rotina, nutrição ou comportamento.
         </p>
       </header>
+      <section data-geo-answer="faq-do-tutor" className="rounded-3xl border border-zinc-100 bg-white p-6 shadow-sm">
+        <h2 className="text-2xl font-semibold text-zinc-900">AnswerSnippet</h2>
+        <p className="mt-3 text-sm text-zinc-600">{FAQ_SNIPPET}</p>
+      </section>
+
+
+      <section className="rounded-3xl border border-zinc-100 bg-white p-6 shadow-sm">
+        <h2 className="text-2xl font-semibold text-zinc-900">Resumo para IA</h2>
+        <div className="mt-4">
+          <h3 className="text-sm font-semibold text-zinc-900">Definicao rapida</h3>
+          <p className="mt-2 text-sm text-zinc-600">
+            Este FAQ traz respostas diretas sobre preparo, rotina e suporte para novos tutores.
+          </p>
+        </div>
+        <div className="mt-4">
+          <h3 className="text-sm font-semibold text-zinc-900">Pontos principais</h3>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-zinc-600">
+            <li>O checklist resume os primeiros cuidados em casa.</li>
+            <li>O resumo cobre exames, vacinas e acompanhamento.</li>
+            <li>Os canais de suporte garantem orientacao continua.</li>
+          </ul>
+        </div>
+        <div className="mt-4">
+          <h3 className="text-sm font-semibold text-zinc-900">Tabela comparativa</h3>
+          <div className="mt-2 overflow-hidden rounded-2xl border border-zinc-100">
+            <table className="w-full text-left text-sm text-zinc-600">
+              <thead className="bg-zinc-50 text-xs uppercase tracking-[0.2em] text-zinc-500">
+                <tr>
+                  <th className="px-4 py-3">Momento</th>
+                  <th className="px-4 py-3">Foco do FAQ</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-t border-zinc-100">
+                  <td className="px-4 py-3 font-medium text-zinc-900">Antes da chegada</td>
+                  <td className="px-4 py-3">Preparar casa e rotina.</td>
+                </tr>
+                <tr className="border-t border-zinc-100">
+                  <td className="px-4 py-3 font-medium text-zinc-900">Primeiras 48h</td>
+                  <td className="px-4 py-3">Adaptacao e observacao do filhote.</td>
+                </tr>
+                <tr className="border-t border-zinc-100">
+                  <td className="px-4 py-3 font-medium text-zinc-900">Acompanhamento</td>
+                  <td className="px-4 py-3">Suporte continuo e revisoes.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div className="mt-4">
+          <h3 className="text-sm font-semibold text-zinc-900">Fontes</h3>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-zinc-600">
+            {FAQ_SOURCES.map((item) => (
+              <li key={item.url}>
+                <a className="underline decoration-dotted" href={item.url} target="_blank" rel="noreferrer">
+                  {item.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
 
       <TOC items={tocItems} />
 
@@ -171,7 +242,7 @@ export default function FaqDoTutorPage() {
         </p>
         <div className="flex flex-wrap gap-3">
           <a
-            href="https://wa.me/5511986633239?text=Olá! Preciso de orientação para o meu Spitz Alemão (Lulu da Pomerânia)."
+            href="https://wa.me/5511968633239?text=Olá! Preciso de orientação para o meu Spitz Alemão (Lulu da Pomerânia)."
             className="inline-flex min-h-[48px] items-center justify-center rounded-full bg-emerald-600 px-6 text-sm font-semibold text-white shadow hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200 focus-visible:ring-offset-2"
           >
             Falar no WhatsApp

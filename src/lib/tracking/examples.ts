@@ -14,7 +14,7 @@ import type {
   UpdateTrackingPayload,
   TrackingAPIResponse,
   TrackingAPIError,
-} from '@/types/tracking';
+} from '../../types/tracking';
 
 // ============================================================================
 // 1. FRONTEND PÃšBLICO - Buscar configuraÃ§Ãµes de tracking (GET)

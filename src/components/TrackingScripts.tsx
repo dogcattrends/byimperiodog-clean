@@ -184,11 +184,11 @@ export default function TrackingScripts() {
     // listen for SPA navigation
     const onPop = () => sendPageView();
     window.addEventListener("popstate", onPop);
-    window.addEventListener("pushstate" as any, onPop);
+    window.addEventListener(("pushstate" as unknown) as string, onPop);
 
     return () => {
       window.removeEventListener("popstate", onPop);
-      window.removeEventListener("pushstate" as any, onPop);
+      window.removeEventListener(("pushstate" as unknown) as string, onPop);
       document.removeEventListener('click', onClick, true);
       if (waitHandle) {
         clearInterval(waitHandle);

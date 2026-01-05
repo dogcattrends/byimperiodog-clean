@@ -1,19 +1,14 @@
-"use client";
 
-import { CheckCircle2, HeartHandshake, ShieldCheck } from "lucide-react";
+import { ShieldCheck, HeartHandshake, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
-import { useMemo } from "react";
 
-import PrimaryCTA from "@/components/ui/PrimaryCTA";
-import { HERO_IMAGE_SIZES } from "@/lib/image-sizes";
-import { routes } from "@/lib/route";
-import heroDesktop from "@/public/spitz-hero-desktop.webp";
+import { HERO_IMAGE_SIZES } from "../../lib/image-sizes";
 
 const SELLING_POINTS = [
   {
     icon: ShieldCheck,
     title: "Saúde validada",
-    description: "Exames genéticos, laudos cardiológicos e pedigree CBKC entregues antes da reserva.",
+    description: "Exames genéticos, laudos cardiológicos e pedigree entregue antes da reserva.",
   },
   {
     icon: HeartHandshake,
@@ -34,16 +29,7 @@ const STATS = [
 ] as const;
 
 export default function HeroSection() {
-  const greeting = useMemo(() => {
-    const hour = new Date().getHours();
-    if (hour < 12) {
-      return "Bom dia! Vamos planejar juntos a chegada do seu Spitz com saúde validada.";
-    }
-    if (hour < 18) {
-      return "Boa tarde! Temos filhotes socializados aguardando tutores responsáveis.";
-    }
-    return "Boa noite! Ainda dá tempo de receber orientação personalizada hoje.";
-  }, []);
+  const greeting = "Bem-vindo! Aqui voce encontra orientacao direta para escolher e cuidar do Spitz Alemao Anao.";
 
   return (
     <section
@@ -51,11 +37,10 @@ export default function HeroSection() {
       aria-labelledby="hero-heading"
     >
       <div className="mx-auto grid w-full max-w-7xl gap-12 px-5 py-16 sm:px-8 lg:grid-cols-[1.1fr,1fr] lg:items-center lg:gap-16 lg:py-20">
-        <div className="space-y-7">
+        <div className="space-y-7 animate-fade-in-up" style={{ animationDelay: "0.1s", animationFillMode: "both" }}>
           <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-700 shadow-sm">
             Spitz Alemão Anão com mentoria premium
           </span>
-
           <header className="space-y-5">
             <h1 id="hero-heading" className="text-4xl font-semibold leading-tight text-zinc-900 sm:text-5xl">
               Transparência e carinho para entregar o seu Spitz Alemão Anão com suporte vitalício
@@ -66,15 +51,15 @@ export default function HeroSection() {
               Tudo para que o Spitz até 22 cm viva em equilíbrio com a sua família.
             </p>
           </header>
-
           <div className="grid gap-4 sm:grid-cols-2">
-            {SELLING_POINTS.map(({ icon: Icon, title, description }) => (
+            {SELLING_POINTS.map(({ icon: Icon, title, description }, idx) => (
               <article
                 key={title}
-                  className="flex items-start gap-3 rounded-2xl border border-emerald-200/60 bg-white/95 p-4 shadow-sm transition hover:shadow-md focus-within:shadow-md"
+                className="flex items-start gap-3 rounded-2xl border border-emerald-200/60 bg-white/95 p-4 shadow-sm transition hover:shadow-md focus-within:shadow-md animate-fade-in-up"
+                style={{ animationDelay: `${0.2 + idx * 0.1}s`, animationFillMode: "both" }}
               >
                 <span className="mt-1 flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-                  <Icon className="h-4 w-4" aria-hidden="true" />
+                  {Icon && <Icon className="h-4 w-4" aria-hidden="true" />}
                 </span>
                 <div className="space-y-1">
                   <h2 className="text-sm font-semibold text-zinc-900">{title}</h2>
@@ -83,17 +68,7 @@ export default function HeroSection() {
               </article>
             ))}
           </div>
-
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <PrimaryCTA href={routes.filhotes} tracking={{ location: "hero", ctaId: "hero_primary" }}>
-              Ver filhotes premium
-            </PrimaryCTA>
-            <PrimaryCTA href="/guia" variant="ghost" tracking={{ location: "hero", ctaId: "hero_secondary" }}>
-              Baixar o guia do tutor
-            </PrimaryCTA>
-          </div>
-
-          <ul className="flex flex-wrap items-center gap-3 text-xs font-medium uppercase tracking-[0.3em] text-emerald-700">
+          <ul className="flex flex-wrap items-center gap-3 text-xs font-medium uppercase tracking-[0.3em] text-emerald-700 animate-fade-in-up" style={{ animationDelay: "0.6s", animationFillMode: "both" }}>
             <li>Entrega humanizada</li>
             <li className="text-zinc-600" aria-hidden="true">
               •
@@ -104,29 +79,39 @@ export default function HeroSection() {
             </li>
             <li>Planejamento financeiro claro</li>
           </ul>
-
-          <dl className="grid gap-4 sm:grid-cols-3" aria-label="Indicadores de confiança">
-            {STATS.map((stat) => (
-              <div key={stat.label} className="rounded-2xl border border-emerald-200 bg-white p-4 shadow-sm">
+          <dl className="grid gap-4 sm:grid-cols-3 animate-fade-in-up" aria-label="Indicadores de confiança" style={{ animationDelay: "0.7s", animationFillMode: "both" }}>
+            {STATS.map((stat, idx) => (
+              <div
+                key={stat.label}
+                className="rounded-2xl border border-emerald-200 bg-white p-4 shadow-sm animate-fade-in-up"
+                style={{ animationDelay: `${0.8 + idx * 0.1}s`, animationFillMode: "both" }}
+              >
                 <dt className="text-xs uppercase tracking-[0.24em] text-zinc-500">{stat.label}</dt>
                 <dd className="mt-2 text-2xl font-semibold text-zinc-900">{stat.value}</dd>
               </div>
             ))}
           </dl>
+          <div className="rounded-3xl border border-emerald-200 bg-white/80 p-5 shadow-sm animate-fade-in-up" style={{ animationDelay: "1.1s", animationFillMode: "both" }}>
+            <h3 className="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-700">Compromisso estratégico</h3>
+            <p className="mt-3 text-sm text-zinc-600">
+              Cada reserva nasce de conversa personalizada: avaliamos o cotidiano familiar, estabelecemos marcos de socialização e enviamos relatórios semanais de saúde.
+            </p>
+            <p className="mt-2 text-sm text-zinc-600">
+              Investimento é compartilhado com transparência, desenhando planos sob medida sem pressão antes de qualquer decisão definitiva.
+            </p>
+          </div>
         </div>
-
-        <div className="space-y-6">
+        <div className="space-y-6 animate-fade-in-up" style={{ animationDelay: "1.3s", animationFillMode: "both" }}>
           <figure className="relative overflow-hidden rounded-3xl border border-emerald-200/70 bg-white shadow-2xl">
             <div className="relative aspect-[4/3]">
               <Image
-                src={heroDesktop}
+                src="/spitz-hero-desktop.webp"
                 alt="Filhote de Spitz Alemão Anão creme no colo da criadora, em sala clara com tapete branco"
                 fill
                 priority
                 fetchPriority="high"
                 sizes={HERO_IMAGE_SIZES}
                 className="object-cover"
-                placeholder="blur"
                 style={{ contentVisibility: "auto" }}
               />
             </div>
@@ -134,8 +119,7 @@ export default function HeroSection() {
               Socialização guiada com vídeos semanais
             </figcaption>
           </figure>
-
-          <div className="rounded-2xl border border-emerald-200 bg-white p-6 shadow-lg">
+          <div className="rounded-2xl border border-emerald-200 bg-white p-6 shadow-lg animate-fade-in-up" style={{ animationDelay: "1.5s", animationFillMode: "both" }}>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="space-y-1">
                 <p className="text-sm font-semibold text-zinc-900">Atendimento humano em tempo real</p>
@@ -143,14 +127,14 @@ export default function HeroSection() {
                   Envie um vídeo da sua casa e receba checklist de rotina, enxoval e investimento em minutos.
                 </p>
               </div>
-              <PrimaryCTA
+              {/* <PrimaryCTA
                 href={routes.filhotes}
                 variant="ghost"
                 tracking={{ location: "hero", ctaId: "hero_secondary_contact" }}
                 className="min-h-[48px] px-4 py-2 text-sm"
               >
                 Falar com a criadora
-              </PrimaryCTA>
+              </PrimaryCTA> */}
             </div>
           </div>
         </div>

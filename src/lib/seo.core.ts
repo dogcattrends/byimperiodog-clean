@@ -4,6 +4,7 @@ import { supabasePublic } from './supabasePublic';
 
 // SITE base sem barra final
 export const SITE_ORIGIN = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.byimperiodog.com.br').replace(/\/$/, '');
+export const SITE_BRAND_NAME = 'By Imperio Dog';
 
 export function canonical(path: string) {
   if (!path) return SITE_ORIGIN;
@@ -12,18 +13,21 @@ export function canonical(path: string) {
 
 /** Metadados base do site público (home / institucionais). */
 export function baseSiteMetadata(overrides: Partial<Metadata> = {}): Metadata {
-  const title = overrides.title || { default: 'Spitz Alemão Anão | By Imperio Dog', template: '%s | By Imperio Dog' };
-  const description = overrides.description || 'Filhotes legítimos, entrega responsável e pós-venda acolhedor.';
+  const title = overrides.title || { default: `Spitz Alem??o An??o | ${SITE_BRAND_NAME}`, template: `%s | ${SITE_BRAND_NAME}` };
+  const description = overrides.description || 'Filhotes leg??timos, entrega respons??vel e p??s-venda acolhedor.';
   return {
     metadataBase: new URL(SITE_ORIGIN),
     title,
     description,
+    authors: [{ name: SITE_BRAND_NAME, url: SITE_ORIGIN }],
+    creator: SITE_BRAND_NAME,
+    publisher: SITE_BRAND_NAME,
     alternates: { canonical: SITE_ORIGIN + '/' },
     openGraph: {
       type: 'website',
       url: SITE_ORIGIN + '/',
-  siteName: 'By Imperio Dog',
-  images: [{ url: '/spitz-hero-desktop.webp', width: 1200, height: 630, alt: 'Spitz Alemão Anão — By Imperio Dog' }],
+      siteName: SITE_BRAND_NAME,
+      images: [{ url: '/spitz-hero-desktop.webp', width: 1200, height: 630, alt: 'Spitz Alem??o An??o ??" By Imperio Dog' }],
       ...overrides.openGraph,
     },
     twitter: { card: 'summary_large_image', ...(overrides.twitter || {}) },
@@ -40,7 +44,7 @@ export function baseBlogMetadata(overrides: Partial<Metadata> = {}): Metadata {
     openGraph: {
       type: 'website',
       url: canonical('/blog'),
-  siteName: 'By Imperio Dog',
+  siteName: SITE_BRAND_NAME,
   title: 'Blog | By Imperio Dog',
       description: 'Conteúdo especializado sobre Spitz Alemão, saúde, adestramento e bem-estar.',
       ...overrides.openGraph,
@@ -152,3 +156,6 @@ export function buildAuthorJsonLd(author: { name:string; slug:string; avatar_url
 export const adminNoIndexMetadata: Metadata = {
   robots: { index: false, follow: false },
 };
+
+// Re-export helpers from schema module for backward compatibility
+export { blogPostingSchema } from './schema';

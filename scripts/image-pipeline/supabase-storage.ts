@@ -1,11 +1,14 @@
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 /**
  * Supabase Storage Integration
  * Upload automático de imagens processadas para Supabase Storage
  */
 
-import { createClient } from '@supabase/supabase-js';
 import fs from 'fs/promises';
 import path from 'path';
+
+import { createClient } from '@supabase/supabase-js';
+
 import { IMAGE_CONFIG } from './config';
 import type { ProcessedImage } from './processor';
 

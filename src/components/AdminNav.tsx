@@ -1,5 +1,6 @@
 // app/(admin)/admin/_components/AdminNav.tsx
- 'use client';
+
+'use client';
 
 import * as AlertDialog from '@radix-ui/react-alert-dialog';
 import clsx from 'clsx';
@@ -9,9 +10,27 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-const NAV: { href: Route; label: string }[] = [
+type NavEntry = {
+  href?: Route;
+  label: string;
+  children?: { href: Route; label: string }[];
+  badge?: string;
+};
+
+const NAV: NavEntry[] = [
   { href: '/admin/dashboard' as Route, label: 'Dashboard' },
-  { href: '/admin/puppies' as Route, label: 'Gerenciar Filhotes' },
+  // Filhotes deve ficar em destaque e com rotas claras: Listar, Novo, Editar, Mídias
+  {
+    label: 'Filhotes / Estoque',
+    children: [
+      { href: '/admin/filhotes' as Route, label: 'Listar' },
+      { href: '/admin/filhotes/novo' as Route, label: 'Novo' },
+      // Editar é contextual — apontamos para a listagem onde se escolhe um item para editar
+      { href: '/admin/filhotes' as Route, label: 'Editar (selecione item)' },
+      { href: '/admin/filhotes/media' as Route, label: 'Mídias' },
+    ],
+    badge: 'estoque',
+  },
   { href: '/admin/blog' as Route, label: 'Gerenciar Blog' },
   { href: '/admin/blog/analytics' as Route, label: 'Blog Analytics' },
   { href: '/admin/config' as Route, label: 'Config' },
@@ -35,15 +54,15 @@ export default function AdminNav() {
     if (isLoggingOut) return;
     setIsLoggingOut(true);
     try {
-      const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : (null as any);
-      const t = ctrl ? setTimeout(() => ctrl.abort(), 1500) : null;
+      const ctrl: AbortController | null = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      const t: ReturnType<typeof setTimeout> | null = ctrl ? setTimeout(() => ctrl.abort(), 1500) : null;
       await fetch('/api/admin/logout', {
         method: 'GET',
         cache: 'no-store',
-          keepalive: true,
-        signal: (ctrl ? (ctrl as AbortController).signal : undefined) as any,
+        keepalive: true,
+        signal: ctrl ? ctrl.signal : undefined,
       });
-      if (t) clearTimeout(t as any);
+      if (t) clearTimeout(t);
     } catch (e) { /* ignored */ }
     // navega direto para o login e força revalidação do layout
     router.replace('/admin/login');
@@ -57,17 +76,74 @@ export default function AdminNav() {
         <div className="mx-auto max-w-6xl px-4">
           <nav className="flex flex-wrap items-center justify-center gap-2 py-2 overflow-x-auto" aria-label="Navegação administrativa">
           {NAV.map((n) => {
-            const active = pathname?.startsWith(n.href);
+            if (n.children && n.children.length > 0) {
+              const open = pathname?.startsWith(n.children[0].href) || pathname?.startsWith('/admin/filhotes');
+              const submenuId = `submenu-${n.label.replace(/\s+/g, '-').toLowerCase()}`;
+              return (
+                <details key={n.label} className="relative" open={!!open}>
+                  <summary
+                    className={clsx(
+                      'list-none rounded-lg px-3 py-2 text-sm font-medium transition cursor-pointer',
+                      // destacar o grupo Filhotes com visual mais forte
+                      n.label.includes('Filhotes')
+                        ? (open ? 'bg-emerald-600 text-white ring-2 ring-emerald-300' : 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200')
+                        : (open ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' : 'text-zinc-700 hover:bg-zinc-100')
+                    )}
+                    aria-haspopup="true"
+                    aria-expanded={open}
+                    role="button"
+                    aria-controls={submenuId}
+                    tabIndex={0}
+                    aria-label={n.label}
+                  >
+                    {n.label}
+                  </summary>
+                  <div id={submenuId} className="mt-2 flex flex-col gap-1 rounded-md p-2" role="menu">
+                    {n.children.map((c) => {
+                      const active = pathname?.startsWith(c.href);
+                      return (
+                        <Link
+                          key={c.href}
+                          href={c.href}
+                          role="menuitem"
+                          className={clsx(
+                            'rounded-md px-3 py-2 text-sm transition text-left',
+                            active ? 'bg-emerald-100 text-emerald-800' : 'text-zinc-700 hover:bg-zinc-100'
+                          )}
+                          aria-label={c.label}
+                        >
+                          {c.label}
+                        </Link>
+                      );
+                    })}
+                    <div className="mt-2 flex gap-2 items-center">
+                      <Link
+                        href="/admin/filhotes/novo"
+                        role="menuitem"
+                        aria-label="Criar novo filhote"
+                        className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white shadow-sm"
+                      >
+                        Novo
+                      </Link>
+                      <Link href="/admin/filhotes/import" role="menuitem" className="rounded-full border px-3 py-1 text-xs font-semibold">
+                        Importar
+                      </Link>
+                      <span className="ml-2 inline-block rounded px-2 py-0.5 text-xs font-medium text-zinc-600">Estoque</span>
+                    </div>
+                  </div>
+                </details>
+              );
+            }
+            const href = n.href as Route | undefined;
+            const active = href ? pathname?.startsWith(href) : false;
             return (
               <Link
-                key={n.href}
-                href={n.href}
+                key={n.label}
+                href={href ?? '/'}
                 aria-current={active ? 'page' : undefined}
                 className={clsx(
                   'rounded-lg px-3 py-2 text-sm font-medium transition',
-                  active
-                    ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200'
-                    : 'text-zinc-700 hover:bg-zinc-100'
+                  active ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' : 'text-zinc-700 hover:bg-zinc-100'
                 )}
               >
                 {n.label}

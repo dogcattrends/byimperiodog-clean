@@ -26,7 +26,9 @@ async function callProvider(prompt: string, opts?: { temperature?: number }): Pr
     if (!res.ok) return `Erro provider (${res.status})`;
     const json: any = await res.json();
     return json.choices?.[0]?.message?.content?.trim() || '';
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const msg = typeof err === 'object' && err !== null && 'message' in err ? String((err as { message?: unknown }).message ?? err) : String(err);
+    console.error('[ai:callProvider] ', msg);
     return 'Erro de rede ao chamar provedor IA';
   }
 }

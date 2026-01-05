@@ -69,7 +69,7 @@ export default function ConsentBanner() {
         aria-labelledby="consent-title"
         aria-describedby="consent-description"
       >
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+        <div className="max-w-7xl w-full mx-auto px-4 py-6 sm:px-6 lg:px-8">
           {!showSettings ? (
             // Banner simples
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

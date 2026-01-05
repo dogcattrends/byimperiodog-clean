@@ -1,7 +1,8 @@
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import type { ProviderKey } from "@/lib/tracking/providers/types";
+import { supabaseAdmin } from "../supabaseAdmin";
 
-export type NormalizedResource = { id: string; name: string; extra?: Record<string, unknown> };
+import type { ProviderKey } from "./providers/types";
+
+export type NormalizedResource = { id: string; name: string; extra?: object };
 
 async function getIntegration(userId: string, provider: ProviderKey): Promise<Record<string, unknown> | null> {
   const supa = supabaseAdmin();
@@ -34,11 +35,10 @@ export async function listFacebookPixels(userId: string): Promise<NormalizedReso
     if (!pixelsRes.ok) return [];
     const pixelsJson = await pixelsRes.json();
     const pixels = pixelsJson.data || [];
-    return pixels.map((p: unknown) => {
-      const row = p as Record<string, unknown>;
+    return pixels.map((p: any) => {
       return {
-        id: String(row.id ?? ""),
-        name: String(row.name ?? `Pixel ${row.id ?? ""}`),
+        id: String(p.id ?? ""),
+        name: String(p.name ?? `Pixel ${p.id ?? ""}`),
         extra: { accountId: firstAccountId },
       };
     });

@@ -56,7 +56,10 @@ export default function BlogCard({ post }: BlogCardProps) {
   });
 
   return (
-    <article className="grid h-full grid-rows-[auto,1fr] overflow-hidden rounded-2xl border border-border bg-surface shadow-soft transition hover:-translate-y-1">
+    <article
+      className="group grid h-full grid-rows-[auto,1fr] overflow-hidden rounded-2xl border border-border bg-surface shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-lg focus-within:ring-2 focus-within:ring-brand"
+      aria-labelledby={`blog-card-title-${post.slug}`}
+    >
       <figure className="relative aspect-[4/3] w-full overflow-hidden bg-surface-subtle">
         {post.cover_url ? (
           <Image
@@ -64,7 +67,7 @@ export default function BlogCard({ post }: BlogCardProps) {
             alt={post.cover_alt || post.title}
             fill
             sizes={BLOG_CARD_SIZES}
-            className="object-cover transition duration-500 group-hover:scale-[1.03]"
+            className="object-cover transition duration-500 group-hover:scale-[1.04] group-focus:scale-[1.04] rounded-2xl"
             placeholder="blur"
             blurDataURL={BLUR_DATA_URL}
             loading="lazy"
@@ -80,8 +83,11 @@ export default function BlogCard({ post }: BlogCardProps) {
 
       <div className="flex flex-1 flex-col gap-4 p-6">
         <header className="space-y-2">
-          <h3 className="line-clamp-2 text-lg font-semibold text-text">
-            <Link href={articleHref} className="transition hover:text-brand">
+          <h3
+            id={`blog-card-title-${post.slug}`}
+            className="line-clamp-2 text-lg font-semibold text-text group-hover:text-brand group-focus:text-brand transition-colors"
+          >
+            <Link href={articleHref} className="transition hover:text-brand focus:outline-none focus-visible:ring-2 focus-visible:ring-brand">
               {post.title}
             </Link>
           </h3>
@@ -98,7 +104,8 @@ export default function BlogCard({ post }: BlogCardProps) {
           <div className="flex flex-col gap-2 sm:flex-row">
             <Link
               href={articleHref}
-              className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-full bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground shadow-sm transition hover:bg-brand-600"
+              className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-full bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground shadow-sm transition-all duration-200 hover:bg-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+              aria-label={`Ler artigo: ${post.title}`}
             >
               Ler artigo
               <ArrowRight className="h-4 w-4" aria-hidden />
@@ -107,8 +114,9 @@ export default function BlogCard({ post }: BlogCardProps) {
               href={whatsappLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+              className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-emerald-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
               title="Tirar dúvidas sobre este artigo no WhatsApp"
+              aria-label={`WhatsApp: dúvidas sobre ${post.title}`}
             >
               <WhatsAppIcon className="h-4 w-4" aria-hidden />
               WhatsApp

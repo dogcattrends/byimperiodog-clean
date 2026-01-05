@@ -15,9 +15,11 @@ import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { AI_BADGE_MAP, type AiBadgeConfig, type AiBadgeId } from "@/components/catalog/ai-badges";
+import ShareButton from "@/components/ui/ShareButton";
 import { PUPPY_CARD_SIZES } from "@/lib/image-sizes";
 import { optimizePuppyCardImage } from "@/lib/optimize-image";
 import { BLUR_DATA_URL } from "@/lib/placeholders";
+import type { ShareablePuppy } from "@/lib/sharePuppy";
 import track from "@/lib/track";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 
@@ -238,6 +240,17 @@ export default function PuppyCard({ p, cover, onOpen, priority = false, rankingF
   }, [p.id, seoKeywords]);
 
   const cardAriaLabel = `Filhote ${cardTitle}, ${color}, ${gender}, ${status.label.toLowerCase()}`;
+  const shareablePuppy: ShareablePuppy = {
+    id: p.id,
+    slug: (p as { slug?: string | null }).slug ?? undefined,
+    name: cardTitle,
+    color: p.color ?? p.cor ?? undefined,
+    sex: p.sex ?? p.sexo ?? p.gender ?? undefined,
+    city: p.city ?? undefined,
+    state: p.state ?? undefined,
+    priceCents: p.priceCents ?? p.price_cents ?? undefined,
+    status: p.status ?? undefined,
+  };
 
   return (
     <article
@@ -246,7 +259,7 @@ export default function PuppyCard({ p, cover, onOpen, priority = false, rankingF
       data-ranking-flag={rankingFlags}
       ref={cardRef}
     >
-      <div className="relative">
+      <div className="relative overflow-visible">
         <button
           type="button"
           onClick={() => {
@@ -284,25 +297,28 @@ export default function PuppyCard({ p, cover, onOpen, priority = false, rankingF
           </div>
         </button>
 
-        <button
-          type="button"
-          onClick={(event) => {
-            event.stopPropagation();
-            const nextLiked = !liked;
-            setLiked(nextLiked);
-            setIsPopping(true);
-            if (likeAnimationTimeout.current) clearTimeout(likeAnimationTimeout.current);
-            likeAnimationTimeout.current = setTimeout(() => setIsPopping(false), 250);
-            track.event?.("puppy_like_toggle", { puppy_id: p.id, liked: nextLiked, placement: "grid" });
-          }}
-          aria-label={liked ? "Remover dos favoritos" : "Adicionar aos favoritos"}
-          aria-pressed={liked}
-          className={`absolute right-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white text-rose-500 shadow-lg ring-1 ring-black/5 transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 ${
-            isPopping ? "scale-110" : "scale-100"
-          }`}
-        >
-          <Heart className={`h-5 w-5 ${liked ? "fill-rose-500" : "fill-none"}`} aria-hidden="true" />
-        </button>
+        <div className="absolute right-4 top-4 flex items-center gap-3 z-20">
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              const nextLiked = !liked;
+              setLiked(nextLiked);
+              setIsPopping(true);
+              if (likeAnimationTimeout.current) clearTimeout(likeAnimationTimeout.current);
+              likeAnimationTimeout.current = setTimeout(() => setIsPopping(false), 250);
+              track.event?.("puppy_like_toggle", { puppy_id: p.id, liked: nextLiked, placement: "grid" });
+            }}
+            aria-label={liked ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+            aria-pressed={liked}
+            className={`flex h-11 w-11 items-center justify-center rounded-full bg-white text-rose-500 shadow-lg ring-1 ring-black/5 transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 ${
+              isPopping ? "scale-110" : "scale-100"
+            }`}
+          >
+            <Heart className={`h-5 w-5 ${liked ? "fill-rose-500" : "fill-none"}`} aria-hidden="true" />
+          </button>
+          <ShareButton puppy={shareablePuppy} location="card" />
+        </div>
       </div>
 
       <div className="flex flex-1 flex-col gap-4 px-5 pb-5 pt-4 sm:px-6">

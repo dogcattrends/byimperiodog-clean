@@ -229,9 +229,8 @@ export async function GET(req: NextRequest) {
       slug: post.slug,
     }));
 
-  const authorIds = Array.from(
-    new Set(postsArr.map((post) => post.author_id).filter(Boolean) as string[]),
-  );
+  const isString = (v: unknown): v is string => typeof v === 'string' && v.trim() !== '';
+  const authorIds = Array.from(new Set(postsArr.map((post) => post.author_id).filter(isString)));
   let authorLeaderboard: { id: string; name: string; avatar_url?: string | null; posts: number }[] = [];
   if (authorIds.length) {
     const { data: authorRows, error: authorErr } = await supa

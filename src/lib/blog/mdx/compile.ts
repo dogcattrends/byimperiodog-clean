@@ -1,3 +1,7 @@
+/* LEGADO / FALLBACK: MDX Contentlayer helpers.
+  These utilities are a fallback for environments where Sanity is not
+  available (Contentlayer). Prefer `src/lib/sanity/*` for production.
+*/
 /* eslint-disable import/order */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Root } from 'hast';

@@ -7,7 +7,7 @@ import { promises as fs } from "node:fs";
 import sharp from "sharp";
 import { z } from "zod";
 
-import { createLogger } from "@/lib/logger";
+import { createLogger } from "../logger";
 
 const logger = createLogger("ai:puppy-vision");
 
@@ -467,7 +467,8 @@ function buildUICard({
 }
 
 function uniqueList(values: Array<string | null | undefined>) {
-  return Array.from(new Set(values.filter(Boolean) as string[]));
+  const isString = (v: unknown): v is string => typeof v === 'string' && v.trim() !== '';
+  return Array.from(new Set(values.filter(isString)));
 }
 
 function clampScore(value: number) {

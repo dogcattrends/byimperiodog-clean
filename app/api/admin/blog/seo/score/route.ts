@@ -31,7 +31,8 @@ export async function GET(req:Request){
     if(post.seo_title) score+=5; if(post.seo_description) score+=5; if(post.excerpt) score+=5;
     const coverageAlt = images.length? Math.round((altWithText/images.length)*100):100;
     return NextResponse.json({ ok:true, score, coverageAlt, words, headings: headings.length, images: images.length, entidades: densidadeEntidades });
-  } catch(e:any){
-    return NextResponse.json({ ok:false, error:e?.message||'erro' },{ status:500 });
+  } catch (e: unknown) {
+    const msg = typeof e === 'object' && e !== null && 'message' in e ? String((e as { message?: unknown }).message ?? e) : String(e);
+    return NextResponse.json({ ok: false, error: msg || 'erro' }, { status: 500 });
   }
 }

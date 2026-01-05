@@ -7,7 +7,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-import type { PublicTrackingSettings } from "@/types/tracking";
+import type { PublicTrackingSettings } from "../types/tracking";
 
 export type TrackingFormValues = {
   facebookPixelId: string;

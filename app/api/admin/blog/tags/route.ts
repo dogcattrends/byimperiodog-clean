@@ -48,8 +48,9 @@ export async function GET(req: NextRequest) {
     if (error) throw error;
   const items = (data || []).filter((t: { name?:string|null; slug?:string|null }) => !q || t.name?.toLowerCase().includes(q) || t.slug?.toLowerCase().includes(q));
     return NextResponse.json(items);
-  } catch (err: any) {
-    return NextResponse.json({ error: err?.message || String(err) }, { status: 500 });
+  } catch (err: unknown) {
+    const msg = typeof err === 'object' && err !== null && 'message' in err ? String((err as { message?: unknown }).message ?? err) : String(err);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 
@@ -75,7 +76,8 @@ export async function POST(req: NextRequest) {
     const { data, error } = await sb.from("blog_tags").upsert(payload, { onConflict: "slug" }).select("id,name,slug");
     if (error) throw error;
     return NextResponse.json({ ok: true, tags: data || [] });
-  } catch (err: any) {
-    return NextResponse.json({ error: err?.message || String(err) }, { status: 500 });
+  } catch (err: unknown) {
+    const msg = typeof err === 'object' && err !== null && 'message' in err ? String((err as { message?: unknown }).message ?? err) : String(err);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

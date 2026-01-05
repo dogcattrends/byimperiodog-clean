@@ -72,9 +72,10 @@ export async function GET(req: Request) {
       nextCursor = last?.created_at ?? null;
     }
     return NextResponse.json({ items, nextCursor });
-  } catch (err: any) {
-    console.error(err?.message || err);
-    return NextResponse.json({ error: err?.message || String(err) }, { status: 500 });
+  } catch (err: unknown) {
+    const msg = typeof err === 'object' && err !== null && 'message' in err ? String((err as { message?: unknown }).message ?? err) : String(err);
+    console.error(msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 
@@ -129,9 +130,10 @@ export async function POST(req: Request) {
     if (error) throw error;
 
     return NextResponse.json({ ok: true, comment: data }, { status: 201 });
-  } catch (err: any) {
-    console.error(err?.message || err);
-    return NextResponse.json({ error: err?.message || String(err) }, { status: 500 });
+  } catch (err: unknown) {
+    const msg = typeof err === 'object' && err !== null && 'message' in err ? String((err as { message?: unknown }).message ?? err) : String(err);
+    console.error(msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 

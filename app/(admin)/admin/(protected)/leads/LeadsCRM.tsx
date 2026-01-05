@@ -1,9 +1,10 @@
-"use client";
+﻿"use client";
 
 import {
   ArrowLeft,
   ArrowRight,
   CalendarRange,
+  Download,
   Filter,
   LayoutGrid,
   Loader2,
@@ -38,7 +39,7 @@ const STATUS_LABELS: Record<LeadStatus, string> = {
   perdido: "Perdido",
 };
 
-const EMPTY_VALUE = "—";
+const EMPTY_VALUE = "-";
 
 const buildFormState = (filters: ParsedLeadFilters): FilterFormState => ({
   statuses: new Set(filters.statuses),
@@ -56,11 +57,11 @@ const formatDateTime = (value?: string | null) => {
 
 const buildWhatsappMessage = (lead: LeadListItem) => {
   const firstName = (lead.name || "").split(" ")[0] ?? "";
-  const desired = [lead.color, lead.preferredSex].filter(Boolean).join(" • ");
+  const desired = [lead.color, lead.preferredSex].filter((v): v is string => typeof v === "string" && v.length > 0).join(" â€¢ ");
   const puppy = lead.matchedPuppy?.name;
-  return `Oi ${firstName || ""}! Somos da By Império Dog. Recebemos seu interesse${desired ? ` (${desired})` : ""}${
-    puppy ? ` e já separamos o ${puppy}` : ""
-  }. Podemos falar por aqui e te mandar fotos/vídeo?`;
+  return `Oi ${firstName || ""}! Somos da By ImpÃ©rio Dog. Recebemos seu interesse${desired ? ` (${desired})` : ""}${
+    puppy ? ` e jÃ¡ separamos o ${puppy}` : ""
+  }. Podemos falar por aqui e te mandar fotos/vÃ­deo?`;
 };
 
 const buildWhatsAppLink = (lead: LeadListItem) => {
@@ -150,19 +151,66 @@ export default function LeadsCRM({ filters, items, total, page, hasNext, statusS
   const handleCopyMessage = async (lead: LeadListItem) => {
     try {
       await navigator.clipboard.writeText(buildWhatsappMessage(lead));
-      push({ type: "success", message: "Mensagem copiada para a área de transferência" });
+      push({ type: "success", message: "Mensagem copiada para a Ã¡rea de transferÃªncia" });
     } catch {
-      push({ type: "error", message: "Não foi possível copiar a mensagem" });
+      push({ type: "error", message: "NÃ£o foi possÃ­vel copiar a mensagem" });
     }
   };
 
   const handleOpenWhatsApp = (lead: LeadListItem) => {
     const link = buildWhatsAppLink(lead);
     if (!link) {
-      push({ type: "error", message: "Telefone sem WhatsApp válido" });
+      push({ type: "error", message: "Telefone sem WhatsApp vÃ¡lido" });
       return;
     }
     window.open(link, "_blank", "noopener,noreferrer");
+  };
+  const handleExportCsv = () => {
+    const rows = items.map((lead) => {
+      const matched = lead.matchedPuppy?.name ?? "";
+      const createdAt = lead.createdAt ?? "";
+      return [
+        lead.id,
+        lead.name || "",
+        lead.phone ?? "",
+        lead.whatsapp ?? "",
+        lead.city ?? "",
+        lead.state ?? "",
+        lead.color ?? "",
+        lead.status ?? "",
+        createdAt,
+        lead.source ?? "",
+        lead.page ?? "",
+        matched,
+      ]
+        .map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`)
+        .join(",");
+    });
+
+    const header = [
+      "id",
+      "name",
+      "phone",
+      "whatsapp",
+      "city",
+      "state",
+      "color",
+      "status",
+      "created_at",
+      "source",
+      "page",
+      "matched_puppy",
+    ].join(",");
+
+    const csv = [header, ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `leads_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    push({ type: "success", message: "CSV exportado com os leads filtrados." });
   };
 
   return (
@@ -170,11 +218,21 @@ export default function LeadsCRM({ filters, items, total, page, hasNext, statusS
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-[var(--text)]">Leads</h1>
-          <p className="text-sm text-[var(--text-muted)]">Mini-CRM com filtros, ações rápidas e integração com filhotes.</p>
+          <p className="text-sm text-[var(--text-muted)]">Mini-CRM com filtros, aÃ§Ãµes rÃ¡pidas e integraÃ§Ã£o com filhotes.</p>
         </div>
-        <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-sm text-[var(--text-muted)]">
-          <TableProperties className="h-4 w-4" aria-hidden />
-          {items.length} de {formattedTotal} leads
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={handleExportCsv}
+            className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-sm font-semibold text-[var(--text)] hover:bg-[var(--surface)]"
+          >
+            <Download className="h-4 w-4" aria-hidden />
+            Exportar CSV
+          </button>
+          <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-sm text-[var(--text-muted)]">
+            <TableProperties className="h-4 w-4" aria-hidden />
+            {items.length} de {formattedTotal} leads
+          </div>
         </div>
       </header>
 
@@ -272,7 +330,7 @@ export default function LeadsCRM({ filters, items, total, page, hasNext, statusS
                   aria-label="Data final"
                 />
               </div>
-              <p className="text-xs text-[var(--text-muted)]">Filtra por data de criação do lead.</p>
+              <p className="text-xs text-[var(--text-muted)]">Filtra por data de criaÃ§Ã£o do lead.</p>
             </div>
           </div>
 
@@ -304,7 +362,7 @@ export default function LeadsCRM({ filters, items, total, page, hasNext, statusS
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="space-y-1 text-sm text-[var(--text-muted)]">
-            <p className="font-semibold text-[var(--text)]">Página {page}</p>
+            <p className="font-semibold text-[var(--text)]">PÃ¡gina {page}</p>
             <p>
               Mostrando {items.length} de {formattedTotal} leads.
             </p>
@@ -318,14 +376,14 @@ export default function LeadsCRM({ filters, items, total, page, hasNext, statusS
             >
               <ArrowLeft className="h-4 w-4" aria-hidden /> Anterior
             </button>
-            <span aria-hidden>•</span>
+            <span aria-hidden>â€¢</span>
             <button
               type="button"
               onClick={() => handlePageChange(page + 1)}
               disabled={!canNext}
               className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-semibold disabled:opacity-40"
             >
-              Próxima <ArrowRight className="h-4 w-4" aria-hidden />
+              PrÃ³xima <ArrowRight className="h-4 w-4" aria-hidden />
             </button>
           </div>
         </div>
@@ -343,7 +401,7 @@ export default function LeadsCRM({ filters, items, total, page, hasNext, statusS
         {items.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface)] px-6 py-12 text-center">
             <p className="text-sm font-semibold text-[var(--text)]">Nenhum lead encontrado para esses filtros.</p>
-            <p className="text-xs text-[var(--text-muted)]">Tente ajustar o período ou limpar os filtros.</p>
+            <p className="text-xs text-[var(--text-muted)]">Tente ajustar o perÃ­odo ou limpar os filtros.</p>
           </div>
         ) : (
           <LeadsTable
@@ -384,7 +442,7 @@ function LeadsTable({
             <th className="px-4 py-3">Filhote</th>
             <th className="px-4 py-3">Status</th>
             <th className="px-4 py-3">Criado em</th>
-            <th className="px-4 py-3">Ações</th>
+            <th className="px-4 py-3">AÃ§Ãµes</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-[var(--border)] bg-white">
@@ -418,13 +476,13 @@ function LeadsTable({
                 </div>
               </td>
               <td className="px-4 py-3 text-[var(--text-muted)]">
-                {[lead.city, lead.state].filter(Boolean).join(", ") || EMPTY_VALUE}
+                {[lead.city, lead.state].filter((v): v is string => typeof v === "string" && v.length > 0).join(", ") || EMPTY_VALUE}
               </td>
               <td className="px-4 py-3 text-[var(--text-muted)]">{lead.color || EMPTY_VALUE}</td>
               <td className="px-4 py-3 text-[var(--text-muted)]">
                 {lead.matchedPuppy ? (
                   <a
-                    href={`/admin/puppies/${lead.matchedPuppy.id}`}
+                    href={`/admin/filhotes/${lead.matchedPuppy.id}`}
                     className="inline-flex flex-col rounded-xl bg-[var(--surface)] px-3 py-2 text-xs text-[var(--text)] hover:underline"
                   >
                     <span className="font-semibold">{lead.matchedPuppy.name}</span>
@@ -476,3 +534,7 @@ function LeadsTable({
     </div>
   );
 }
+
+
+
+

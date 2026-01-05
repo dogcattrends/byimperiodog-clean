@@ -1,3 +1,6 @@
+// LEGADO / FALLBACK: TOC builder used by Contentlayer/MDX fallback.
+// Public site must prefer data from Sanity; this module only helps
+// when Contentlayer is used as fallback.
 import type { Parent } from 'unist';
 
 export interface TocItem {

@@ -191,20 +191,24 @@ export const zIndex = {
 /**
  * Helper para obter valor de token com fallback
  */
-export function getToken<T extends Record<string, any>>(
+export function getToken<T extends Record<string, unknown>>(
   tokens: T,
   path: string,
-  fallback?: any
-): any {
+  fallback?: unknown
+): unknown {
   const keys = path.split('.');
-  let value: any = tokens;
+  let value: unknown = tokens;
   
   for (const key of keys) {
-    value = value?.[key];
-    if (value === undefined) return fallback;
+    // Type-guard for unknown indexing
+    if (typeof value === 'object' && value !== null && key in (value as Record<string, unknown>)) {
+      value = (value as Record<string, unknown>)[key];
+    } else {
+      return fallback;
+    }
   }
   
-  return value ?? fallback;
+  return (value ?? fallback) as unknown;
 }
 
 /**

@@ -50,7 +50,8 @@ export async function POST(req: NextRequest) {
     if (e2) return NextResponse.json({ error: e2.message }, { status: 400 });
 
     return NextResponse.json({ ok: true, id: contract.id, ...uploads });
-  } catch (e:any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+  } catch (e: unknown) {
+    const msg = typeof e === "object" && e !== null && "message" in e ? String((e as { message?: unknown }).message ?? e) : String(e);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { canonical as resolveCanonical, SITE_ORIGIN } from "./seo.core";
+import { canonical as resolveCanonical, SITE_BRAND_NAME, SITE_ORIGIN } from "./seo.core";
 
 type OgImage = {
   url: string;
@@ -33,13 +33,66 @@ const DEFAULT_IMAGE: Required<OgImage> = {
   alt: "Spitz Alemão (Lulu da Pomerânia) — By Imperio Dog",
 };
 
-export function resolveRobots(overrides?: Metadata["robots"]) {
-  if (overrides) return overrides;
-  const env = process.env.VERCEL_ENV || process.env.NODE_ENV || "";
-  if (PREVIEW_ENVS.has(env)) {
-    return { index: false, follow: false };
+const ROBOTS_DEFAULT: NonNullable<Metadata["robots"]> = {
+  index: true,
+  follow: true,
+  "max-snippet": -1,
+  "max-image-preview": "large",
+  "max-video-preview": -1,
+  googleBot: {
+    index: true,
+    follow: true,
+    "max-snippet": -1,
+    "max-image-preview": "large",
+    "max-video-preview": -1,
+  },
+};
+
+const ROBOTS_PREVIEW: NonNullable<Metadata["robots"]> = {
+  index: false,
+  follow: false,
+  noarchive: true,
+  noimageindex: true,
+  nosnippet: true,
+  googleBot: {
+    index: false,
+    follow: false,
+    noarchive: true,
+    noimageindex: true,
+    nosnippet: true,
+  },
+};
+
+function mergeRobots(base: NonNullable<Metadata["robots"]>, overrides: NonNullable<Metadata["robots"]>) {
+  if (typeof overrides === "string") return overrides;
+  if (typeof base === "string") return overrides;
+  const baseGoogleBot = base.googleBot;
+  const overrideGoogleBot = overrides.googleBot;
+  let googleBot = baseGoogleBot;
+
+  if (overrideGoogleBot) {
+    if (typeof overrideGoogleBot === "string") {
+      googleBot = overrideGoogleBot;
+    } else if (!baseGoogleBot || typeof baseGoogleBot === "string") {
+      googleBot = { ...overrideGoogleBot };
+    } else {
+      googleBot = { ...baseGoogleBot, ...overrideGoogleBot };
+    }
   }
-  return { index: true, follow: true };
+
+  return {
+    ...base,
+    ...overrides,
+    googleBot,
+  };
+}
+
+export function resolveRobots(overrides?: Metadata["robots"]) {
+  const env = process.env.VERCEL_ENV || process.env.NODE_ENV || "";
+  const base = PREVIEW_ENVS.has(env) ? ROBOTS_PREVIEW : ROBOTS_DEFAULT;
+  if (!overrides) return base;
+  if (typeof overrides === "string") return overrides;
+  return mergeRobots(base, overrides);
 }
 
 export function buildCanonical(path: string) {
@@ -83,6 +136,9 @@ export function pageMetadata(input: PageMetadataInput): Metadata {
     metadataBase: new URL(SITE_ORIGIN),
     title: input.title,
     description: input.description,
+    authors: [{ name: SITE_BRAND_NAME, url: SITE_ORIGIN }],
+    creator: SITE_BRAND_NAME,
+    publisher: SITE_BRAND_NAME,
     robots,
     keywords: input.keywords,
     alternates: {

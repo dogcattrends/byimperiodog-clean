@@ -11,18 +11,29 @@ const args = ['contentlayer', 'build'];
 let stdoutBuf = '';
 let stderrBuf = '';
 
-const child = spawn(npxCmd, args, { stdio: ['ignore', 'pipe', 'pipe'] });
+let child;
+try {
+  // Em Windows algumas vezes spawn sem `shell` causa EINVAL; habilitamos shell apenas no win32
+  child = spawn(npxCmd, args, { stdio: ['ignore', 'pipe', 'pipe'], shell: process.platform === 'win32' });
+} catch (err) {
+  console.error('[contentlayer-wrapper] spawn failed:', err && err.message ? err.message : err);
+  process.exit(1);
+}
 
-child.stdout.on('data', (d) => {
-  const text = d.toString();
-  stdoutBuf += text;
-  process.stdout.write(text); // fluxo normal
-});
-child.stderr.on('data', (d) => {
-  const text = d.toString();
-  stderrBuf += text;
-  process.stderr.write(text); // fluxo normal
-});
+if (child.stdout) {
+  child.stdout.on('data', (d) => {
+    const text = d.toString();
+    stdoutBuf += text;
+    process.stdout.write(text); // fluxo normal
+  });
+}
+if (child.stderr) {
+  child.stderr.on('data', (d) => {
+    const text = d.toString();
+    stderrBuf += text;
+    process.stderr.write(text); // fluxo normal
+  });
+}
 
 child.on('close', (code) => {
   // Assinatura conhecida do bug

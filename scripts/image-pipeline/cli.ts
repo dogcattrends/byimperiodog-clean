@@ -1,3 +1,4 @@
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 /**
  * CLI para processar imagens de filhotes
  * Uso: npm run images:process

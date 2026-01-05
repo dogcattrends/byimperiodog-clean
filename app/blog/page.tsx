@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
+import FAQBlock from "@/components/answer/FAQBlock";
 import BlogCard from "@/components/blog/BlogCard";
 import SeoJsonLd from "@/components/SeoJsonLd";
 import { estimateReadingTime } from "@/lib/blog/reading-time";
-import { listPostsWithMeta } from "@/lib/blog/service";
-import { getAllPosts } from "@/lib/content";
 import { BLUR_DATA_URL } from "@/lib/placeholders";
+import { listPublicPosts, type PublicPostsPage } from "@/lib/sanity/publicPosts";
+import { baseBlogMetadata, SITE_ORIGIN } from "@/lib/seo.core";
 
 type SortOption = "recentes" | "antigos";
 
@@ -21,17 +22,9 @@ type PublicPost = {
   published_at?: string | null;
   updated_at?: string | null;
   content_mdx?: string | null;
-  status?: string | null;
-  category?: string | null;
-  author_id?: string | null;
   tags?: string[] | null;
+  category?: string | null;
 };
-
-type FetchState =
-  | { status: "ok"; posts: PublicPost[]; page: number; pageSize: number; total: number; hasNext: boolean; hasPrev: boolean }
-  | { status: "empty" }
-  | { status: "env-missing" }
-  | { status: "error"; message: string };
 
 type CategoryDefinition = {
   id: string;
@@ -47,8 +40,8 @@ const CATEGORY_DEFINITIONS: CategoryDefinition[] = [
     id: "guia-do-tutor",
     title: "Guia do Tutor",
     description:
-      "Rotinas, enxoval, planejamento financeiro e a jornada completa para receber um Spitz equilibrado em casa.",
-    highlight: "Checklist premium e mentoria vital�cia para fam�lias exigentes.",
+      "Rotinas, enxoval, planejamento financeiro e a jornada completa para receber um Spitz Alemão Anão (Lulu da Pomerânia) equilibrado em casa.",
+    highlight: "Checklist premium e mentoria vitalicia para familias exigentes.",
     match: (post) => includesCategory(post, ["guia", "tutor", "planejamento"]),
     cta: { label: "Planejar rotina", href: "/sobre" },
   },
@@ -56,8 +49,8 @@ const CATEGORY_DEFINITIONS: CategoryDefinition[] = [
     id: "cuidados",
     title: "Cuidados",
     description:
-      "Nutri��o personalizada, higiene estrat�gica e protocolos preventivos para manter o Spitz saud�vel e confiante.",
-    highlight: "Orienta��es da neonatologia ao primeiro ano com suporte cont�nuo.",
+      "Nutricao personalizada, higiene estrategica e protocolos preventivos para manter o Spitz Alemão Anão (Lulu da Pomerânia) saudavel e confiante.",
+    highlight: "Orientacoes da neonatologia ao primeiro ano com suporte continuo.",
     match: (post) => includesCategory(post, ["cuidado", "rotina", "nutri", "higiene"]),
     cta: { label: "Ver dicas de cuidados", href: "/faq#cuidados" },
   },
@@ -65,49 +58,75 @@ const CATEGORY_DEFINITIONS: CategoryDefinition[] = [
     id: "adestramento",
     title: "Adestramento",
     description:
-      "Socializa��o guiada, enriquecimento ambiental e refor�o positivo focado em lares urbanos com agenda cheia.",
-    highlight: "Protocolos semanais com v�deos e check-ins pelo WhatsApp.",
+      "Socializacao guiada, enriquecimento ambiental e reforco positivo focado em lares urbanos com agenda cheia.",
+    highlight: "Protocolos semanais com videos e check-ins pelo WhatsApp.",
     match: (post) => includesCategory(post, ["adestramento", "comportamento", "socializacao"]),
     cta: { label: "Conhecer nosso processo", href: "/sobre#processo" },
   },
   {
     id: "saude",
-    title: "Sa�de",
+    title: "Saude",
     description:
-      "Preventivo completo: exames gen�ticos, cardiol�gicos e protocolos veterin�rios para Spitz at� 22 cm.",
-    highlight: "Transpar�ncia total com laudos digitais e acompanhamento p�s-entrega.",
-    match: (post) => includesCategory(post, ["saude", "cl�nico", "veterin", "check-up"]),
+      "Preventivo completo: exames geneticos, cardiologicos e protocolos veterinarios para o Spitz Alemão Anão (Lulu da Pomerânia) ate 22 cm.",
+    highlight: "Transparencia total com laudos digitais e acompanhamento pos-entrega.",
+    match: (post) => includesCategory(post, ["saude", "clinico", "veterin", "check-up"]),
     cta: { label: "Entender exames", href: "/faq#saude" },
   },
   {
     id: "perguntas-frequentes",
     title: "Perguntas Frequentes",
     description:
-      "Respostas diretas sobre investimento, log�stica, conviv�ncia com crian�as e integra��o com outros pets.",
-    highlight: "Conte�do did�tico produzido com base nas d�vidas reais dos tutores.",
+      "Respostas diretas sobre investimento, logistica, convivio com criancas e integracao com outros pets.",
+    highlight: "Conteudo didatico produzido com base nas duvidas reais dos tutores.",
     match: (post) => includesCategory(post, ["pergunta", "faq", "investimento", "logistica"]),
     cta: { label: "FAQ completo", href: "/faq" },
   },
 ];
 
-// Revalidate cache every 60 seconds in production, but disable cache in development
-export const revalidate = process.env.NODE_ENV === 'production' ? 60 : 0;
-// Force dynamic rendering to always show latest posts
-export const dynamic = 'force-dynamic';
+const BLOG_SNIPPET =
+  "O blog da By Império Dog reúne artigos sobre Spitz Alemão Anão (Lulu da Pomerânia) com foco em rotina, saúde, comportamento e decisões com pedigree. Cada texto responde perguntas reais de tutores e aponta para guias, FAQ e contato direto com a criadora.";
 
-export const metadata: Metadata = {
-  title: "Guia completo do tutor de Spitz Alem�o An�o (Lulu da Pomer�nia)",
-  description:
-    "Conte�do evergreen para quem busca Spitz Alem�o An�o (Lulu da Pomer�nia) com responsabilidade: cuidados, rotina, comportamento, sa�de preventiva e respostas das principais d�vidas.",
-  alternates: { canonical: "/blog" },
-  openGraph: {
-    type: "website",
-    url: "/blog",
-    title: "Blog | By Imp�rio Dog",
-    description:
-      "Pilares evergreen sobre sa�de, rotina e comportamento do Spitz Alem�o An�o (Lulu da Pomer�nia) para uma decis�o respons�vel.",
+const BLOG_FAQ = [
+  {
+    question: "Como o blog ajuda a decidir um filhote?",
+    answer:
+      "Cada artigo cita evidências de socialização, saúde e investimento, relacionando perguntas frequentes a guias e ao catálogo de filhotes com pedigree.",
   },
-};
+  {
+    question: "Os conteúdos são escritos por especialistas?",
+    answer: "Sim, todos os textos passam pelo time By Império Dog e validam referências confiáveis antes da publicação.",
+  },
+  {
+    question: "Posso compartilhar essas informações com minha família?",
+    answer: "Claro, o blog foi pensado para familias e consultores, sempre mantendo a fonte Sanity como verdade editorial.",
+  },
+];
+
+const HERO_LINKS = [
+  {
+    title: "Filhotes disponiveis sob consulta",
+    description: "Acesso antecipado as ninhadas com saude validada e mentoria vitalicia.",
+    href: "/filhotes",
+  },
+  {
+    title: "Processo By Imperio Dog",
+    description: "Entenda cada etapa: entrevista, socializacao, entrega humanizada e suporte 24h.",
+    href: "/sobre#processo",
+  },
+  {
+    title: "FAQ para tutores",
+    description: "Perguntas frequentes sobre investimento, logistica e rotina em familia.",
+    href: "/faq",
+  },
+];
+
+export const revalidate = process.env.NODE_ENV === "production" ? 60 : 0;
+export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = baseBlogMetadata({
+  description:
+    "Conteudo evergreen e pratico sobre saude, rotina e comportamento do Spitz Alemao Anao (Lulu da Pomerânia).",
+});
 
 type PageSearchParams = {
   q?: string;
@@ -118,259 +137,166 @@ type PageSearchParams = {
 export default async function BlogListPage({ searchParams }: { searchParams?: PageSearchParams }) {
   const sort = searchParams?.sort === "antigos" ? "antigos" : "recentes";
   const searchTerm = (searchParams?.q || "").trim();
-  const pageNum = Number(searchParams?.page || 1);
-  const fetchState = await fetchPosts({ sort, page: pageNum });
+  const pageNum = Math.max(1, Number(searchParams?.page || 1));
+  const searchQuery = searchTerm.length >= 2 ? searchTerm : undefined;
 
-  const heroLinks = [
-    {
-      title: "Filhotes dispon�veis sob consulta",
-      description: "Acesso antecipado �s ninhadas com sa�de validada e mentoria vital�cia.",
-      href: "/filhotes",
-    },
-    {
-      title: "Processo By Imperio Dog",
-      description: "Entenda cada etapa: entrevista, socializa��o, entrega humanizada e suporte 24h.",
-      href: "/sobre#processo",
-    },
-    {
-      title: "FAQ para tutores",
-      description: "Perguntas frequentes sobre investimento, log�stica e rotina em fam�lia.",
-      href: "/faq",
-    },
-  ];
+  let pageData: PublicPostsPage | null = null;
+  let fetchError: string | null = null;
 
-  // Em caso de ambiente Supabase ausente, tentamos fallback ao Contentlayer
-  if (fetchState.status === "env-missing") {
-    const fallback = await fetchFromContentlayer();
-    if (fallback.status === "ok") {
-      // Reusa o mesmo template, apenas troca a fonte de dados
-      const filtered = searchTerm
-        ? fallback.posts.filter((post) => {
-            const target = `${post.title} ${post.excerpt ?? ""} ${post.category ?? ""}`.toLowerCase();
-            return target.includes(searchTerm.toLowerCase());
-          })
-        : fallback.posts;
-
-      const featured = filtered[0] ?? fallback.posts[0];
-      const collections = buildCollections(filtered);
-
-      const metaTitleStr = typeof metadata.title === "string" ? metadata.title : "Blog | By Imp�rio Dog";
-      const metaDescStr = metadata.description ?? "Conte�do evergreen sobre sa�de, rotina e comportamento do Spitz Alem�o An�o (Lulu da Pomer�nia).";
-      const blogSchema = buildBlogSchema({
-        url: process.env.NEXT_PUBLIC_SITE_URL || "https://www.byimperiodog.com.br",
-        headline: metaTitleStr,
-        description: metaDescStr,
-        posts: fallback.posts.slice(0, 12),
-      });
-      const siteBase = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.byimperiodog.com.br").replace(/\/$/, "");
-      const crumbs = {
-        "@context": "https://schema.org",
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "In�cio", item: `${siteBase}/` },
-          { "@type": "ListItem", position: 2, name: "Blog", item: `${siteBase}/blog` },
-        ],
-      };
-      const itemList = {
-        "@context": "https://schema.org",
-        "@type": "ItemList",
-        "@id": `${siteBase}/blog#itemlist`,
-        itemListElement: filtered.map((p, idx) => ({
-          "@type": "ListItem",
-          position: idx + 1,
-          url: `${siteBase}/blog/${p.slug}`,
-          name: p.title,
-        })),
-      };
-
-      const guiaDoTutorCollection = collections.find(c => c.definition.id === "guia-do-tutor");
-      const otherCollections = collections.filter(c => c.definition.id !== "guia-do-tutor");
-
-      return (
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-16 px-4 py-16 sm:px-6 lg:px-8">
-          <SeoJsonLd data={[blogSchema, crumbs, itemList]} />
-          <Hero searchTerm={searchTerm} links={heroLinks} />
-          {featured ? <FeaturedPost post={featured} /> : null}
-          {searchTerm && filtered.length === 0 ? (
-            <EmptyState
-              title="Nenhum artigo corresponde ao termo pesquisado"
-              message="Use palavras-chave como sa�de, rotina, comportamento ou investimento."
-            />
-          ) : null}
-          {guiaDoTutorCollection && guiaDoTutorCollection.posts.length > 0 && !searchTerm ? (
-            <GuiaDoTutorSection collection={guiaDoTutorCollection} />
-          ) : null}
-          {otherCollections.map((collection) =>
-            collection.posts.length > 0 ? (
-              <CategorySection key={collection.definition.id} collection={collection} />
-            ) : null
-          )}
-        </div>
-      );
+  try {
+    pageData = await listPublicPosts({
+      page: pageNum,
+      pageSize: 12,
+      sort,
+      search: searchQuery,
+    });
+  } catch (error) {
+    if (process.env.NODE_ENV !== "production") {
+      console.error("[blog] erro ao carregar posts do Sanity", error);
     }
-    // Se fallback também não tiver posts, mostra estado vazio
+    fetchError = error instanceof Error ? error.message : "Erro desconhecido";
+  }
+
+  if (!pageData) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-16">
-        <Hero searchTerm={searchTerm} links={heroLinks} />
+        <Hero searchTerm={searchTerm} links={HERO_LINKS} />
+        <EmptyState
+          title="Nao foi possivel carregar os artigos"
+          message={fetchError || "Tente novamente em instantes."}
+        />
+      </div>
+    );
+  }
+
+  if (!pageData.posts.length) {
+    return (
+      <div className="mx-auto max-w-4xl px-4 py-16">
+        <Hero searchTerm={searchTerm} links={HERO_LINKS} />
         <EmptyState
           title="Nenhum artigo publicado ainda"
-          message="Assim que novos conte�dos estiverem prontos, voc� ser� notificado nas redes sociais."
+          message="Assim que novos conteudos estiverem prontos, voce sera notificado nas redes sociais."
         />
-      </div>
-    );
-  }
-
-  if (fetchState.status === "error") {
-    return (
-      <div className="mx-auto max-w-4xl px-4 py-16">
-        <Hero searchTerm={searchTerm} links={heroLinks} />
-        <EmptyState
-          title="N�o foi poss�vel carregar os artigos"
-          message={fetchState.message || "Tente novamente em instantes."}
-        />
-      </div>
-    );
-  }
-
-  if (fetchState.status === "empty") {
-    return (
-      <div className="mx-auto max-w-4xl px-4 py-16">
-        <Hero searchTerm={searchTerm} links={heroLinks} />
-        {/* tenta fallback para Contentlayer também quando não houver posts no Supabase */}
-        {await (async () => {
-          const fb = await fetchFromContentlayer();
-          if (fb.status !== "ok") {
-            return (
-              <EmptyState
-                title="Nenhum artigo publicado ainda"
-                message="Assim que novos conte�dos estiverem prontos, voc� ser� notificado nas redes sociais."
-              />
-            );
-          }
-          const filtered = searchTerm
-            ? fb.posts.filter((post) => {
-                const target = `${post.title} ${post.excerpt ?? ""} ${post.category ?? ""}`.toLowerCase();
-                return target.includes(searchTerm.toLowerCase());
-              })
-            : fb.posts;
-          const guiaDoTutorCollection = buildCollections(filtered).find(c => c.definition.id === "guia-do-tutor");
-          const otherCollections = buildCollections(filtered).filter(c => c.definition.id !== "guia-do-tutor");
-          return (
-            <div className="mt-10 space-y-10">
-              {guiaDoTutorCollection && guiaDoTutorCollection.posts.length > 0 ? (
-                <GuiaDoTutorSection collection={guiaDoTutorCollection} />
-              ) : null}
-              {otherCollections.map((collection) =>
-                collection.posts.length > 0 ? (
-                  <CategorySection key={collection.definition.id} collection={collection} />
-                ) : null
-              )}
-            </div>
-          );
-        })()}
       </div>
     );
   }
 
   const filtered = searchTerm
-    ? fetchState.posts.filter((post) => {
+    ? pageData.posts.filter((post) => {
         const target = `${post.title} ${post.excerpt ?? ""} ${post.category ?? ""}`.toLowerCase();
         return target.includes(searchTerm.toLowerCase());
       })
-    : fetchState.posts;
+    : pageData.posts;
 
-  const featured = filtered[0] ?? fetchState.posts[0];
+  const featured = filtered[0] ?? pageData.posts[0];
   const collections = buildCollections(filtered);
+  const guiaDoTutorCollection = collections.find((collection) => collection.definition.id === "guia-do-tutor");
+  const otherCollections = collections.filter((collection) => collection.definition.id !== "guia-do-tutor");
 
-  const metaTitleStr = typeof metadata.title === "string" ? metadata.title : "Blog | By Imp�rio Dog";
-  const metaDescStr = metadata.description ?? "Conte�do evergreen sobre sa�de, rotina e comportamento do Spitz Alem�o An�o (Lulu da Pomer�nia).";
+  const metaTitleStr =
+    typeof metadata.title === "string" ? metadata.title : "Blog | By Imperio Dog";
+  const metaDescStr =
+    metadata.description || "Conteudo evergreen sobre saude, rotina e comportamento do Spitz Alemão Anão (Lulu da Pomerânia).";
   const blogSchema = buildBlogSchema({
-    url: process.env.NEXT_PUBLIC_SITE_URL || "https://www.byimperiodog.com.br",
+    url: SITE_ORIGIN,
     headline: metaTitleStr,
     description: metaDescStr,
-    posts: fetchState.posts.slice(0, 12),
+    posts: pageData.posts.slice(0, 12),
   });
-  const siteBase = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.byimperiodog.com.br").replace(/\/$/, "");
+
   const crumbs = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "In�cio", item: `${siteBase}/` },
-      { "@type": "ListItem", position: 2, name: "Blog", item: `${siteBase}/blog` },
+      { "@type": "ListItem", position: 1, name: "Inicio", item: `${SITE_ORIGIN}/` },
+      { "@type": "ListItem", position: 2, name: "Blog", item: `${SITE_ORIGIN}/blog` },
     ],
   };
+
   const itemList = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    "@id": `${siteBase}/blog#itemlist`,
-    itemListElement: filtered.map((p, idx) => ({
+    "@id": `${SITE_ORIGIN}/blog#itemlist`,
+    itemListElement: pageData.posts.map((post, idx) => ({
       "@type": "ListItem",
       position: idx + 1,
-      url: `${siteBase}/blog/${p.slug}`,
-      name: p.title,
+      url: `${SITE_ORIGIN}/blog/${post.slug}`,
+      name: post.title,
     })),
   };
 
-  // Separar "Guia do Tutor" para destaque
-  const guiaDoTutorCollection = collections.find(c => c.definition.id === "guia-do-tutor");
-  const otherCollections = collections.filter(c => c.definition.id !== "guia-do-tutor");
-
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-16 px-4 py-16 sm:px-6 lg:px-8">
-  <SeoJsonLd data={[blogSchema, crumbs, itemList]} />
-      <Hero searchTerm={searchTerm} links={heroLinks} />
+      <SeoJsonLd data={[blogSchema, crumbs, itemList]} />
+      <Hero searchTerm={searchTerm} links={HERO_LINKS} />
+      <section
+        className="mt-8 rounded-3xl border border-border bg-white p-6 shadow-sm"
+        aria-labelledby="blog-answer-snippet"
+        data-geo-answer="blog-hub"
+      >
+        <h2 id="blog-answer-snippet" className="text-xl font-semibold text-zinc-900">
+          AnswerSnippet
+        </h2>
+        <p className="mt-3 text-sm text-text-muted">{BLOG_SNIPPET}</p>
+      </section>
       {featured ? <FeaturedPost post={featured} /> : null}
 
-      {/* An�ncio de resultados para leitores de tela */}
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
-        {searchTerm && filtered.length > 0 && `${filtered.length} artigo${filtered.length > 1 ? 's' : ''} encontrado${filtered.length > 1 ? 's' : ''} para "${searchTerm}"`}
+        {searchTerm && filtered.length > 0 && `${filtered.length} artigo${filtered.length > 1 ? "s" : ""} encontrado${filtered.length > 1 ? "s" : ""} para "${searchTerm}"`}
         {searchTerm && filtered.length === 0 && `Nenhum artigo encontrado para "${searchTerm}"`}
       </div>
 
       {searchTerm && filtered.length === 0 ? (
         <EmptyState
           title="Nenhum artigo corresponde ao termo pesquisado"
-          message="Use palavras-chave como sa�de, rotina, comportamento ou investimento."
+          message="Use palavras-chave como saude, rotina, comportamento ou investimento."
         />
       ) : null}
 
-      {/* Guia do Tutor em destaque */}
       {guiaDoTutorCollection && guiaDoTutorCollection.posts.length > 0 && !searchTerm ? (
         <GuiaDoTutorSection collection={guiaDoTutorCollection} />
       ) : null}
 
       {otherCollections.map((collection) =>
-        collection.posts.length > 0 ? (
-          <CategorySection key={collection.definition.id} collection={collection} />
-        ) : null
+        collection.posts.length > 0 ? <CategorySection key={collection.definition.id} collection={collection} /> : null
       )}
 
-      {fetchState.status === "ok" ? (
-        <nav className="mx-auto mt-2 flex items-center justify-center gap-3">
-          {fetchState.hasPrev ? (
-            <Link
-              href={`/blog?${new URLSearchParams({ q: searchTerm || "", sort, page: String((fetchState.page || 1) - 1) })}`}
-              className="rounded-pill border border-border px-4 py-2 text-sm"
-            >
-              Anteriores
-            </Link>
-          ) : null}
-          <span className="text-xs text-text-soft">
-            P�gina {fetchState.page} de {Math.max(1, Math.ceil(fetchState.total / fetchState.pageSize))}
-          </span>
-          {fetchState.hasNext ? (
-            <Link
-              href={`/blog?${new URLSearchParams({ q: searchTerm || "", sort, page: String((fetchState.page || 1) + 1) })}`}
-              className="rounded-pill border border-border px-4 py-2 text-sm"
-            >
-              Pr�ximos
-            </Link>
-          ) : null}
-        </nav>
-      ) : null}
+      <div className="mt-12 rounded-3xl border border-border bg-white p-6 shadow-sm">
+        <FAQBlock items={BLOG_FAQ} />
+      </div>
+
+      <nav className="mx-auto mt-2 flex items-center justify-center gap-3">
+        {pageData.hasPrev ? (
+          <Link
+            href={`/blog?${new URLSearchParams({
+              q: searchTerm || "",
+              sort,
+              page: String(pageData.page - 1),
+            })}`}
+            className="rounded-pill border border-border px-4 py-2 text-sm"
+          >
+            Anteriores
+          </Link>
+        ) : null}
+        <span className="text-xs text-text-soft">
+          Pagina {pageData.page} de {Math.max(1, Math.ceil(pageData.total / pageData.pageSize))}
+        </span>
+        {pageData.hasNext ? (
+          <Link
+            href={`/blog?${new URLSearchParams({
+              q: searchTerm || "",
+              sort,
+              page: String(pageData.page + 1),
+            })}`}
+            className="rounded-pill border border-border px-4 py-2 text-sm"
+          >
+            Proximos
+          </Link>
+        ) : null}
+      </nav>
 
       <aside className="grid gap-6 rounded-3xl border border-border bg-surface p-8 shadow-soft sm:grid-cols-3">
-        {heroLinks.map((link) => (
+        {HERO_LINKS.map((link) => (
           <Link
             key={link.href}
             href={link.href}
@@ -378,9 +304,7 @@ export default async function BlogListPage({ searchParams }: { searchParams?: Pa
           >
             <h3 className="text-base font-semibold text-text group-hover:text-brand">{link.title}</h3>
             <p className="text-sm text-text-muted">{link.description}</p>
-            <span className="text-xs font-semibold uppercase tracking-[0.3em] text-brand">
-              Leia tamb�m
-            </span>
+            <span className="text-xs font-semibold uppercase tracking-[0.3em] text-brand">Leia tambem</span>
           </Link>
         ))}
       </aside>
@@ -390,64 +314,9 @@ export default async function BlogListPage({ searchParams }: { searchParams?: Pa
 
 function includesCategory(post: PublicPost, tags: string[]) {
   const category = (post.category || "").toLowerCase();
-  const hasTag = tags.some((tag) => category.includes(tag));
-  if (hasTag) return true;
-  const normalizedTags = (post.tags ?? []) as string[] | undefined;
-  return normalizedTags ? normalizedTags.some((tag) => tags.includes(tag.toLowerCase())) : false;
-}
-
-async function fetchPosts({ sort, page }: { sort: SortOption; page: number }): Promise<FetchState> {
-  try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (!supabaseUrl || !anonKey) {
-      return { status: "env-missing" };
-    }
-
-    const { posts, page: current, pageSize, total, hasNext, hasPrev } = await listPostsWithMeta({ page, pageSize: 12, sort, status: "published" });
-    const mapped = (posts ?? []) as PublicPost[];
-    if (!mapped.length) {
-      const fb = await fetchFromContentlayer(12);
-      if (fb.status === "ok") return fb;
-      return { status: "empty" };
-    }
-    return { status: "ok", posts: mapped, page: current, pageSize, total, hasNext, hasPrev };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Erro desconhecido";
-    if (process.env.NODE_ENV !== "production") {
-      console.error("[blog] falha ao carregar posts", message);
-    }
-    // tentativa final de fallback
-    const fb = await fetchFromContentlayer(12);
-    if (fb.status === "ok") return fb;
-    return { status: "error", message };
-  }
-}
-
-async function fetchFromContentlayer(limit = 12): Promise<FetchState> {
-  try {
-    const { items, page, pageSize, total } = await getAllPosts({ page: 1, pageSize: limit });
-    const mapped: PublicPost[] = items.map((p) => ({
-      id: p.slug,
-      slug: p.slug,
-      title: p.title,
-      excerpt: p.excerpt || null,
-      cover_url: p.cover || null,
-      cover_alt: p.title,
-      published_at: p.date || null,
-      updated_at: p.updated || null,
-      content_mdx: null,
-      status: "published",
-      category: p.category || null,
-      author_id: null,
-      tags: p.tags || null,
-    }));
-    if (!mapped.length) return { status: "empty" };
-    return { status: "ok", posts: mapped, page, pageSize, total, hasNext: false, hasPrev: false };
-  } catch (e) {
-    return { status: "empty" };
-  }
+  if (tags.some((tag) => category.includes(tag))) return true;
+  const normalizedTags = post.tags ?? [];
+  return normalizedTags.some((tag) => tags.includes(tag.toLowerCase()));
 }
 
 function buildCollections(posts: PublicPost[]) {
@@ -458,10 +327,10 @@ function buildCollections(posts: PublicPost[]) {
       filtered.length > 0
         ? filtered
         : definition.id === "guia-do-tutor"
-          ? fallback.length > 0
-            ? fallback
-            : posts
-          : [];
+        ? fallback.length > 0
+          ? fallback
+          : posts
+        : [];
     return { definition, posts: bucket.slice(0, 4) };
   });
 }
@@ -471,14 +340,14 @@ function Hero({ searchTerm, links }: { searchTerm: string; links: Array<{ title:
     <header className="flex flex-col gap-8 rounded-3xl border border-border bg-surface p-8 shadow-soft sm:p-10 lg:flex-row lg:items-center">
       <div className="flex-1 space-y-4">
         <span className="inline-flex items-center gap-2 rounded-pill bg-brand/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.32em] text-brand">
-          Conte�do premium para tutores
+          Conteudo premium para tutores
         </span>
         <h1 className="text-3xl font-serif text-text sm:text-4xl">
-          Blog By Imperio Dog: decis�o com responsabilidade come�a pelo conhecimento.
+          Blog By Imperio Dog: decisao com responsabilidade comeca pelo conhecimento.
         </h1>
         <p className="text-sm text-text-muted">
-          Damos transpar�ncia total sobre rotina, sa�de e comportamento do Spitz Alem�o An�o (Lulu da Pomer�nia).
-          Leia os pilares evergreen e avance para o formul�rio sob consulta quando estiver pronto.
+          Damos transparencia total sobre rotina, saude e comportamento do Spitz Alemão Anão (Lulu da Pomerânia).
+          Leia os pilares evergreen e avance para o formulario sob consulta quando estiver pronto.
         </p>
         <form className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
           <label htmlFor="blog-search" className="sr-only">
@@ -488,7 +357,7 @@ function Hero({ searchTerm, links }: { searchTerm: string; links: Array<{ title:
             id="blog-search"
             name="q"
             defaultValue={searchTerm}
-            placeholder="Buscar por sa�de, rotina, comportamento..."
+            placeholder="Buscar por saude, rotina, comportamento..."
             className="flex-1 rounded-pill border border-border bg-surface-subtle px-5 py-3 text-sm text-text focus:ring-2 focus:ring-brand/30"
           />
           <button
@@ -506,7 +375,7 @@ function Hero({ searchTerm, links }: { searchTerm: string; links: Array<{ title:
             href={link.href}
             className="group flex flex-col gap-2 rounded-2xl border border-border/60 bg-surface-subtle p-5 transition hover:-translate-y-1 hover:border-brand/70"
           >
-            <span className="text-xs font-semibold uppercase tracking-[0.3em] text-brand">Leia tamb�m</span>
+            <span className="text-xs font-semibold uppercase tracking-[0.3em] text-brand">Leia tambem</span>
             <h3 className="text-base font-semibold text-text group-hover:text-brand">{link.title}</h3>
             <p className="text-sm text-text-muted">{link.description}</p>
           </Link>
@@ -575,7 +444,7 @@ function FeaturedPost({ post }: { post: PublicPost }) {
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-sm font-semibold uppercase tracking-[0.28em] text-text-soft">
-            Conte�do exclusivo
+            Conteudo exclusivo
           </div>
         )}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/35 via-black/0" />
@@ -618,6 +487,7 @@ function CategorySection({
     </section>
   );
 }
+
 function GuiaDoTutorSection({
   collection,
 }: {
@@ -712,6 +582,3 @@ function buildBlogSchema({
     })),
   };
 }
-
-
-

@@ -94,7 +94,8 @@ export async function POST(req: Request) {
 
     // log removed to avoid noisy console output in production
     return NextResponse.json({ ok: true, id: data.id, slug: data.slug, status: data.status });
-  } catch (err: any) {
-    return NextResponse.json({ error: err?.message || "Erro" }, { status: 500 });
+  } catch (err: unknown) {
+    const msg = typeof err === 'object' && err !== null && 'message' in err ? String((err as { message?: unknown }).message ?? 'Erro') : String(err ?? 'Erro');
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

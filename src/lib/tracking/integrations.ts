@@ -10,7 +10,7 @@ export type IntegrationRow = {
   refresh_token: string | null;
   expires_at: string | null;
   provider_account_id: string | null;
-  metadata: Record<string, unknown> | null;
+  metadata: import("../../types/supabase").Json | null;
 };
 
 const DEFAULT_USER_ID = process.env.INTEGRATIONS_DEFAULT_USER_ID;
@@ -19,7 +19,7 @@ export async function upsertIntegrationTokens(opts: {
   provider: ProviderKey;
   tokens: OAuthTokens;
   providerAccountId?: string | null;
-  metadata?: Record<string, unknown> | null;
+  metadata?: import("../../types/supabase").Json | null;
   userId?: string;
 }) {
   const userId = opts.userId || DEFAULT_USER_ID;

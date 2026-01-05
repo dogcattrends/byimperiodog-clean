@@ -2,7 +2,7 @@
 import Link from "next/link";
 
 import { BlogSubnav } from "@/components/admin/BlogSubnav";
-import { blogRepo } from "@/lib/db";
+import { sanityBlogRepo } from "@/lib/sanity/blogRepo";
 
 import EditorWrapper from "./EditorWrapper";
 
@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 
 export default async function BlogEditorPage({ searchParams }: PageProps) {
   const postId = searchParams.id;
-  const post = postId ? await blogRepo.getPostById(postId) : null;
+  const post = postId ? await sanityBlogRepo.getPostById(postId) : null;
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6 p-6">

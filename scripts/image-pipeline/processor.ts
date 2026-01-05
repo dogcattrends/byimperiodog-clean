@@ -1,3 +1,4 @@
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 /**
  * Image Processor
  * Processa imagens de filhotes com resize, crop, ajustes e conversão
