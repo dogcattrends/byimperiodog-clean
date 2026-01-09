@@ -2,6 +2,7 @@
 type TrackingEvent = "page_view" | "view_form" | "submit_start" | "submit_success" | "submit_error";
 
 function safePushToDataLayer(event: string, payload: object = {}) {
+  if (typeof window === 'undefined') return;
   try {
     // GTM/GA4 via dataLayer
     const w = window as unknown as {

@@ -24,20 +24,20 @@ export function PieChart({ data, title }: { data: Slice[]; title: string }) {
   });
 
   return (
-    <figure className="rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm">
-      <figcaption className="mb-2 text-sm font-semibold text-[var(--text)]">{title}</figcaption>
+    <figure className="admin-glass-card admin-interactive admin-stagger-item">
+      <figcaption className="admin-card-title text-sm mb-3">{title}</figcaption>
       <div className="flex gap-4">
         <svg viewBox="0 0 100 100" role="img" aria-label={title} className="h-40 w-40">
           {slices.map((slice) => (
             <path key={slice.label} d={slice.pathData} fill={slice.color} aria-hidden />
           ))}
         </svg>
-        <div className="space-y-2 text-sm text-[var(--text)]">
+        <div className="space-y-2 text-sm">
           {slices.map((slice) => (
             <div key={slice.label} className="flex items-center gap-2">
               <span className="h-3 w-3 rounded-full" style={{ backgroundColor: slice.color }} aria-hidden />
               <span className="font-semibold">{slice.label}</span>
-              <span className="text-[var(--text-muted)]">{((slice.value / total) * 100).toFixed(1)}%</span>
+              <span className="admin-card-subtitle">{((slice.value / total) * 100).toFixed(1)}%</span>
             </div>
           ))}
         </div>

@@ -1,4 +1,5 @@
 "use client";
+import Image from 'next/image';
 import React, { useState } from 'react';
 
 import { useToast } from '@/components/ui/toast';
@@ -152,7 +153,7 @@ export default function MediaGallery({ media, cover, onChange, onSelectCover, ma
           return (
             <li key={m} draggable onDragStart={(e)=> onDragStart(e,i)} onDragOver={onDragOver} onDrop={(e)=> onDrop(e,i)} className={`relative group aspect-square overflow-hidden rounded-lg border ${isCover? 'border-[var(--accent)] ring-2 ring-[var(--accent)]':'border-[var(--border)]'}`}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={m} alt={isCover? 'Capa (arraste para reordenar)': 'Miniatura (arraste)'} className="h-full w-full object-cover select-none pointer-events-none" />
+              <Image src={m} alt={isCover? 'Capa (arraste para reordenar)': 'Miniatura (arraste)'} fill className="object-cover select-none pointer-events-none" unoptimized />
               <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition bg-gradient-to-t from-black/50 to-black/0" />
               <button type="button" onClick={()=> onChange(media.filter((_,x)=> x!==i))} aria-label="Remover" className="absolute top-1 right-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white text-[11px] opacity-0 group-hover:opacity-100 transition">×</button>
               {onSelectCover && (

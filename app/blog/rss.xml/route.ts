@@ -24,7 +24,7 @@ export async function GET() {
       })
       .join("\n");
 
-    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0">\n<channel>\n  <title>By Imperio Dog - Blog</title>\n  <link>${SITE_URL}/blog</link>\n  <description>Artigos e guias sobre Spitz alemao anao e cuidados de filhotes</description>\n${itemsXml}\n</channel>\n</rss>`;
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0">\n<channel>\n  <title>By Império Dog - Blog</title>\n  <link>${SITE_URL}/blog</link>\n  <description>Artigos e guias sobre Spitz Alemão Anão, Lulu da Pomerânia e cuidados de filhotes</description>\n${itemsXml}\n</channel>\n</rss>`;
 
     return new NextResponse(xml, { headers: { "Content-Type": "application/rss+xml; charset=utf-8" } });
   } catch (error) {

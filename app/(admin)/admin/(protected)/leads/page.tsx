@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 
 import { createLogger } from "@/lib/logger";
 
@@ -18,10 +19,11 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: S
   const logger = createLogger("admin:leads");
   const { filters, page } = parseLeadFilters(searchParams ?? {});
   try {
-    const payload = await fetchAdminLeads({ filters, page });
+    const accessToken = cookies().get("admin_sb_at")?.value;
+    const payload = await fetchAdminLeads({ filters, page, accessToken });
     return <LeadsCRM {...payload} filters={filters} />;
   } catch (error) {
-    logger.error("Falha ao carregar leads", { error });
+    logger.error("Falha ao carregar leads", { error, page, filters });
     return (
       <AdminErrorState
         title="Erro ao carregar leads"

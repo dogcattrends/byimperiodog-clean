@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 
+import { cn } from "@/lib/cn";
+import { shouldPreferPuppiesV2FromEnv, withPuppiesReadTable } from "@/lib/puppies/readTable";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getTrackingConfig, type TrackingConfig } from "@/lib/tracking/getTrackingConfig";
 
@@ -16,6 +18,7 @@ type LeadRow = {
 type PuppyRow = {
   status?: string | null;
   price_cents?: number | null;
+  price?: number | null;
   midia?: unknown;
   media?: unknown;
   images?: unknown;
@@ -65,10 +68,23 @@ async function fetchSnapshot(): Promise<DashboardSnapshot> {
   const sb = supabaseAdmin();
   const startToday = startOfDayIso(new Date());
 
-  const [{ data: leads, error: leadsError }, { data: puppies, error: puppiesError }] = await Promise.all([
+  const [{ data: leads, error: leadsError }, puppiesRes] = await Promise.all([
     sb.from("leads").select("created_at,status").gte("created_at", startOfDayIso(new Date(Date.now() - 1000 * 60 * 60 * 24 * 30))),
-    sb.from("puppies").select("status,price_cents,midia,media,cover_url"),
+    withPuppiesReadTable({
+      sb,
+      preferV2: shouldPreferPuppiesV2FromEnv("PUPPIES_ADMIN_READ_SOURCE"),
+      query: (table) => {
+        const select =
+          table === "puppies_v2"
+            ? "status,price,images"
+            : "status,price_cents,preco,midia,media,images,cover_url,image_url";
+        return (sb as any).from(table).select(select);
+      },
+    }),
   ]);
+
+  const puppies = (puppiesRes as any).data as unknown;
+  const puppiesError = (puppiesRes as any).error as { message?: string } | undefined;
 
   if (leadsError) throw new Error(`Falha ao carregar leads: ${leadsError.message}`);
   if (puppiesError) throw new Error(`Falha ao carregar filhotes: ${puppiesError.message}`);
@@ -81,9 +97,12 @@ async function fetchSnapshot(): Promise<DashboardSnapshot> {
 
   const puppiesAvailable = puppiesArr.filter((p) => normalizePuppyStatus(p.status) === "available").length;
   const puppiesReserved = puppiesArr.filter((p) => normalizePuppyStatus(p.status) === "reserved").length;
-  const puppiesNoPrice = puppiesArr.filter((p) => !p.price_cents || p.price_cents <= 0).length;
+  const puppiesNoPrice = puppiesArr.filter((p) => {
+    const cents = typeof p.price_cents === "number" ? p.price_cents : typeof p.price === "number" ? p.price : null;
+    return !cents || cents <= 0;
+  }).length;
   const puppiesNoPhoto = puppiesArr.filter(
-    (p) => !hasMedia(p.midia) && !hasMedia(p.media) && !hasMedia(p.cover_url) && !hasMedia(p.image_url),
+    (p) => !hasMedia(p.images) && !hasMedia(p.midia) && !hasMedia(p.media) && !hasMedia(p.cover_url) && !hasMedia(p.image_url),
   ).length;
 
   return {
@@ -127,114 +146,173 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-3xl font-semibold text-[var(--text)]">Cockpit de vendas</h1>
-          <p className="text-sm text-[var(--text-muted)]">KPIs acionáveis e visão operacional — foco em ações.</p>
+    <div className="space-y-8">
+      {/* Header */}
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div className="space-y-2">
+          <h1 className="text-4xl font-bold text-[rgb(var(--admin-text))]">
+            Cockpit de vendas
+          </h1>
+          <p className="text-sm text-[rgb(var(--admin-text-muted))]">
+            KPIs acionáveis e visão operacional — foco em ações.
+          </p>
         </div>
-        <div className="flex gap-2">
-          <a href="/admin/filhotes/novo" className="rounded-full bg-emerald-600 px-3 py-1 text-sm font-semibold text-white">Novo filhote</a>
-          <a href="/admin/filhotes" className="rounded-full border px-3 py-1 text-sm font-semibold">Ver estoque</a>
+        <div className="flex gap-3">
+          <a href="/admin/filhotes/novo" className="admin-btn admin-btn-primary">
+            + Novo filhote
+          </a>
+          <a href="/admin/filhotes" className="admin-btn admin-btn-secondary">
+            Ver estoque
+          </a>
         </div>
       </header>
 
+      {/* Error alert */}
       {error ? (
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-4 text-sm text-rose-700" role="alert">
-          {error}
+        <div className="admin-glass-card border-[rgb(var(--admin-danger))] bg-[rgba(239,68,68,0.1)] px-5 py-4" role="alert">
+          <p className="text-sm font-medium text-[rgb(var(--admin-danger))]">{error}</p>
         </div>
       ) : null}
 
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Painel operacional resumido">
-        <div className="rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm" role="region" aria-labelledby="health-heading">
-          <h2 id="health-heading" className="text-lg font-semibold">Saúde do sistema</h2>
-          <p className="text-sm text-[var(--text-muted)] mt-1">Sanity, Supabase, OpenAI e Webhooks</p>
-          <div className="mt-3 space-y-2 text-sm">
-            <div className="flex items-center justify-between">
-              <span>Sanity</span>
-              <span className="text-xs text-[var(--text-muted)]">{health?.sanity?.status ?? '—'}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Supabase</span>
-              <span className="text-xs text-[var(--text-muted)]">{health?.supabase?.status ?? '—'}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>OpenAI</span>
-              <span className="text-xs text-[var(--text-muted)]">{health?.openai?.status ?? '—'}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Webhooks</span>
-              <span className="text-xs text-[var(--text-muted)]">{health?.webhooks?.status ?? '—'}</span>
-            </div>
-          </div>
-          <div className="mt-4">
-            <a href="/admin/system/health" className="text-xs font-semibold text-emerald-700">Ver mais</a>
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm" role="region" aria-labelledby="pixels-heading">
-          <h2 id="pixels-heading" className="text-lg font-semibold">Pixels / Tracking</h2>
-          <p className="text-sm text-[var(--text-muted)] mt-1">Status rápido de tags e pixels</p>
-          <div className="mt-3 space-y-2 text-sm">
-            <div className="flex items-center justify-between">
-              <span>GTM</span>
-              <span className="text-xs text-[var(--text-muted)]" role="status" aria-live="polite" aria-atomic="true">{dashboardTracking?.isGTMEnabled ? (dashboardTracking.gtmContainerId ?? 'Ativado') : 'Desativado'}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>GA4</span>
-              <span className="text-xs text-[var(--text-muted)]" role="status" aria-live="polite" aria-atomic="true">{dashboardTracking?.isGAEnabled ? (dashboardTracking.gaMeasurementId ?? 'Ativado') : 'Desativado'}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Facebook</span>
-              <span className="text-xs text-[var(--text-muted)]" role="status" aria-live="polite" aria-atomic="true">{dashboardTracking?.isFacebookEnabled ? (dashboardTracking.facebookPixelId ?? 'Ativado') : 'Desativado'}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>TikTok</span>
-              <span className="text-xs text-[var(--text-muted)]" role="status" aria-live="polite" aria-atomic="true">{dashboardTracking?.isTikTokEnabled ? (dashboardTracking.tiktokPixelId ?? 'Ativado') : 'Desativado'}</span>
-            </div>
-          </div>
-          <div className="mt-4">
-            <a href="/admin/config/tracking" className="text-xs font-semibold text-emerald-700">Configurar pixels</a>
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm" role="region" aria-labelledby="funnel-heading">
-          <h2 id="funnel-heading" className="text-lg font-semibold">Funil</h2>
-          <p className="text-sm text-[var(--text-muted)] mt-1">Leads e ações urgentes</p>
-          <div className="mt-3 space-y-3">
-            <div className="flex items-center justify-between">
-              <span>Leads hoje</span>
-              <strong className="text-xl" aria-live="polite" aria-atomic="true">{snapshot?.leadsToday ?? '—'}</strong>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Leads sem resposta</span>
-              <strong className="text-xl" aria-live="polite" aria-atomic="true">{snapshot?.leadsNoResponse ?? '—'}</strong>
-            </div>
+      {/* KPI Grid */}
+      <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4" aria-label="Painel operacional resumido">
+        {/* Health Card */}
+        <div className="admin-glass-card admin-card-gradient p-6" role="region" aria-labelledby="health-heading">
+          <div className="admin-card-header pb-4">
             <div>
-              <a href="/admin/leads" className="text-xs font-semibold text-emerald-700">Ver detalhes</a>
+              <h2 id="health-heading" className="admin-card-title">Saúde do sistema</h2>
+              <p className="admin-card-subtitle">Sanity, Supabase, OpenAI e Webhooks</p>
             </div>
+          </div>
+          <div className="space-y-3">
+            {[
+              { label: 'Sanity', status: health?.sanity?.status },
+              { label: 'Supabase', status: health?.supabase?.status },
+              { label: 'OpenAI', status: health?.openai?.status },
+              { label: 'Webhooks', status: health?.webhooks?.status },
+            ].map(({ label, status }) => (
+              <div key={label} className="flex items-center justify-between rounded-lg bg-[rgb(var(--admin-surface))] px-3 py-2.5">
+                <span className="text-sm font-medium text-[rgb(var(--admin-text))]">{label}</span>
+                <span className={cn(
+                  "admin-status",
+                  status === '✅' || status?.toLowerCase().includes('ok') 
+                    ? "admin-status-online" 
+                    : status === '—' 
+                      ? "admin-status-warning" 
+                      : "admin-status-offline"
+                )}>
+                  {status === '✅' ? 'Online' : status === '—' ? 'Checking' : status || 'Offline'}
+                </span>
+              </div>
+            ))}
+          </div>
+          <div className="mt-5">
+            <a href="/admin/system/health" className="text-xs font-bold uppercase tracking-wider text-[rgb(var(--admin-brand-bright))] hover:text-[rgb(var(--admin-brand))]">
+              Ver detalhes →
+            </a>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm" role="region" aria-labelledby="inventory-heading">
-          <h2 id="inventory-heading" className="text-lg font-semibold">Estoque</h2>
-          <p className="text-sm text-[var(--text-muted)] mt-1">Disponíveis / Reservados / Pendências</p>
-          <div className="mt-3 space-y-3">
-            <div className="flex items-center justify-between">
-              <span>Disponíveis</span>
-              <strong className="text-xl" aria-live="polite" aria-atomic="true">{snapshot?.puppiesAvailable ?? '—'}</strong>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Reservados</span>
-              <strong className="text-xl" aria-live="polite" aria-atomic="true">{snapshot?.puppiesReserved ?? '—'}</strong>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Pendências (preço/foto)</span>
-              <strong className="text-xl" aria-live="polite" aria-atomic="true">{(snapshot?.puppiesNoPrice ?? 0) + (snapshot?.puppiesNoPhoto ?? 0)}</strong>
-            </div>
+        {/* Tracking Card */}
+        <div className="admin-glass-card admin-card-gradient p-6" role="region" aria-labelledby="pixels-heading">
+          <div className="admin-card-header pb-4">
             <div>
-              <a href="/admin/filhotes" className="text-xs font-semibold text-emerald-700">Ver estoque</a>
+              <h2 id="pixels-heading" className="admin-card-title">Pixels / Tracking</h2>
+              <p className="admin-card-subtitle">Status rápido de tags e pixels</p>
             </div>
+          </div>
+          <div className="space-y-3">
+            {[
+              { label: 'GTM', enabled: dashboardTracking?.isGTMEnabled, id: dashboardTracking?.gtmContainerId },
+              { label: 'GA4', enabled: dashboardTracking?.isGAEnabled, id: dashboardTracking?.gaMeasurementId },
+              { label: 'Facebook', enabled: dashboardTracking?.isFacebookEnabled, id: dashboardTracking?.facebookPixelId },
+              { label: 'TikTok', enabled: dashboardTracking?.isTikTokEnabled, id: dashboardTracking?.tiktokPixelId },
+            ].map(({ label, enabled, id }) => (
+              <div key={label} className="flex items-center justify-between rounded-lg bg-[rgb(var(--admin-surface))] px-3 py-2.5">
+                <span className="text-sm font-medium text-[rgb(var(--admin-text))]">{label}</span>
+                <span className={cn(
+                  "admin-badge",
+                  enabled ? "admin-badge-success" : "admin-badge-warning"
+                )} role="status" aria-live="polite" aria-atomic="true">
+                  {enabled ? (id ?? 'Ativo') : 'Off'}
+                </span>
+              </div>
+            ))}
+          </div>
+          <div className="mt-5">
+            <a href="/admin/config/tracking" className="text-xs font-bold uppercase tracking-wider text-[rgb(var(--admin-brand-bright))] hover:text-[rgb(var(--admin-brand))]">
+              Configurar →
+            </a>
+          </div>
+        </div>
+
+        {/* Funnel Card */}
+        <div className="admin-glass-card admin-card-gradient p-6" role="region" aria-labelledby="funnel-heading">
+          <div className="admin-card-header pb-4">
+            <div>
+              <h2 id="funnel-heading" className="admin-card-title">Funil</h2>
+              <p className="admin-card-subtitle">Leads e ações urgentes</p>
+            </div>
+          </div>
+          <div className="space-y-5">
+            <div className="admin-kpi">
+              <span className="admin-kpi-label">Leads hoje</span>
+              <strong className="admin-kpi-value" aria-live="polite" aria-atomic="true">
+                {snapshot?.leadsToday ?? '—'}
+              </strong>
+            </div>
+            <div className="admin-kpi">
+              <span className="admin-kpi-label">Sem resposta</span>
+              <strong className="admin-kpi-value" aria-live="polite" aria-atomic="true">
+                {snapshot?.leadsNoResponse ?? '—'}
+              </strong>
+              {snapshot && snapshot.leadsNoResponse > 0 && (
+                <span className="admin-badge admin-badge-warning mt-1">Ação necessária</span>
+              )}
+            </div>
+          </div>
+          <div className="mt-5">
+            <a href="/admin/leads" className="text-xs font-bold uppercase tracking-wider text-[rgb(var(--admin-brand-bright))] hover:text-[rgb(var(--admin-brand))]">
+              Ver leads →
+            </a>
+          </div>
+        </div>
+
+        {/* Inventory Card */}
+        <div className="admin-glass-card admin-card-gradient p-6" role="region" aria-labelledby="inventory-heading">
+          <div className="admin-card-header pb-4">
+            <div>
+              <h2 id="inventory-heading" className="admin-card-title">Estoque</h2>
+              <p className="admin-card-subtitle">Disponíveis / Reservados / Pendências</p>
+            </div>
+          </div>
+          <div className="space-y-5">
+            <div className="admin-kpi">
+              <span className="admin-kpi-label">Disponíveis</span>
+              <strong className="admin-kpi-value" aria-live="polite" aria-atomic="true">
+                {snapshot?.puppiesAvailable ?? '—'}
+              </strong>
+            </div>
+            <div className="admin-kpi">
+              <span className="admin-kpi-label">Reservados</span>
+              <strong className="admin-kpi-value" aria-live="polite" aria-atomic="true">
+                {snapshot?.puppiesReserved ?? '—'}
+              </strong>
+            </div>
+            <div className="admin-kpi">
+              <span className="admin-kpi-label">Pendências (preço/foto)</span>
+              <strong className="admin-kpi-value" aria-live="polite" aria-atomic="true">
+                {(snapshot?.puppiesNoPrice ?? 0) + (snapshot?.puppiesNoPhoto ?? 0)}
+              </strong>
+              {snapshot && ((snapshot.puppiesNoPrice ?? 0) + (snapshot.puppiesNoPhoto ?? 0)) > 0 && (
+                <span className="admin-badge admin-badge-danger mt-1">Revisar</span>
+              )}
+            </div>
+          </div>
+          <div className="mt-5">
+            <a href="/admin/filhotes" className="text-xs font-bold uppercase tracking-wider text-[rgb(var(--admin-brand-bright))] hover:text-[rgb(var(--admin-brand))]">
+              Ver estoque →
+            </a>
           </div>
         </div>
       </section>

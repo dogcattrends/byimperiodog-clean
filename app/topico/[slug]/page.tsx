@@ -43,8 +43,6 @@ export default async function TopicPage({ params }: { params: { slug: string } }
 
       <FAQBlock items={TOPICO_FAQ} />
 
-<FAQBlock items={TOPICO_FAQ} />
-
 <section className="grid gap-6 md:grid-cols-2">
         {posts.map((p: any) => (
           <article key={p.slug}>

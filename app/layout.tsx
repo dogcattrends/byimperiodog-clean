@@ -1,6 +1,10 @@
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import NextDynamic from "next/dynamic";
+const SpeedInsights = NextDynamic(
+  // load package and prefer named export SpeedInsights or default
+  () => import("@vercel/speed-insights/next").then((m: any) => (m.SpeedInsights ?? m.default)),
+  { ssr: false },
+);
 import { headers } from "next/headers";
 import Script from "next/script";
 
@@ -14,6 +18,7 @@ import Header from "@/components/common/Header";
 import SkipLink from "@/components/common/SkipLink";
 import Pixels from "@/components/Pixels";
 import ToastContainer from "@/components/Toast";
+import { ToastProvider } from "@/components/ui/toast";
 import { getSiteSettings } from "@/lib/getSettings";
 import { getPixelsSettings, resolveActiveEnvironment, type PixelsSettings } from "@/lib/pixels";
 import { resolveRobots, baseMetaOverrides } from "@/lib/seo";
@@ -57,6 +62,7 @@ function resolvePathname() {
 
   // Tenta primeiro os headers customizados
   const candidates = [
+    "x-pathname",
     "x-invoke-path",
     "x-matched-path",
     "x-rewrite-url",
@@ -319,7 +325,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
 
       <body
-        className={`min-h-screen bg-[var(--bg)] text-[var(--text)] antialiased ${
+        className={`min-h-screen bg-[var(--bg)] text-[var(--text)] antialiased overflow-x-clip ${
           isAdminRoute ? "admin-shell" : ""
         }`}
       >
@@ -344,18 +350,19 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {!isAdminRoute && <AnalyticsClient />}
         {!isAdminRoute && <GeoTracking />}
 
-        <ThemeProvider>
-          <div className="flex min-h-screen flex-col">
-            {!isAdminRoute && <Header />}
-            {!isAdminRoute && <div aria-hidden className="h-20" />}
-            <main className="flex-1" id="conteudo-principal" role="main">
-              {children}
-            </main>
-            {!isAdminRoute && <Footer />}
-            {!isAdminRoute && <FloatingPuppiesCTA disabled={false} />}
-            {!isAdminRoute && <ConsentBanner />}
-          </div>
-        </ThemeProvider>
+        <ToastProvider>
+          <ThemeProvider>
+            <div className="flex min-h-screen flex-col">
+              {!isAdminRoute && <Header />}
+              <main className="flex-1" id="conteudo-principal" role="main">
+                {children}
+              </main>
+              {!isAdminRoute && <Footer />}
+              {!isAdminRoute && <FloatingPuppiesCTA disabled={false} />}
+              {!isAdminRoute && <ConsentBanner />}
+            </div>
+          </ThemeProvider>
+        </ToastProvider>
         <SpeedInsights />
         <ToastContainer />
       </body>

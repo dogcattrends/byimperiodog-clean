@@ -2,9 +2,11 @@
 "use client";
 import React from "react";
 
+import { parseBRLToCents, formatCentsToBRL } from "@/lib/price";
+
 export interface PriceInputProps {
   value: string;
-  onChange: (v: string) => void;
+  onChange: (v: string) => void; // formatted display string
   error?: string;
   id?: string;
   name?: string;
@@ -14,10 +16,11 @@ export interface PriceInputProps {
 }
 
 function formatBRLInput(v: string) {
-  const digits = v.replace(/\D/g, "");
-  if (!digits) return "";
-  const number = (parseInt(digits, 10) / 100).toFixed(2);
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(number));
+  // Reuse central parser/formatter to keep formatting consistent across the app
+  const cents = parseBRLToCents(v);
+  if (!cents) return "";
+  // For input display we want two fraction digits
+  return formatCentsToBRL(cents, { maximumFractionDigits: 2 });
 }
 
 export function PriceInput({ value, onChange, error, id = "price_display", name = "price_display", placeholder = "R$ 7.500,00", label = "Preço (R$)", required }: PriceInputProps) {

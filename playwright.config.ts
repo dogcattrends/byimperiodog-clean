@@ -20,7 +20,8 @@ export default defineConfig({
     { name: 'mobile-chrome', use: { ...devices['Pixel 5'] } },
   ],
   webServer: {
-    command: 'npm run dev',
+    // Use npx next dev to avoid running npm lifecycle hooks that may prompt interactively
+    command: 'npx next dev -p 3000',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000

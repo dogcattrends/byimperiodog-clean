@@ -22,23 +22,26 @@ export default function AdminProtectedLayout({ children }: { children: React.Rea
 
   return (
     <ToastProvider>
-      <div className="min-h-screen bg-[var(--surface-2)] text-[var(--text)] antialiased">
-        <div className="grid min-h-screen grid-cols-1 md:grid-cols-[260px_1fr]">
-          <nav aria-label="Navegacao principal" className="border-b border-[var(--border)] bg-white shadow-sm md:border-b-0 md:border-r">
+      <div className="admin-container admin-scrollbar min-h-screen antialiased">
+        <div className="grid min-h-screen grid-cols-1 md:grid-cols-[280px_1fr]">
+          <nav aria-label="Navegação principal" className="admin-sidebar">
             <AdminNav environment={environment} />
           </nav>
 
           <div className="flex flex-col">
-            <header className="border-b border-[var(--border)] bg-white/90 backdrop-blur">
+            <header className="sticky top-0 z-40 border-b border-[rgb(var(--admin-border))] bg-[rgb(var(--admin-surface))/80] backdrop-blur-xl">
               <AdminTopbar environment={environment} userName={adminIdentity?.name ?? "Admin"} />
             </header>
 
-            <main className="flex-1 bg-[var(--surface-2)] px-4 py-6 md:px-8" role="main">
+            <main className="flex-1 px-4 py-6 md:px-8 lg:px-12" role="main">
               {children}
             </main>
 
-            <footer className="border-t border-[var(--border)] bg-white px-4 py-3 text-xs text-[var(--text-muted)] md:px-8">
-              <p>By Imperio Dog - Painel operacional - {environment}</p>
+            <footer className="border-t border-[rgb(var(--admin-border))] bg-[rgb(var(--admin-surface))] px-4 py-4 text-xs text-[rgb(var(--admin-text-soft))] md:px-8">
+              <div className="flex items-center justify-between">
+                <p>By Império Dog — Painel Operacional</p>
+                <span className="admin-badge admin-badge-info">{environment}</span>
+              </div>
             </footer>
           </div>
         </div>

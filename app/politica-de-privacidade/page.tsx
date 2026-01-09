@@ -19,19 +19,19 @@ const tocItems = [
 ];
 
 const PRIVACY_SNIPPET =
-  "Esta pagina resume como tratamos dados pessoais, quais informacoes coletamos e quais sao os direitos do tutor. O objetivo e dar transparencia sobre contato, consentimento e armazenamento, explicando como solicitar ajustes ou exclusao de dados. Consulte esta politica antes de enviar formularios.";
+  "Esta página resume como tratamos dados pessoais, quais informações coletamos e quais são os direitos do tutor. O objetivo é dar transparência sobre contato, consentimento e armazenamento, explicando como solicitar ajustes ou exclusão de dados. Consulte esta política antes de enviar formulários.";
 
 const PRIVACY_FAQ = [
-  { question: "Quais dados sao coletados?", answer: "Coletamos dados enviados pelo formulario e preferencia de contato." },
-  { question: "Como solicitar exclusao?", answer: "Use o canal de contato e informe o e-mail cadastrado." },
-  { question: "Ha compartilhamento com terceiros?", answer: "Somente quando necessario para entrega e suporte." },
+  { question: "Quais dados são coletados?", answer: "Coletamos dados enviados pelo formulário e preferência de contato." },
+  { question: "Como solicitar exclusão?", answer: "Use o canal de contato e informe o e-mail cadastrado." },
+  { question: "Há compartilhamento com terceiros?", answer: "Somente quando necessário para entrega e suporte." },
 ];
 
 export function generateMetadata(): Metadata {
   return pageMetadata({
-    title: "Política de Privacidade | By Imperio Dog",
+    title: "Política de Privacidade | By Império Dog",
     description:
-      "Como a By Imperio Dog trata dados pessoais de tutores interessados no Spitz Alemão (Lulu da Pomerânia): coleta, finalidade, retenção, segurança e atendimento à LGPD.",
+      "Como a By Império Dog trata dados pessoais de tutores interessados no Spitz Alemão (Lulu da Pomerânia): coleta, finalidade, retenção, segurança e atendimento à LGPD.",
     path,
     images: [
       {
@@ -165,7 +165,7 @@ export default function PoliticaDePrivacidadePage() {
       <section id="contato" className="space-y-3">
         <h2 className="text-2xl font-semibold text-zinc-900">Contato do controlador</h2>
         <p className="text-zinc-600">
-          Controladora: By Imperio Dog LTDA • CNPJ 34.010.264/0001-12
+          Controladora: By Império Dog LTDA • CNPJ 34.010.264/0001-12
         </p>
         <p className="text-zinc-600">
           E-mail para assuntos de privacidade: <strong>privacidade@byimperiodog.com.br</strong>

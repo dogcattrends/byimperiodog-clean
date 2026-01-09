@@ -14,6 +14,7 @@ import Link from "next/link";
 
 import { Card, CardContent } from "@/components/ui";
 import type { Puppy } from "@/domain/puppy";
+import { formatCentsToBRL } from "@/lib/price";
 
 type Props = {
   puppies: Puppy[];
@@ -37,7 +38,7 @@ export function PuppyRelated({ puppies }: Props) {
         {puppies.map((puppy) => {
           const href = `/filhotes/${puppy.slug}`;
           const location = [puppy.city, puppy.state].filter(Boolean).join(" / ");
-          const priceFormatted = formatPrice(puppy.priceCents);
+          const priceFormatted = typeof puppy.priceCents === "number" && puppy.priceCents > 0 ? formatCentsToBRL(puppy.priceCents) : "Consultar valor";
 
           return (
             <article key={puppy.id}>
@@ -94,14 +95,7 @@ export function PuppyRelated({ puppies }: Props) {
 }
 
 // Helpers
-function formatPrice(cents: number | null | undefined): string {
-  if (cents == null || cents <= 0) return "Consultar";
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-    maximumFractionDigits: 0,
-  }).format(cents / 100);
-}
+// price formatting centralized in `src/lib/price`
 
 function translateSex(sex?: string | null): string {
   if (!sex) return "Não informado";

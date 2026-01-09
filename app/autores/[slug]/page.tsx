@@ -5,13 +5,53 @@ import { notFound } from "next/navigation";
 import FAQBlock from "@/components/answer/FAQBlock";
 import PostCard from "@/components/blog/PostCard";
 import { buildBlogMetadata } from "@/lib/blog/seo";
-import { supabaseAnon } from "@/lib/supabaseAnon";
+import { sanityClient } from "@/lib/sanity/client";
+
+type AuthorDoc = {
+  _id?: string;
+  name?: string | null;
+  slug?: string | null;
+  bio?: string | null;
+  avatar_url?: string | null;
+};
+
+type Author = {
+  _id: string;
+  name: string;
+  slug: string;
+  bio: string | null;
+  avatar_url: string | null;
+};
+
+type AuthorPostSummary = {
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  cover_url: string | null;
+  published_at: string | null;
+};
 
 async function fetchAuthorBySlug(slug: string) {
   try {
-    const sb = supabaseAnon();
-    const { data } = await sb.from("blog_authors").select("id,name,slug,bio,avatar_url").eq("slug", slug).maybeSingle();
-    return data || null;
+    const author = await sanityClient.fetch<AuthorDoc | null>(
+      `*[_type == "author" && slug.current == $slug][0]{
+        _id,
+        name,
+        "slug": slug.current,
+        bio,
+        "avatar_url": coalesce(avatar.asset->url, image.asset->url, mainImage.asset->url)
+      }`,
+      { slug }
+    );
+
+    if (!author?._id) return null;
+    return {
+      _id: author._id,
+      name: author.name?.trim() || "Autor",
+      slug: author.slug?.trim() || slug,
+      bio: author.bio ?? null,
+      avatar_url: author.avatar_url ?? null,
+    } satisfies Author;
   } catch {
     return null;
   }
@@ -19,9 +59,18 @@ async function fetchAuthorBySlug(slug: string) {
 
 async function fetchPostsByAuthor(authorId: string) {
   try {
-    const sb = supabaseAnon();
-    const { data } = await sb.from("blog_posts").select("slug,title,excerpt,cover_url,published_at").eq("author_id", authorId).eq("status", "published").order("published_at", { ascending: false });
-    return Array.isArray(data) ? data : [];
+    const posts = await sanityClient.fetch<AuthorPostSummary[]>(
+      `*[_type == "post" && author._ref == $authorId && (status == "published" || (defined(publishedAt) && dateTime(publishedAt) <= now()))]
+        | order(publishedAt desc)[0...50]{
+          "slug": coalesce(slug.current, _id),
+          "title": coalesce(title, "Post"),
+          "excerpt": coalesce(description, excerpt),
+          "cover_url": coalesce(coverUrl, coverImage.asset->url, mainImage.asset->url),
+          "published_at": coalesce(publishedAt, _createdAt)
+        }`,
+      { authorId }
+    );
+    return Array.isArray(posts) ? posts : [];
   } catch {
     return [];
   }
@@ -35,18 +84,18 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 const AUTHOR_SNIPPET =
-  "Esta pagina apresenta o autor e os artigos assinados sobre Spitz Alemao Anao (Lulu da Pomerania). Aqui voce pode conhecer o perfil, ler a biografia e acessar os guias publicados. O objetivo e dar contexto sobre a experiencia de quem escreve e facilitar a navegacao por temas.";
+  "Esta página apresenta o autor e os artigos assinados sobre Spitz Alemão Anão (Lulu da Pomerânia). Aqui você pode conhecer o perfil, ler a biografia e acessar os guias publicados. O objetivo é dar contexto sobre a experiência de quem escreve e facilitar a navegação por temas.";
 
 const AUTHOR_FAQ = [
-  { question: "Quem escreve os artigos?", answer: "Autores e colaboradores da By Imperio Dog." },
+  { question: "Quem escreve os artigos?", answer: "Autores e colaboradores da By Império Dog." },
   { question: "Como encontrar outros textos?", answer: "Use a lista abaixo para acessar os posts do autor." },
-  { question: "Posso entrar em contato?", answer: "Sim, use o formulario de contato para encaminhar perguntas." },
+  { question: "Posso entrar em contato?", answer: "Sim, use o formulário de contato para encaminhar perguntas." },
 ];
 
 export default async function AuthorPage({ params }: { params: { slug: string } }) {
   const author = await fetchAuthorBySlug(params.slug);
   if (!author) return notFound();
-  const posts = await fetchPostsByAuthor(author.id);
+  const posts = await fetchPostsByAuthor(author._id ?? "");
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-8">

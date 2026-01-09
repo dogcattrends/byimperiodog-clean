@@ -135,3 +135,8 @@ body.admin-shell [data-site-shell="cta"] {
   40%, 60% { transform: translateX(3px); }
 }
 
+/* Hard lock: "Detalhes do filhote" sempre em 2 colunas (evita 3-col em alguns contextos) */
+[data-puppy-details-grid] {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+

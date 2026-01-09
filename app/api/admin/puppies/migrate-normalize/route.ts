@@ -77,7 +77,8 @@ export async function POST(req: NextRequest) {
         const normalizedMedia = JSON.stringify(existingPhotoUrls);
         const normalizedMidia = JSON.stringify(mediaPayload);
 
-        if ((r as any).media !== normalizedMedia) updates.media = normalizedMedia;
+        const hasMediaColumn = Object.prototype.hasOwnProperty.call(r as any, "media");
+        if (hasMediaColumn && (r as any).media !== normalizedMedia) updates.media = normalizedMedia;
         if ((r as any).midia !== normalizedMidia) updates.midia = normalizedMidia;
         if (!(r as any).cover_url && (r as any).image_url) updates.cover_url = (r as any).image_url;
 

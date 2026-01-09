@@ -4,6 +4,8 @@ import { createHash } from "node:crypto";
 
 import { z } from "zod";
 
+import { formatCentsToBRL } from "@/lib/price";
+
 import type { Database } from "../types/supabase";
 
 import { createLogger } from "./logger";
@@ -11,7 +13,15 @@ import { supabaseAdmin } from "./supabaseAdmin";
 
 type LeadRow = Database["public"]["Tables"]["leads"]["Row"];
 type PuppyRow = Database["public"]["Tables"]["puppies"]["Row"];
-type InsightRow = any;
+type InsightRow = Record<string, unknown>;
+
+// Tipo híbrido para puppies com campos em PT e EN
+type PuppyWithAliases = PuppyRow & {
+  sex?: string | null;
+  sexo?: string | null;
+  city?: string | null;
+  cidade?: string | null;
+};
 
 export type LeadRecord = LeadRow & {
   cor_preferida?: string | null;
@@ -94,7 +104,11 @@ function detectUrgency(message: string): "alta" | "media" | "baixa" {
 
 function detectBudget(message: string) {
   const match = message.match(/(\d{3,6})/);
-  return match ? `~R$ ${match[1]}` : null;
+  if (!match) return null;
+  const reais = Number(match[1]);
+  if (!Number.isFinite(reais) || reais <= 0) return null;
+  // match[1] is likely a BRL amount without separators (e.g. 3500 -> R$ 3.500,00)
+  return `~${formatCentsToBRL(Math.round(reais * 100))}`;
 }
 
 function detectEmotion(message: string) {
@@ -150,7 +164,7 @@ function normalizeStatus(status?: string | null) {
   return value || "available";
 }
 
-function recommendPuppies(puppies: PuppyRow[], prefs: { color?: string | null; sex?: string | null; city?: string | null; budget?: number | null }): {
+function recommendPuppies(puppies: PuppyWithAliases[], prefs: { color?: string | null; sex?: string | null; city?: string | null; budget?: number | null }): {
   suggestions: PuppySuggestion[];
   matched: string | null;
 } {
@@ -164,11 +178,11 @@ function recommendPuppies(puppies: PuppyRow[], prefs: { color?: string | null; s
         score += 30;
         reasons.push("Cor desejada");
       }
-      if (prefs.sex && normalize((p as any).sex ?? (p as any).sexo) === normalize(prefs.sex)) {
+      if (prefs.sex && normalize(p.sex ?? p.sexo) === normalize(prefs.sex)) {
         score += 20;
         reasons.push("Sexo desejado");
       }
-      const cityVal = (p as any)['city'] ?? (p as any)['cidade'];
+      const cityVal = p.city ?? p.cidade;
       if (prefs.city && typeof cityVal === 'string' && normalize(cityVal) === normalize(prefs.city)) {
         score += 15;
         reasons.push("Cidade próxima");

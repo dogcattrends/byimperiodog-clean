@@ -5,15 +5,10 @@
 
 import crypto from 'crypto';
 
-import { createClient } from '@supabase/supabase-js';
-
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import type { WebhookEvent, WebhookPayload, Webhook } from '@/types/webhooks';
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  { auth: { persistSession: false } }
-);
+const supabase = supabaseAdmin();
 
 interface DispatchOptions {
   retries?: number;
@@ -33,7 +28,7 @@ export async function dispatchWebhookEvent(
 
   try {
     // Buscar webhooks ativos que escutam este evento
-    const { data: webhooks, error } = await supabaseAdmin
+    const { data: webhooks, error } = await supabase
       .from('webhooks')
       .select('*')
       .eq('status', 'active')
@@ -58,8 +53,8 @@ export async function dispatchWebhookEvent(
 
     // Enviar para cada webhook (em paralelo)
     await Promise.all(
-      webhooks.map((webhook) =>
-        deliverWebhook(webhook as Webhook, payload, { retries, timeout })
+      webhooks.map((webhook: Webhook) =>
+        deliverWebhook(webhook, payload, { retries, timeout })
       )
     );
   } catch (error) {
@@ -102,7 +97,7 @@ async function deliverWebhook(
       const responseBody = await response.text();
 
       // Registrar entrega
-      await supabaseAdmin.from('webhook_deliveries').insert({
+      await supabase.from('webhook_deliveries').insert({
         webhook_id: webhook.id,
         event: payload.event,
         payload,
@@ -115,7 +110,7 @@ async function deliverWebhook(
 
       if (response.ok) {
         // Sucesso - atualizar contadores
-        await supabaseAdmin
+        await supabase
           .from('webhooks')
           .update({
             success_count: webhook.success_count + 1,
@@ -140,7 +135,7 @@ async function deliverWebhook(
   }
 
   // Todas as tentativas falharam
-  await supabaseAdmin.from('webhook_deliveries').insert({
+  await supabase.from('webhook_deliveries').insert({
     webhook_id: webhook.id,
     event: payload.event,
     payload,
@@ -149,7 +144,7 @@ async function deliverWebhook(
     attempts,
   });
 
-  await supabaseAdmin
+  await supabase
     .from('webhooks')
     .update({
       error_count: webhook.error_count + 1,
@@ -158,7 +153,7 @@ async function deliverWebhook(
 
   // Se muitos erros consecutivos, desabilitar webhook
   if (webhook.error_count + 1 >= 10) {
-    await supabaseAdmin
+    await supabase
       .from('webhooks')
       .update({ status: 'error' })
       .eq('id', webhook.id);

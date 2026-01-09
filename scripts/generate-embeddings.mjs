@@ -1,9 +1,17 @@
 import { createClient } from '@supabase/supabase-js'
 import OpenAI from 'openai'
 
-const supabaseUrl = 'https://npmnuihgydadihktglrd.supabase.co'
-const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5wbW51aWhneWRhZGloa3RnbHJkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NTY5MDA4NiwiZXhwIjoyMDcxMjY2MDg2fQ.IaBdH-IqdwNHNyDMREpYtRtwMEp5LIOirH1FHXWLiPw'
-const openaiApiKey = process.env.OPENAI_API_KEY || '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'
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://npmnuihgydadihktglrd.supabase.co'
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+const openaiApiKey = process.env.OPENAI_API_KEY
+
+if (!supabaseServiceKey) {
+  throw new Error('SUPABASE_SERVICE_ROLE_KEY ausente. Defina a chave no ambiente para executar este script.')
+}
+
+if (!openaiApiKey) {
+  throw new Error('OPENAI_API_KEY ausente. Defina a chave no ambiente para executar este script.')
+}
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 const openai = new OpenAI({ apiKey: openaiApiKey })

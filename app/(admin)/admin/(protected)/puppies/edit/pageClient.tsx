@@ -44,7 +44,7 @@ export function PuppyEditLauncher() {
           className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
           disabled={isPending}
         >
-          {isPending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <ArrowRight className="h-4 w-4" aria-hidden />} Ir para ediÃ§Ã£o
+          {isPending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <ArrowRight className="h-4 w-4" aria-hidden />} Ir para edição
         </button>
         <button
           type="button"

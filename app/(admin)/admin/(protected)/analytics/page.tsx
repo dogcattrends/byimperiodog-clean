@@ -8,6 +8,7 @@ import { generateDecisions } from "@/lib/ai/decision-engine";
 import { recalcDemandPredictions } from "@/lib/ai/demand-prediction";
 import { generateOperationalAlerts } from "@/lib/ai/operational-alerts";
 import { generatePriorityTasks } from "@/lib/ai/priority-engine";
+import { shouldPreferPuppiesV2FromEnv, withFallbackTable } from "@/lib/puppies/readTable";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 import { BarChart } from "./components/BarChart";
@@ -103,11 +104,24 @@ async function fetchLeadsLimited(sb: SupabaseClient, limit: number) {
 }
 
 async function fetchPuppies(sb: SupabaseClient) {
-  const { data } = await sb
-    .from("puppies")
-    .select("id,name,status,color,price_cents,slug")
-    .order("created_at", { ascending: false });
-  return (data ?? []) as PuppyRow[];
+  // Opt-in: use compatibility view that joins v2 + legacy (slug/midia) when enabled.
+  const preferUnified = shouldPreferPuppiesV2FromEnv("PUPPIES_ANALYTICS_READ_SOURCE");
+  if (!preferUnified) {
+    const { data } = await sb
+      .from("puppies")
+      .select("id,name,status,color,price_cents,slug")
+      .order("created_at", { ascending: false });
+    return (data ?? []) as PuppyRow[];
+  }
+
+  const r = await withFallbackTable({
+    sb,
+    primary: "puppies_unified",
+    fallback: "puppies",
+    query: (table) => (sb as any).from(table).select("id,name,status,color,price_cents,slug").order("created_at", { ascending: false }),
+  });
+
+  return (((r as any).data ?? []) as PuppyRow[]) ?? [];
 }
 
 async function fetchInteractions(sb: SupabaseClient, sinceIso: string) {
@@ -435,83 +449,88 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: { 
         <MetricCard label="CTR IA (reordenacao)" value={catalogReorderCtrDelta} description="Variacao media de CTR apos ordenacao" />
       </section>
 
-      <section className="rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm" aria-label="Previsao de vendas IA">
+      <section className="admin-glass-card admin-stagger-item admin-border-glow" aria-label="Previsao de vendas IA">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-[var(--text)]">Previsao de vendas (IA)</h2>
-            <p className="text-sm text-[var(--text-muted)]">Estimativa 30 dias com base em historico e estoque.</p>
+            <h2 className="admin-card-title text-lg">Previsão de vendas (IA)</h2>
+            <p className="admin-card-subtitle mt-1">Estimativa 30 dias com base em histórico e estoque.</p>
           </div>
-          <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">{forecast.confidenceLabel}</span>
+          <span className="admin-status-online admin-pulse-ring">{forecast.confidenceLabel}</span>
         </div>
-        <div className="mt-3 grid gap-3 md:grid-cols-3">
-          <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3">
-            <p className="text-sm text-[var(--text-muted)]">Vendas provaveis</p>
-            <p className="text-2xl font-bold text-[var(--text)]">{forecast.salesNext30} filhotes</p>
-            <p className="text-xs text-[var(--text-muted)]">Base {forecast.samples} leads analisados</p>
+        <div className="mt-4 admin-grid-responsive gap-4">
+          <div className="admin-interactive rounded-xl p-4" style={{ background: 'rgba(var(--admin-surface), 0.5)', border: '1px solid rgba(var(--admin-border), 0.5)' }}>
+            <p className="admin-card-subtitle">Vendas prováveis</p>
+            <p className="admin-kpi-value mt-2">{forecast.salesNext30} <span className="text-lg">filhotes</span></p>
+            <p className="text-xs mt-1" style={{ color: 'rgb(var(--admin-text-soft))' }}>Base {forecast.samples} leads analisados</p>
           </div>
-          <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3">
-            <p className="text-sm text-[var(--text-muted)]">Cores mais buscadas</p>
-            <p className="text-sm font-semibold text-[var(--text)]">{forecast.topColors.join(", ") || "Sem dado"}</p>
+          <div className="admin-interactive rounded-xl p-4" style={{ background: 'rgba(var(--admin-surface), 0.5)', border: '1px solid rgba(var(--admin-border), 0.5)' }}>
+            <p className="admin-card-subtitle">Cores mais buscadas</p>
+            <p className="text-sm font-semibold mt-2">{forecast.topColors.join(", ") || "Sem dado"}</p>
           </div>
-          <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3">
-            <p className="text-sm text-[var(--text-muted)]">Epocas de maior demanda</p>
-            <p className="text-sm font-semibold text-[var(--text)]">{forecast.hotPeriods.join(", ") || "Estavel"}</p>
+          <div className="admin-interactive rounded-xl p-4" style={{ background: 'rgba(var(--admin-surface), 0.5)', border: '1px solid rgba(var(--admin-border), 0.5)' }}>
+            <p className="admin-card-subtitle">Épocas de maior demanda</p>
+            <p className="text-sm font-semibold mt-2">{forecast.hotPeriods.join(", ") || "Estável"}</p>
           </div>
         </div>
       </section>
 
-      <section className="rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm" aria-label="Insights automaticos">
-        <h2 className="text-lg font-semibold text-[var(--text)]">Insights automaticos</h2>
-        <p className="text-sm text-[var(--text-muted)] mb-3">Picos, quedas e sugestoes acionaveis.</p>
-        <ul className="space-y-2">
-          {intelligence.length === 0 && <li className="text-sm text-[var(--text-muted)]">Nenhum insight detectado.</li>}
+      <section className="admin-glass-card admin-stagger-item" aria-label="Insights automaticos">
+        <h2 className="admin-card-title text-lg">Insights automáticos</h2>
+        <p className="admin-card-subtitle mb-4">Picos, quedas e sugestões acionáveis.</p>
+        <ul className="space-y-3">
+          {intelligence.length === 0 && <li className="admin-card-subtitle">Nenhum insight detectado.</li>}
           {intelligence.map((insight) => (
             <li
               key={insight.title}
-              className={`rounded-lg border px-3 py-2 text-sm ${
-                insight.tone === "alert" ? "border-amber-200 bg-amber-50 text-amber-800" : "border-[var(--border)] bg-[var(--surface)] text-[var(--text)]"
+              className={`admin-interactive rounded-lg px-4 py-3 text-sm ${
+                insight.tone === "alert" ? "" : ""
               }`}
+              style={{
+                background: insight.tone === "alert" ? 'rgba(251, 191, 36, 0.1)' : 'rgba(var(--admin-surface), 0.5)',
+                border: insight.tone === "alert" ? '1px solid rgba(251, 191, 36, 0.3)' : '1px solid rgba(var(--admin-border), 0.5)',
+                color: insight.tone === "alert" ? 'rgb(var(--admin-warning))' : 'rgb(var(--admin-text))'
+              }}
             >
               <p className="font-semibold">{insight.title}</p>
-              <p className="text-[var(--text-muted)]">{insight.detail}</p>
+              <p className="admin-card-subtitle mt-1">{insight.detail}</p>
             </li>
           ))}
         </ul>
       </section>
 
-      <section className="rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm" aria-label="Gargalos">
-        <h2 className="text-lg font-semibold text-[var(--text)]">Gargalos da jornada</h2>
-        <p className="text-sm text-[var(--text-muted)] mb-3">Onde voce perde venda segundo o tempo de resposta.</p>
-        <ul className="space-y-2">
-          {bottlenecks.length === 0 && <li className="text-sm text-[var(--text-muted)]">Nenhum gargalo critico detectado.</li>}
+      <section className="admin-glass-card admin-stagger-item" aria-label="Gargalos">
+        <h2 className="admin-card-title text-lg">Gargalos da jornada</h2>
+        <p className="admin-card-subtitle mb-4">Onde você perde venda segundo o tempo de resposta.</p>
+        <ul className="space-y-3">
+          {bottlenecks.length === 0 && <li className="admin-card-subtitle">Nenhum gargalo crítico detectado.</li>}
           {bottlenecks.map((b) => (
-            <li key={b.title} className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text)]">
+            <li key={b.title} className="admin-interactive rounded-lg px-4 py-3 text-sm" style={{ background: 'rgba(var(--admin-surface), 0.5)', border: '1px solid rgba(var(--admin-border), 0.5)' }}>
               <p className="font-semibold">{b.title}</p>
-              <p className="text-[var(--text-muted)]">{b.detail}</p>
+              <p className="admin-card-subtitle mt-1">{b.detail}</p>
             </li>
           ))}
         </ul>
       </section>
 
-      <section aria-label="Metricas adicionais" className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <div className="rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm">
-          <h2 className="text-sm font-semibold text-[var(--text)]">Status do estoque</h2>
-          <dl className="mt-3 grid grid-cols-2 gap-2 text-sm">
-            <div className="rounded-lg bg-[var(--surface)] px-3 py-2">
-              <dt className="text-[var(--text-muted)]">Disponiveis</dt>
-              <dd className="text-lg font-semibold text-[var(--text)]">{puppiesByStatus["available"] ?? 0}</dd>
+      <section aria-label="Metricas adicionais" className="admin-grid-responsive gap-4">
+        <div className="admin-glass-card admin-interactive admin-stagger-item">
+          <h2 className="admin-card-title text-sm">Status do estoque</h2>
+          <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
+            <div className="rounded-lg px-3 py-3 admin-border-glow" style={{ background: 'rgba(var(--admin-surface), 0.5)' }}>
+              <dt className="admin-card-subtitle text-xs">Disponíveis</dt>
+              <dd className="text-xl font-bold mt-1" style={{ color: 'rgb(var(--admin-brand))' }}>{puppiesByStatus["available"] ?? 0}</dd>
             </div>
-            <div className="rounded-lg bg-[var(--surface)] px-3 py-2">
-              <dt className="text-[var(--text-muted)]">Reservados</dt>
-              <dd className="text-lg font-semibold text-[var(--text)]">{puppiesByStatus["reserved"] ?? 0}</dd>
+            <div className="rounded-lg px-3 py-3" style={{ background: 'rgba(var(--admin-surface), 0.5)' }}>
+              <dt className="admin-card-subtitle text-xs">Reservados</dt>
+              <dd className="text-xl font-bold mt-1" style={{ color: 'rgb(var(--admin-accent))' }}>{puppiesByStatus["reserved"] ?? 0}</dd>
             </div>
-            <div className="rounded-lg bg-[var(--surface)] px-3 py-2">
-              <dt className="text-[var(--text-muted)]">Vendidos</dt>
-              <dd className="text-lg font-semibold text-[var(--text)]">{puppiesByStatus["sold"] ?? 0}</dd>
+            <div className="rounded-lg px-3 py-3" style={{ background: 'rgba(var(--admin-surface), 0.5)' }}>
+              <dt className="admin-card-subtitle text-xs">Vendidos</dt>
+              <dd className="text-xl font-bold mt-1" style={{ color: 'rgb(var(--admin-success))' }}>{puppiesByStatus["sold"] ?? 0}</dd>
             </div>
-            <div className="rounded-lg bg-[var(--surface)] px-3 py-2">
-              <dt className="text-[var(--text-muted)]">Total</dt>
-              <dd className="text-lg font-semibold text-[var(--text)]">{puppies.length}</dd>
+            <div className="rounded-lg px-3 py-3" style={{ background: 'rgba(var(--admin-surface), 0.5)' }}>
+              <dt className="admin-card-subtitle text-xs">Total</dt>
+              <dd className="text-xl font-bold mt-1">{puppies.length}</dd>
             </div>
           </dl>
         </div>
@@ -525,33 +544,36 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: { 
         <BarChart data={leadsBySource} title="Origem dos leads (UTM/referrer)" />
       </section>
 
-      <section className="rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm" aria-label="Alertas IA">
-        <h2 className="text-lg font-semibold text-[var(--text)]">Alertas automaticos</h2>
-        <p className="text-sm text-[var(--text-muted)] mb-3">Estoque, demanda e precos fora do padrao.</p>
-        <div className="grid gap-3 md:grid-cols-2">
+      <section className="admin-glass-card admin-stagger-item" aria-label="Alertas IA">
+        <h2 className="admin-card-title text-lg">Alertas automáticos</h2>
+        <p className="admin-card-subtitle mb-4">Estoque, demanda e preços fora do padrão.</p>
+        <div className="admin-grid-responsive gap-4">
           {alertsAi.map((alert) => (
             <div
               key={alert.title}
-              className={`rounded-xl border px-3 py-2 text-sm ${
-                alert.type === "critical" ? "border-rose-200 bg-rose-50 text-rose-800" : "border-amber-200 bg-amber-50 text-amber-800"
-              }`}
+              className="admin-interactive rounded-xl px-4 py-3 text-sm"
+              style={{
+                background: alert.type === "critical" ? 'rgba(239, 68, 68, 0.1)' : 'rgba(251, 191, 36, 0.1)',
+                border: alert.type === "critical" ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(251, 191, 36, 0.3)',
+                color: alert.type === "critical" ? 'rgb(var(--admin-danger))' : 'rgb(var(--admin-warning))'
+              }}
             >
               <p className="font-semibold">{alert.title}</p>
-              <p>{alert.detail}</p>
+              <p className="mt-1 opacity-90">{alert.detail}</p>
             </div>
           ))}
-          {alertsAi.length === 0 && <p className="text-sm text-[var(--text-muted)]">Sem alertas gerados.</p>}
+          {alertsAi.length === 0 && <p className="admin-card-subtitle">Sem alertas gerados.</p>}
         </div>
       </section>
 
-      <section className="rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm" aria-label="Simulacoes">
-        <h2 className="text-lg font-semibold text-[var(--text)]">Simulacoes (E se...)</h2>
-        <p className="text-sm text-[var(--text-muted)] mb-3">Preve impacto em vendas com mudancas rapidas.</p>
-        <div className="grid gap-3 md:grid-cols-3">
+      <section className="admin-glass-card admin-stagger-item" aria-label="Simulacoes">
+        <h2 className="admin-card-title text-lg">Simulações (E se...)</h2>
+        <p className="admin-card-subtitle mb-4">Prevê impacto em vendas com mudanças rápidas.</p>
+        <div className="admin-grid-responsive gap-4">
           {simulations.map((sim) => (
-            <div key={sim.title} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3">
-              <p className="text-sm font-semibold text-[var(--text)]">{sim.title}</p>
-              <p className="text-sm text-[var(--text-muted)]">{sim.detail}</p>
+            <div key={sim.title} className="admin-interactive rounded-xl p-4" style={{ background: 'rgba(var(--admin-surface), 0.5)', border: '1px solid rgba(var(--admin-border), 0.5)' }}>
+              <p className="text-sm font-semibold">{sim.title}</p>
+              <p className="admin-card-subtitle mt-2">{sim.detail}</p>
             </div>
           ))}
         </div>

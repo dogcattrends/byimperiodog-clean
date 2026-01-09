@@ -1,5 +1,6 @@
 
 
+import { updatePuppyRow } from "@/lib/catalog/dbWrites";
 import { sanityClient } from "@/lib/sanity/client";
 
 import { buildArticleLD } from "../schemas/article";
@@ -362,7 +363,7 @@ export async function applyAutopilotSeo() {
         meta_description: meta.description,
       });
     } else {
-      await sb.from("puppies").update({ seo_title: meta.title, seo_description: meta.description }).eq("slug", meta.slug);
+      await updatePuppyRow({ seo_title: meta.title, seo_description: meta.description }, { column: "slug", value: meta.slug });
     }
   }
 
@@ -370,7 +371,7 @@ export async function applyAutopilotSeo() {
     if (faq.kind === "blog") {
       await patchSanityPostBySlug(faq.slug, { faq: faq.faqs });
     } else if (faq.kind === "puppy") {
-      await sb.from("puppies").update({ faq: faq.faqs }).eq("slug", faq.slug);
+      await updatePuppyRow({ faq: faq.faqs }, { column: "slug", value: faq.slug });
     }
   }
 

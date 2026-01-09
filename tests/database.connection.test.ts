@@ -1,8 +1,16 @@
 import { createClient } from '@supabase/supabase-js'
 import { describe, it, expect, beforeAll } from 'vitest'
 
-const supabaseUrl = 'https://npmnuihgydadihktglrd.supabase.co'
-const serviceRoleKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5wbW51aWhneWRhZGloa3RnbHJkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NTY5MDA4NiwiZXhwIjoyMDcxMjY2MDg2fQ.IaBdH-IqdwNHNyDMREpYtRtwMEp5LIOirH1FHXWLiPw'
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://npmnuihgydadihktglrd.supabase.co'
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+if (!serviceRoleKey) {
+  describe.skip('Testes de Conexão com Banco de Dados', () => {
+    it('requer SUPABASE_SERVICE_ROLE_KEY para rodar', () => {
+      expect(serviceRoleKey).toBeTruthy()
+    })
+  })
+} else {
 
 const supabase = createClient(supabaseUrl, serviceRoleKey, {
   auth: {
@@ -33,3 +41,5 @@ describe('Testes de Conexão com Banco de Dados', () => {
     expect(data).toBeDefined()
   }, 10000)
 })
+
+}

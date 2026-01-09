@@ -843,3 +843,30 @@ export const Constants = {
   },
 } as const
 
+// ----------------------------
+// App-level canonical types
+// ----------------------------
+
+export type PuppySex = "macho" | "femea";
+export type PuppyStatus = "disponivel" | "reservado" | "vendido";
+
+// Schema esperado pela migration em sql/puppies.sql
+export type PuppyRow = {
+  id: string;
+  slug: string;
+  title: string;
+  sex: PuppySex;
+  color: string;
+  city: string;
+  state: string;
+  price_cents: number;
+  status: PuppyStatus;
+  main_image_url: string | null;
+  gallery: Json;
+  badges: Json;
+  description: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+

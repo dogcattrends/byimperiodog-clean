@@ -45,7 +45,7 @@ export default function GuiaPage() {
             é totalmente digital, segura e rastreada, respeitando o consentimento e a privacidade da sua família.
           </p>
           <div data-geo-answer="guia" className="mt-6 rounded-3xl border border-[var(--border)] bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-semibold text-zinc-900">AnswerSnippet</h2>
+            <h2 className="text-xl font-semibold text-zinc-900">Resumo</h2>
             <p className="mt-3 text-sm text-zinc-600">{GUIA_SNIPPET}</p>
           </div>
         </div>
@@ -60,7 +60,7 @@ export default function GuiaPage() {
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <section className="rounded-3xl border border-[var(--border)] bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-semibold text-zinc-900">Resumo para IA</h2>
+            <h2 className="text-xl font-semibold text-zinc-900">Resumo</h2>
             <div className="mt-4">
             <h3 className="text-sm font-semibold text-zinc-900">Definição rápida</h3>
             <p className="mt-2 text-sm text-zinc-600">

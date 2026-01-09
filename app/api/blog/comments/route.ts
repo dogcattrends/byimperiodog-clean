@@ -4,6 +4,23 @@ import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { supabasePublic } from "@/lib/supabasePublic";
 
+function isUuid(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
+async function resolvePostUuid(sb: ReturnType<typeof supabasePublic>, postIdOrSlug: string) {
+  if (!postIdOrSlug) return null;
+  const normalized = postIdOrSlug.trim();
+  if (!normalized) return null;
+  if (isUuid(normalized)) return normalized;
+  const { data } = await sb
+    .from("blog_posts")
+    .select("id")
+    .eq("slug", normalized)
+    .maybeSingle();
+  return data?.id ?? null;
+}
+
 // best-effort in-memory rate limiter
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX = 5;
@@ -34,7 +51,7 @@ export async function GET(req: Request) {
   try {
     const url = new URL(req.url);
     const schema = z.object({
-      post_id: z.string().uuid({ message: "post_id inválido" }),
+      post_id: z.string().trim().min(1, { message: "post_id obrigatório" }),
       limit: z.coerce.number().int().min(1).max(50).default(20),
       before: z
         .string()
@@ -53,10 +70,14 @@ export async function GET(req: Request) {
     const { post_id, limit, before } = parsed.data;
 
     const sb = supabasePublic();
+    const resolvedPostId = await resolvePostUuid(sb, post_id);
+    if (!resolvedPostId) {
+      return NextResponse.json({ error: "Post inexistente ou não publicado" }, { status: 404 });
+    }
     let query = sb
       .from("blog_comments")
       .select("id,post_id,author_name,body,approved,created_at")
-      .eq("post_id", post_id)
+      .eq("post_id", resolvedPostId)
       .eq("approved", true)
       .order("created_at", { ascending: false })
       .limit(limit + 1);
@@ -86,7 +107,7 @@ export async function POST(req: Request) {
     }
 
     const schema = z.object({
-      post_id: z.string().uuid({ message: "post_id inválido" }),
+      post_id: z.string().trim().min(1, { message: "post_id obrigatório" }),
       author_name: z
         .string()
         .trim()
@@ -111,12 +132,8 @@ export async function POST(req: Request) {
 
     // Ensure post exists and is published (public select on published only)
     const sbPublic = supabasePublic();
-    const { data: postExist } = await sbPublic
-      .from("blog_posts")
-      .select("id")
-      .eq("id", post_id)
-      .maybeSingle();
-    if (!postExist) {
+    const resolvedPostId = await resolvePostUuid(sbPublic, post_id);
+    if (!resolvedPostId) {
       return NextResponse.json({ error: "Post inexistente ou não publicado" }, { status: 404 });
     }
 
@@ -124,7 +141,7 @@ export async function POST(req: Request) {
     const sb = supabaseAdmin();
     const { data, error } = await sb
       .from("blog_comments")
-      .insert([{ post_id, author_name, author_email, body: comment }])
+      .insert([{ post_id: resolvedPostId, author_name, author_email, body: comment }])
       .select("id,post_id,author_name,body,approved,created_at")
       .single();
     if (error) throw error;

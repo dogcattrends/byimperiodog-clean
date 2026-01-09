@@ -2,12 +2,12 @@ import FAQBlock from "@/components/answer/FAQBlock";
 import ContractForm from "@/components/ContractForm";
 
 const CONTRACT_SNIPPET =
-  "Esta pagina coleta os dados necessarios para formalizar o contrato do filhote. Informe seu codigo, revise os dados e envie os anexos solicitados. O objetivo e garantir que todas as informacoes estejam corretas antes da conclusao do processo. Se tiver duvidas, fale com a equipe antes de enviar.";
+  "Esta página coleta os dados necessários para formalizar o contrato do filhote. Informe seu código, revise os dados e envie os anexos solicitados. O objetivo é garantir que todas as informações estejam corretas antes da conclusão do processo. Se tiver dúvidas, fale com a equipe antes de enviar.";
 
 const CONTRACT_FAQ = [
-  { question: "Para que serve o codigo?", answer: "Ele identifica sua reserva e libera o formulario correto." },
-  { question: "Quais anexos sao exigidos?", answer: "Documentos solicitados no atendimento, como comprovante e dados basicos." },
-  { question: "Posso corrigir dados depois?", answer: "Sim, avise a equipe caso precise ajustar informacoes." },
+  { question: "Para que serve o código?", answer: "Ele identifica sua reserva e libera o formulário correto." },
+  { question: "Quais anexos são exigidos?", answer: "Documentos solicitados no atendimento, como comprovante e dados básicos." },
+  { question: "Posso corrigir dados depois?", answer: "Sim, avise a equipe caso precise ajustar informações." },
 ];
 
 export default function ContractPage({ params }: { params: { code: string }}) {

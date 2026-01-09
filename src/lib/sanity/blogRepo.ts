@@ -13,6 +13,7 @@ import type { BlogBulkAction, BlogBulkResult, ListResult, Post, PostStatus } fro
 import type { SanityBlock } from "@/lib/sanity/blocks";
 import { blocksToPlainText } from "@/lib/sanity/blocks";
 import { sanityClient } from "@/lib/sanity/client";
+import { SANITY_POST_DETAIL_FIELDS, SANITY_POST_LIST_FIELDS } from "@/lib/sanity/queries";
 
 interface SanityPostDocument {
   _id: string;
@@ -25,16 +26,24 @@ interface SanityPostDocument {
   _updatedAt?: string | null;
   slug?: { current?: string };
   coverImage?: { asset?: { url?: string } };
+  mainImage?: { asset?: { url?: string } };
   coverUrl?: string | null;
   category?: string | null;
+  categories?: Array<{ title?: string | null; slug?: string | null }> | null;
   tags?: string[] | null;
   content?: SanityBlock[];
+  body?: SanityBlock[];
   // The Portable Text body lives here and must never be copied back to Supabase. Sanity is the canonical CMS (see docs/BLOG_ARCHITECTURE.md).
   status?: PostStatus;
   keyTakeaways?: string[] | null;
   faq?: Array<{ question?: string; answer?: string }> | null;
   sources?: Array<{ label?: string; url?: string }> | null;
-  author?: { _id?: string };
+  author?: {
+    _id?: string;
+    name?: string | null;
+    slug?: { current?: string } | null;
+    avatar_url?: string | null;
+  };
 }
 
 type ListSummariesParams = {
@@ -49,27 +58,6 @@ type ListSummariesParams = {
   includePendingComments?: boolean;
 };
 
-const SUMMARY_FIELDS = `
-  _id,
-  title,
-  description,
-  answerSnippet,
-  tldr,
-  keyTakeaways,
-  faq,
-  sources,
-  slug,
-  publishedAt,
-  status,
-  coverUrl,
-  coverImage { asset->{url} },
-  category,
-  tags,
-  author->{_id, name, slug},
-  _createdAt,
-  _updatedAt,
-`;
-
 const DEFAULT_LIMIT = 12;
 const MAX_LIMIT = 100;
 
@@ -83,7 +71,10 @@ function normalizeSearch(search?: string) {
 function mapDocumentToPost(doc: SanityPostDocument): Post {
   const slug = doc.slug?.current ?? doc._id;
   const publishedAt = doc.publishedAt ?? null;
-  const content = blocksToPlainText(doc.content ?? []);
+  const portableTextBlocks = (doc.content ?? doc.body ?? []) as SanityBlock[];
+  const content = blocksToPlainText(portableTextBlocks);
+  const firstCategory = Array.isArray(doc.categories) && doc.categories.length ? doc.categories[0] : null;
+  const derivedCategory = doc.category ?? firstCategory?.slug ?? firstCategory?.title ?? null;
   return {
     id: doc._id,
     slug,
@@ -92,13 +83,13 @@ function mapDocumentToPost(doc: SanityPostDocument): Post {
     excerpt: doc.description ?? null,
     content: content || null,
     status: doc.status ?? resolveStatus(doc),
-    coverUrl: doc.coverUrl ?? doc.coverImage?.asset?.url ?? null,
+    coverUrl: doc.coverUrl ?? doc.coverImage?.asset?.url ?? doc.mainImage?.asset?.url ?? null,
     coverAlt: null,
-    category: doc.category
+    category: derivedCategory
       ? {
-          id: doc.category,
-          slug: doc.category,
-          title: doc.category,
+          id: derivedCategory,
+          slug: derivedCategory,
+          title: derivedCategory,
           description: null,
           createdAt: null,
           updatedAt: null,
@@ -128,18 +119,22 @@ function mapDocumentToPost(doc: SanityPostDocument): Post {
 
 // Compat layer: adiciona aliases em snake_case para reduzir quebras
 // em código legado que ainda acessa propriedades como `published_at`.
-function addSnakeCaseAliases(post: Post, extras?: Record<string, unknown>) {
-  const p = post as any;
+function addSnakeCaseAliases(post: Post, extras?: Record<string, unknown>): Post & Record<string, unknown> {
+  const p = { ...post } as Post & Record<string, unknown>;
   if (extras) Object.assign(p, extras);
   p.published_at = p.publishedAt ?? null;
   p.created_at = p.createdAt ?? null;
   p.updated_at = p.updatedAt ?? null;
   p.cover_url = p.coverUrl ?? null;
   p.cover_alt = p.coverAlt ?? null;
-  p.key_takeaways = (p.keyTakeaways as any) ?? null;
-  p.tldr = (p.tldr as any) ?? null;
-  p.content_blocks = (p.content as any) ?? null;
-  return p as Post & Record<string, unknown>;
+  p.key_takeaways = p.keyTakeaways ?? null;
+  p.tldr = p.tldr ?? null;
+  // `content_blocks` precisa ser Portable Text (array de blocks) para o `<PortableText />`.
+  // Se vier do Sanity (extras), preserva; caso contrário, mantém null.
+  if (typeof p.content_blocks === "undefined") {
+    p.content_blocks = null;
+  }
+  return p;
 }
 
 function resolveStatus(doc: SanityPostDocument): PostStatus {
@@ -283,8 +278,12 @@ function buildDocument(data: PostContentInput, authorId: string, docId: string) 
   };
 }
 
-async function fetchDocument(filter: string, params: Record<string, unknown>) {
-  return sanityClient.fetch<SanityPostDocument | null>(`${filter} { ${SUMMARY_FIELDS} }[0]`, params);
+async function fetchDocument(
+  filter: string,
+  params: Record<string, unknown>,
+  fields: string = SANITY_POST_DETAIL_FIELDS
+) {
+  return sanityClient.fetch<SanityPostDocument | null>(`${filter} { ${fields} }[0]`, params);
 }
 
 async function fetchList(
@@ -298,7 +297,7 @@ async function fetchList(
     sort === "antigos" ? "publishedAt asc, _createdAt asc" : "publishedAt desc, _createdAt desc";
   const [items, total] = await Promise.all([
     sanityClient.fetch<SanityPostDocument[]>(
-      `${filter} | order(${orderClause})[${offset}...${offset + limit - 1}]{ ${SUMMARY_FIELDS} }`,
+      `${filter} | order(${orderClause})[${offset}...${offset + limit - 1}]{ ${SANITY_POST_LIST_FIELDS} }`,
       params
     ),
     sanityClient.fetch<number>(`count(${filter})`, params),
@@ -308,8 +307,14 @@ async function fetchList(
 
 export const sanityBlogRepo = {
   async listSummaries(params?: ListSummariesParams): Promise<ListResult<Post>> {
-    const statusClause = params?.status ? " && status == $status" : "";
-    const categoryClause = params?.category ? " && category == $category" : "";
+    const statusClause = params?.status
+      ? params.status === "published"
+        ? " && (!defined(status) || status == $status)"
+        : " && status == $status"
+      : "";
+    const categoryClause = params?.category
+      ? " && (category == $category || $category in categories[].slug)"
+      : "";
     const tagClause = params?.tag ? " && $tag in tags" : "";
     const filterClauses = [
       `*[_type == "post"${statusClause}${categoryClause}${tagClause}]`,
@@ -320,12 +325,12 @@ export const sanityBlogRepo = {
       search && search.length > 2
         ? `${filterClauses.join("")} && (title match $search || description match $search || slug.current match $search)`
         : filterClauses.join("");
-    // Monta params sem incluir search se for undefined
+    // Monta params sem incluir campos undefined (Sanity pode falhar em $status=undefined)
     const fetchParams: Record<string, unknown> = {
-      status: params?.status,
       limit: params?.limit ?? DEFAULT_LIMIT,
       offset: params?.offset ?? 0,
     };
+    if (params?.status) fetchParams.status = params.status;
     if (search) fetchParams.search = search;
     if (params?.tag) fetchParams.tag = params.tag;
     if (params?.category) fetchParams.category = params.category;
@@ -346,6 +351,14 @@ export const sanityBlogRepo = {
       keyTakeaways: doc.keyTakeaways ?? null,
       faq: doc.faq ?? null,
       sources: doc.sources ?? null,
+      content_blocks: (doc.content ?? doc.body ?? null) as unknown,
+      author: doc.author
+        ? {
+            name: doc.author.name ?? null,
+            slug: doc.author.slug?.current ?? null,
+            avatar_url: doc.author.avatar_url ?? null,
+          }
+        : null,
     });
   },
 
@@ -359,6 +372,14 @@ export const sanityBlogRepo = {
       keyTakeaways: doc.keyTakeaways ?? null,
       faq: doc.faq ?? null,
       sources: doc.sources ?? null,
+      content_blocks: (doc.content ?? doc.body ?? null) as unknown,
+      author: doc.author
+        ? {
+            name: doc.author.name ?? null,
+            slug: doc.author.slug?.current ?? null,
+            avatar_url: doc.author.avatar_url ?? null,
+          }
+        : null,
     });
   },
 

@@ -20,24 +20,24 @@ export default function Prose({ className, children, spacious = false, ...rest }
         'prose-h2:text-2xl prose-h2:tracking-tight prose-h2:mt-12 prose-h2:mb-4',
         'prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-3',
         'prose-h4:text-lg prose-h4:mt-6 prose-h4:mb-2',
-        // Links com melhor contraste
-        'prose-a:text-emerald-700 dark:prose-a:text-emerald-400',
-        'prose-a:font-medium prose-a:underline prose-a:decoration-emerald-600/30',
-        'hover:prose-a:decoration-emerald-600 dark:hover:prose-a:decoration-emerald-400',
+        // Links com melhor contraste (tokens)
+        'prose-a:text-brand prose-a:font-medium prose-a:underline prose-a:decoration-brand/30',
+        'hover:prose-a:decoration-brand',
+        'prose-a:rounded-sm prose-a:focus:outline-none prose-a:focus-visible:ring-2 prose-a:focus-visible:ring-brand',
         // Imagens
         'prose-img:rounded-xl prose-img:border prose-img:border-[var(--border)] prose-img:shadow-md',
         // Citações
-        'prose-blockquote:border-l-4 prose-blockquote:border-l-emerald-600 dark:prose-blockquote:border-l-emerald-400',
+        'prose-blockquote:border-l-4 prose-blockquote:border-l-brand',
         'prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-[var(--text-muted)]',
         // Código inline
-        'prose-code:rounded-md prose-code:bg-zinc-100 dark:prose-code:bg-zinc-800',
+        'prose-code:rounded-md prose-code:bg-[var(--surface-2)]',
         'prose-code:px-2 prose-code:py-1 prose-code:text-sm',
-        'prose-code:text-emerald-700 dark:prose-code:text-emerald-300',
+        'prose-code:text-brand',
         'prose-code:font-mono prose-code:font-medium',
         'prose-code:before:content-none prose-code:after:content-none',
         // Listas
         'prose-ul:text-[var(--text)] prose-ol:text-[var(--text)]',
-        'prose-li:marker:text-emerald-600 dark:prose-li:marker:text-emerald-400',
+        'prose-li:marker:text-brand',
         // Tabelas
         'prose-table:text-[var(--text)]',
         'prose-thead:border-b-2 prose-thead:border-[var(--border)]',

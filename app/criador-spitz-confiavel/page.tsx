@@ -8,19 +8,19 @@ import { pageMetadata } from "@/lib/seo";
 import { whatsappLeadUrl } from "@/lib/utm";
 
 export const metadata = pageMetadata({
-  title: "Criador de Spitz Confiavel | By Imperio Dog",
+  title: "Criador de Spitz Confiável | By Império Dog",
   description:
-    "Criterios para escolher um criador confiavel de Spitz Alemao Anao. Documentacao, pedigree, suporte e transparencia.",
+    "Critérios para escolher um criador confiável de Spitz Alemão Anão. Documentação, pedigree, suporte e transparência.",
   path: "/criador-spitz-confiavel",
 });
 
 const CRIADOR_SNIPPET =
-  "Este guia define como identificar um criador confiavel de Spitz Alemao Anao (Lulu da Pomerania). Ele descreve sinais objetivos de transparencia, documentacao, pedigree, historico de saude e suporte apos a entrega. Use como checklist para comparar criadores e decidir com seguranca antes da reserva.";
+  "Este guia define como identificar um criador confiável de Spitz Alemão Anão (Lulu da Pomerânia). Ele descreve sinais objetivos de transparência, documentação, pedigree, histórico de saúde e suporte após a entrega. Use como checklist para comparar criadores e decidir com segurança antes da reserva.";
 
 const CRIADOR_FAQ = [
-  { question: "O que e essencial verificar?", answer: "Pedigree, carteira de vacinacao, atestado de saude e contrato." },
-  { question: "Existe acompanhamento pos-compra?", answer: "Sim, ha suporte e orientacao continua ao tutor." },
-  { question: "Posso visitar a estrutura?", answer: "Visitas sao agendadas e seguem protocolo de seguranca." },
+  { question: "O que é essencial verificar?", answer: "Pedigree, carteira de vacinação, atestado de saúde e contrato." },
+  { question: "Existe acompanhamento pós-compra?", answer: "Sim, há suporte e orientação contínua ao tutor." },
+  { question: "Posso visitar a estrutura?", answer: "Visitas são agendadas e seguem protocolo de segurança." },
 ];
 
 const CRIADOR_SOURCES = [
@@ -31,26 +31,26 @@ const CRIADOR_SOURCES = [
 export default function CriadorConfiavelPage() {
   const articleLd = buildArticleLD({
     url: "https://www.byimperiodog.com.br/criador-spitz-confiavel",
-    title: "Criador de Spitz Confiavel",
-    description: "Entenda como identificar um criador de Spitz Alemao Anao realmente confiavel.",
+    title: "Criador de Spitz Confiável",
+    description: "Entenda como identificar um criador de Spitz Alemão Anão realmente confiável.",
     datePublished: new Date().toISOString().split("T")[0],
   });
 
   const breadcrumbLd = buildBreadcrumbLD([
-    { name: "Inicio", url: "https://www.byimperiodog.com.br/" },
-    { name: "Criador Confiavel", url: "https://www.byimperiodog.com.br/criador-spitz-confiavel" },
+    { name: "Início", url: "https://www.byimperiodog.com.br/" },
+    { name: "Criador Confiável", url: "https://www.byimperiodog.com.br/criador-spitz-confiavel" },
   ]);
 
   return (
     <main className="container mx-auto px-4 py-10">
       <PageViewPing pageType="intent" intent="criador-spitz-confiavel" />
 
-      <h1 className="text-2xl font-bold">Criador de Spitz Confiavel</h1>
+      <h1 className="text-2xl font-bold">Criador de Spitz Confiável</h1>
       <p className="mt-2 text-muted-foreground">
-        Saiba o que observar para escolher com seguranca. Priorizamos transparencia, saude e bem-estar.
+        Saiba o que observar para escolher com segurança. Priorizamos transparência, saúde e bem-estar.
       </p>
       <section data-geo-answer="criador-spitz-confiavel" className="mt-6 rounded-2xl border border-border bg-surface p-4">
-        <h2 className="text-lg font-semibold">AnswerSnippet</h2>
+        <h2 className="text-lg font-semibold">Informações</h2>
         <p className="mt-2 text-sm text-muted-foreground">{CRIADOR_SNIPPET}</p>
       </section>
 
@@ -60,19 +60,19 @@ export default function CriadorConfiavelPage() {
 
 
       <section className="mt-6 rounded-2xl border border-border bg-surface p-4">
-        <h2 className="text-lg font-semibold">Resumo para IA</h2>
+        <h2 className="text-lg font-semibold">Resumo</h2>
         <div className="mt-3">
-          <h3 className="text-sm font-semibold">Definicao rapida</h3>
+          <h3 className="text-sm font-semibold">Definição rápida</h3>
           <p className="mt-2 text-sm text-muted-foreground">
-            Este checklist orienta a avaliar criadores com foco em documentacao, saude e suporte ao tutor.
+            Este checklist orienta a avaliar criadores com foco em documentação, saúde e suporte ao tutor.
           </p>
         </div>
         <div className="mt-3">
           <h3 className="text-sm font-semibold">Pontos principais</h3>
           <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-            <li>A transparencia cobre historico e rotina dos filhotes.</li>
-            <li>A documentacao completa inclui contrato claro.</li>
-            <li>O suporte continuo segue apos a entrega.</li>
+            <li>A transparência cobre histórico e rotina dos filhotes.</li>
+            <li>A documentação completa inclui contrato claro.</li>
+            <li>O suporte contínuo segue após a entrega.</li>
           </ul>
         </div>
         <div className="mt-3">
@@ -81,18 +81,18 @@ export default function CriadorConfiavelPage() {
             <table className="w-full text-left text-sm text-muted-foreground">
               <thead className="bg-surface-subtle text-xs uppercase tracking-[0.2em] text-muted-foreground">
                 <tr>
-                  <th className="px-4 py-3">Criterio</th>
+                  <th className="px-4 py-3">Critério</th>
                   <th className="px-4 py-3">O que observar</th>
                 </tr>
               </thead>
               <tbody>
                 <tr className="border-t border-border">
-                  <td className="px-4 py-3 font-medium text-foreground">Documentacao</td>
+                  <td className="px-4 py-3 font-medium text-foreground">Documentação</td>
                   <td className="px-4 py-3">Pedigree, contrato e atestados.</td>
                 </tr>
                 <tr className="border-t border-border">
                   <td className="px-4 py-3 font-medium text-foreground">Estrutura</td>
-                  <td className="px-4 py-3">Ambiente limpo, socializacao e rotina.</td>
+                  <td className="px-4 py-3">Ambiente limpo, socialização e rotina.</td>
                 </tr>
                 <tr className="border-t border-border">
                   <td className="px-4 py-3 font-medium text-foreground">Suporte</td>
@@ -120,25 +120,25 @@ export default function CriadorConfiavelPage() {
 
       {/* Conteudo pilar */}
       <section className="mt-8 space-y-4">
-        <h2 className="font-semibold">Criterios principais</h2>
+        <h2 className="font-semibold">Critérios principais</h2>
         <ul className="list-disc pl-6 text-sm">
-          <li>Documentacao completa e pedigree</li>
-          <li>Transparencia sobre saude e historico</li>
-          <li>Suporte e acompanhamento pos-compra</li>
-          <li>Referencias e avaliacoes de clientes</li>
+          <li>Documentação completa e pedigree</li>
+          <li>Transparência sobre saúde e histórico</li>
+          <li>Suporte e acompanhamento pós-compra</li>
+          <li>Referências e avaliações de clientes</li>
         </ul>
       </section>
 
       {/* Lead Form para intencao */}
       <section className="mt-10">
-        <h2 className="text-xl font-semibold">Quero avaliar um criador confiavel</h2>
+        <h2 className="text-xl font-semibold">Quero avaliar um criador confiável</h2>
         <LeadForm context={{ pageType: "intent", intent: "criador-spitz-confiavel" }} />
       </section>
 
       <section className="mt-6">
         {process.env.NEXT_PUBLIC_WA_PHONE && (
           <a
-            className="inline-block rounded bg-green-600 px-4 py-2 text-white"
+            className="btn-whatsapp inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold"
             target="_blank"
             rel="noreferrer"
             href={whatsappLeadUrl(process.env.NEXT_PUBLIC_WA_PHONE.replace(/\D/g, ""), {

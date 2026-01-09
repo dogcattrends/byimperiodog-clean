@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { withPuppiesReadTable } from "@/lib/puppies/readTable";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export async function GET(request: Request) {
@@ -11,28 +12,33 @@ export async function GET(request: Request) {
     }
 
     const sb = supabaseAdmin();
-    const { data, error } = await sb
-      .from("puppies")
-      .select("id, nome, name, status, color, gender, cover_url, midia, created_at")
-      .order("created_at", { ascending: false })
-      .limit(50);
+    const r = await withPuppiesReadTable({
+      sb,
+      query: (table) => {
+        const select =
+          table === "puppies_v2"
+            ? "id, name, status, color, gender, city, state, price, images, created_at"
+            : "id, nome, name, status, color, gender, cover_url, midia, created_at";
+        return (sb as any).from(table).select(select).order("created_at", { ascending: false }).limit(50);
+      },
+    });
 
-    if (error) return NextResponse.json({ ok: false, error: String(error) }, { status: 500 });
+    if ((r as any).error) return NextResponse.json({ ok: false, error: String((r as any).error) }, { status: 500 });
 
-    const rows = Array.isArray(data)
-      ? data.map((r: any) => ({
-          id: r.id,
-          nome: r.nome ?? r.name ?? null,
-          status: r.status ?? null,
-          color: r.color ?? null,
-          gender: r.gender ?? null,
-          cover_url: r.cover_url ?? null,
-          midia: r.midia ?? null,
-          created_at: r.created_at ?? null,
+    const rows = Array.isArray((r as any).data)
+      ? (r as any).data.map((row: any) => ({
+          id: row.id,
+          nome: row.nome ?? row.name ?? null,
+          status: row.status ?? null,
+          color: row.color ?? null,
+          gender: row.gender ?? null,
+          cover_url: row.cover_url ?? null,
+          midia: row.midia ?? row.images ?? null,
+          created_at: row.created_at ?? null,
         }))
       : [];
 
-    return NextResponse.json({ ok: true, count: rows.length, rows, timestamp: new Date().toISOString() });
+    return NextResponse.json({ ok: true, table: r.table, usedFallback: r.usedFallback, firstError: r.firstError, count: rows.length, rows, timestamp: new Date().toISOString() });
   } catch (err) {
     return NextResponse.json({ ok: false, error: String(err) }, { status: 500 });
   }

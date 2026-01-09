@@ -11,26 +11,26 @@ const lastUpdated = "2025-10-18T09:00:00.000Z";
 const tocItems = [
   { id: "escopo", label: "Escopo dos serviços" },
   { id: "responsabilidades", label: "Responsabilidades do tutor" },
-  { id: "obrigacoes", label: "Obrigações da By Imperio Dog" },
+  { id: "obrigacoes", label: "Obrigações da By Império Dog" },
   { id: "condicoes", label: "Condições comerciais e materiais" },
   { id: "alteracoes", label: "Alterações destes termos" },
   { id: "foro", label: "Foro aplicável" },
 ];
 
 const TERMS_SNIPPET =
-  "Os termos de uso descrevem regras de acesso ao site, responsabilidade sobre conteudo e uso dos canais de contato. O objetivo e definir limites, direitos e obrigacoes do usuario ao navegar, baixar materiais e solicitar informacoes sobre filhotes. Leia antes de enviar dados.";
+  "Os termos de uso descrevem regras de acesso ao site, responsabilidade sobre conteúdo e uso dos canais de contato. O objetivo é definir limites, direitos e obrigações do usuário ao navegar, baixar materiais e solicitar informações sobre filhotes. Leia antes de enviar dados.";
 
 const TERMS_FAQ = [
-  { question: "Posso usar o conteudo do site?", answer: "O conteudo e informativo e nao deve ser reproduzido sem autorizacao." },
+  { question: "Posso usar o conteúdo do site?", answer: "O conteúdo é informativo e não deve ser reproduzido sem autorização." },
   { question: "Como funcionam os links externos?", answer: "Links externos sao fornecidos para referencia, sem controle direto." },
-  { question: "Posso solicitar remocao de dados?", answer: "Sim, pelo contato oficial informado na pagina." },
+  { question: "Posso solicitar remoção de dados?", answer: "Sim, pelo contato oficial informado na página." },
 ];
 
 export function generateMetadata(): Metadata {
   return pageMetadata({
-    title: "Termos de Uso | By Imperio Dog",
+    title: "Termos de Uso | By Império Dog",
     description:
-      "Condições para acesso aos materiais, consultorias e suporte oferecidos pela By Imperio Dog a tutores do Spitz Alemão (Lulu da Pomerânia).",
+      "Condições para acesso aos materiais, consultorias e suporte oferecidos pela By Império Dog a tutores do Spitz Alemão (Lulu da Pomerânia).",
     path,
     images: [
       {
@@ -48,7 +48,7 @@ export default function TermosDeUsoPage() {
         <p className="text-sm font-semibold uppercase tracking-[0.28em] text-emerald-600">Condições legais</p>
         <h1 className="text-4xl font-bold text-zinc-900">Termos de Uso</h1>
         <p className="text-lg text-zinc-600">
-          Estes termos regem o uso do site, dos materiais educativos e do suporte oferecido pela By Imperio Dog a tutores e
+          Estes termos regem o uso do site, dos materiais educativos e do suporte oferecido pela By Império Dog a tutores e
           interessados no Spitz Alemão (Lulu da Pomerânia). Ao continuar navegando ou utilizar nossos serviços, você concorda com
           as condições descritas abaixo.
         </p>
@@ -76,13 +76,13 @@ export default function TermosDeUsoPage() {
           <li>Realizar consultas veterinárias periódicas e cumprir o calendário de vacinas.</li>
           <li>Monitorar peso, alimentação e hidratação, comunicando alterações relevantes.</li>
           <li>
-            Solicitar suporte oficial antes de aplicar medidas corretivas não validadas pela equipe técnica da By Imperio Dog.
+            Solicitar suporte oficial antes de aplicar medidas corretivas não validadas pela equipe técnica da By Império Dog.
           </li>
         </ul>
       </section>
 
       <section id="obrigacoes" className="space-y-3">
-        <h2 className="text-2xl font-semibold text-zinc-900">Obrigações da By Imperio Dog</h2>
+        <h2 className="text-2xl font-semibold text-zinc-900">Obrigações da By Império Dog</h2>
         <p className="text-zinc-600">
           Comprometemo-nos a fornecer materiais atualizados, comunicar eventuais riscos à saúde e manter canal ágil de suporte. O
           acompanhamento remoto é prestado por equipe especializada, respeitando limites éticos e o bem-estar do Spitz Alemão

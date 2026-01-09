@@ -9,6 +9,7 @@ import type { Puppy } from "../domain/puppy";
 import { listPuppiesCatalog } from "../lib/data/supabase";
 import { buildWhatsAppLink } from "../lib/whatsapp";
 
+import ErrorBoundary from "./ErrorBoundary";
 import PuppiesFilterBar from "./PuppiesFilterBar";
 import PuppyCard from "./PuppyCard";
 import PuppyCardSkeleton from "./PuppyCardSkeleton";
@@ -221,7 +222,11 @@ export default function PuppiesGrid({ initialItems = [] }: Props) {
         </div>
       )}
 
-      {openId && <PuppyDetailsModal id={openId} onClose={() => setOpenId(null)} />}
+      {openId && (
+        <ErrorBoundary>
+          <PuppyDetailsModal id={openId} onClose={() => setOpenId(null)} />
+        </ErrorBoundary>
+      )}
     </section>
   );
 }

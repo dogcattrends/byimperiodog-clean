@@ -7,9 +7,9 @@ import FAQBlock from "@/components/answer/FAQBlock";
 import PuppiesCatalogGrid from "@/components/catalog/PuppiesCatalogGrid";
 import HeroSection from "@/components/sections/Hero";
 import TrustBlock from "@/components/ui/TrustBlock";
+import type { Puppy } from "@/domain/puppy";
 import { normalizePuppyFromDB } from "@/lib/catalog/normalize";
 import { baseSiteMetadata } from "@/lib/seo.core";
-import { hasServiceRoleKey, supabaseAdmin } from "@/lib/supabaseAdmin";
 import { supabasePublic } from "@/lib/supabasePublic";
 import { TRUST_BLOCK_ITEMS } from "@/lib/trust-data";
 
@@ -27,56 +27,55 @@ const Testimonials = dynamic(() => import("@/components/Testimonials"), {
 export const revalidate = 60; // ISR interval in seconds
 
 export const metadata = baseSiteMetadata({
-  title: "Spitz Alemao Anao (Lulu da Pomerania) | By Imperio Dog",
+  title: "Spitz Alemão Anão (Lulu da Pomerânia) | By Império Dog",
   description:
-    "Criacao familiar e responsavel de Spitz Alemao Anao (Lulu da Pomerania) em Braganca Paulista, com planejamento de ninhadas, orientacao de rotina e suporte ao tutor.",
+    "Criação familiar e responsável de Spitz Alemão Anão (Lulu da Pomerânia) em Bragança Paulista, com planejamento de ninhadas, orientação de rotina e suporte ao tutor.",
   openGraph: {
-    title: "By Imperio Dog | Spitz Alemao Anao (Lulu da Pomerania)",
+    title: "By Império Dog | Spitz Alemão Anão (Lulu da Pomerânia)",
     description:
-      "Criacao especializada com poucas ninhadas ao ano, transparencia e suporte direto com a criadora.",
+      "Criação especializada com poucas ninhadas ao ano, transparência e suporte direto com a criadora.",
   },
 });
 
 const HOME_SNIPPET =
-  "By Imperio Dog e um portal brasileiro sobre Spitz Alemao Anao (Lulu da Pomerania) que centraliza catalogo de filhotes, guias e informacoes essenciais para tutores. Aqui voce encontra criterios de escolha, orientacoes de rotina e contato oficial para seguir com o processo.";
+  "By Império Dog é um portal brasileiro sobre Spitz Alemão Anão (Lulu da Pomerânia) que centraliza catálogo de filhotes, guias e informações essenciais para tutores. Aqui você encontra critérios de escolha, orientações de rotina e contato oficial para seguir com o processo.";
 
 const HOME_FAQ = [
   {
     question: "Como funciona o planejamento de ninhadas?",
-    answer: "Informamos a previsao de nascimentos, prioridade de escolha e etapas de entrevista antes da reserva.",
+    answer: "Informamos a previsão de nascimentos, prioridade de escolha e etapas de entrevista antes da reserva.",
   },
   {
     question: "Que tipo de suporte o tutor recebe?",
-    answer: "Orientacoes de rotina, adaptacao, socializacao e contato direto para duvidas no pos-entrega.",
+    answer: "Orientações de rotina, adaptação, socialização e contato direto para dúvidas no pós-entrega.",
   },
   {
-    question: "Voces atendem familias de outras cidades?",
-    answer: "Sim. Organizamos entrega humanizada com planejamento logistico e comunicacao clara.",
+    question: "Vocês atendem famílias de outras cidades?",
+    answer: "Sim. Organizamos entrega humanizada com planejamento logístico e comunicação clara.",
   },
 ];
 
-type SupabaseCatalogClient = ReturnType<typeof supabaseAdmin> | ReturnType<typeof supabasePublic>;
+type SupabaseCatalogClient = ReturnType<typeof supabasePublic>;
 
 async function queryPuppiesFromSupabase(client: SupabaseCatalogClient) {
   return client
     .from("puppies")
     .select("*")
-    .in("status", ["disponivel", "reservado"])
     .order("created_at", { ascending: false })
     .limit(12);
 }
 
 async function fetchHomePuppies() {
   try {
-    const adminReady = hasServiceRoleKey();
-    const client = adminReady ? supabaseAdmin() : supabasePublic();
+    const client = supabasePublic();
     const { data, error } = await queryPuppiesFromSupabase(client);
 
     if (error) {
       console.error("[HOME] Erro ao buscar filhotes:", error);
       return [];
     }
-    return (data ?? []).map(normalizePuppyFromDB);
+    const normalized: Puppy[] = (data ?? []).map((row: unknown) => normalizePuppyFromDB(row));
+    return normalized.filter((p: Puppy) => p.status === "available" || p.status === "reserved");
   } catch (err) {
     console.error("[HOME] Exception ao buscar filhotes:", err);
     return [];
@@ -91,7 +90,7 @@ export default async function HomePage() {
 
       <section className="container mx-auto px-4 pt-10 sm:px-6 lg:px-8">
         <div data-geo-answer="home" className="rounded-3xl border border-[var(--border)] bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-semibold text-zinc-900">AnswerSnippet</h2>
+          <h2 className="text-xl font-semibold text-zinc-900">Pílula da resposta</h2>
           <p className="mt-3 text-sm text-zinc-600">{HOME_SNIPPET}</p>
         </div>
       </section>
@@ -111,19 +110,19 @@ export default async function HomePage() {
       <section className="container mx-auto px-4 pb-16 sm:px-6 lg:px-8">
         <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <section className="rounded-3xl border border-[var(--border)] bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-semibold text-zinc-900">Resumo para IA</h2>
+            <h2 className="text-xl font-semibold text-zinc-900">Sobre Nós</h2>
             <div className="mt-4">
-              <h3 className="text-sm font-semibold text-zinc-900">Definicao rapida</h3>
+              <h3 className="text-sm font-semibold text-zinc-900">Definição rápida</h3>
               <p className="mt-2 text-sm text-zinc-600">
-                Este criatorio familiar e especializado em Spitz Alemao Anao (Lulu da Pomerania), com acompanhamento de rotina e suporte continuo ao tutor.
+                Esta criação familiar é especializada em Spitz Alemão Anão (Lulu da Pomerânia), com acompanhamento de rotina e suporte contínuo ao tutor.
               </p>
             </div>
             <div className="mt-4">
               <h3 className="text-sm font-semibold text-zinc-900">Pontos principais</h3>
               <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-zinc-600">
-                <li>O planejamento de ninhadas e comunicado com antecedencia.</li>
-                <li>A orientacao cobre socializacao, saude preventiva e rotina inicial.</li>
-                <li>A transparencia inclui processos claros e acompanhamento pos-entrega.</li>
+                <li>O planejamento de ninhadas e comunicado com antecedência.</li>
+                <li>A orientação cobre socialização, saúde preventiva e rotina inicial.</li>
+                <li>A transparência inclui processos claros e acompanhamento pós-entrega.</li>
               </ul>
             </div>
             <div className="mt-4">
@@ -139,15 +138,15 @@ export default async function HomePage() {
                   <tbody>
                     <tr className="border-t border-[var(--border)]">
                       <td className="px-4 py-3 font-medium text-zinc-900">Planejamento</td>
-                      <td className="px-4 py-3">Previsao de ninhadas e criterios de prioridade.</td>
+                      <td className="px-4 py-3">Previsão de ninhadas e critérios de prioridade.</td>
                     </tr>
                     <tr className="border-t border-[var(--border)]">
                       <td className="px-4 py-3 font-medium text-zinc-900">Entrega</td>
-                      <td className="px-4 py-3">Orientacao de chegada, rotina e adaptacao inicial.</td>
+                      <td className="px-4 py-3">Orientação de chegada, rotina e adaptação inicial.</td>
                     </tr>
                     <tr className="border-t border-[var(--border)]">
                       <td className="px-4 py-3 font-medium text-zinc-900">Suporte</td>
-                      <td className="px-4 py-3">Acompanhamento continuo para duvidas do tutor.</td>
+                      <td className="px-4 py-3">Acompanhamento contínuo para dúvidas do tutor.</td>
                     </tr>
                   </tbody>
                 </table>

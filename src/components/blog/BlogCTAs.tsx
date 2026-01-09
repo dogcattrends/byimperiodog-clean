@@ -12,7 +12,7 @@ interface BlogCTAsProps {
 
 const CTA_LINKS = [
   {
-    title: "Filhotes sob consulta",
+    title: "Filhotes — Consultar valor",
     description: "Visualize disponibilidade, cronograma de entrevistas e acompanhe a socializacao em tempo real.",
     href: "/filhotes",
     utmContent: "cta_filhotes",
@@ -59,7 +59,7 @@ export default function BlogCTAs({ postTitle, category }: BlogCTAsProps) {
           </div>
           <div className="flex-1 space-y-2">
             <h3 className="text-2xl font-serif text-text">
-              Pronto para uma conversa sob consulta?
+              Pronto para uma conversa? Consulte valores.
             </h3>
             <p className="text-sm text-text-muted">
               Atendimento humano, analise de perfil em ate 30 minutos e material exclusivo para planejar a chegada do Spitz.

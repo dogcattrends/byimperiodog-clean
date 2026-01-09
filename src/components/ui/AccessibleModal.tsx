@@ -104,21 +104,24 @@ export default function AccessibleModal({
                 className="fixed inset-0 z-[90] bg-black/40 backdrop-blur-[1px]"
               />
             </Dialog.Overlay>
-            <div className="fixed inset-0 z-[95] flex items-center justify-center overflow-y-auto p-4">
+            <div className="fixed inset-0 z-[95] flex items-stretch justify-center overflow-hidden p-0 sm:items-center sm:p-4">
               <Dialog.Content asChild>
                 <motion.div
                   initial={{ opacity: 0, y: 24, scale: 0.98 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 12, scale: 0.98 }}
                   transition={{ duration: reducedMotion ? 0 : 0.2 }}
-                  className={panelClass}
+                  className={classNames(
+                    panelClass,
+                    "flex h-[100dvh] min-h-0 flex-col rounded-none sm:h-auto sm:max-h-[calc(100vh-2rem)] sm:rounded-2xl",
+                  )}
                   ref={contentRef}
                   role="dialog"
                   aria-modal="true"
-                  aria-labelledby={titleId}
-                  aria-describedby={descId}
+                  aria-labelledby={title ? titleId : undefined}
+                  aria-describedby={description ? descId : undefined}
                 >
-                  <div className="sticky top-0 z-10 border-b border-[var(--border)] bg-[var(--surface)] px-6 py-4">
+                  <div className="sticky top-0 z-10 border-b border-[var(--border)] bg-[var(--surface)] px-4 py-3 sm:px-6 sm:py-4">
                     {title && (
                       <Dialog.Title id={titleId} className="text-base font-semibold tracking-tight text-[var(--text)]">
                         {title}
@@ -133,16 +136,16 @@ export default function AccessibleModal({
                       <button
                         ref={closeBtnRef}
                         type="button"
-                        className="absolute top-4 right-4 inline-flex h-10 w-10 sm:h-8 sm:w-8 items-center justify-center rounded-full border border-transparent bg-white text-[var(--text)] shadow-sm transition hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2"
+                        className="absolute top-3 right-3 inline-flex h-10 w-10 items-center justify-center rounded-full border border-transparent bg-white text-[var(--text)] shadow-sm transition hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2 sm:top-4 sm:right-4 sm:h-8 sm:w-8"
                         aria-label="Fechar modal (Esc)"
                       >
                         <span aria-hidden>×</span>
                       </button>
                     </Dialog.Close>
                   </div>
-                  <div className="px-6 py-4 overflow-y-auto max-h-[calc(100vh-7rem)]">{children}</div>
+                  <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 [-webkit-overflow-scrolling:touch] sm:px-6">{children}</div>
                   {footer && (
-                    <div className="border-t border-[var(--border)] px-6 py-4 bg-[var(--surface)]">
+                    <div className="border-t border-[var(--border)] bg-[var(--surface)] px-4 py-3 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-4 sm:pb-4">
                       {footer}
                     </div>
                   )}

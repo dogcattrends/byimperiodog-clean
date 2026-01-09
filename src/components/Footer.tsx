@@ -30,12 +30,12 @@ const supportLinks: { label: string; href: string }[] = [
   { label: "Política editorial", href: "/politica-editorial" },
 ];
 
-const footerContact = {
-  description:
-    "Atendimento sob consulta a partir de São Paulo — conversas individuais para alinhar rotina, investimento e socialização antes da reserva.",
-  email: "contato@byimperiodog.com.br",
-  phone: "(11) 96863-3239",
-};
+  const footerContact = {
+    description:
+      "Atendimento — consulte valores a partir de São Paulo — conversas individuais para alinhar rotina, investimento e socialização antes da reserva.",
+    email: "contato@byimperiodog.com.br",
+    phone: "(11) 96863-3239",
+  };
 
 type FooterLink = { label: string; href: string };
 
@@ -125,7 +125,7 @@ export default function FooterFixed() {
               BY IMPÉRIO DOG
             </span>
             <p className="text-sm leading-relaxed text-zinc-200">
-              Spitz Alemão Anão até 22 cm, criado com responsabilidade, saúde validada e mentoria vitalícia. Atendimento premium sob consulta para famílias que valorizam transparência.
+              Spitz Alemão Anão até 22 cm, criado com responsabilidade, saúde validada e mentoria vitalícia. Atendimento premium — consulte valores para famílias que valorizam transparência.
             </p>
             <a
               href={WA}

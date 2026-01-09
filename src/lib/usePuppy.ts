@@ -35,9 +35,9 @@ export function usePuppy(id: string | null) {
         const s = supabasePublic();
         const { data, error } = await s
           .from("puppies")
-          .select(
-            "id,nome,name,cor,color,gender,status,price_cents,priceCents,nascimento,birthDate,descricao,description,midia,media,imageUrl,delivery"
-          )
+          // Usa select("*") para tolerar schemas diferentes (legado vs canonical)
+          // e evitar erros como "Could not find the 'description' column ...".
+          .select("*")
           .eq("id", id)
           .single();
 

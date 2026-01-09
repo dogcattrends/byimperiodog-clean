@@ -1,25 +1,23 @@
 "use client";
+/* eslint-disable import/order */
 
-import { Camera, Copy, Loader2, MapPin, MessageCircle, PawPrint, Phone, ShieldCheck, Sparkles, Video } from "lucide-react";
-import Image from "next/image";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { RefObject } from "react";
 
 import AccessibleModal from "@/components/ui/AccessibleModal";
-import { ContentTOC } from "@/components/ui/ContentTOC";
-import PrimaryCTA from "@/components/ui/PrimaryCTA";
-import { RelatedLinks } from "@/components/ui/RelatedLinks";
-import ShareButton from "@/components/ui/ShareButton";
-import ShareCTA from "@/components/ui/ShareCTA";
-import { TrustBlock } from "@/components/ui/TrustBlock";
-import { BRAND, BUSINESS_RULES } from "@/domain/config";
+import { PuppyDetails } from "@/components/puppy/PuppyDetails";
+import { PuppyGallery } from "@/components/puppy/PuppyGallery";
+import { Button, Spinner, StatusBadge } from "@/components/ui";
+import { useToast } from "@/components/ui/toast";
 import type { Puppy } from "@/domain/puppy";
-import { formatPuppyMeta } from "@/domain/puppyMeta";
-import { TaxonomyHelpers } from "@/domain/taxonomies";
+import { normalizePuppyFromDB } from "@/lib/catalog/normalize";
 import { saveLead } from "@/lib/data/supabase";
-import type { ShareablePuppy } from "@/lib/sharePuppy";
+import { titleCasePt } from "@/lib/formatters";
+import { formatCentsToBRL } from "@/lib/price";
 import track from "@/lib/track";
-import { buildWhatsAppLink } from "@/lib/whatsapp";
+import { buildWhatsAppLink, WHATSAPP_NUMBER } from "@/lib/whatsapp";
+import { normalizeMedia } from "@/lib/puppyMedia";
+// `PuppyStatus` type was previously imported but is no longer required here.
 
 type Props = {
   id: string;
@@ -27,716 +25,479 @@ type Props = {
   restoreFocusRef?: RefObject<HTMLElement | null>;
 };
 
-type HeroStatus = { key: "available" | "reserved" | "sold"; label: string };
-type PrimaryAction = { type: "video" | "list" | "reserve" | "sold"; label: string; disabled: boolean };
-
-const COPY_DELAY = 2200;
-const STATUS_MAP: Record<string, HeroStatus> = {
-  available: { key: "available", label: "Disponível" },
-  disponivel: { key: "available", label: "Disponível" },
-  disponível: { key: "available", label: "Disponível" },
-  reserved: { key: "reserved", label: "Reservado" },
-  reservado: { key: "reserved", label: "Reservado" },
-  sold: { key: "sold", label: "Vendido" },
-  vendido: { key: "sold", label: "Vendido" },
-};
-
-const normalizeStatus = (value?: string | null): HeroStatus =>
-  STATUS_MAP[String(value ?? "").trim().normalize("NFC").toLowerCase()] ?? STATUS_MAP.available;
-
-const normalizeText = (input: string) =>
-  input
-    .normalize("NFC")
-    .replace(/ç/g, "c")
-    .replace(/ã/g, "a")
-    .replace(/á/g, "a")
-    .replace(/é/g, "e")
-    .replace(/í/g, "i");
-
 export default function PuppyDetailsModal({ id, onClose, restoreFocusRef }: Props) {
   const [puppy, setPuppy] = useState<Puppy | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [activeMediaIndex, setActiveMediaIndex] = useState(0);
-  const [copied, setCopied] = useState(false);
-  const [reserveProcessing, setReserveProcessing] = useState(false);
-  const [reserved, setReserved] = useState(false);
-  const [announceReserve, setAnnounceReserve] = useState("");
-  const copyTimerRef = useRef<number | null>(null);
-  const linkCopyTimerRef = useRef<number | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [reserveSubmitting, setReserveSubmitting] = useState(false);
+  const { push } = useToast();
+  const [open, setOpen] = useState(true);
+
+  const handleClose = useCallback(() => {
+    setOpen(false);
+    onClose();
+    if (restoreFocusRef?.current) {
+      restoreFocusRef.current.focus({ preventScroll: true });
+    }
+  }, [onClose, restoreFocusRef]);
+
+  const getTrackingContext = useCallback(
+    (extra?: Record<string, unknown>) => {
+      const loc = typeof window !== "undefined" ? window.location : null;
+      const search = loc ? new URLSearchParams(loc.search) : null;
+      const deviceType =
+        typeof navigator !== "undefined" && /Mobi|Android|iPhone|iPad|Mobile/i.test(navigator.userAgent)
+          ? "mobile"
+          : "desktop";
+
+      const context = {
+        slug: puppy?.slug ?? undefined,
+        puppy_id: puppy?.id ?? id,
+        page_path: loc?.pathname ?? undefined,
+        referrer: typeof document !== "undefined" ? document.referrer || undefined : undefined,
+        device_type: deviceType,
+        utm_source: search?.get("utm_source") ?? undefined,
+        utm_medium: search?.get("utm_medium") ?? undefined,
+        utm_campaign: search?.get("utm_campaign") ?? undefined,
+        utm_content: search?.get("utm_content") ?? undefined,
+        utm_term: search?.get("utm_term") ?? undefined,
+        ...extra,
+      };
+
+      return context;
+    },
+    [id, puppy]
+  );
+
+  // Body scroll lock handled by AccessibleModal
 
   useEffect(() => {
-    let active = true;
     const controller = new AbortController();
-    setLoading(true);
-    setError(null);
-    setActiveMediaIndex(0);
-    setCopied(false);
+    let isActive = true;
+    setIsLoading(true);
+    setErrorMessage(null);
+    setPuppy(null);
 
-    fetch(`/api/puppies/${encodeURIComponent(id)}`, { cache: "no-store", signal: controller.signal })
-      .then((res) => res.json().then((payload) => ({ status: res.status, body: payload })))
-      .then(({ status, body }) => {
-        if (!active) return;
-        if (status >= 400) throw new Error(body?.error || `Erro ${status} ao carregar o filhote`);
-        if (!body?.data) throw new Error("Filhote não encontrado");
-        setPuppy(normalize(body.data) as Puppy);
-      })
-      .catch((err: Error) => {
-        if (active) setError(err.message || "Erro ao carregar detalhes.");
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
+    (async () => {
+      try {
+        const response = await fetch(`/api/puppies/${encodeURIComponent(id)}`, {
+          signal: controller.signal,
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          const text = await response.text();
+          throw new Error(text || "Falha ao carregar detalhes do filhote.");
+        }
+
+        const payload = await response.json();
+        const raw = payload?.data;
+        if (!isActive) return;
+        if (!raw) {
+          setErrorMessage("Filhote nao encontrado.");
+          return;
+        }
+
+        const normalized = normalizePuppyFromDB(raw);
+        setPuppy(normalized);
+      } catch (error) {
+        if (!isActive) return;
+        if ((error as { name?: string }).name === "AbortError") return;
+        setErrorMessage((error as Error)?.message || "Nao foi possivel carregar o filhote.");
+      } finally {
+        if (isActive) setIsLoading(false);
+      }
+    })();
 
     return () => {
-      active = false;
+      isActive = false;
       controller.abort();
     };
   }, [id]);
 
+  // ESC fechando é suportado por AccessibleModal (Radix Dialog)
+
+  // Focus trap e retorno de foco são geridos por AccessibleModal
+
   useEffect(() => {
-    const copyTimer = copyTimerRef.current;
-    const linkCopyTimer = linkCopyTimerRef.current;
+    if (!puppy) return;
+    track.event?.("modal_open", getTrackingContext({ placement: "catalog_modal" }));
+  }, [getTrackingContext, puppy]);
 
-    return () => {
-      if (copyTimer) window.clearTimeout(copyTimer);
-      if (linkCopyTimer) window.clearTimeout(linkCopyTimer);
-    };
-  }, []);
-
-  // Fallback: if the puppy record has no images, try to fetch files from storage via API
-  useEffect(() => {
-    let active = true;
-    if (!puppy || (puppy.images && puppy.images.length > 0)) return;
-
-    fetch(`/api/puppies/${encodeURIComponent(id)}/media`, { cache: "no-store" })
-      .then((res) => res.json().then((body) => ({ status: res.status, body })))
-      .then(({ status, body }) => {
-        if (!active) return;
-        if (status >= 400) return;
-        const items: string[] = Array.isArray(body?.items) ? body.items : [];
-        if (items.length > 0) {
-          setPuppy((prev) => (prev ? { ...prev, images: items } : prev));
-        }
-      })
-      .catch(() => {})
-      .finally(() => {});
-
-    return () => {
-      active = false;
-    };
-  }, [puppy, id]);
-
-  const mediaItems = useMemo(() => (puppy?.images ?? []) as string[], [puppy]);
-  const heroHasImage = useMemo(() => mediaItems.some((item) => !isVideo(item)), [mediaItems]);
-  const currentMediaItem = mediaItems[activeMediaIndex];
-  const heroStatus = useMemo(() => normalizeStatus(puppy?.status), [puppy?.status]);
-  const heroHighlights = useMemo(() => {
-    if (!puppy) return [];
-    return [
-      {
-        title: "Pedigree",
-        detail: puppy.hasPedigree ? "Registro oficial incluso" : "Em processo de validação",
-      },
-      {
-        title: "Socialização",
-        detail: puppy.healthNotes ? "Cuidados guiados" : "Programa completo",
-      },
-      {
-        title: "Suporte",
-        detail: "Mentoria vitalícia e consultoria de chegada",
-      },
-    ];
-  }, [puppy]);
-  const locationLabel = useMemo(() => {
-    if (!puppy) return "Bragança Paulista, SP";
-    const cityLabel = puppy.city ? TaxonomyHelpers.getCityBySlug(String(puppy.city))?.name ?? String(puppy.city) : undefined;
-    const location = [cityLabel, puppy.state].filter(Boolean).join(", ");
-    return location || "Bragança Paulista, SP";
-  }, [puppy]);
-
-  const puppyMeta = useMemo(() => (puppy ? formatPuppyMeta(puppy) : null), [puppy]);
-  const colorSexDescriptor = puppyMeta?.combinedLabel ?? "Cor e sexo sob consulta";
+  // share payload removido do modal para evitar ações paralelas às CTAs principais
 
   const whatsappLink = useMemo(() => {
-    if (!puppy) return BRAND.urls.whatsappLink;
+    const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://byimperio.dog";
+    if (!puppy) {
+      return buildWhatsAppLink({
+        message: `Ola! Quero saber mais sobre os filhotes. Link: ${baseUrl}`,
+        utmSource: "site",
+        utmMedium: "modal",
+        utmCampaign: "filhotes",
+        utmContent: "cta_whatsapp",
+      });
+    }
+
+    const sexLabel = translateSexLabel(puppy.sex);
+    const colorLabel = puppy.color ? titleCasePt(puppy.color) : "";
+    const location = [puppy.city, puppy.state].filter(Boolean).join(" / ");
+    const canonical = `${baseUrl}/filhotes/${puppy.slug ?? puppy.id}`;
+
     return buildWhatsAppLink({
-      message: `Olá! Vi o filhote ${puppy.name} (${colorSexDescriptor}) e quero saber sobre disponibilidade e valor.`,
+      message: `Ola! Vi o filhote ${puppy.name} — ${[colorLabel, sexLabel].filter(Boolean).join(" • ")}${location ? ` — ${location}` : ""}. Link: ${canonical}`,
       utmSource: "site",
       utmMedium: "modal",
-      utmCampaign: "puppy_detail",
+      utmCampaign: "filhotes",
       utmContent: puppy.slug ?? puppy.id,
     });
-  }, [puppy, colorSexDescriptor]);
+  }, [puppy]);
 
-  const openWhatsApp = useCallback(() => {
-    if (!whatsappLink) return;
-    window.open(whatsappLink, "_blank", "noopener,noreferrer");
-  }, [whatsappLink]);
+  const openLink = useCallback((url: string) => {
+    const popup = window.open(url, "_blank", "noopener,noreferrer");
+    if (!popup) window.location.assign(url);
+  }, []);
+
+  const normalizedStatus = useMemo(() => normalizeStatusForCtas(puppy?.status), [puppy?.status]);
+  const isReservable = normalizedStatus === "available";
+  const reserveAction = isReservable ? "reserve" : "waitlist";
+  const reserveLabel = isReservable ? "Reservar" : "Entrar na lista";
+
+  const handleWhatsApp = useCallback(() => {
+    if (!puppy) return;
+    const payload = getTrackingContext({ placement: "modal", type: "whatsapp", status: normalizedStatus });
+    track.event?.("cta_click", payload);
+    track.event?.("whatsapp_click", payload);
+    track.event?.("lead_submit", { ...payload, action: "whatsapp" });
+    openLink(whatsappLink);
+  }, [getTrackingContext, normalizedStatus, openLink, puppy, whatsappLink]);
 
   const handleReserve = useCallback(async () => {
-    if (reserveProcessing || reserved || !puppy?.id) return;
-    setReserveProcessing(true);
+    if (!puppy) return;
+    if (reserveSubmitting) return;
+
+    const location = [puppy.city, puppy.state].filter(Boolean).join(" / ");
+    const message =
+      reserveAction === "reserve"
+        ? `Ola! Quero reservar o filhote ${puppy.name}${location ? ` (${location})` : ""}. Pode me enviar os proximos passos?`
+        : `Ola! Quero entrar na lista para o filhote ${puppy.name}${location ? ` (${location})` : ""}. Pode me avisar quando houver disponibilidade?`;
+
+    const url = buildWhatsAppLink({
+      message,
+      utmSource: "site",
+      utmMedium: "modal",
+      utmCampaign: reserveAction,
+      utmContent: puppy.slug ?? puppy.id,
+    });
+
+    setReserveSubmitting(true);
+    const payload = getTrackingContext({ placement: "modal", status: normalizedStatus, action: reserveAction });
+    track.event?.("cta_click", { ...payload, type: "reserve" });
+    track.event?.("lead_submit", payload);
+
     try {
-      await saveLead({ puppy_id: puppy.id, channel: "modal-cta", note: "Reserva via modal" });
-      setReserved(true);
-      setAnnounceReserve("Reserva registrada com sucesso. Entraremos em contato em breve.");
+      await saveLead({
+        puppy_id: puppy.slug ?? puppy.id,
+        action: reserveAction,
+        status: normalizedStatus,
+        source: "modal",
+      });
+      push({ type: "success", message: "Perfeito — abrindo WhatsApp agora." });
+      track.event?.("lead_saved", { placement: "modal", puppy_id: puppy.id, action: reserveAction });
     } catch {
-      setAnnounceReserve("Não foi possível registrar a reserva agora. Tente novamente.");
+      push({ type: "error", message: "Nao foi possivel registrar seu pedido. Abrindo WhatsApp mesmo assim." });
+      track.event?.("lead_error", { placement: "modal", puppy_id: puppy.id, action: reserveAction });
     } finally {
-      setReserveProcessing(false);
-      setTimeout(() => setAnnounceReserve(""), 3500);
+      setReserveSubmitting(false);
+      openLink(url);
     }
-  }, [puppy?.id, reserveProcessing, reserved]);
+  }, [getTrackingContext, normalizedStatus, openLink, puppy, push, reserveAction, reserveSubmitting]);
 
-  const primaryAction = useMemo<PrimaryAction>(() => {
-    if (!heroHasImage) return { type: "video", label: "Ver vídeo no WhatsApp", disabled: false };
-    if (heroStatus.key === "reserved") return { type: "list", label: "Entrar na lista", disabled: false };
-    if (heroStatus.key === "sold") return { type: "sold", label: "Indisponível", disabled: true };
-    return {
-      type: "reserve",
-      label: reserveProcessing ? "Registrando..." : reserved ? "Reserva registrada" : "Quero reservar",
-      disabled: reserveProcessing || reserved,
-    };
-  }, [heroHasImage, heroStatus.key, reserveProcessing, reserved]);
+  // Videochamada removida do conjunto principal de CTAs do modal
 
-  const handlePrimaryAction = useCallback(() => {
-    if (primaryAction.disabled) return;
-    if (primaryAction.type === "reserve") {
-      handleReserve();
-      return;
-    }
-    openWhatsApp();
-  }, [handleReserve, openWhatsApp, primaryAction]);
+  const handleCall = useCallback(() => {
+    if (!puppy) return;
+    const payload = getTrackingContext({ placement: "modal", type: "call" });
+    const telUrl = `tel:+${WHATSAPP_NUMBER}`;
+    track.event?.("cta_click", payload);
+    track.event?.("phone_click", payload);
+    window.location.href = telUrl;
+  }, [getTrackingContext, puppy]);
 
-  const copyPhone = useCallback(() => {
-    track.event?.("cta_click", { action: "copy_phone_modal", puppy_id: puppy?.id ?? id });
-    if (navigator.clipboard) navigator.clipboard.writeText(BRAND.contact.phone).catch(() => {});
-    setCopied(true);
-    if (copyTimerRef.current) window.clearTimeout(copyTimerRef.current);
-    copyTimerRef.current = window.setTimeout(() => setCopied(false), COPY_DELAY);
-  }, [id, puppy?.id]);
-
-  const tocItems = useMemo(() => {
+  const priceLabel = puppy?.priceCents && puppy.priceCents > 0 ? formatCentsToBRL(puppy.priceCents) : "Consultar valor";
+  const locationLabel = puppy ? [puppy.city, puppy.state].filter(Boolean).join(" / ") : "";
+  const galleryMedia = useMemo(() => {
     if (!puppy) return [];
-    const items = [
-      { title: "Sobre o filhote", href: "#sobre-filhote" },
-      { title: "Ficha rápida", href: "#ficha-rapida" },
-    ];
-    if (puppy.healthNotes) items.push({ title: "Cuidados especiais", href: "#cuidados-especiais" });
-    if (puppy.shippingNotes) items.push({ title: "Entrega & logística", href: "#entrega-logistica" });
-    items.push({ title: "O que você recebe", href: "#o-que-voce-recebe" });
-    return items;
+    const normalized = normalizeMedia(puppy);
+    if (normalized.length) {
+      return normalized
+        .map((item) => item.url)
+        .filter((url): url is string => typeof url === "string" && url.trim().length > 0 && url !== "undefined" && url !== "null");
+    }
+    return (puppy.images ?? []).filter((url): url is string => typeof url === "string" && url.trim().length > 0 && url !== "undefined" && url !== "null");
   }, [puppy]);
 
-  const relatedLinks = useMemo(() => {
-    if (!puppy) return [];
-    const baseDescription = `Conteúdo para acompanhar ${puppy.name}`;
-    return [
-      {
-        label: "Guia completo para receber seu filhote",
-        href: "/guia?source=modal",
-        description: "Checklist seguro com consentimentos e token de download.",
-      },
-      {
-        label: "Blog: Preparando o novo lar",
-        href: "/blog?tag=preparacao",
-        description: "Artigos reais sobre adaptação e cuidados.",
-      },
-      {
-        label: "Catálogo completo",
-        href: "/filhotes",
-        description: baseDescription,
-      },
-    ];
+  const postersByUrl = useMemo<Record<string, string | undefined>>(() => {
+    if (!puppy) return {};
+    const normalized = normalizeMedia(puppy);
+    const out: Record<string, string | undefined> = {};
+    for (const item of normalized) {
+      if (!item?.url) continue;
+      if (item.poster) out[item.url] = item.poster;
+    }
+    return out;
   }, [puppy]);
 
-const trustItems = useMemo(() => {
-  if (!puppy) return [];
-  const reservation = BUSINESS_RULES.reservation;
-  const warranties = BUSINESS_RULES.warranties;
-  const availableForShipping = Boolean(puppy.availableForShipping ?? true);
-  return [
-    {
-        label: "Reserva segura",
-        value: `${reservation.durationDays} dias`,
-        meta: `Sinal de ${reservation.depositPercentage}%`,
-      },
-      {
-        label: "Garantia de saúde",
-        value: `${warranties.healthGuaranteeDays} dias`,
-        meta: warranties.lifetimeSupport ? "Suporte vitalício" : "Suporte especializado",
-      },
-      {
-        label: "Entrega assistida",
-        value: availableForShipping ? "Envio nacional" : "Retirada em SP",
-        meta: puppy.shippingNotes ? "Logística guiada" : "Coordenação concierge",
-    },
-  ];
-}, [puppy]);
+  const chipLabel = useMemo(() => {
+    if (!puppy) return "";
+    const parts = [puppy.color ? titleCasePt(puppy.color) : null, puppy.sex ? translateSexLabel(puppy.sex) : null].filter(Boolean);
+    return parts.join(" • ");
+  }, [puppy]);
 
-const shareablePuppy = useMemo<ShareablePuppy | null>(() => {
-  if (!puppy) return null;
-  return {
-    id: puppy.id,
-    slug: puppy.slug ?? undefined,
-    name: puppy.name,
-    color: puppy.color,
-    sex: puppy.sex,
-    city: puppy.city,
-    state: puppy.state,
-    priceCents: puppy.priceCents,
-    status: puppy.status,
-  };
-}, [puppy]);
+  const modalTitle = useMemo(() => {
+    const base = "Spitz Alemão Anão";
+    if (!puppy) return base;
+    const sex = puppy.sex ? translateSexLabel(puppy.sex) : "";
+    const color = puppy.color ? titleCasePt(puppy.color) : "";
+    const suffix = [sex, color].filter(Boolean).join(" ").trim();
+    return suffix ? `${base} – ${suffix}` : base;
+  }, [puppy]);
+
+  const forWhoText = useMemo(() => {
+    if (!puppy) return null;
+    const sex = puppy.sex ? translateSex(puppy.sex) : "";
+    const color = puppy.color ? titleCasePt(puppy.color) : "";
+    const subject = [sex, color].filter(Boolean).join(" ").trim();
+    const label = subject ? `${subject}` : "";
+    return `Ideal para quem quer um Spitz Alemão Anão${label ? ` ${label}` : ""} com orientação antes de reservar.`;
+  }, [puppy]);
 
   return (
     <AccessibleModal
-      open
-      onOpenChange={(open) => {
-        if (!open) onClose();
+      open={open}
+      onOpenChange={(o) => {
+        if (!o) handleClose();
       }}
-      title={puppy?.name ?? "Detalhes do filhote"}
-      description={heroStatus.label}
-      size="lg"
+      title={modalTitle}
+      description={undefined}
       restoreFocusRef={restoreFocusRef}
+      size="xl"
+      className="sm:max-w-[960px] xl:max-w-[1160px]"
+      footer={
+        puppy ? (
+          <div className="lg:hidden">
+            <div className="grid grid-cols-3 gap-2">
+              <Button
+                type="button"
+                variant="solid"
+                size="lg"
+                className="w-full rounded-full"
+                onClick={handleWhatsApp}
+                aria-label={`Falar no WhatsApp sobre ${puppy.name}`}
+              >
+                WhatsApp
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                className="w-full rounded-full"
+                onClick={handleCall}
+                aria-label="Ligar"
+              >
+                Ligar
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="lg"
+                className="w-full rounded-full"
+                onClick={handleReserve}
+                disabled={reserveSubmitting}
+                aria-label={`${reserveLabel} (opcional) ${puppy.name}`}
+              >
+                {reserveSubmitting ? "Enviando..." : reserveLabel}
+              </Button>
+            </div>
+          </div>
+        ) : null
+      }
     >
-      <div className="space-y-6">
-        {loading && (
-          <div className="flex items-center justify-center gap-2 rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface)] px-6 py-8 text-sm text-[var(--text-muted)]" role="status" aria-live="polite">
-            <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
-            Carregando detalhes...
-          </div>
-        )}
-        {error && (
-          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert" aria-live="assertive">
-            {process.env.NODE_ENV === "development" ? (
-              <div>{error}</div>
-            ) : (
-              <div>
-                Não foi possível carregar os detalhes. Tente novamente ou fale conosco pelo WhatsApp.
-                <div className="mt-2">
-                  <a href={BRAND.urls.whatsappLink} className="text-sm font-semibold text-[var(--brand)]">
-                    Falar no WhatsApp
-                  </a>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-        {puppy && (
-          <>
-            <div className="grid gap-6 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,0.95fr)]">
-            <div className="space-y-6">
-              <section id="sobre-filhote" className="space-y-4">
-                <figure className="relative aspect-[4/3] lg:aspect-[16/9] overflow-hidden rounded-2xl border border-[var(--border)] bg-zinc-900 text-white shadow-xl">
-                {heroHasImage && currentMediaItem ? (
-                    isVideo(currentMediaItem) ? (
-                      <video className="h-full w-full object-cover" controls aria-label={`Vídeo do filhote ${puppy.name}`} poster={mediaItems.find((m) => !isVideo(m))}>
-                        <source src={currentMediaItem} />
-                        <track kind="captions" srcLang="pt-BR" src={puppy.captionUrl ?? ""} />
-                      </video>
-                    ) : (
-                      <Image src={currentMediaItem} alt={`Filhote ${puppy.name}`} fill className="object-cover" sizes="(max-width: 768px) 100vw, 640px" priority />
-                    )
-                  ) : (
-                    <div className="relative flex h-full w-full items-center justify-center overflow-hidden">
-                      <div className="absolute inset-0 bg-gradient-to-br from-black/85 via-black/60 to-black/95" />
-                        <div className="relative z-10 flex flex-col items-center justify-center gap-3 px-6 text-center">
-                          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-white/70">Vídeo disponível</p>
-                          <button
-                            type="button"
-                            onClick={openWhatsApp}
-                            aria-label={`Abrir WhatsApp para ver vídeo do filhote ${puppy.name ?? ""}`}
-                            className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2"
-                          >
-                            <Video className="h-4 w-4" aria-hidden />
-                            Ver vídeo
-                          </button>
-                        </div>
-                    </div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/0 to-black/60" aria-hidden />
-                <div className="absolute left-4 top-4 rounded-full bg-black/50 px-3 py-1 text-xs font-medium text-white">{heroStatus.label}</div>
-                {heroHasImage && mediaItems.length > 0 && (
-                  <div className="absolute right-4 top-4 rounded-full bg-black/60 px-3 py-1 text-[11px] font-medium text-white">{`${activeMediaIndex + 1} / ${mediaItems.length}`}</div>
-                )}
-              </figure>
-
-
-              {heroHighlights.length > 0 && (
-                <section className="rounded-2xl border border-[var(--border)] bg-white/80 p-4 text-sm text-[var(--text)] shadow-sm">
-                  <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[var(--text-muted)]">Resumo do filhote</p>
-                  <div className="mt-3 grid gap-3 sm:grid-cols-3">
-                    {heroHighlights.map((item) => (
-                      <div key={item.title} className="rounded-2xl border border-[var(--border)] bg-white/90 p-3 text-xs font-semibold uppercase tracking-[0.3em] text-[var(--text-muted)]">
-                        <p className="text-[10px] font-bold text-[var(--text)]">{item.title}</p>
-                        <p className="mt-1 text-[12px] leading-snug text-[var(--text)]">{item.detail}</p>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              )}
-
-                {mediaItems.length > 1 && (
-                  <div className="flex gap-3 overflow-auto pb-2" aria-label="Galeria de fotos e vídeos">
-                    {mediaItems.map((item, index) => {
-                      const active = index === activeMediaIndex;
-                      return (
-                        <button
-                          key={`${item}-${index}`}
-                          type="button"
-                          onClick={() => setActiveMediaIndex(index)}
-                          className={`relative h-16 w-20 rounded-lg border transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2 ${
-                            active ? "border-[var(--brand)] ring-2 ring-[var(--brand)]/40" : "border-[var(--border)]"
-                          }`}
-                          aria-label={isVideo(item) ? `Selecionar vídeo ${index + 1}` : `Selecionar imagem ${index + 1}`}
-                        >
-                          {isVideo(item) ? (
-                            <div className="flex h-full w-full items-center justify-center bg-zinc-900 text-[var(--brand-foreground)]">
-                              <Video className="h-5 w-5" aria-hidden />
-                            </div>
-                          ) : (
-                            <Image src={item} alt="" fill className="object-cover" sizes="96px" />
-                          )}
-                          <span className="absolute bottom-1 right-1 rounded-full bg-black/70 px-2 py-0.5 text-[10px] text-white">
-                            {isVideo(item) ? "Vídeo" : "Foto"}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {mediaItems.length > 0 && (
-                  <section
-                    aria-label="Lista completa de fotos e vídeos"
-                    className="rounded-2xl border border-dashed border-[var(--border)] bg-white/70 p-4"
-                  >
-                    <h3 className="text-xs font-semibold uppercase tracking-[0.35em] text-[var(--text-muted)]">
-                      Galeria completa
-                    </h3>
-                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                      {mediaItems.map((item, index) => {
-                        const isActive = index === activeMediaIndex;
-                        const label = isVideo(item) ? `Vídeo ${index + 1}` : `Foto ${index + 1}`;
-                        return (
-                          <button
-                            key={`gallery-${index}`}
-                            type="button"
-                            onClick={() => setActiveMediaIndex(index)}
-                            aria-pressed={isActive}
-                            className={`group flex flex-col gap-2 rounded-2xl border px-3 py-3 text-left transition ${
-                              isActive
-                                ? "border-[var(--brand)] bg-[var(--brand)]/5 ring-2 ring-[var(--brand)]/40"
-                                : "border-[var(--border)] bg-white shadow-sm hover:border-[var(--brand)]"
-                            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2`}
-                          >
-                            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-zinc-100">
-                              {isVideo(item) ? (
-                                <div className="flex h-full w-full items-center justify-center bg-gradient-to-b from-black/40 to-black/70 text-white">
-                                  <Video className="h-6 w-6" aria-hidden />
-                                  <span className="ml-2 text-sm font-semibold">{label}</span>
-                                </div>
-                              ) : (
-                                <Image src={item} alt={`Galeria ${label} de ${puppy.name}`} fill className="object-cover" />
-                              )}
-                            </div>
-                            <span className="text-xs font-semibold uppercase tracking-[0.3em] text-[var(--text-muted)]">
-                              {label}
-                            </span>
-                            <span className="text-sm text-[var(--text)]">
-                              {isActive ? "Selecionado" : "Clique para visualizar"}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </section>
-                )}
-
-                {puppy.description && (
-                  <article className="rounded-2xl border border-[var(--border)] bg-white/70 p-4">
-                    <h3 className="text-sm font-semibold text-[var(--text)]">Sobre esse filhote</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-[var(--text-muted)]">{sanitizeDescription(puppy.description)}</p>
-                  </article>
-                )}
-              </section>
-
-              <section id="ficha-rapida" className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm" aria-label="Ficha rápida do filhote">
-                <h3 className="text-base font-semibold text-[var(--text)]">Ficha rápida</h3>
-                <div className="mt-3 space-y-3 text-sm text-[var(--text-muted)]">
-                  {puppy.priceCents != null && (
-                    <div className="flex items-center justify-between">
-                      <p className="font-medium text-[var(--text)]">Investimento</p>
-                      <span className="font-semibold text-[var(--text)]">{fmtPrice(puppy.priceCents)}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center justify-between">
-                    <p className="font-medium text-[var(--text)]">Cor e sexo</p>
-                    <span className="text-[var(--text)]">{colorSexDescriptor}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <p className="font-medium text-[var(--text)]">Nascimento</p>
-                    <span className="text-[var(--text)]">
-                      {puppy.birthDate
-                        ? new Date(puppy.birthDate).toLocaleDateString("pt-BR", {
-                            day: "2-digit",
-                            month: "long",
-                            year: "numeric",
-                          })
-                        : "A confirmar"}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-[var(--text)]">
-                    <MapPin className="h-4 w-4 text-[var(--text-muted)]" aria-hidden />
-                    <span>{locationLabel}</span>
-                  </div>
-                  {puppy.averageRating != null && (
-                    <div className="flex items-center gap-2">
-                      <PawPrint className="h-4 w-4 text-amber-500" aria-hidden />
-                      <span className="text-[var(--text)]">{Number(puppy.averageRating).toFixed(1)} ({puppy.reviewCount ?? 0} avaliações)</span>
-                    </div>
-                  )}
-                </div>
-              </section>
-
-              {puppy.healthNotes && (
-                <section id="cuidados-especiais" className="rounded-2xl border border-[var(--border)] bg-white/70 p-4">
-                  <h3 className="text-base font-semibold text-[var(--text)]">Cuidados especiais</h3>
-                  <p className="mt-2 text-sm text-[var(--text-muted)]">{puppy.healthNotes}</p>
-                </section>
-              )}
-
-              {puppy.shippingNotes && (
-                <section id="entrega-logistica" className="rounded-2xl border border-[var(--border)] bg-white/70 p-4">
-                  <h3 className="text-base font-semibold text-[var(--text)]">Entrega & logística</h3>
-                  <p className="mt-2 text-sm text-[var(--text-muted)]">{puppy.shippingNotes}</p>
-                </section>
-              )}
-
-              <section id="o-que-voce-recebe" className="rounded-2xl border border-[var(--border)] bg-white/80 p-4 text-sm text-[var(--text)] shadow-sm">
-                <h3 className="text-base font-semibold text-[var(--text)]">O que você recebe</h3>
-                <ul className="mt-3 space-y-2 text-[var(--text-muted)]">
-                  <li className="flex items-start gap-2">
-                    <ShieldCheck className="mt-0.5 h-4 w-4 text-[var(--brand)]" aria-hidden />
-                    Certificado digital, carteira de vacinação e orientação pós-venda.
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Sparkles className="mt-0.5 h-4 w-4 text-[var(--brand)]" aria-hidden />
-                    Socialização guiada e acompanhamento na adaptação.
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Camera className="mt-0.5 h-4 w-4 text-[var(--brand)]" aria-hidden />
-                    Chamadas de vídeo para ver o filhote antes de decidir.
-                  </li>
-                </ul>
-              </section>
+      <div className="relative z-0 flex flex-col">
+          {isLoading ? (
+            <div className="flex min-h-[240px] flex-col items-center justify-center gap-3">
+              <Spinner size="xl" variant="brand" />
+              <p className="text-sm font-semibold text-zinc-700">Carregando informacoes do filhote...</p>
             </div>
-
-            <aside className="hidden lg:block space-y-6 lg:sticky lg:top-6">
-              <ContentTOC items={tocItems} label="Sumário do filhote" />
-
-              <div className="space-y-3 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[var(--text-muted)]">Investimento</p>
-                <div className="flex items-center justify-between text-sm text-[var(--text)]">
-                  <span>Valor</span>
-                  <strong className="text-base font-semibold text-[var(--text)]">{puppy.priceCents != null ? fmtPrice(puppy.priceCents) : "Sob consulta"}</strong>
-                </div>
-                <p className="text-sm text-zinc-600">Reserve com Pedigree e suporte completo.</p>
-                {shareablePuppy && (
-                  <div className="mt-3 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <ShareCTA puppy={shareablePuppy} />
-                      <div className="ml-2">
-                        <ShareButton puppy={shareablePuppy} location="modal" />
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <PrimaryCTA
-                  href={whatsappLink}
-                  ariaLabel={`Falar sobre o filhote ${puppy.name}`}
-                  icon={<MessageCircle className="h-4 w-4" aria-hidden />}
-                  tracking={{ location: "modal", deviceMode: "modal", extra: { action: "whatsapp_modal", puppy_id: puppy.id ?? id } }}
-                >
-                  Falar no WhatsApp
-                </PrimaryCTA>
-                <button
-                  type="button"
-                  onClick={handlePrimaryAction}
-                  disabled={primaryAction.disabled}
-                  className={`w-full rounded-full px-5 py-3 text-sm font-semibold transition ${primaryAction.disabled ? "border border-zinc-200 bg-white text-zinc-400" : "border border-transparent bg-[var(--brand)] text-[var(--brand-foreground)] hover:bg-[var(--accent-hover)]"} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]`}
-                >
-                  {primaryAction.label}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => track.event?.("cta_click", { action: "call_modal", puppy_id: puppy.id ?? id })}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[var(--border)] px-4 py-3 text-sm font-semibold text-[var(--text)] transition hover:bg-[var(--surface-3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2"
-                >
-                  <Phone className="h-4 w-4" aria-hidden />
-                  Ligar agora
-                </button>
-                <button
-                  type="button"
-                  onClick={copyPhone}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--text)] shadow-sm transition hover:bg-[var(--surface-3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2"
-                >
-                  <Copy className="h-4 w-4" aria-hidden />
-                  Copiar telefone
-                </button>
-                <p className="text-xs text-[var(--text-muted)]" aria-live="polite">
-                  {copied ? "Número copiado" : "Enviar no WhatsApp ou ligar direto."}
-                </p>
-                <div className="sr-only" role="status" aria-live="polite">
-                  {announceReserve}
-                </div>
-              </div>
-
-            <TrustBlock
-              title="Confiança comprovada"
-              description="Processo desenhado para aquisição segura"
-              items={trustItems}
-            />
-
-            <RelatedLinks links={relatedLinks} label="Links úteis" className="hidden lg:block" />
-            </aside>
-          </div>
-            <div className="lg:hidden sticky bottom-0 left-0 right-0 z-40 border-t border-[var(--border)] bg-white/95 backdrop-blur-sm shadow-xl">
-          <div className="mx-auto flex w-full max-w-3xl flex-col gap-3 px-4 py-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold text-[var(--text-muted)]">Investimento</p>
-                <p className="text-base font-semibold text-[var(--text)]">{puppy.priceCents ? fmtPrice(puppy.priceCents) : "Sob consulta"}</p>
-              </div>
-              <span className="text-xs text-[var(--text-muted)]">{locationLabel}</span>
-            </div>
-            <div className="flex flex-col gap-2">
+          ) : errorMessage ? (
+            <div
+              role="alert"
+              className="flex min-h-[240px] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-rose-400 bg-rose-50 p-6 text-center text-sm text-rose-700"
+            >
+              <p>{errorMessage}</p>
               <button
                 type="button"
-                onClick={handlePrimaryAction}
-                disabled={primaryAction.disabled}
-                className={`w-full rounded-2xl px-4 py-3 text-sm font-semibold ${
-                  primaryAction.disabled
-                    ? "border border-zinc-200 bg-white text-zinc-400"
-                    : "border border-transparent bg-[var(--brand)] text-[var(--brand-foreground)] hover:bg-[var(--accent-hover)]"
-                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]`}
-                aria-label={`${primaryAction.type === "reserve" ? "Quero reservar" : "Abrir WhatsApp"} ${puppy.name}`}
+                onClick={handleClose}
+                className="rounded-full bg-rose-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white transition hover:bg-rose-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2"
               >
-                {primaryAction.label}
+                Fechar modal
               </button>
-              <a
-                href={whatsappLink}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[var(--border)] px-4 py-3 text-sm font-semibold text-[var(--text)] bg-white hover:border-[var(--brand)] hover:text-[var(--brand)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2"
-                aria-label={`WhatsApp ${puppy.name}`}
-                onClick={() => track.event?.("cta_click", { action: "whatsapp_modal", puppy_id: puppy.id })}
-              >
-                <MessageCircle className="h-4 w-4" aria-hidden />
-                WhatsApp
-              </a>
             </div>
-          </div>
-        </div>
-          </>
-        )}
+          ) : puppy ? (
+            <div className="space-y-10 lg:space-y-8">
+              <div className="grid gap-8 lg:gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,0.65fr)]">
+                <div className="min-w-0 space-y-4 xl:sticky xl:top-6 xl:self-start">
+                  <div className="-mx-4 sm:mx-0">
+                    <PuppyGallery images={galleryMedia} postersByUrl={postersByUrl} name={puppy.name} />
+                  </div>
+                </div>
+                <div className="min-w-0 flex flex-col gap-5 lg:gap-4">
+                  {/* Bloco acima da dobra: Nome + Status + Preço + chip */}
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      {chipLabel && (
+                        <div className="mt-2 inline-flex max-w-full items-center rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-semibold text-zinc-700">
+                          <span className="truncate">{chipLabel}</span>
+                        </div>
+                      )}
+                      {locationLabel && <p className="mt-2 text-sm text-zinc-600" id="puppy-modal-desc">{locationLabel}</p>}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <StatusBadge status={resolveBadgeStatus(puppy.status)} />
+                    </div>
+                  </div>
+
+                  {forWhoText && (
+                    <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                      <h3 className="text-sm font-semibold text-zinc-900">Para quem é</h3>
+                      <p className="mt-2 text-sm text-zinc-700">{forWhoText}</p>
+                    </div>
+                  )}
+
+                  <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">Próximo passo</h3>
+                    <p className="mt-2 text-sm text-zinc-700">
+                      Converse primeiro; se fizer sentido, a reserva vem depois — sem pressão.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-zinc-600">Valor do filhote + o que inclui</p>
+                    <p className="text-3xl font-bold text-emerald-700">{priceLabel}</p>
+                    <ul className="mt-1 space-y-1 text-sm text-zinc-700">
+                      <li>Pedigree, contrato claro e garantia de saúde.</li>
+                      <li>Exames e orientação de socialização personalizada.</li>
+                      <li>Entrega segura e acompanhamento vitalício.</li>
+                    </ul>
+                  </div>
+
+                  {/* CTAs consultivas (desktop): WhatsApp (primário) -> Ligar -> Reservar (terciário) */}
+                  <div className="hidden lg:flex flex-col gap-3">
+                    <div className="grid grid-cols-1 gap-2 xl:grid-cols-3">
+                      <Button
+                        type="button"
+                        variant="solid"
+                        size="lg"
+                        className="w-full rounded-full"
+                        onClick={handleWhatsApp}
+                        aria-label={`Falar no WhatsApp sobre ${puppy.name}`}
+                      >
+                        WhatsApp
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="lg"
+                        className="w-full rounded-full font-semibold"
+                        onClick={handleCall}
+                        aria-label="Ligar"
+                      >
+                        Ligar
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="lg"
+                        className="w-full rounded-full"
+                        onClick={handleReserve}
+                        disabled={reserveSubmitting}
+                        aria-label={`${reserveLabel} (opcional) ${puppy.name}`}
+                      >
+                        {reserveSubmitting ? "Enviando..." : reserveLabel}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-zinc-500">
+                      WhatsApp é o caminho mais rápido. Reserva só depois.
+                    </p>
+                  </div>
+
+                  {/* Confiança (desktop) */}
+                  <div className="hidden lg:block rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                    <h3 className="text-sm font-semibold text-zinc-900">Confianca</h3>
+                    <ul className="mt-2 space-y-2 text-sm text-zinc-700">
+                      <li>Garantia de saude e orientacao completa.</li>
+                      <li>Reserva com acompanhamento e transparência.</li>
+                      <li>Entrega/retirada combinada com seguranca.</li>
+                    </ul>
+                  </div>
+
+                  {puppy.description && (
+                    <p className="text-sm leading-relaxed text-zinc-600">{puppy.description}</p>
+                  )}
+                  <PuppyDetails puppy={puppy} />
+                </div>
+              </div>
+
+            </div>
+          ) : (
+            <div className="flex min-h-[240px] flex-col items-center justify-center gap-3 text-sm text-zinc-500">
+              <p>Filhote nao encontrado.</p>
+              <button
+                type="button"
+                onClick={handleClose}
+                className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-600 transition hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+              >
+                Voltar ao catalogo
+              </button>
+            </div>
+          )}
       </div>
     </AccessibleModal>
   );
 }
 
-function fmtPrice(cents: number) {
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(cents / 100);
+function translateSex(sex?: string | null): string {
+  if (!sex) return "filhote";
+  const normalized = sex.toLowerCase();
+  if (normalized === "male" || normalized === "macho") return "macho";
+  if (normalized === "female" || normalized === "femea") return "femea";
+  return sex;
 }
 
-function normalizeSex(value?: string | null) {
-  if (!value) return undefined;
-  const normalized = value.toLowerCase();
-  if (normalized.includes("female") || normalized.includes("fêmea") || normalized.includes("femea")) return "female";
-  if (normalized.includes("male") || normalized.includes("macho")) return "male";
-  return undefined;
+function translateSexLabel(sex?: string | null): string {
+  const s = translateSex(sex);
+  if (s === "macho") return "Macho";
+  if (s === "femea") return "Femea";
+  return titleCasePt(s);
 }
 
-function sanitizeDescription(description?: string | null) {
-  if (!description) return "";
-  return description.replace(/\s{2,}/g, " ").trim();
+function normalizeStatusForCtas(status?: string | null): "available" | "reserved" | "sold" | "pending" | "unavailable" {
+  const normalized = (status ?? "available").toLowerCase();
+  if (["pending", "em-breve", "coming-soon"].includes(normalized)) return "pending";
+  if (["sold", "vendido"].includes(normalized)) return "sold";
+  if (["reserved", "reservado"].includes(normalized)) return "reserved";
+  if (["unavailable", "indisponivel"].includes(normalized)) return "unavailable";
+  return "available";
 }
 
-function isVideo(url: string) {
-  return /\.(mp4|webm|ogg)$/i.test(url);
-}
+function resolveBadgeStatus(
+  status?: string | null
+): 'disponivel' | 'available' | 'reservado' | 'reserved' | 'vendido' | 'sold' | 'em-breve' | 'coming-soon' {
+  const normalized = (status ?? 'available').toLowerCase();
+  if (['pending', 'em-breve', 'coming-soon'].includes(normalized)) return 'em-breve';
+  if (['sold', 'vendido'].includes(normalized)) return 'sold';
+  if (['reserved', 'reservado'].includes(normalized)) return 'reserved';
+  if (['available', 'disponivel'].includes(normalized)) return 'available';
+  if (['unavailable', 'indisponivel'].includes(normalized)) return 'em-breve';
 
-function normalize(p: unknown): Partial<Puppy> {
-  const obj = p as Record<string, unknown>;
-  const name = (obj.nome as string) || (obj.name as string) || "Filhote";
-  const rawPrice = (obj.price_cents as number) ?? (obj.priceCents as number) ?? Number(obj.preco as unknown) ?? 0;
-  const priceCents = Number.isFinite(rawPrice) ? Math.round(rawPrice) : 0;
-  const midia = (obj.midia as unknown) || (obj.images as unknown) || [];
-  const images =
-    Array.isArray(midia) && midia.length > 0
-      ? (midia as unknown[])
-          .map((item) => (typeof item === "string" ? item : ((item as Record<string, unknown>)?.url as string | undefined)))
-          .filter((url): url is string => typeof url === "string" && /^https?:\/\//.test(url))
-      : [];
-  const rawStatus = normalizeText(String((obj.status as string) ?? "available")).toLowerCase();
-  const normalizedStatus = rawStatus === "reservado" ? "reserved" : rawStatus === "vendido" ? "sold" : "available";
-  const rawBirth = obj.nascimento ?? obj.birth_date ?? obj.birthDate;
-  const birthDate = rawBirth ? new Date(String(rawBirth)) : new Date();
-
-  const averageRating = Number.isFinite(Number(obj.aggregate_rating as unknown))
-    ? Number(obj.aggregate_rating as unknown)
-    : Number.isFinite(Number(obj.averageRating as unknown))
-    ? Number(obj.averageRating as unknown)
-    : undefined;
-
-  const reviewCount = Number.isFinite(Number(obj.review_count as unknown))
-    ? Number(obj.review_count as unknown)
-    : Number.isFinite(Number(obj.reviewCount as unknown))
-    ? Number(obj.reviewCount as unknown)
-    : undefined;
-
-  const captionUrl = (obj.caption_url as string) || (obj.captionUrl as string) || undefined;
-  const colorCandidate = String((obj.cor as string) || (obj.color as string) || "")
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, "-");
-  const color = TaxonomyHelpers.getColorBySlug(colorCandidate) ? (colorCandidate as any) : "creme";
-  const cityCandidate = String((obj.city as string) || (obj.cidade as string) || "")
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, "-");
-  const city = TaxonomyHelpers.getCityBySlug(cityCandidate) ? (cityCandidate as any) : "braganca-paulista";
-
-  return {
-    id: (obj.id as string) || (obj._id as string) || undefined,
-    slug: (obj.slug as string) || undefined,
-    name,
-    description: (obj.descricao as string) || (obj.description as string) || "",
-    priceCents,
-    color,
-    // Accept explicit 'female' or 'male', otherwise leave undefined
-    sex: normalizeSex(obj.sexo as string) ?? normalizeSex(obj.sex as string),
-    birthDate,
-    city,
-    state: ((obj.state as string) || (obj.estado as string) || "SP").toUpperCase(),
-    status: normalizedStatus as Puppy["status"],
-    averageRating,
-    reviewCount,
-    images,
-    captionUrl,
-    hasPedigree: Boolean(obj.hasPedigree ?? (obj.pedigree as unknown)),
-    availableForShipping: (obj.available_for_shipping as boolean) ?? (obj.availableForShipping as boolean) ?? true,
-    shippingNotes: (obj.shippingNotes as string) || (obj.shipping_notes as string) || "",
-    currency: "BRL",
-    breed: "Spitz Alemão Anão",
-    size: "toy",
-    source: "own-breeding",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    vaccinationStatus: "up-to-date",
-    viewCount: (obj.view_count as number) ?? 0,
-    favoriteCount: (obj.favorite_count as number) ?? 0,
-    shareCount: (obj.share_count as number) ?? 0,
-    inquiryCount: (obj.inquiry_count as number) ?? 0,
-  };
+  return 'available';
 }

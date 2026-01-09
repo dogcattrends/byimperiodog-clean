@@ -7,35 +7,14 @@ import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import PrimaryCTA from "@/components/ui/PrimaryCTA";
 import track from "@/lib/track";
 
-type ContactContext = {
-  slug?: string;
-  puppyName?: string;
-  page?: string;
-};
-
 type ContactCTAProps = {
   phone: string;
   whatsappLink: string;
-  context?: ContactContext;
+  context?: Record<string, unknown>;
   className?: string;
 };
 
 const sanitizePhone = (value?: string) => (value ? value.replace(/\D+/g, "") : "");
-
-const buildTrackingPayload = (context?: ContactContext, extras?: Record<string, unknown>) => ({
-  puppy_slug: context?.slug,
-  puppy_name: context?.puppyName,
-  page: context?.page,
-  ...extras,
-});
-
-const trackWhatsAppClick = (context?: ContactContext, extra?: Record<string, unknown>) => {
-  track.event?.("cta_click_whatsapp", { ...buildTrackingPayload(context, extra) });
-};
-
-const trackPhoneClick = (context?: ContactContext, extra?: Record<string, unknown>) => {
-  track.event?.("cta_click_phone", { ...buildTrackingPayload(context, extra) });
-};
 
 export function ContactCTA({ phone, whatsappLink, context, className }: ContactCTAProps) {
   const [copiedPhone, setCopiedPhone] = useState(false);
@@ -52,7 +31,8 @@ export function ContactCTA({ phone, whatsappLink, context, className }: ContactC
       await navigator.clipboard.writeText(phone);
       setCopiedPhone(true);
       setAnnounce('Telefone copiado para a área de transferência');
-      trackPhoneClick(context, { action: "copy" });
+      track.event?.("phone_click", { ...(context || {}), action: "copy" });
+      track.event?.("cta_click", { ...(context || {}), type: "phone", action: "copy" });
       setTimeout(() => setCopiedPhone(false), 2500);
       setTimeout(() => setAnnounce(''), 2500);
     } catch {
@@ -67,7 +47,11 @@ export function ContactCTA({ phone, whatsappLink, context, className }: ContactC
           href={sanitizedWhatsApp}
           icon={<WhatsAppIcon className="h-4 w-4" aria-hidden="true" />}
           ariaLabel="Conversar no WhatsApp"
-          onClick={() => trackWhatsAppClick(context)}
+          onClick={() => {
+            track.event?.("cta_click", { ...(context || {}), type: "whatsapp" });
+            track.event?.("whatsapp_click", { ...(context || {}), type: "whatsapp" });
+            track.event?.("lead_submit", { ...(context || {}), action: "whatsapp" });
+          }}
         >
           WhatsApp
         </PrimaryCTA>
@@ -88,14 +72,21 @@ export function ContactCTA({ phone, whatsappLink, context, className }: ContactC
               variant="ghost"
               icon={<Phone className="h-4 w-4" aria-hidden="true" />}
               ariaLabel="Discar telefone"
-              onClick={() => trackPhoneClick(context, { action: "call" })}
+              onClick={() => {
+                track.event?.("cta_click", { ...(context || {}), type: "phone", action: "call" });
+                track.event?.("phone_click", { ...(context || {}), action: "call" });
+              }}
             >
               Ligar agora
             </PrimaryCTA>
           )}
           <button
             type="button"
-            onClick={handleCopy}
+            onClick={() => {
+              handleCopy();
+              track.event?.("cta_click", { ...(context || {}), type: "phone", action: "copy" });
+              track.event?.("phone_click", { ...(context || {}), action: "copy" });
+            }}
             className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] px-4 py-2 text-sm font-semibold text-[var(--text)] shadow-sm transition hover:border-[var(--brand)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2"
             aria-label={`Copiar telefone ${phone}`}
           >
@@ -110,7 +101,11 @@ export function ContactCTA({ phone, whatsappLink, context, className }: ContactC
             variant="ghost"
             icon={<WhatsAppIcon className="h-4 w-4" aria-hidden="true" />}
             ariaLabel="Conversar no WhatsApp"
-            onClick={() => trackWhatsAppClick(context, { action: "modal" })}
+            onClick={() => {
+              track.event?.("cta_click", { ...(context || {}), type: "whatsapp", action: "secondary" });
+              track.event?.("whatsapp_click", { ...(context || {}), action: "secondary" });
+              track.event?.("lead_submit", { ...(context || {}), action: "whatsapp" });
+            }}
           >
             WhatsApp
           </PrimaryCTA>

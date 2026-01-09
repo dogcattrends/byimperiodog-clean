@@ -14,8 +14,6 @@ describe('encoding integrity', () => {
     'scripts/check-encoding.mjs',
     'scripts/fix-encoding.mjs',
     'tests/encoding.test.ts',
-    // Temporário: arquivos com conteúdo legado a ser revisado
-    'src/components/PuppyStories.tsx',
     'app/blog/page.tsx'
   ];
 

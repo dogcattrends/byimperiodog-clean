@@ -9,20 +9,20 @@ const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.byimperiodog.com.
 const PATH = "/politica-editorial";
 
 const EDITORIAL_SNIPPET =
-  "Esta politica editorial explica como a By Imperio Dog planeja, revisa e atualiza conteudos sobre Spitz Alemao Anao. Resume criterios de fontes, revisoes e correcao de erros, garantindo transparencia para leitores, imprensa e parceiros. Tambem descreve como lidar com IA e feedback.";
+  "Esta política editorial explica como a By Império Dog planeja, revisa e atualiza conteúdos sobre Spitz Alemão Anão. Resume critérios de fontes, revisões e correção de erros, garantindo transparência para leitores, imprensa e parceiros. Também descreve como lidar com IA e feedback.";
 
 const EDITORIAL_FAQ = [
   {
-    question: "Quem revisa o conteudo?",
-    answer: "A equipe editorial revisa e valida as informacoes antes da publicacao.",
+    question: "Quem revisa o conteúdo?",
+    answer: "A equipe editorial revisa e valida as informações antes da publicação.",
   },
   {
-    question: "Como as fontes sao escolhidas?",
+    question: "Como as fontes são escolhidas?",
     answer: "Priorizamos fontes reconhecidas e documentos oficiais de entidades do setor.",
   },
   {
-    question: "Como solicitar correcao?",
-    answer: "Use o contato oficial para enviar ajustes ou apontar inconsistencias.",
+    question: "Como solicitar correção?",
+    answer: "Use o contato oficial para enviar ajustes ou apontar inconsistências.",
   },
 ];
 
@@ -54,7 +54,7 @@ export default function PoliticaEditorialPage() {
     url,
     description:
       "Nossa política editorial: quem escreve, como produzimos e revisamos, política de correções e transparência sobre uso de IA.",
-    isPartOf: { "@type": "WebSite", name: "By Imperio Dog", url: `${SITE}/` },
+    isPartOf: { "@type": "WebSite", name: "By Império Dog", url: `${SITE}/` },
   } as const;
 
   return (

@@ -10,7 +10,7 @@ export async function GET() {
 
     const feed = {
       version: "https://jsonfeed.org/version/1",
-      title: "By Imperio Dog - Blog",
+      title: "By Império Dog - Blog",
       home_page_url: `${SITE_URL}/blog`,
       feed_url: `${SITE_URL}/blog/feed.json`,
       items: posts.map((post) => ({

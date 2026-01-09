@@ -1,5 +1,38 @@
 type LogLevel = "debug" | "info" | "warn" | "error";
 
+function serializeError(err: Error) {
+  const anyErr = err as unknown as Record<string, unknown>;
+  const out: Record<string, unknown> = {
+    name: err.name,
+    message: err.message,
+    stack: err.stack,
+  };
+
+  if ("cause" in anyErr && anyErr.cause instanceof Error) {
+    out.cause = serializeError(anyErr.cause);
+  } else if ("cause" in anyErr && anyErr.cause != null) {
+    out.cause = anyErr.cause;
+  }
+
+  for (const key of ["code", "details", "hint", "status", "statusCode"]) {
+    if (key in anyErr && anyErr[key] != null) out[key] = anyErr[key];
+  }
+
+  return out;
+}
+
+function safeJsonStringify(value: unknown) {
+  const seen = new WeakSet<object>();
+  return JSON.stringify(value, (_key, val: unknown) => {
+    if (val instanceof Error) return serializeError(val);
+    if (typeof val === "object" && val !== null) {
+      if (seen.has(val)) return "[Circular]";
+      seen.add(val);
+    }
+    return val;
+  });
+}
+
 const CONSOLE_METHOD: Record<LogLevel, keyof Console> = {
   debug: "debug",
   info: "info",
@@ -54,7 +87,7 @@ function emitLog(
   // eslint-disable-next-line no-console
   const logFn = console[method] as (message: string) => void;
   // eslint-disable-next-line no-console
-  logFn(JSON.stringify(payload));
+  logFn(safeJsonStringify(payload));
 }
 
 export function createLogger(

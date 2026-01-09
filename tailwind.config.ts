@@ -12,17 +12,24 @@ theme: {
         brand: "var(--brand)",
         brandForeground: "var(--brand-foreground)",
         brandContrast: "var(--brand-contrast)",
+        'brand-foreground': "var(--brand-foreground)",
+        'brand-contrast': "var(--brand-contrast)",
         accent: "var(--accent)",
         accentForeground: "var(--accent-foreground)",
         accentContrast: "var(--accent-contrast)",
+        'accent-foreground': "var(--accent-foreground)",
+        'accent-contrast': "var(--accent-contrast)",
         whatsapp: "var(--whatsapp)",
         whatsappContrast: "var(--whatsapp-contrast)",
+        'whatsapp-contrast': "var(--whatsapp-contrast)",
         background: "var(--background)",
         surface: "var(--surface)",
         surface2: "var(--surface-2)",
+        'surface-2': "var(--surface-2)",
         foreground: "var(--foreground)",
         text: "var(--text)",
         textMuted: "var(--text-muted)",
+        'text-muted': "var(--text-muted)",
         border: "var(--border)",
         success: "var(--success)",
         warning: "var(--warning)",
@@ -59,7 +66,8 @@ theme: {
 
     plugins:  [
     typography,
-    function ({ addUtilities, addVariant }: { addUtilities: (utils: Record<string, unknown>) => void, addVariant: (name: string, def: string) => void }) {
+    function (api: any) {
+      const { addUtilities, addVariant } = api;
       addUtilities({
         '.perspective': { perspective: '1000px' },
         '.preserve-3d': { transformStyle: 'preserve-3d' },
@@ -74,8 +82,8 @@ theme: {
         '.focus-ring': { outline: '2px solid var(--brand)', outlineOffset: '2px' },
         '.focus-ring-accent': { outline: '2px solid var(--accent)', outlineOffset: '2px' },
         '.focus-ring-inset': { boxShadow: '0 0 0 2px var(--surface), 0 0 0 4px var(--brand)' },
-      })
-      addVariant('focus-visible', '&:focus-visible')
+      });
+      addVariant('focus-visible', '&:focus-visible');
     }
     ],
 

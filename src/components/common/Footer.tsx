@@ -39,7 +39,10 @@ export default function Footer() {
   });
 
   return (
-    <footer className="mt-16 border-t border-emerald-100 bg-emerald-950 text-emerald-50" role="contentinfo">
+    <footer
+      className="mt-16 border-t border-emerald-100 bg-emerald-950 text-emerald-50 pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:pb-0"
+      role="contentinfo"
+    >
       <div className="mx-auto grid w-full max-w-7xl gap-12 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4 sm:px-8">
         <div className="space-y-3">
           <span className="inline-flex items-center rounded-full bg-emerald-800 px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-emerald-100">
@@ -47,7 +50,7 @@ export default function Footer() {
           </span>
           <p className="text-sm leading-relaxed text-emerald-100/80">
             Spitz Alemão Anão até 22 cm, criado com responsabilidade, saúde validada e mentoria vitalícia.
-            Atendimento premium sob consulta para famílias que valorizam transparência.
+            Atendimento premium — consulte valores para famílias que valorizam transparência.
           </p>
           <a
             href={whatsapp}
@@ -94,7 +97,7 @@ export default function Footer() {
         <div className="space-y-3 text-sm">
           <h3 className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200/80">Contato</h3>
           <p className="text-emerald-100/80">
-            Atendimento sob consulta a partir de São Paulo — conversas individuais para alinhar rotina, investimento e socialização antes da reserva.
+            Atendimento — consulte valores a partir de São Paulo — conversas individuais para alinhar rotina, investimento e socialização antes da reserva.
           </p>
           <address className="not-italic space-y-1 text-emerald-100/60">
             <p>E-mail: {BRAND.contact.email}</p>

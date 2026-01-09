@@ -6,9 +6,9 @@
 
 import type { Puppy, PuppyFilters, PuppySearchResult, PuppySortBy } from "../../domain/puppy";
 import type { City, Color } from "../../domain/taxonomies";
-import { supabaseAnon } from "../supabaseAnon";
+import { supabasePublic } from "../supabasePublic";
 
-import { normalizePuppyFromDB } from "./normalize";
+import { mapDbPuppyToDomain } from "./mapDbPuppyToDomain";
 
 // Cache simples em memória para reduzir round-trips ao Supabase
 const cache = new Map<string, { value: any; expiresAt: number }>();
@@ -137,7 +137,7 @@ export async function listPuppies(
     const cached = getCache<PuppySearchResult>(cacheKey);
     if (cached) return cached;
 
-    const sb = supabaseAnon();
+    const sb = supabasePublic();
     
     // Query base (usa wildcard e normaliza depois)
     let query = sb
@@ -165,7 +165,7 @@ export async function listPuppies(
     }
     
     // Normalizar e aplicar filtros client-side (para filtros complexos)
-    let puppies = (data || []).map(normalizePuppyFromDB);
+    let puppies = (data || []).map(mapDbPuppyToDomain);
     puppies = applyFilters(puppies, filters);
     puppies = applySorting(puppies, sortBy);
     
@@ -211,7 +211,7 @@ export async function getPuppyBySlug(slug: string): Promise<Puppy | null> {
     const cached = getCache<Puppy | null>(cacheKey);
     if (cached !== null) return cached;
 
-    const sb = supabaseAnon();
+    const sb = supabasePublic();
     
     const { data, error } = await sb
       .from('puppies')
@@ -223,7 +223,7 @@ export async function getPuppyBySlug(slug: string): Promise<Puppy | null> {
       return null;
     }
     
-    const normalized = normalizePuppyFromDB(data);
+    const normalized = mapDbPuppyToDomain(data);
     setCache(cacheKey, normalized);
     return normalized;
     
@@ -242,7 +242,7 @@ export async function getPuppyById(id: string): Promise<Puppy | null> {
     const cached = getCache<Puppy | null>(cacheKey);
     if (cached !== null) return cached;
 
-    const sb = supabaseAnon();
+    const sb = supabasePublic();
     
     const { data, error } = await sb
       .from('puppies')
@@ -254,7 +254,7 @@ export async function getPuppyById(id: string): Promise<Puppy | null> {
       return null;
     }
     
-    const normalized = normalizePuppyFromDB(data);
+    const normalized = mapDbPuppyToDomain(data);
     setCache(cacheKey, normalized);
     return normalized;
     
@@ -285,7 +285,7 @@ export async function getPuppiesByCity(city: City): Promise<Puppy[]> {
  */
 export async function getRelatedPuppies(puppy: Puppy, limit: number = 3): Promise<Puppy[]> {
   try {
-    const sb = supabaseAnon();
+    const sb = supabasePublic();
     
     // Buscar candidatos e filtrar client-side por mesma cor/cidade, evitando dependência de coluna 'city'
     const { data, error } = await sb
@@ -296,7 +296,7 @@ export async function getRelatedPuppies(puppy: Puppy, limit: number = 3): Promis
 
     if (error || !data) return [];
 
-    const normalized = data.map(normalizePuppyFromDB);
+    const normalized = data.map(mapDbPuppyToDomain);
     const filtered = normalized
       .filter((p: any) => p.status === 'available')
       .filter((p: any) => p.color === puppy.color || (puppy.city && p.city === puppy.city));
@@ -313,7 +313,7 @@ export async function getRelatedPuppies(puppy: Puppy, limit: number = 3): Promis
  */
 export async function getAvailableColors(): Promise<string[]> {
   try {
-    const sb = supabaseAnon();
+    const sb = supabasePublic();
     
     const { data, error } = await sb
       .from('puppies')
@@ -342,7 +342,7 @@ export async function getAvailableColors(): Promise<string[]> {
  */
 export async function getCatalogStats() {
   try {
-    const sb = supabaseAnon();
+    const sb = supabasePublic();
     
     const { data, error } = await sb
       .from('puppies')

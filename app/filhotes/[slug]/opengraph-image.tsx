@@ -4,7 +4,7 @@ import { BRAND } from "@/domain/config";
 import { formatPuppyMeta } from "@/domain/puppyMeta";
 import { normalizePuppyFromDB } from "@/lib/catalog/normalize";
 import { formatCurrency, getStatusLabel } from "@/lib/sharePuppy";
-import { supabaseAnon } from "@/lib/supabaseAnon";
+import { supabasePublic } from "@/lib/supabasePublic";
 
 export const runtime = "edge";
 
@@ -16,7 +16,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 async function fetchPuppy(identifier: string) {
-  const sb = supabaseAnon();
+  const sb = supabasePublic();
   const { data: bySlug } = await sb.from("puppies").select("*").eq("slug", identifier).maybeSingle();
   if (bySlug) return normalizePuppyFromDB(bySlug);
   const { data: byId } = await sb.from("puppies").select("*").eq("id", identifier).maybeSingle();

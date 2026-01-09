@@ -5,6 +5,7 @@ import type { ChangeEvent, FormEvent } from "react";
 
 import PrimaryCTA from "@/components/ui/PrimaryCTA";
 import track from "@/lib/track";
+import { captureUtmFromLocation } from "@/lib/utm";
 
 type FormFields = {
   name: string;
@@ -24,16 +25,10 @@ const DEFAULT_FIELDS: FormFields = {
   consent: false,
 };
 
-const captureUtm = () => {
-  if (typeof window === "undefined") return {};
-  const params = new URLSearchParams(window.location.search);
-  return {
-    utm_source: params.get("utm_source"),
-    utm_medium: params.get("utm_medium"),
-    utm_campaign: params.get("utm_campaign"),
-    utm_content: params.get("utm_content"),
-    utm_term: params.get("utm_term"),
-  };
+const sanitizePhone = (value: string) => {
+  const digits = value.replace(/\D+/g, "");
+  if (digits.startsWith("55") && digits.length >= 12) return digits.slice(2);
+  return digits;
 };
 
 export function GuiaLeadForm() {
@@ -54,8 +49,13 @@ export function GuiaLeadForm() {
 
   const validate = () => {
     const next: FormErrors = {};
-    if (!fields.name.trim()) next.name = "Informe seu nome";
-    if (!fields.whatsapp.trim()) next.whatsapp = "Informe um WhatsApp válido";
+    if (fields.name.trim().length < 2) next.name = "Informe seu nome";
+    const phoneDigits = sanitizePhone(fields.whatsapp);
+    if (!phoneDigits || phoneDigits.length < 10) next.whatsapp = "Informe um WhatsApp válido";
+    if (phoneDigits.length > 11) next.whatsapp = "Use DDD + número";
+    if (fields.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email.trim())) {
+      next.email = "Informe um e-mail válido";
+    }
     if (!hasConsent) next.consent = "Você precisa concordar com os termos";
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -69,7 +69,7 @@ export function GuiaLeadForm() {
 
     const payload = {
       nome: fields.name.trim(),
-      telefone: fields.whatsapp.trim(),
+      telefone: sanitizePhone(fields.whatsapp),
       cidade: "Online",
       estado: "SP",
       email: fields.email.trim() || null,
@@ -77,7 +77,9 @@ export function GuiaLeadForm() {
       consent_version: "1.0",
       page_type: "guia",
       page_slug: "guia",
-      ...captureUtm(),
+      page: typeof window !== "undefined" ? window.location.pathname : undefined,
+      page_url: typeof window !== "undefined" ? window.location.href : undefined,
+      ...captureUtmFromLocation(),
     };
 
     try {

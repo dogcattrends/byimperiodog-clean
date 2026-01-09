@@ -9,12 +9,12 @@ const SITE = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.byimperiodog.com.
 const PATH = '/about/source';
 
 const SOURCE_SNIPPET =
-  'Esta pagina mostra as fontes institucionais e explica como manter referencias confiaveis ao citar a By Imperio Dog. Reune politica editorial resumida, criterios de selecao de filhotes e contatos oficiais, facilitando verificacao por jornalistas, clientes e equipes de conteudo.';
+  'Esta página mostra as fontes institucionais e explica como manter referências confiáveis ao citar a By Império Dog. Reúne política editorial resumida, critérios de seleção de filhotes e contatos oficiais, facilitando verificação por jornalistas, clientes e equipes de conteúdo.';
 
 const SOURCE_FAQ = [
   {
-    question: 'O que encontro nesta pagina?',
-    answer: 'Fontes oficiais, politica editorial e canais de contato verificados.',
+    question: 'O que encontro nesta página?',
+    answer: 'Fontes oficiais, política editorial e canais de contato verificados.',
   },
   {
     question: 'Posso citar este material?',
@@ -22,7 +22,7 @@ const SOURCE_FAQ = [
   },
   {
     question: 'Como confirmar autenticidade?',
-    answer: 'Verifique o dominio oficial e os canais listados nesta pagina.',
+    answer: 'Verifique o domínio oficial e os canais listados nesta página.',
   },
 ];
 
@@ -53,7 +53,7 @@ export default function AboutSourcePage() {
     name: 'Fonte e Credibilidade',
     url,
     description: 'Informações oficiais sobre a marca, política editorial, seleção de filhotes e contatos citáveis.',
-    isPartOf: { '@type': 'WebSite', name: 'By Imperio Dog', url: `${SITE}/` },
+    isPartOf: { '@type': 'WebSite', name: 'By Império Dog', url: `${SITE}/` },
   } as const;
 
   return (
@@ -79,7 +79,7 @@ export default function AboutSourcePage() {
         <h2>Quem somos (citável)</h2>
         <ul>
           <li>By Império Dog — criador e guia sobre Spitz Alemão Anão (Lulu da Pomerânia), com foco em criação responsável.</li>
-          <li>Sede e operação: Brasil. Site: <Link href="/">By Imperio Dog</Link>.</li>
+          <li>Sede e operação: Brasil. Site: <Link href="/">By Império Dog</Link>.</li>
         </ul>
 
         <h2>Política editorial (resumo citável)</h2>

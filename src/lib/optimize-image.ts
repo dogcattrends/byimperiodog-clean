@@ -22,7 +22,7 @@ export function optimizeSupabaseImage(url: string | undefined | null, options: {
     width = 800,
     height,
     quality = 80,
-    format = 'webp',
+    format = 'avif',
     resize = 'cover'
   } = options;
   
@@ -35,7 +35,13 @@ export function optimizeSupabaseImage(url: string | undefined | null, options: {
     if (width) params.set('width', width.toString());
     if (height) params.set('height', height.toString());
     if (quality) params.set('quality', quality.toString());
-    if (format && format !== 'origin') params.set('format', format);
+    // Permitir override por variável de ambiente para compatibilidade
+    // Ex.: NEXT_PUBLIC_IMAGE_FALLBACK=webp
+    let chosenFormat = format
+    if (chosenFormat === 'avif' && process.env.NEXT_PUBLIC_IMAGE_FALLBACK === 'webp') {
+      chosenFormat = 'webp'
+    }
+    if (chosenFormat && chosenFormat !== 'origin') params.set('format', chosenFormat);
     if (resize) params.set('resize', resize);
     
     // Construir nova URL com transformações
@@ -58,7 +64,7 @@ export function optimizePuppyCardImage(url: string | undefined | null): string |
   return optimizeSupabaseImage(url, {
     width: 640, // Mobile-first, suficiente para cards
     quality: 85,
-    format: 'webp',
+    format: 'avif',
     resize: 'cover'
   });
 }
@@ -70,7 +76,7 @@ export function optimizePuppyGalleryImage(url: string | undefined | null): strin
   return optimizeSupabaseImage(url, {
     width: 1200, // Maior para modal/detalhes
     quality: 90,
-    format: 'webp',
+    format: 'avif',
     resize: 'cover'
   });
 }
@@ -83,7 +89,7 @@ export function optimizePuppyThumb(url: string | undefined | null): string | und
     width: 160, // 80px @ 2x DPR
     height: 160,
     quality: 75,
-    format: 'webp',
+    format: 'avif',
     resize: 'cover'
   });
 }

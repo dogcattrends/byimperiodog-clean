@@ -29,29 +29,29 @@ import { normalizePuppyFromDB } from "@/lib/catalog/normalize";
 import { buildDetailCrumbs } from "@/lib/interlinking";
 import { buildBreadcrumbLD, buildProductLD } from "@/lib/schema";
 import { canonical } from "@/lib/seo.core";
-import { supabaseAnon } from "@/lib/supabaseAnon";
+import { supabasePublic } from "@/lib/supabasePublic";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 
 type Props = { params: { slug: string } };
 
 const PUPPY_SNIPPET =
-  "Perfil completo do filhote com fotos, detalhes de saude, orientacoes de cuidado, rotina recomendada e etapas da reserva. A pagina ajuda a comparar disponibilidade, entender o que ja esta incluso e planejar a chegada, com informacoes claras sobre suporte e proximos passos.";
+  "Perfil completo do filhote com fotos, detalhes de saúde, orientações de cuidado, rotina recomendada e etapas da reserva. A página ajuda a comparar disponibilidade, entender o que já está incluso e planejar a chegada, com informações claras sobre suporte e próximos passos.";
 
 const PUPPY_FAQ = [
   {
-    question: "O que encontro na pagina do filhote?",
+    question: "O que encontro na página do filhote?",
     answer:
-      "Voce ve fotos, status, informacoes de saude, orientacoes de cuidado, beneficios e formas de contato para reserva.",
+      "Você vê fotos, status, informações de saúde, orientações de cuidado, benefícios e formas de contato para reserva.",
   },
   {
     question: "Como confirmar disponibilidade e valores?",
     answer:
-      "Fale com o time pelo WhatsApp no botao principal para validar disponibilidade, valores e agenda de visita.",
+      "Fale com o time pelo WhatsApp no botão principal para validar disponibilidade, valores e agenda de visita.",
   },
   {
-    question: "O que acontece apos a reserva?",
+    question: "O que acontece após a reserva?",
     answer:
-      "Voce recebe orientacoes de acompanhamento, documentos e alinhamento sobre entrega e suporte pos-reserva.",
+      "Você recebe orientações de acompanhamento, documentos e alinhamento sobre entrega e suporte pós-reserva.",
   },
 ];
 
@@ -107,11 +107,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export async function generateStaticParams() {
     /* eslint-disable @typescript-eslint/no-unused-vars, no-unused-vars */
   try {
-    const sb = supabaseAnon();
+    const sb = supabasePublic();
     const { data } = await sb
       .from("puppies")
       .select("slug")
-      .in("status", ["disponivel", "available", "reservado", "reserved"])
+      .in("status", ["disponivel", "reservado"])
       .limit(50);
     
     return (data || []).map((p: any) => ({ slug: p.slug }));
@@ -123,6 +123,8 @@ export async function generateStaticParams() {
 
 // ISR: Revalidar a cada 5 minutos
 export const revalidate = 300;
+// Evita timeouts de build locais: renderização dinâmica no ambiente de desenvolvimento
+export const dynamic = process.env.NODE_ENV === "production" ? undefined : "force-dynamic";
 
 export default async function PuppyDetailPage({ params }: Props) {
   const puppy = await fetchPuppyBySlug(params.slug);
@@ -266,7 +268,7 @@ export default async function PuppyDetailPage({ params }: Props) {
 // Data fetching: buscar filhote por slug no Supabase
 async function fetchPuppyBySlug(slug: string): Promise<Puppy | null> {
   try {
-    const sb = supabaseAnon();
+    const sb = supabasePublic();
     const { data, error } = await sb
       .from("puppies")
       .select("*")
@@ -287,15 +289,15 @@ async function fetchPuppyBySlug(slug: string): Promise<Puppy | null> {
 // Data fetching: buscar filhotes relacionados (por cor ou cidade)
 async function fetchRelatedPuppies(current: Puppy): Promise<Puppy[]> {
   try {
-    const sb = supabaseAnon();
+    const sb = supabasePublic();
     
     // Buscar por cor ou cidade, excluindo o atual
     const { data } = await sb
       .from("puppies")
       .select("*")
-      .in("status", ["disponivel", "available"])
+      .in("status", ["disponivel"])
       .neq("id", current.id)
-      .or(`cor.eq.${current.color},city.eq.${current.city}`)
+      .or(`cor.eq.${current.color},color.eq.${current.color},city.eq.${current.city},cidade.eq.${current.city}`)
       .limit(3);
 
     if (!data || data.length === 0) {
@@ -303,7 +305,7 @@ async function fetchRelatedPuppies(current: Puppy): Promise<Puppy[]> {
       const { data: fallback } = await sb
         .from("puppies")
         .select("*")
-        .in("status", ["disponivel", "available"])
+        .in("status", ["disponivel"])
         .neq("id", current.id)
         .limit(3);
       

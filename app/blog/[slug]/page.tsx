@@ -3,9 +3,10 @@
 
 import { PortableText } from "@portabletext/react";
 import type { TypedObject } from "@portabletext/types";
-import Image from "next/image";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cache } from "react";
 
 
 import FAQBlock from "@/components/answer/FAQBlock";
@@ -20,12 +21,15 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import LeadForm from "@/components/LeadForm";
 import PageViewPing from "@/components/PageViewPing";
 import SeoJsonLd from "@/components/SeoJsonLd";
+import SmartImage from "@/components/SmartImage";
 import { buildAnswerSnippet } from "@/lib/ai-readiness";
 import type { TocItem } from "@/lib/blog/mdx/toc";
 import { BLUR_DATA_URL } from "@/lib/placeholders";
 import { sanityBlogRepo } from "@/lib/sanity/blogRepo";
-import { blogPostingSchema } from "@/lib/seo.core";
+import { buildBlogPostMetadata, blogPostingSchema, SITE_ORIGIN } from "@/lib/seo.core";
 import { whatsappLeadUrl } from "@/lib/utm";
+
+const getPostBySlugCached = cache(async (slug: string) => sanityBlogRepo.getPostBySlug(slug));
 
 // Função utilitária local para formatar datas
 function formatDate(value?: string | null) {
@@ -60,16 +64,91 @@ function splitSentences(value?: string | null) {
     .filter(Boolean);
 }
 
+function shouldUnoptimizeImage(url?: string | null) {
+  if (!url) return false;
+  const trimmed = url.trim();
+  if (!trimmed) return false;
+  if (trimmed.startsWith("/")) return false;
+  const normalized = trimmed.startsWith("//") ? `https:${trimmed}` : trimmed;
+  try {
+    const hostname = new URL(normalized).hostname.toLowerCase();
+    // Mantém otimização para assets do Sanity; evita fetch server-side para hosts externos.
+    return hostname !== "cdn.sanity.io";
+  } catch {
+    // Se a URL for inválida para o otimizador do Next, prefira renderizar como <img> direto.
+    return true;
+  }
+}
+
+function resolveImageSrc(url: string) {
+  const trimmed = url.trim();
+  if (trimmed.startsWith("//")) return `https:${trimmed}`;
+  return trimmed;
+}
+
+function isUsableImageSrc(value?: string | null) {
+  const trimmed = (value ?? "").trim();
+  if (!trimmed) return false;
+  if (trimmed.startsWith("/")) return true;
+  return trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("//");
+}
+
+function externalImageProps(url: string) {
+  // Alguns hosts bloqueiam hotlink via Referer. Para imagens externas,
+  // esconder o referrer costuma destravar o carregamento.
+  return shouldUnoptimizeImage(url)
+    ? ({ referrerPolicy: "no-referrer", crossOrigin: "anonymous" as const } as const)
+    : ({} as const);
+}
+
+function resolveTaxonomyLabel(value: unknown): string | null {
+  if (!value) return null;
+  if (typeof value === "string") return value;
+  if (typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    const title = typeof record.title === "string" ? record.title : null;
+    const slug = typeof record.slug === "string" ? record.slug : null;
+    return title || slug;
+  }
+  return null;
+}
+
 type PageProps = {
   params: { slug: string };
   searchParams?: Record<string, string>;
 };
 
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const post = await getPostBySlugCached(params.slug);
+  if (!post) {
+    return {
+      title: "Post não encontrado | Blog",
+      robots: { index: false, follow: false },
+    } as Metadata;
+  }
+
+  const status = (post.status ?? "published") as string;
+  if (status !== "published") {
+    return {
+      title: post.title ?? "Preview | Blog",
+      robots: { index: false, follow: false },
+    } as Metadata;
+  }
+
+  return buildBlogPostMetadata({
+    slug: post.slug,
+    title: post.title ?? post.slug,
+    description: post.seo?.description ?? post.excerpt ?? post.subtitle ?? undefined,
+    image: post.seo?.ogImageUrl ?? post.coverUrl ?? undefined,
+    published: post.publishedAt ?? undefined,
+  });
+}
+
 
 export default async function Page({ params }: PageProps) {
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.byimperiodog.com.br").replace(/\/$/, "");
+  const siteUrl = SITE_ORIGIN;
   // Buscar o post pelo slug
-  const post = await sanityBlogRepo.getPostBySlug(params.slug);
+  const post = await getPostBySlugCached(params.slug);
   if (!post) return notFound();
   type Author = { name?: string; slug?: string; avatar_url?: string };
   type Reviewer = { name?: string };
@@ -121,8 +200,14 @@ export default async function Page({ params }: PageProps) {
   const reviewer = p.reviewer ? (p.reviewer as Reviewer) : undefined;
   const minutes = (p.reading_time ?? p.readingTime) ?? undefined;
   const toc = Array.isArray(p.toc) ? p.toc : Array.isArray(p.tableOfContents) ? p.tableOfContents! : [];
-  const related = (p.related ?? []) as BlogPost[];
-  const preview = p.status !== "published";
+  const related = ((p.related ?? []) as BlogPost[]).filter((rel) => {
+    const relStatus = (rel as unknown as { status?: string | null })?.status;
+    return (relStatus ?? "published") === "published";
+  });
+  const resolvedStatus = (p.status ?? "published") as string;
+  if (resolvedStatus !== "published") return notFound();
+  const categoryLabel = resolveTaxonomyLabel(p.category);
+  const sectionLabel = resolveTaxonomyLabel(p.section);
 
   // SEO e dados estruturados
   const description = String(p.seo_description ?? p.seoDescription ?? p.excerpt ?? p.subtitle ?? "");
@@ -157,7 +242,7 @@ export default async function Page({ params }: PageProps) {
     }
     if (minutes !== undefined) extras.push(`${minutes} min de leitura`);
     if (author && author.name) extras.push(`Por ${String(author.name)}`);
-    if (p.category) extras.push(String(p.category));
+    if (categoryLabel) extras.push(categoryLabel);
     const augmented = [normalized, ...extras.filter(Boolean)].filter(Boolean).join('. ');
     const clamped = clampWordsLocal(augmented);
     // Se ainda for muito curto, incluir primeira frase da descrição (factual)
@@ -226,22 +311,6 @@ export default async function Page({ params }: PageProps) {
     <div className="relative mx-auto w-full max-w-6xl px-4 py-10">
       <PageViewPing pageType="blog" />
       <SeoJsonLd data={structuredData} />
-      {preview ? (
-        <div className="mb-6 flex flex-wrap items-center gap-3 rounded-md border border-amber-400 bg-amber-50 p-3 text-sm text-amber-800">
-          <span className="font-medium">Pré-visualização</span>
-          <span>
-            Status atual: <strong>{p.status}</strong>
-          </span>
-          <form method="POST" action={`/api/admin/blog/publish?slug=${p.slug}`} style={{ display: 'inline' }}>
-            <button type="submit" className="inline-flex items-center gap-1 rounded bg-amber-600 px-3 py-1 text-xs font-medium text-white shadow hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-1">
-              Publicar agora
-            </button>
-          </form>
-          <a href={`/blog/${p.slug}`} className="underline decoration-dotted">
-            Sair do modo preview
-          </a>
-        </div>
-      ) : null}
 
       <Breadcrumbs
         className="mb-6"
@@ -257,7 +326,7 @@ export default async function Page({ params }: PageProps) {
 
           <header className="space-y-4">
             <span className="inline-flex items-center gap-2 rounded-pill bg-brand/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-brand">
-              {p.category || p.section || "Conteúdo premium"}
+              {categoryLabel || sectionLabel || "Conteúdo premium"}
             </span>
             <h1 className="text-3xl font-serif text-text sm:text-4xl">{p.title}</h1>
             {p.subtitle ? <p className="text-base text-text-muted">{p.subtitle}</p> : null}
@@ -277,17 +346,22 @@ export default async function Page({ params }: PageProps) {
             </div>
             {author ? (
               <div className="mt-2 flex items-center gap-3 text-sm text-text">
-                {author?.avatar_url ? (
-                  <Image
-                    src={String(author.avatar_url)}
-                    alt={String(author.name ?? "")}
-                    width={36}
-                    height={36}
-                    className="h-9 w-9 rounded-full border object-cover"
-                  />
-                ) : (
-                  <div className="h-9 w-9 rounded-full border bg-surface-subtle" aria-hidden />
-                )}
+                {(() => {
+                  const fallbackAvatar = "/icons/icon-192.png";
+                  const avatarRaw = typeof author?.avatar_url === "string" ? author.avatar_url : "";
+                  const avatarSrc = isUsableImageSrc(avatarRaw) ? resolveImageSrc(avatarRaw) : fallbackAvatar;
+                  return (
+                    <SmartImage
+                      src={avatarSrc}
+                      alt={String(author?.name ?? "")}
+                      width={36}
+                      height={36}
+                      className="h-9 w-9 rounded-full border object-cover"
+                      unoptimized={shouldUnoptimizeImage(avatarSrc)}
+                      {...externalImageProps(avatarSrc)}
+                    />
+                  );
+                })()}
                 <div>
                   <span className="text-text-muted">Por </span>
                   {author?.slug ? (
@@ -301,6 +375,41 @@ export default async function Page({ params }: PageProps) {
               </div>
             ) : null}
           </header>
+
+          {(() => {
+            const rawCover = String(p.coverUrl ?? p.cover_url ?? "").trim();
+            if (!rawCover) return null;
+            const coverSrc = resolveImageSrc(rawCover);
+            const looksLikeUrl =
+              coverSrc.startsWith("/") ||
+              coverSrc.startsWith("http://") ||
+              coverSrc.startsWith("https://");
+            if (!looksLikeUrl) return null;
+
+            return (
+              <figure className="overflow-hidden rounded-3xl border border-border bg-surface-subtle shadow-soft">
+                <SmartImage
+                  src={coverSrc}
+                  alt={String(p.coverAlt ?? p.cover_alt ?? p.title ?? "")}
+                  width={1280}
+                  height={720}
+                  priority
+                  fetchPriority="high"
+                  unoptimized={shouldUnoptimizeImage(coverSrc)}
+                  {...externalImageProps(coverSrc)}
+                  className="h-full w-full object-cover"
+                  sizes="(max-width: 1024px) 100vw, 65vw"
+                  placeholder="blur"
+                  blurDataURL={BLUR_DATA_URL}
+                  decoding="async"
+                  draggable={false}
+                />
+                {(p.coverAlt ?? p.cover_alt) ? (
+                  <figcaption className="px-5 py-3 text-xs text-text-soft">{p.coverAlt ?? p.cover_alt}</figcaption>
+                ) : null}
+              </figure>
+            );
+          })()}
 
           {finalAnswerSnippet ? (
             <section data-geo-answer={String(p.slug ?? "blog-post")} aria-labelledby="resposta-curta" className="rounded-2xl border border-border bg-surface p-4">
@@ -345,40 +454,9 @@ export default async function Page({ params }: PageProps) {
             </section>
           ) : null}
 
-          {(p.coverUrl ?? p.cover_url) ? (
-            <figure className="overflow-hidden rounded-3xl border border-border bg-surface-subtle shadow-soft">
-              <Image
-                src={String(p.coverUrl ?? p.cover_url)}
-                alt={String(p.coverAlt ?? p.cover_alt ?? p.title ?? "")}
-                width={1280}
-                height={720}
-                priority
-                fetchPriority="high"
-                className="h-full w-full object-cover"
-                sizes="(max-width: 1024px) 100vw, 65vw"
-                placeholder="blur"
-                blurDataURL={BLUR_DATA_URL}
-                decoding="async"
-                draggable={false}
-              />
-              {(p.coverAlt ?? p.cover_alt) ? (
-                <figcaption className="px-5 py-3 text-xs text-text-soft">{p.coverAlt ?? p.cover_alt}</figcaption>
-              ) : null}
-            </figure>
-          ) : null}
-
           {/* resposta curta já renderizada acima; evitar duplicação */}
 
-          {Array.isArray(p.key_takeaways) && p.key_takeaways.length ? (
-            <section className="mt-4 rounded-md border border-border bg-surface p-4">
-              <h2 className="mb-2 text-sm font-semibold">Principais insights</h2>
-              <ul className="list-inside list-disc text-sm text-text-muted">
-                {p.key_takeaways.map((t: string, i: number) => (
-                  <li key={i}>{t}</li>
-                ))}
-              </ul>
-            </section>
-          ) : null}
+          {/* insights já aparecem no Resumo para IA; evitar duplicação */}
 
           {toc.length ? (
             <div className="mt-4">
@@ -409,7 +487,7 @@ export default async function Page({ params }: PageProps) {
             {process.env.NEXT_PUBLIC_WA_PHONE && (
               <div className="pt-2">
                 <a
-                  className="inline-block rounded bg-green-600 px-4 py-2 text-white"
+                  className="btn-whatsapp"
                   target="_blank"
                   rel="noreferrer"
                   href={whatsappLeadUrl(process.env.NEXT_PUBLIC_WA_PHONE.replace(/\D/g, ""), {
@@ -437,7 +515,7 @@ export default async function Page({ params }: PageProps) {
             ))}
           </aside>
 
-          <BlogCTAs postTitle={p.title ?? ""} category={p.category ?? null} />
+          <BlogCTAs postTitle={p.title ?? ""} category={categoryLabel} />
 
           <div className="mt-16 border-t border-border pt-12">
             <Comments postId={String(post.id ?? p.id ?? "")} />
@@ -482,11 +560,21 @@ export default async function Page({ params }: PageProps) {
 const portableTextComponents = {
   types: {
     image: ({ value }: { value?: { asset?: { url?: string }; caption?: string } }) => {
-      const url = value?.asset?.url;
-      if (!url) return null;
+      const rawUrl = value?.asset?.url;
+      if (!rawUrl) return null;
+      const url = resolveImageSrc(String(rawUrl));
       return (
         <figure className="my-10 overflow-hidden rounded-3xl border border-border bg-surface-subtle shadow-soft">
-          <Image src={url} alt={value?.caption || "Imagem do post"} width={1280} height={720} className="w-full object-cover" />
+          <SmartImage
+            src={url}
+            alt={value?.caption || "Imagem do post"}
+            width={1280}
+            height={720}
+            decoding="async"
+            unoptimized={shouldUnoptimizeImage(url)}
+            {...externalImageProps(url)}
+            className="w-full object-cover"
+          />
           {value?.caption ? (
             <figcaption className="px-5 py-3 text-xs text-text-soft">{value.caption}</figcaption>
           ) : null}

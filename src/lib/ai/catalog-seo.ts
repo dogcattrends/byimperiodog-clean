@@ -32,6 +32,8 @@ export type CatalogSeoOutput = {
   warnings?: string[];
 };
 
+import { formatCentsToBRL } from "@/lib/price";
+
 const BLACKLIST = ["aquisicao", "aquisição", "doacao", "doação", "liquidacao", "liquidação", "canil", "gratuito", "gratis"];
 
 function sanitizeText(text: string): { text: string; warnings: string[] } {
@@ -64,11 +66,7 @@ function normalizeSex(sex?: Sex): "macho" | "femea" | null {
 
 function formatPrice(priceCents?: number): string | null {
   if (!priceCents || priceCents <= 0) return null;
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-    maximumFractionDigits: 0,
-  }).format(priceCents / 100);
+  return formatCentsToBRL(priceCents);
 }
 
 function buildKeywords(input: CatalogSeoInput, warnings: string[]): string[] {

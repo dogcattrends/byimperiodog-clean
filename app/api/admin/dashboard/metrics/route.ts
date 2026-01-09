@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 
 import { requireAdmin } from "@/lib/adminAuth";
+import { shouldPreferPuppiesV2FromEnv, withPuppiesReadTable } from "@/lib/puppies/readTable";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { computeCoverage } from "@/lib/topicClusters";
 
@@ -156,9 +157,12 @@ export async function GET(req: NextRequest) {
     ? Math.round((contractRows.length / leadCount) * 100)
     : 0;
 
-  const { data: puppies } = await supa
-    .from("puppies")
-    .select("id,status");
+  const puppiesRes = await withPuppiesReadTable({
+    sb: supa,
+    preferV2: shouldPreferPuppiesV2FromEnv("PUPPIES_ADMIN_READ_SOURCE"),
+    query: (table) => (supa as any).from(table).select("id,status"),
+  });
+  const puppies = (puppiesRes as any).data as unknown;
   const puppyStatus = (puppies as PuppyRow[] | null | undefined)?.reduce(
     (acc, pup) => {
       const status = (pup.status || "desconhecido").toLowerCase();

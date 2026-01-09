@@ -9,6 +9,30 @@ export type LeadContext = {
   intent?: string;
 };
 
+export type CapturedUtm = {
+  utm_source?: string | null;
+  utm_medium?: string | null;
+  utm_campaign?: string | null;
+  utm_content?: string | null;
+  utm_term?: string | null;
+  gclid?: string | null;
+  fbclid?: string | null;
+};
+
+export function captureUtmFromLocation(): CapturedUtm {
+  if (typeof window === "undefined") return {};
+  const params = new URLSearchParams(window.location.search);
+  return {
+    utm_source: params.get("utm_source"),
+    utm_medium: params.get("utm_medium"),
+    utm_campaign: params.get("utm_campaign"),
+    utm_content: params.get("utm_content"),
+    utm_term: params.get("utm_term"),
+    gclid: params.get("gclid"),
+    fbclid: params.get("fbclid"),
+  };
+}
+
 export function withUTM(baseUrl: string, params: Record<string, string | undefined>) {
   const url = new URL(baseUrl, typeof window !== "undefined" ? window.location.origin : "https://byimperiodog.com.br");
   Object.entries(params).forEach(([k, v]) => {

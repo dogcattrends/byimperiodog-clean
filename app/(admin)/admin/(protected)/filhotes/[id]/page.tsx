@@ -122,9 +122,10 @@ export default function FilhoteDetailPage() {
   );
 }
 
-function formatPrice(cents?: number | null) {
-  if (!cents) return EMPTY;
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(cents / 100);
+function formatPrice(cents?: number | string | null) {
+  const value = typeof cents === "string" ? Number(cents) : cents;
+  if (!value || !Number.isFinite(value)) return EMPTY;
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(value / 100);
 }
 
 function formatDate(value?: string | null) {

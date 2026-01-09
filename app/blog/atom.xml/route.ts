@@ -27,7 +27,7 @@ export async function GET() {
       })
       .join("\n");
 
-    const xml = `<?xml version="1.0" encoding="utf-8"?>\n<feed xmlns="http://www.w3.org/2005/Atom">\n  <title>By Imperio Dog - Blog</title>\n  <link href="${SITE_URL}/blog" />\n  <updated>${updated}</updated>\n  <id>${SITE_URL}/blog</id>\n${entries}\n</feed>`;
+    const xml = `<?xml version="1.0" encoding="utf-8"?>\n<feed xmlns="http://www.w3.org/2005/Atom">\n  <title>By Império Dog - Blog</title>\n  <link href="${SITE_URL}/blog" />\n  <updated>${updated}</updated>\n  <id>${SITE_URL}/blog</id>\n${entries}\n</feed>`;
 
     return new NextResponse(xml, { headers: { "Content-Type": "application/atom+xml; charset=utf-8" } });
   } catch (error) {

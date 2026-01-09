@@ -89,11 +89,11 @@ export function normalizePuppyFromDB(rawInput: unknown): Puppy {
   const b = base as Partial<Record<string, unknown>>;
 
   // Suporta campos em português e inglês
-  const name = ((b.nome as string) || (b.name as string) || "filhote").trim();
+  const name = (((b.title as string) || (b.nome as string) || (b.name as string) || "filhote") + "").trim();
   const color = coerceColor((b.cor as string) || (b.color as string));
-  const genderValue = (b.sexo as string) || (b.gender as string);
+  const genderValue = (b.sexo as string) || (b.sex as string) || (b.gender as string);
   const sex = genderValue === "femea" || genderValue === "female" ? "female" : "male";
-  const birthDate = safeDate((b.nascimento as string) || (b.birth_date as string));
+  const birthDate = safeDate((b.nascimento as string) || (b.birth_date as string) || (b.birthDate as string));
 
   // Preço: converte de decimal para centavos se necessário
   let priceCents = (b.price_cents as number) ?? 0;
@@ -102,8 +102,9 @@ export function normalizePuppyFromDB(rawInput: unknown): Puppy {
     priceCents = Math.round(precoDecimal * 100);
   }
 
-  // Mapeia campo 'midia' do banco para 'images'
-  const rawMidia = (b.midia as unknown) || (b.images as unknown) || [];
+  // Imagens: suporta schema canonical (main_image_url + gallery) e schema legado (midia/images)
+  const canonicalGallery = (b.gallery as unknown) || (b.images as unknown);
+  const rawMidia = canonicalGallery || (b.midia as unknown) || (b.media as unknown) || [];
   let parsedMidia: unknown[] = [];
   if (Array.isArray(rawMidia)) parsedMidia = rawMidia as unknown[];
   else if (typeof rawMidia === "string") {
@@ -116,10 +117,17 @@ export function normalizePuppyFromDB(rawInput: unknown): Puppy {
     }
   }
 
-  const images = parsedMidia
+  // Normaliza midia (pode ser string[] ou { url }[] vindo do Supabase)
+  const rawMidiaNormalized = parsedMidia
     .filter((item) => item && (typeof item === "string" || ((item as Record<string, unknown>)?.url)))
-    .map((item) => (typeof item === "string" ? (item as string) : ((item as Record<string, unknown>).url as string)))
-    .filter((u: string) => URL_REGEX.test(u));
+    .map((item) => (typeof item === "string" ? (item as string) : ((item as Record<string, unknown>).url as string)));
+
+  const mainImageUrl = (b.main_image_url as string) || (b.cover_url as string) || (b.imageUrl as string);
+  const mainImageList = mainImageUrl && typeof mainImageUrl === "string" ? [mainImageUrl] : [];
+  const mergedImages = [...mainImageList, ...rawMidiaNormalized];
+
+  // images mantém apenas URLs absolutos válidos (para usos que exigem http://)
+  const images = mergedImages.filter((u: string) => URL_REGEX.test(u));
   const thumbnail = images.length > 0 ? images[0] : undefined;
 
   // Descrição em português ou inglês
@@ -140,6 +148,8 @@ export function normalizePuppyFromDB(rawInput: unknown): Puppy {
     birthDate,
     readyForAdoptionDate: new Date(birthDate.getTime() + 60 * 24 * 60 * 60 * 1000),
     images,
+    // preserva o retorno original do banco (midia) como strings — útil para construir urls relativas do Supabase
+    midia: mergedImages,
     thumbnailUrl: thumbnail,
     city: coerceCity(((b.cidade as string) || (b.city as string))),
     state: (((b.estado as string) || (b.state as string) || "SP").toUpperCase()),
@@ -162,5 +172,5 @@ export function normalizePuppyFromDB(rawInput: unknown): Puppy {
     seoKeywords: [],
     createdAt: safeDate(b.created_at as string),
     updatedAt: safeDate(b.updated_at as string),
-  };
+  } as unknown as Puppy;
 }

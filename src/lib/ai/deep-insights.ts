@@ -1,3 +1,5 @@
+import { formatCentsToBRL } from "@/lib/price";
+
 import { supabaseAdmin } from "../supabaseAdmin";
 
 type LeadRow = {
@@ -193,9 +195,10 @@ export async function generateDeepInsights(): Promise<DeepInsightsReport> {
     });
   }
 
-  const summary = `Relatório automático baseado em leads (90d), estoque e interações. Mediana de preço: R$ ${(
-    (medianPrice || 0) / 100
-  ).toFixed(2)}.`;
+  const summary = `Relatório automático baseado em leads (90d), estoque e interações. Mediana de preço: ${formatCentsToBRL(
+    medianPrice || 0,
+    { maximumFractionDigits: 2 }
+  )}.`;
 
   return {
     periodLabel: "90 dias",

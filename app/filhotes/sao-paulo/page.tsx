@@ -14,10 +14,10 @@ const WA_PHONE = process.env.NEXT_PUBLIC_WA_PHONE?.replace(/\D/g, "") || "551196
 const WA_LINK = `https://wa.me/${WA_PHONE}`;
 
 const SP_SNIPPET =
-  "Pagina com informacoes sobre filhotes de Spitz Alemao Anao (Lulu da Pomerania) para Sao Paulo, com detalhes de entrega segura, atendimento local e contato direto. Ajuda a entender disponibilidade, suporte pos-entrega e como agendar visita ou conversa antes da reserva.";
+  "Página com informações sobre filhotes de Spitz Alemão Anão (Lulu da Pomerânia) para São Paulo, com detalhes de entrega segura, atendimento local e contato direto. Ajuda a entender disponibilidade, suporte pós-entrega e como agendar visita ou conversa antes da reserva.";
 
 export const metadata: Metadata = {
-  title: "Filhotes de Spitz Alemão Anão (Lulu da Pomerânia) em São Paulo (SP) | By Imperio Dog",
+  title: "Filhotes de Spitz Alemão Anão (Lulu da Pomerânia) em São Paulo (SP) | By Império Dog",
   description:
     "Compre filhotes de Spitz Alemão Anão (Lulu da Pomerânia) em São Paulo com entrega segura na capital, Grande SP e interior. Pedigree, suporte vitalício e criadora de referência.",
   alternates: { canonical: canonical("/filhotes/sao-paulo") },
@@ -51,7 +51,7 @@ const faqSP = [
       "Sim! Fazemos entrega em toda a capital paulista e Grande São Paulo. A entrega é segura, com transporte especializado para filhotes, e o tutor recebe orientações completas no momento da entrega.",
   },
   {
-    question: "Posso visitar o criatorio em Bragança Paulista antes de comprar?",
+    question: "Posso visitar o criatório em Bragança Paulista antes de comprar?",
     answer:
       "Sim! Recebemos visitas agendadas em nosso criatório em Bragança Paulista (SP). É uma ótima oportunidade para conhecer os filhotes, os pais e toda nossa estrutura. Agende pelo WhatsApp.",
   },
@@ -81,7 +81,7 @@ export default function FilhotesSaoPauloPage() {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "@id": `${SITE_URL}/filhotes/sao-paulo#localbusiness`,
-    name: "By Imperio Dog - Filhotes em São Paulo",
+    name: "By Império Dog - Filhotes em São Paulo",
     url: `${SITE_URL}/filhotes/sao-paulo`,
     image: `${SITE_URL}/spitz-hero-desktop.webp`,
     telephone: "+55 11 9 6863-3239",
@@ -169,7 +169,7 @@ export default function FilhotesSaoPauloPage() {
               href={waLink}
               target="_blank"
               rel="noopener noreferrer"
-              className={cn(buttonVariants({ size: "lg" }), "gap-2 bg-[#25D366] hover:bg-[#20BA5A]")}
+              className={cn(buttonVariants({ size: "lg" }), "btn-whatsapp gap-2")}
             >
               <WhatsAppIcon className="h-5 w-5" />
               Falar com a Criadora
@@ -270,7 +270,7 @@ export default function FilhotesSaoPauloPage() {
               href={waLink}
               target="_blank"
               rel="noopener noreferrer"
-              className={cn(buttonVariants({ size: "lg" }), "mt-6 gap-2 bg-[#25D366] hover:bg-[#20BA5A]")}
+              className={cn(buttonVariants({ size: "lg" }), "btn-whatsapp mt-6 gap-2")}
             >
               <WhatsAppIcon className="h-5 w-5" />
               Falar no WhatsApp

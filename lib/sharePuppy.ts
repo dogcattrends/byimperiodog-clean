@@ -2,7 +2,7 @@ import { BRAND } from '@/domain/config';
 import type { Puppy } from '@/domain/puppy';
 import { formatPuppyMeta } from '@/domain/puppyMeta';
 import { logEvent } from '@/lib/analytics';
-import { canonical } from '@/lib/seo.core';
+import { canonical } from '@/lib/seo';
 
 export type ShareablePuppy = {
   id: string;

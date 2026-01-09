@@ -7,10 +7,11 @@ import type { NextRequest} from "next/server";
 import { NextResponse } from "next/server";
 
 import { requireAdmin } from "@/lib/adminAuth";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { clearAdminSupabaseCookies, isJwtExpiredError } from "@/lib/adminSession";
+import { supabaseAdminOrUser } from "@/lib/supabaseAdminOrUser";
 import { sanitizeFilename } from "@/lib/uploadValidation";
 
-const STORAGE_BUCKET = "puppies";
+const STORAGE_BUCKET = process.env.NEXT_PUBLIC_SUPABASE_BUCKET || "media";
 
 // Module-level appendLog used by helper functions. Writes to tmp/puppies-manage.log
 const LOG_PATH = path.join(process.cwd(), "tmp", "puppies-manage.log");
@@ -29,25 +30,27 @@ type OrderEntry = {
   ref: string;
 };
 
-type JsonBody = {
-  id?: string;
-  name?: string;
-  slug?: string | null;
-  color?: string | null;
-  sex?: string | null;
-  city?: string | null;
-  state?: string | null;
-  priceCents?: number | null;
-  status?: string | null;
-  description?: string | null;
-};
-
 function mapStatusToDb(status?: string | null) {
   const value = (status || "disponivel").toLowerCase();
   if (value === "sold" || value === "vendido") return "vendido";
   if (value === "reserved" || value === "reservado") return "reservado";
-  if (value === "indisponivel" || value === "unavailable" || value === "pending") return "indisponivel";
   return "disponivel";
+}
+
+function serializeError(err: unknown) {
+  try {
+    if (!err) return String(err);
+    if (typeof err === 'string') return err;
+    // Supabase error objects often have `message` and `details`.
+    if (typeof err === 'object') {
+      const asAny = err as any;
+      if (typeof asAny.message === 'string') return asAny.message;
+      return JSON.stringify(err, Object.getOwnPropertyNames(err));
+    }
+    return String(err);
+  } catch (e) {
+    return String(err);
+  }
 }
 
 function mapSexToDb(sex?: string | null) {
@@ -112,7 +115,8 @@ function publicUrlToPath(url: string): { bucket: string | null; path: string | n
   return { bucket, path: rest.join("/") };
 }
 
-async function uploadMediaFile(sb: ReturnType<typeof supabaseAdmin>, file: File, type: "image" | "video", originalName: string) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function uploadMediaFile(sb: any, file: File, type: "image" | "video", originalName: string) {
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
   const extFromName = originalName.includes(".") ? originalName.split(".").pop() : undefined;
@@ -139,7 +143,8 @@ async function uploadMediaFile(sb: ReturnType<typeof supabaseAdmin>, file: File,
   return data.publicUrl;
 }
 
-async function deleteMedia(sb: ReturnType<typeof supabaseAdmin>, urls: string[]) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function deleteMedia(sb: any, urls: string[]) {
   if (!urls.length) return;
   const pathsByBucket = new Map<string, string[]>();
   urls.forEach((url) => {
@@ -195,16 +200,25 @@ export async function POST(req: NextRequest) {
     if (guard) return guard;
 
     const contentType = req.headers.get("content-type") || "";
-    const sb = supabaseAdmin();
+    const { client: sb, mode } = supabaseAdminOrUser(req);
+    if (!sb) {
+      return NextResponse.json(
+        { ok: false, error: mode === "missing_token" ? "Sessao admin ausente. Refaça login." : "Cliente Supabase indisponível." },
+        { status: 401 },
+      );
+    }
 
     // Garante que o bucket de storage existe (cria se ausente) - tentativa best-effort
     try {
-      const maybeStorage = (sb as unknown as { storage?: { getBucket?: (name: string) => Promise<{ data?: unknown; error?: unknown }>; createBucket?: (name: string, opts?: unknown) => Promise<unknown> } }).storage;
-      if (maybeStorage && typeof maybeStorage.getBucket === "function") {
-        const { data: bInfo, error: bErr } = (await maybeStorage.getBucket(STORAGE_BUCKET)) as { data?: unknown; error?: unknown };
-        if (bErr || !bInfo) {
-          if (typeof maybeStorage.createBucket === "function") {
-            await maybeStorage.createBucket(STORAGE_BUCKET, { public: true }).catch(() => {});
+      // Só tenta criar bucket em modo service (user token normalmente não tem permissão)
+      if (mode === "service") {
+        const maybeStorage = (sb as unknown as { storage?: { getBucket?: (name: string) => Promise<{ data?: unknown; error?: unknown }>; createBucket?: (name: string, opts?: unknown) => Promise<unknown> } }).storage;
+        if (maybeStorage && typeof maybeStorage.getBucket === "function") {
+          const { data: bInfo, error: bErr } = (await maybeStorage.getBucket(STORAGE_BUCKET)) as { data?: unknown; error?: unknown };
+          if (bErr || !bInfo) {
+            if (typeof maybeStorage.createBucket === "function") {
+              await maybeStorage.createBucket(STORAGE_BUCKET, { public: true }).catch(() => {});
+            }
           }
         }
       }
@@ -214,33 +228,274 @@ export async function POST(req: NextRequest) {
 
     appendLog({ event: "request-start", url: req.url, method: "POST", contentType });
 
+    // Conservative set of columns that are commonly present across legacy/canonical schemas.
+    // Optional columns like `media` must be detected before being sent.
+    const conservativeCols = [
+      "id",
+      "codigo",
+      "name",
+      "nome",
+      "slug",
+      "color",
+      "cor",
+      "preco",
+      "price",
+      "price_cents",
+      "nascimento",
+      "descricao",
+      "notes",
+      "midia",
+      "cover_url",
+      "video_url",
+      "microchip",
+      "pedigree",
+      "status",
+      "sexo",
+      "gender",
+      "reserved_at",
+      "sold_at",
+      "created_at",
+      "updated_at",
+    ];
+
+    const detectPuppiesColumns = async (id?: string): Promise<Set<string> | null> => {
+      try {
+        if (id) {
+          const { data, error } = await sb.from("puppies").select("*").eq("id", id).maybeSingle();
+          if (error) throw error;
+          if (data && typeof data === "object") return new Set(Object.keys(data as Record<string, unknown>));
+          return null;
+        }
+        const { data, error } = await sb.from("puppies").select("*").limit(1);
+        if (error) throw error;
+        if (Array.isArray(data) && data[0] && typeof data[0] === "object") {
+          return new Set(Object.keys(data[0] as Record<string, unknown>));
+        }
+        return null;
+      } catch (err) {
+        if (isJwtExpiredError(err)) {
+          clearAdminSupabaseCookies();
+          return null;
+        }
+        return null;
+      }
+    };
+
     if (!contentType.includes("multipart/form-data")) {
-      const body = (await req.json().catch(() => ({}))) as JsonBody;
-      appendLog({ event: "json-payload", payload: { id: body.id, name: body.name ?? null } });
-      if (!body.id) {
-        appendLog({ event: "missing-id" });
-        return NextResponse.json({ error: "id obrigatório" }, { status: 400 });
-      }
+      const body = (await req.json().catch(() => ({}))) as any;
+      appendLog({ event: "json-payload", payload: { id: body.id ?? null, name: body.name ?? body.nome ?? null } });
 
-      const updates: Record<string, unknown> = {};
-      if (body.status) updates.status = mapStatusToDb(body.status);
-      if (typeof body.priceCents === "number") {
-        updates.price_cents = body.priceCents;
-        updates.preco = body.priceCents / 100;
-      }
-      if (body.description !== undefined) {
-        updates.descricao = body.description;
-        updates.description = body.description;
-      }
-      updates.updated_at = new Date().toISOString();
+      // If an id is provided, treat as update. Otherwise, allow create via JSON
+      if (body.id) {
+        const detectedCols = await detectPuppiesColumns(body.id);
+        const cols = detectedCols ?? new Set(conservativeCols);
 
-      const { data, error } = await sb.from("puppies").update(updates).eq("id", body.id).select().maybeSingle();
-          if (error) {
-            appendLog({ event: "db-error", error: String(error) });
-            return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+        const updates: Record<string, unknown> = {};
+        if (body.status) updates.status = mapStatusToDb(body.status);
+        if (typeof body.priceCents === "number" || typeof body.price_cents === "number") {
+          const cents = typeof body.priceCents === 'number' ? body.priceCents : body.price_cents;
+          updates.price_cents = cents;
+          updates.preco = cents / 100;
+        }
+        if (body.description !== undefined || body.descricao !== undefined) {
+          updates.descricao = body.descricao ?? body.description;
+          // Only send `description` if the schema actually has it.
+          if (cols.has('description')) {
+            updates.description = body.description ?? body.descricao;
           }
-          appendLog({ event: "updated", id: body.id, durationMs: Date.now() - start });
-          return NextResponse.json({ ok: true, puppy: data });
+        }
+        updates.updated_at = new Date().toISOString();
+
+        // Filter updates to existing columns to avoid schema cache errors.
+        const finalUpdates: Record<string, unknown> = {};
+        for (const [k, v] of Object.entries(updates)) {
+          if (v === null || v === undefined) continue;
+          if (cols.has(k)) finalUpdates[k] = v;
+        }
+
+        try {
+          appendLog({ event: 'before-json-update', id: body.id, updates: finalUpdates });
+        } catch (e) { void e; }
+        const { data, error } = await sb.from("puppies").update(finalUpdates).eq("id", body.id).select().maybeSingle();
+        if (error) {
+          if (isJwtExpiredError(error)) {
+            clearAdminSupabaseCookies();
+            return NextResponse.json({ ok: false, error: "Sessão expirada. Refaça login." }, { status: 401 });
+          }
+          const ser = serializeError(error);
+          appendLog({ event: "db-error", error: ser });
+
+          // If the DB indicates missing column(s), retry without those keys.
+          // Common errors: "Could not find the 'description' column ..." / "column \"description\" does not exist"
+          try {
+            const missingCols = new Set<string>();
+            const re1 = /could not find the '([^']+)'/gi;
+            const re2 = /column "([^"]+)"/gi;
+            let m: RegExpExecArray | null;
+            while ((m = re1.exec(ser))) missingCols.add(m[1]);
+            while ((m = re2.exec(ser))) missingCols.add(m[1]);
+
+            const retryUpdates = { ...updates } as Record<string, unknown>;
+            const toRemove = Array.from(missingCols).filter((c) => retryUpdates[c] !== undefined);
+            if (toRemove.length) {
+              toRemove.forEach((c) => delete retryUpdates[c]);
+              try { appendLog({ event: 'retry-json-without-missing-cols', removed: toRemove, payloadKeys: Object.keys(retryUpdates) }); } catch (e) { void e; }
+              const { data: rData, error: rErr } = await sb.from('puppies').update(retryUpdates).eq('id', body.id).select().maybeSingle();
+              if (!rErr) {
+                appendLog({ event: 'updated-after-missing-cols-retry', id: body.id, durationMs: Date.now() - start });
+                return NextResponse.json({ ok: true, puppy: rData });
+              }
+              if (isJwtExpiredError(rErr)) {
+                clearAdminSupabaseCookies();
+                return NextResponse.json({ ok: false, error: "Sessão expirada. Refaça login." }, { status: 401 });
+              }
+              const rser = serializeError(rErr);
+              appendLog({ event: 'db-error-retry', error: rser });
+              return NextResponse.json({ ok: false, error: rser }, { status: 500 });
+            }
+          } catch (e) {
+            void e;
+          }
+
+          // If the DB rejects due to the status check constraint, retry without status
+          try {
+            const low = (ser || '').toLowerCase();
+            if (ser.includes('puppies_status_check') || (low.includes('violates check constraint') && low.includes('status'))) {
+              try { appendLog({ event: 'status-check-failed-json', message: ser }); } catch (e) { void e; }
+              const retryUpdates = { ...updates } as Record<string, unknown>;
+              if (retryUpdates.status !== undefined) delete retryUpdates.status;
+              try { appendLog({ event: 'retry-json-without-status', payloadKeys: Object.keys(retryUpdates) }); } catch (e) { void e; }
+              const { data: rData, error: rErr } = await sb.from('puppies').update(retryUpdates).eq('id', body.id).select().maybeSingle();
+              if (rErr) {
+                if (isJwtExpiredError(rErr)) {
+                  clearAdminSupabaseCookies();
+                  return NextResponse.json({ ok: false, error: "Sessão expirada. Refaça login." }, { status: 401 });
+                }
+                const rser = serializeError(rErr);
+                appendLog({ event: 'db-error-retry', error: rser });
+                return NextResponse.json({ ok: false, error: rser }, { status: 500 });
+              }
+              appendLog({ event: 'updated-after-retry', id: body.id, durationMs: Date.now() - start });
+              return NextResponse.json({ ok: true, puppy: rData });
+            }
+          } catch (e) { void e; }
+
+          return NextResponse.json({ ok: false, error: ser }, { status: 500 });
+        }
+        // If no row was returned, the update likely affected 0 rows (RLS denied or id not found)
+        if (!data) {
+          appendLog({ event: 'updated-none', id: body.id, reason: 'no-row-returned', durationMs: Date.now() - start });
+          return NextResponse.json(
+            { ok: false, error: "Atualização não aplicada (sem permissão/RLS ou registro não encontrado)." },
+            { status: 403 },
+          );
+        }
+        appendLog({ event: "updated", id: body.id, durationMs: Date.now() - start });
+        return NextResponse.json({ ok: true, puppy: data });
+      }
+
+      // Build insert payload from JSON body (best-effort mapping of fields)
+      try {
+        const now = new Date().toISOString();
+        const priceCents = typeof body.price_cents === 'number' ? body.price_cents : typeof body.priceCents === 'number' ? body.priceCents : 0;
+        const mediaArr: string[] = Array.isArray(body.midia) ? body.midia : Array.isArray(body.media) ? body.media : [];
+        const mediaPayload = Array.isArray(body.midia)
+          ? body.midia.map((u: string) => ({ url: u, type: /\.mp4$|video\//.test(String(u)) ? 'video' : 'image' }))
+          : [];
+
+        const detectedCols = await detectPuppiesColumns();
+        const cols = detectedCols ?? new Set(conservativeCols);
+
+        const insertPayload: Record<string, unknown> = {
+          nome: body.nome ?? body.name ?? null,
+          name: body.name ?? body.nome ?? null,
+          slug: body.slug ?? null,
+          cor: body.color ?? body.cor ?? null,
+          color: body.color ?? body.cor ?? null,
+          sexo: mapSexToDb(body.gender ?? body.sex ?? null),
+          gender: normalizeGender(body.gender ?? body.sex ?? null),
+          price_cents: priceCents || null,
+          preco: Number.isFinite(priceCents) ? priceCents / 100 : null,
+          status: mapStatusToDb(body.status ?? null),
+          descricao: body.descricao ?? body.description ?? null,
+          cover_url: body.image_url ?? null,
+          video_url: body.video_url ?? null,
+          // Only send `media` if the DB schema actually has the column.
+          ...(cols.has("media") ? { media: mediaArr } : null),
+          midia: JSON.stringify(mediaPayload),
+          created_at: now,
+          updated_at: now,
+        };
+
+        // Filter to only existing columns (prevents PostgREST schema cache errors like missing `media`).
+        const finalInsert: Record<string, unknown> = {};
+        for (const [k, v] of Object.entries(insertPayload)) {
+          if (v === null || v === undefined) continue;
+          if (cols.has(k)) finalInsert[k] = v;
+        }
+
+        // For inserts, avoid sending `status` to let the DB apply its default
+        // (this prevents violating the `puppies_status_check` constraint
+        // when the incoming value does not match DB expectations).
+        try {
+          if (finalInsert.status !== undefined) {
+            delete finalInsert.status;
+            appendLog({ event: 'removed-status-for-insert-json' });
+          }
+        } catch (e) { void e; }
+
+        const { data, error } = await sb.from('puppies').insert(finalInsert).select().maybeSingle();
+        if (error) {
+          if (isJwtExpiredError(error)) {
+            clearAdminSupabaseCookies();
+            return NextResponse.json({ ok: false, error: "Sessão expirada. Refaça login." }, { status: 401 });
+          }
+          const ser = serializeError(error);
+          appendLog({ event: 'db-error', error: ser });
+
+          // Retry without missing columns (e.g., 'description' not present in schema)
+          try {
+            const missingCols = new Set<string>();
+            const re1 = /could not find the '([^']+)'/gi;
+            const re2 = /column "([^"]+)"/gi;
+            let m: RegExpExecArray | null;
+            while ((m = re1.exec(ser))) missingCols.add(m[1]);
+            while ((m = re2.exec(ser))) missingCols.add(m[1]);
+
+            const retryPayload = { ...finalInsert } as Record<string, unknown>;
+            const toRemove = Array.from(missingCols).filter((c) => retryPayload[c] !== undefined);
+            if (toRemove.length) {
+              toRemove.forEach((c) => delete retryPayload[c]);
+              try { appendLog({ event: 'retry-insert-json-without-missing-cols', removed: toRemove, payloadKeys: Object.keys(retryPayload) }); } catch (e) { void e; }
+              const { data: rData, error: rErr } = await sb.from('puppies').insert(retryPayload).select().maybeSingle();
+              if (!rErr) {
+                appendLog({ event: 'created-after-missing-cols-retry', id: (rData && (rData as any).id) ?? null, durationMs: Date.now() - start });
+                return NextResponse.json({ ok: true, puppy: rData });
+              }
+              if (isJwtExpiredError(rErr)) {
+                clearAdminSupabaseCookies();
+                return NextResponse.json({ ok: false, error: "Sessão expirada. Refaça login." }, { status: 401 });
+              }
+              const rser = serializeError(rErr);
+              appendLog({ event: 'db-error-retry', error: rser });
+              return NextResponse.json({ ok: false, error: rser }, { status: 500 });
+            }
+          } catch (e) {
+            void e;
+          }
+
+          return NextResponse.json({ ok: false, error: ser }, { status: 500 });
+        }
+        if (!data) {
+          appendLog({ event: 'created-none', reason: 'no-row-returned', durationMs: Date.now() - start });
+          return NextResponse.json({ ok: false, error: 'Criação não aplicada.' }, { status: 500 });
+        }
+        appendLog({ event: 'created', id: (data && (data as any).id) ?? null, durationMs: Date.now() - start });
+        return NextResponse.json({ ok: true, puppy: data });
+      } catch (e: unknown) {
+        appendLog({ event: 'create-json-exception', error: String(e) });
+        return NextResponse.json({ ok: false, error: 'Erro ao criar registro' }, { status: 500 });
+      }
     }
 
   const formData = await req.formData();
@@ -262,7 +517,9 @@ export async function POST(req: NextRequest) {
   void _state;
   const priceCents = Number(formData.get("priceCents")) || 0;
   const status = (formData.get("status") as string) || null;
-  const description = (formData.get("description") as string) || null;
+  const descricaoFromForm = (formData.get("descricao") as string) || null;
+  const descriptionFromForm = (formData.get("description") as string) || null;
+  const descriptionText = descricaoFromForm || descriptionFromForm || null;
 
   const existingPhotoUrls = parseJsonArray(formData.get("existingPhotoUrls"));
   const existingVideoUrls = parseJsonArray(formData.get("existingVideoUrls"));
@@ -337,8 +594,6 @@ export async function POST(req: NextRequest) {
     price_cents: priceCents,
     preco: Number.isFinite(priceCents) ? priceCents / 100 : null,
     status: mapStatusToDb(status),
-    descricao: description,
-    description,
     // store cover under `cover_url`; avoid writing `image_url` column which may not exist
     cover_url: orderedPhotoUrls[0] ?? null,
     video_url: orderedVideoUrls[0] ?? null,
@@ -349,48 +604,21 @@ export async function POST(req: NextRequest) {
     updated_at: now,
   };
 
+  // Store description only in `descricao` by default.
+  // Some schemas don't have `description`; writing it causes PostgREST schema cache errors.
+  if (descriptionText) {
+    payload.descricao = descriptionText;
+  }
+
   if (!id) {
     payload.created_at = now;
   }
 
-  // Best-effort: fetch actual table columns to filter payload and avoid schema-mismatch errors.
-  // We declare defaults here and compute `finalPayload` below so we never send unknown columns.
-  const defaultCols = [
-    "id",
-    "codigo",
-    "name",
-    "nome",
-    "slug",
-    "color",
-    "cor",
-    "preco",
-    "price",
-    "price_cents",
-    "price_cents",
-    "nascimento",
-    "descricao",
-    "description",
-    "notes",
-    "media",
-    "midia",
-    "cover_url",
-    "microchip",
-    "pedigree",
-    "status",
-    "sexo",
-    "gender",
-    "reserved_at",
-    "sold_at",
-    "created_at",
-    "updated_at",
-    // Note: do not assume location columns for puppies; we won't write them
-  ];
-
-  // Use a stable whitelist of columns to avoid relying on information_schema
-  // queries which can fail depending on PostgREST/Supabase configuration.
-  const found = new Set(defaultCols);
+  // Detect actual columns so we never send fields that don't exist (e.g., `media`).
+  const detectedCols = await detectPuppiesColumns(id);
+  const found = detectedCols ?? new Set(conservativeCols);
   try {
-    appendLog({ event: "table-columns-fallback", table: "puppies", used: defaultCols });
+    appendLog({ event: detectedCols ? 'table-columns-detected' : 'table-columns-conservative', table: 'puppies', used: Array.from(found) });
   } catch (e) {
     void e;
   }
@@ -399,7 +627,9 @@ export async function POST(req: NextRequest) {
   const aliasMap: Record<string, string> = { cidade: "city", estado: "state", nome: "name" };
   const finalPayload: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(payload)) {
-    if (found && found.has(k)) {
+    // Only include known columns and skip null/undefined values to avoid
+    // sending `field: null` for columns that may not exist in some schemas.
+    if (found && found.has(k) && v !== null && v !== undefined) {
       finalPayload[k] = v;
     }
   }
@@ -417,7 +647,20 @@ export async function POST(req: NextRequest) {
 
   // Ensure `status` is a valid puppy_status enum value to avoid DB check constraint failures
   try {
-    const allowed = new Set(["disponivel", "reservado", "vendido", "indisponivel"]);
+    const allowed = new Set([
+      // PT-BR
+      "disponivel",
+      "reservado",
+      "vendido",
+      "indisponivel",
+      "em_breve",
+      // EN
+      "available",
+      "reserved",
+      "sold",
+      "unavailable",
+      "pending",
+    ]);
     if (finalPayload.status !== undefined) {
       const s = String(finalPayload.status || "").toLowerCase();
       finalPayload.status = allowed.has(s) ? s : "disponivel";
@@ -444,12 +687,21 @@ export async function POST(req: NextRequest) {
   const q = id
     ? sb.from("puppies").update(finalPayload).eq("id", id).select().maybeSingle()
     : sb.from("puppies").insert(finalPayload).select().maybeSingle();
+  try {
+    appendLog({ event: "before-query", id: id ?? null, status: finalPayload.status ?? null, payloadKeys: Object.keys(finalPayload) });
+  } catch (e) {
+    void e;
+  }
   // Execute query and handle rare schema-mismatch errors by retrying with EN->PT-BR mapping
   try {
     const { data, error } = await q;
     if (error) {
       const rawMsg = String(error.message ?? error);
       const msg = rawMsg.toLowerCase();
+
+      try {
+        appendLog({ event: 'query-error', message: rawMsg, payloadKeys: Object.keys(finalPayload) });
+      } catch (e) { void e; }
 
       // If DB rejects the status with a check constraint, retry without sending status
       try {
@@ -533,16 +785,28 @@ export async function POST(req: NextRequest) {
 
       return NextResponse.json({ ok: false, error: rawMsg }, { status: 500 });
     }
+    // If no row returned, the mutation likely affected 0 rows (RLS denied or id not found)
+    if (!data) {
+      try {
+        appendLog({ event: id ? 'updated-none' : 'created-none', id: id ?? null, reason: 'no-row-returned' });
+      } catch (e) {
+        void e;
+      }
+      return NextResponse.json(
+        { ok: false, error: id ? "Atualização não aplicada (sem permissão/RLS ou registro não encontrado)." : "Criação não aplicada." },
+        { status: id ? 403 : 500 },
+      );
+    }
     return NextResponse.json({ ok: true, puppy: data });
   } catch (err) {
     try {
-      appendLog({ event: 'query-exception', error: String(err) });
+      appendLog({ event: 'query-exception', error: serializeError(err) });
     } catch (e) { void e; }
-    return NextResponse.json({ ok: false, error: String(err) }, { status: 500 });
+    return NextResponse.json({ ok: false, error: serializeError(err) }, { status: 500 });
   }
 } catch (error) {
   try {
-    const line = `[${new Date().toISOString()}] ${JSON.stringify({ event: "exception", error: String(error) })}\n`;
+    const line = `[${new Date().toISOString()}] ${JSON.stringify({ event: "exception", error: serializeError(error) })}\n`;
     fs.mkdirSync(path.dirname(logPath), { recursive: true });
     fs.appendFileSync(logPath, line);
   } catch (e) { void e; }

@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 import { CITIES, PUPPY_COLORS } from "@/domain/taxonomies";
 import { listPublicPosts } from "@/lib/sanity/publicPosts";
-import { supabaseAnon } from "@/lib/supabaseAnon";
+import { supabasePublic } from "@/lib/supabasePublic";
 
 // const COLORS = Object.values(PUPPY_COLORS); // unused — kept commented to document available taxonomy
 
@@ -93,11 +93,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // ============================================================================
   let puppyPages: MetadataRoute.Sitemap = [];
   try {
-    const sb = supabaseAnon();
+    const sb = supabasePublic();
     const { data, error } = await sb
       .from("puppies")
       .select("slug, updated_at")
-      .in("status", ["disponivel", "available"])
+      .in("status", ["disponivel", "reservado"])
       .order("created_at", { ascending: false });
 
     if (!error && data) {
@@ -117,7 +117,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // ============================================================================
   let webStories: MetadataRoute.Sitemap = [];
   try {
-    const sb = supabaseAnon();
+    const sb = supabasePublic();
     const { data, error } = await sb
       .from("web_stories")
       .select("slug, updated_at")

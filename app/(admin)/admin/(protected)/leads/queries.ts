@@ -1,9 +1,11 @@
 import { buildLeadAdvisor, summarizePriorities, type LeadAdvisorSnapshot, type LeadPrioritySummary } from "@/lib/ai/leadAdvisor";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { hasServiceRoleKey, supabaseAdmin } from "@/lib/supabaseAdmin";
+import { createSupabaseUserClient } from "@/lib/supabaseClient";
 import type { Database } from "@/types/supabase";
 
 const DEFAULT_PAGE_SIZE = 40;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+const MAX_OPTIONS_SCAN = 5000;
 
 export const LEAD_STATUS_OPTIONS = ["novo", "em_contato", "fechado", "perdido"] as const;
 export type LeadStatus = (typeof LEAD_STATUS_OPTIONS)[number];
@@ -111,9 +113,30 @@ type PuppyRow = Database["public"]["Tables"]["puppies"]["Row"] & {
   gender?: string | null;
 };
 
-type StatusAggRow = { status: string | null; count: number };
+type SbErrorLike = { code?: unknown; message?: unknown; details?: unknown; hint?: unknown; status?: unknown; statusCode?: unknown };
 
-type DistinctRow = { cor_preferida?: string | null; cidade?: string | null };
+function isMissingColumnError(err: unknown) {
+  const e = err as SbErrorLike | null | undefined;
+  if (!e) return false;
+  if (e.code === "42703") return true;
+  const msg = typeof e.message === "string" ? e.message : "";
+  return msg.includes("does not exist") && msg.includes("column");
+}
+
+async function resolveFirstColumn(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
+  table: string,
+  candidates: string[],
+) {
+  for (const col of candidates) {
+    const probe = await supabase.from(table).select(col).limit(1);
+    if (!probe?.error) return col;
+    if (isMissingColumnError(probe.error)) continue;
+    throw probe.error;
+  }
+  return undefined;
+}
 
 const PHONE_REGEX = /^\+?\d{11,15}$/;
 
@@ -211,12 +234,42 @@ export async function fetchAdminLeads({
   filters,
   page,
   pageSize = DEFAULT_PAGE_SIZE,
+  accessToken,
 }: {
   filters: ParsedLeadFilters;
   page: number;
   pageSize?: number;
+  accessToken?: string;
 }): Promise<AdminLeadsPayload> {
-  const supabase = supabaseAdmin();
+  const wrapSbError = (label: string, err: unknown) => {
+    if (!err || typeof err !== "object") {
+      return new Error(`${label}: ${String(err)}`);
+    }
+
+    const rawMsg = (err as { message?: unknown }).message;
+    const msg = typeof rawMsg === "string" && rawMsg.trim().length ? rawMsg : "erro";
+    const e = new Error(`${label}: ${msg}`);
+    const src = err as Record<string, unknown>;
+    for (const key of ["code", "details", "hint", "status", "statusCode"]) {
+      if (key in src && src[key] != null) (e as unknown as Record<string, unknown>)[key] = src[key];
+    }
+    (e as unknown as Record<string, unknown>).cause = err;
+    return e;
+  };
+
+  const supabase = hasServiceRoleKey() ? supabaseAdmin() : accessToken ? createSupabaseUserClient(accessToken) : null;
+  if (!supabase) {
+    throw new Error(
+      "Credenciais Supabase ausentes para carregar leads. Defina SUPABASE_SERVICE_ROLE_KEY (recomendado) ou faça login no admin para usar o token (RLS).",
+    );
+  }
+
+  const [statusColumn, colorColumn, cityColumn] = await Promise.all([
+    resolveFirstColumn(supabase, "leads", ["status", "status_lead", "lead_status", "situacao"]).catch(() => undefined),
+    resolveFirstColumn(supabase, "leads", ["cor_preferida", "cor", "color", "preferencia", "preferred_color"]).catch(() => undefined),
+    resolveFirstColumn(supabase, "leads", ["cidade", "city", "municipio"]).catch(() => undefined),
+  ]);
+
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
 
@@ -226,14 +279,14 @@ export async function fetchAdminLeads({
     .order("created_at", { ascending: false })
     .range(from, to);
 
-  if (filters.statuses.length) {
-    query = query.in("status", filters.statuses);
+  if (filters.statuses.length && statusColumn) {
+    query = query.in(statusColumn, filters.statuses);
   }
-  if (filters.colors.length) {
-    query = query.in("cor_preferida", filters.colors);
+  if (filters.colors.length && colorColumn) {
+    query = query.in(colorColumn, filters.colors);
   }
-  if (filters.city) {
-    query = query.eq("cidade", filters.city);
+  if (filters.city && cityColumn) {
+    query = query.eq(cityColumn, filters.city);
   }
   if (filters.dateFrom) {
     query = query.gte("created_at", `${filters.dateFrom}T00:00:00Z`);
@@ -242,23 +295,61 @@ export async function fetchAdminLeads({
     query = query.lte("created_at", `${filters.dateTo}T23:59:59Z`);
   }
 
-  const [listRes, statusAggRes, colorRes, cityRes] = await Promise.all([
-    query,
-    supabase.from("leads").select("status, count:id", { group: "status" }),
-    supabase
-      .from("leads")
-      .select("cor_preferida")
-      .not("cor_preferida", "is", null),
-    supabase
-      .from("leads")
-      .select("cidade")
-      .not("cidade", "is", null),
+  const listRes = await query;
+  if (listRes.error) throw wrapSbError("leads.list", listRes.error);
+
+  const [statusCounts, colorRes, cityRes] = await Promise.all([
+    Promise.all(
+      LEAD_STATUS_OPTIONS.map(async (status) => {
+        if (!statusColumn) return { status, total: 0 };
+        const res = await supabase
+          .from("leads")
+          .select("id", { count: "exact", head: true })
+          .eq(statusColumn, status);
+        if (res.error) {
+          // Sumário é auxiliar: não deve derrubar a listagem.
+          // eslint-disable-next-line no-console
+          console.warn(
+            JSON.stringify({
+              level: "warn",
+              scope: "admin:leads",
+              message: `Falha ao calcular status_summary.${status}`,
+              error: res.error,
+              timestamp: new Date().toISOString(),
+            }),
+          );
+          return { status, total: 0 };
+        }
+        return { status, total: res.count ?? 0 };
+      }),
+    ),
+    colorColumn
+      ? supabase
+          .from("leads")
+          .select(colorColumn)
+          .not(colorColumn, "is", null)
+          .order(colorColumn, { ascending: true })
+          .limit(MAX_OPTIONS_SCAN)
+      : Promise.resolve({ data: [] }),
+    cityColumn
+      ? supabase
+          .from("leads")
+          .select(cityColumn)
+          .not(cityColumn, "is", null)
+          .order(cityColumn, { ascending: true })
+          .limit(MAX_OPTIONS_SCAN)
+      : Promise.resolve({ data: [] }),
   ]);
 
-  if (listRes.error) throw new Error(listRes.error.message);
-  if (statusAggRes.error) throw new Error(statusAggRes.error.message);
-  if (colorRes.error) throw new Error(colorRes.error.message);
-  if (cityRes.error) throw new Error(cityRes.error.message);
+  // Se a coluna não existir neste schema, apenas degrade sem quebrar a página.
+  if ((colorRes as { error?: unknown } | undefined)?.error) {
+    const err = (colorRes as { error?: unknown }).error;
+    if (!isMissingColumnError(err)) throw wrapSbError("leads.color_options", err);
+  }
+  if ((cityRes as { error?: unknown } | undefined)?.error) {
+    const err = (cityRes as { error?: unknown }).error;
+    if (!isMissingColumnError(err)) throw wrapSbError("leads.city_options", err);
+  }
 
   const rows = (listRes.data ?? []) as LeadRow[];
   const leadIds = rows.map((row) => row.id);
@@ -347,13 +438,18 @@ export async function fetchAdminLeads({
     const matchedId = safeStr(ai?.matched_puppy_id ?? row.puppy_id ?? null);
     const matchedPuppy = matchedId ? puppyMap.get(matchedId) ?? null : null;
     const candidateName = typeof row.nome === 'string' && row.nome.length ? row.nome : typeof row.first_name === 'string' && row.first_name.length ? row.first_name : typeof row.name === 'string' && row.name.length ? row.name : 'Lead';
+    const resolvedCity = (row.cidade ?? row.city ?? row.municipio ?? null) as string | null;
+    const resolvedState = (row.estado ?? row.state ?? row.uf ?? null) as string | null;
+    const resolvedPreferredColor = (row.cor_preferida ?? row.cor ?? row.color ?? row.preferencia ?? null) as string | null;
+    const resolvedStatus = safeStr((row as any).status ?? (row as any).status_lead ?? (row as any).lead_status ?? (row as any).situacao ?? null);
+
     const advisor = buildLeadAdvisor({
       id: row.id,
       name: candidateName,
-      status: row.status as string,
-      city: (row.cidade ?? row.city ?? null) as string | null,
-      state: (row.estado ?? row.state ?? null) as string | null,
-      preferredColor: (row.cor_preferida ?? row.color ?? null) as string | null,
+      status: (resolvedStatus ?? (row.status as string) ?? "") as string,
+      city: resolvedCity,
+      state: resolvedState,
+      preferredColor: resolvedPreferredColor,
       preferredSex: (row.sexo_preferido ?? row.sexo ?? null) as string | null,
       createdAt: toStringOrNull(row.created_at),
       updatedAt: toStringOrNull(row.updated_at ?? row.created_at),
@@ -376,10 +472,10 @@ export async function fetchAdminLeads({
       name: displayName,
       phone,
       whatsapp,
-      city: (row.cidade ?? row.city ?? null) as string | null,
-      state: (row.estado ?? row.state ?? null) as string | null,
-      color: (row.cor_preferida ?? row.color ?? null) as string | null,
-      status: normalizeLeadStatus(row.status as string),
+      city: resolvedCity,
+      state: resolvedState,
+      color: resolvedPreferredColor,
+      status: normalizeLeadStatus((resolvedStatus ?? (row.status as string) ?? "novo") as string),
       createdAt: toStringOrNull(row.created_at),
       page: safeStr(row.page_slug ?? row.page ?? null),
       preferredSex: (typeof (row.sexo_preferido ?? row.sexo ?? null) === 'string' ? (row.sexo_preferido ?? row.sexo ?? null) as string : null),
@@ -404,9 +500,8 @@ export async function fetchAdminLeads({
     fechado: 0,
     perdido: 0,
   };
-  (statusAggRes.data as StatusAggRow[]).forEach((row) => {
-    const status = normalizeLeadStatus(row.status as string);
-    statusSummary[status] += row.count ?? 0;
+  statusCounts.forEach(({ status, total }) => {
+    statusSummary[status] = total;
   });
 
   const dedupeSorted = (values: (string | null | undefined)[]) =>
@@ -414,8 +509,18 @@ export async function fetchAdminLeads({
       .map((value) => value.trim())
       .sort((a, b) => a.localeCompare(b, "pt-BR"));
 
-  const colorOptions = dedupeSorted((colorRes.data as DistinctRow[]).map((row) => row.cor_preferida));
-  const cityOptions = dedupeSorted((cityRes.data as DistinctRow[]).map((row) => row.cidade));
+  const extractColumnValues = (data: unknown, col?: string) => {
+    if (!col) return [] as (string | null | undefined)[];
+    if (!Array.isArray(data)) return [];
+    return (data as Array<Record<string, unknown> | null | undefined>).map((row) => {
+      if (!row || typeof row !== "object") return null;
+      const v = (row as Record<string, unknown>)[col];
+      return typeof v === "string" ? v : null;
+    });
+  };
+
+  const colorOptions = dedupeSorted(extractColumnValues((colorRes as { data?: unknown })?.data, colorColumn));
+  const cityOptions = dedupeSorted(extractColumnValues((cityRes as { data?: unknown })?.data, cityColumn));
 
   const total = listRes.count ?? 0;
 

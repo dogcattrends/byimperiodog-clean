@@ -14,10 +14,10 @@ const WA_PHONE = process.env.NEXT_PUBLIC_WA_PHONE?.replace(/\D/g, "") || "551196
 const WA_LINK = `https://wa.me/${WA_PHONE}`;
 
 const MG_SNIPPET =
-  "Guia rapido para tutores de Minas Gerais que buscam filhotes de Spitz Alemao Anao (Lulu da Pomerania). Mostra como funciona a entrega, cidades atendidas e contato direto para confirmar disponibilidade, valores e proximos passos. Tambem reforca suporte pos-entrega e orientacoes iniciais.";
+  "Guia rápido para tutores de Minas Gerais que buscam filhotes de Spitz Alemão Anão (Lulu da Pomerânia). Mostra como funciona a entrega, cidades atendidas e contato direto para confirmar disponibilidade, valores e próximos passos. Também reforça suporte pós-entrega e orientações iniciais.";
 
 export const metadata: Metadata = {
-  title: "Filhotes de Spitz Alemão Anão (Lulu da Pomerânia) em Minas Gerais (MG) | By Imperio Dog",
+  title: "Filhotes de Spitz Alemão Anão (Lulu da Pomerânia) em Minas Gerais (MG) | By Império Dog",
   description:
     "Compre filhotes de Spitz Alemão Anão (Lulu da Pomerânia) em Minas Gerais com entrega segura em BH, Uberlândia, Juiz de Fora e todo o estado. Pedigree e suporte vitalício.",
   alternates: { canonical: canonical("/filhotes/minas-gerais") },
@@ -82,7 +82,7 @@ export default function FilhotesMinasGeraisPage() {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "@id": `${SITE_URL}/filhotes/minas-gerais#localbusiness`,
-    name: "By Imperio Dog - Filhotes em Minas Gerais",
+    name: "By Império Dog - Filhotes em Minas Gerais",
     url: `${SITE_URL}/filhotes/minas-gerais`,
     image: `${SITE_URL}/spitz-hero-desktop.webp`,
     telephone: "+55 11 9 6863-3239",
@@ -171,7 +171,7 @@ export default function FilhotesMinasGeraisPage() {
               href={waLink}
               target="_blank"
               rel="noopener noreferrer"
-              className={cn(buttonVariants({ size: "lg" }), "gap-2 bg-[#25D366] hover:bg-[#20BA5A]")}
+              className={cn(buttonVariants({ size: "lg" }), "btn-whatsapp gap-2")}
             >
               <WhatsAppIcon className="h-5 w-5" />
               Falar com a Criadora
@@ -274,7 +274,7 @@ export default function FilhotesMinasGeraisPage() {
               href={waLink}
               target="_blank"
               rel="noopener noreferrer"
-              className={cn(buttonVariants({ size: "lg" }), "mt-6 gap-2 bg-[#25D366] hover:bg-[#20BA5A]")}
+              className={cn(buttonVariants({ size: "lg" }), "btn-whatsapp mt-6 gap-2")}
             >
               <WhatsAppIcon className="h-5 w-5" />
               Falar no WhatsApp

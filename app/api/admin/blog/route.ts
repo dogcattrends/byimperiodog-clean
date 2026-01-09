@@ -9,6 +9,7 @@ import {
   type PostContentInput,
 } from "@/lib/db";
 import { sanityBlogRepo } from "@/lib/sanity/blogRepo";
+import { sanityClient } from "@/lib/sanity/client";
 
 function badRequest(message: string, details?: unknown) {
   return NextResponse.json({ error: message, details }, { status: 400 });
@@ -27,6 +28,7 @@ export async function GET(req: Request) {
     const url = new URL(req.url);
     const id = url.searchParams.get("id");
     const slug = url.searchParams.get("slug");
+    const summary = url.searchParams.get("summary") === "1";
     const metrics = url.searchParams.get("metrics") === "1";
     const pending = url.searchParams.get("pending") === "1";
     const search = url.searchParams.get("q") || "";
@@ -34,6 +36,23 @@ export async function GET(req: Request) {
     const page = Math.max(1, parseInt(url.searchParams.get("page") || "1", 10));
     const perPage = Math.min(100, Math.max(1, parseInt(url.searchParams.get("perPage") || "50", 10)));
     const offset = (page - 1) * perPage;
+
+    if (summary) {
+      const counts = await sanityClient.fetch<{
+        total: number;
+        published: number;
+        scheduled: number;
+        draft: number;
+      }>(
+        `{
+          "total": count(*[_type == "post"]),
+          "published": count(*[_type == "post" && defined(publishedAt) && dateTime(publishedAt) <= now() && (!defined(status) || status == "published")]),
+          "scheduled": count(*[_type == "post" && defined(publishedAt) && dateTime(publishedAt) > now() && (status == "scheduled" || !defined(status) || status == "published")]),
+          "draft": count(*[_type == "post" && (!defined(publishedAt) || publishedAt == null) && (status == "draft" || !defined(status))])
+        }`
+      );
+      return NextResponse.json({ summary: counts });
+    }
 
     if (id) {
       const post = await sanityBlogRepo.getPostById(id);

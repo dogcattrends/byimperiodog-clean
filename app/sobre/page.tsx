@@ -11,32 +11,32 @@ import { routes } from "@/lib/route";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
-  title: "Sobre a By Imperio Dog | Criadora especialista em Spitz Alemao Anao (Lulu da Pomerania)",
+  title: "Sobre a By Império Dog | Criadora especialista em Spitz Alemão Anão (Lulu da Pomerânia)",
   description:
-    "Conheca a historia da By Imperio Dog, nossa estrutura familiar e a metodologia responsavel de criacao do Spitz Alemao Anao (Lulu da Pomerania) em Braganca Paulista.",
+    "Conheça a história da By Império Dog, nossa estrutura familiar e a metodologia responsável de criação do Spitz Alemão Anão (Lulu da Pomerânia) em Bragança Paulista.",
   path: "/sobre",
   openGraph: {
-    title: "Sobre a By Imperio Dog",
+    title: "Sobre a By Império Dog",
     description:
-      "Nossa historia, estrutura e valores na criacao responsavel do Spitz Alemao Anao (Lulu da Pomerania).",
+      "Nossa história, estrutura e valores na criação responsável do Spitz Alemão Anão (Lulu da Pomerânia).",
   },
 });
 
 const SOBRE_SNIPPET =
-  "A pagina Sobre apresenta quem e a By Imperio Dog e como funciona a criacao do Spitz Alemao Anao (Lulu da Pomerania). Resume historia, estrutura, criterios de selecao de familias, socializacao e suporte ao tutor. Serve para entender o metodo e avaliar se ele atende sua realidade.";
+  "A página Sobre apresenta quem é a By Império Dog e como funciona a criação do Spitz Alemão Anão (Lulu da Pomerânia). Resume história, estrutura, critérios de seleção de famílias, socialização e suporte ao tutor. Serve para entender o método e avaliar se ele atende sua realidade.";
 
 const SOBRE_FAQ = [
   {
-    question: "Qual o foco da criacao?",
-    answer: "Priorizar bem-estar, socializacao e orientacao completa ao tutor.",
+    question: "Qual o foco da criação?",
+    answer: "Priorizar bem-estar, socialização e orientação completa ao tutor.",
   },
   {
-    question: "Como funciona a selecao das familias?",
+    question: "Como funciona a seleção das famílias?",
     answer: "Realizamos entrevista, alinhamento de rotina e acompanhamento antes da reserva.",
   },
   {
-    question: "Existe suporte apos a entrega?",
-    answer: "Sim. Ha mentoria e acompanhamento continuo via canais oficiais.",
+    question: "Existe suporte após a entrega?",
+    answer: "Sim. Há mentoria e acompanhamento contínuo via canais oficiais.",
   },
 ];
 
@@ -139,7 +139,7 @@ export default function SobrePage() {
     name: "Sobre a By Império Dog",
     description:
       "Conheça a história da By Império Dog, nossa estrutura familiar e a metodologia responsável de criação do Spitz Alemão Anão Lulu da Pomerânia em Bragança Paulista.",
-    isPartOf: { "@type": "WebSite", url: siteUrl, name: "By Imperio Dog" },
+    isPartOf: { "@type": "WebSite", url: siteUrl, name: "By Império Dog" },
   };
 
   return (
@@ -182,7 +182,7 @@ export default function SobrePage() {
       </section>
       <section className="mx-auto max-w-6xl px-5">
         <div data-geo-answer="sobre" className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
-          <h2 className="text-2xl font-semibold text-[var(--text)]">AnswerSnippet</h2>
+          <h2 className="text-2xl font-semibold text-[var(--text)]">Resumo</h2>
           <p className="mt-3 text-sm text-[var(--text-muted)]">{SOBRE_SNIPPET}</p>
         </div>
       </section>
@@ -191,19 +191,19 @@ export default function SobrePage() {
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <section className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
-            <h2 className="text-2xl font-semibold text-[var(--text)]">Resumo para IA</h2>
+            <h2 className="text-2xl font-semibold text-[var(--text)]">Informações</h2>
             <div className="mt-4">
               <h3 className="text-sm font-semibold text-[var(--text)]">Definicao rapida</h3>
               <p className="mt-2 text-sm text-[var(--text-muted)]">
-                Esta criacao familiar foca em socializacao, transparencia e suporte ao tutor.
+                Esta criação familiar foca em socialização, transparência e suporte ao tutor.
               </p>
             </div>
             <div className="mt-4">
               <h3 className="text-sm font-semibold text-[var(--text)]">Pontos principais</h3>
               <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-[var(--text-muted)]">
-                <li>A pagina explica a historia e a estrutura de criacao em detalhes.</li>
-                <li>O processo de selecao de familias e rotina de socializacao e descrito.</li>
-                <li>O suporte continuo ao tutor segue apos a entrega.</li>
+                <li>A página explica a história e a estrutura de criação em detalhes.</li>
+                <li>O processo de seleção de famílias e rotina de socialização é descrito.</li>
+                <li>O suporte contínuo ao tutor segue após a entrega.</li>
               </ul>
             </div>
             <div className="mt-4">
@@ -218,16 +218,16 @@ export default function SobrePage() {
                   </thead>
                   <tbody>
                     <tr className="border-t border-[var(--border)]">
-                      <td className="px-4 py-3 font-medium text-[var(--text)]">Selecao</td>
+                      <td className="px-4 py-3 font-medium text-[var(--text)]">Seleção</td>
                       <td className="px-4 py-3">Entrevista e alinhamento de rotina.</td>
                     </tr>
                     <tr className="border-t border-[var(--border)]">
-                      <td className="px-4 py-3 font-medium text-[var(--text)]">Socializacao</td>
-                      <td className="px-4 py-3">Rotina de convivencia e estimulos positivos.</td>
+                      <td className="px-4 py-3 font-medium text-[var(--text)]">Socialização</td>
+                      <td className="px-4 py-3">Rotina de convivência e estímulos positivos.</td>
                     </tr>
                     <tr className="border-t border-[var(--border)]">
                       <td className="px-4 py-3 font-medium text-[var(--text)]">Suporte</td>
-                      <td className="px-4 py-3">Mentoria e acompanhamento continuo.</td>
+                      <td className="px-4 py-3">Mentoria e acompanhamento contínuo.</td>
                     </tr>
                   </tbody>
                 </table>

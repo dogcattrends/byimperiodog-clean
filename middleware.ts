@@ -52,10 +52,15 @@ export function middleware(req: NextRequest) {
   if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
     const res = NextResponse.next();
     res.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive, nosnippet");
+    // Ajuda o RootLayout a detectar a rota de forma confiável (especialmente em dev)
+    res.headers.set("x-pathname", pathname);
     return res;
   }
 
-  return NextResponse.next();
+  const res = NextResponse.next();
+  // Ajuda o RootLayout a detectar a rota de forma confiável (especialmente em dev)
+  res.headers.set("x-pathname", pathname);
+  return res;
 }
 
 export const config = {

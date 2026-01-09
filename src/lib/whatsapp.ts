@@ -63,7 +63,7 @@ export const WHATSAPP_MESSAGES = {
   filhotes: (puppyName?: string) =>
     puppyName
       ? `Ola! Quero saber mais sobre o Spitz ${puppyName}. Poderia me enviar disponibilidade e valores?`
-      : "Ola! Quero conversar sobre os Spitz Alemao Anao sob consulta.",
+      : "Ola! Quero conversar sobre os Spitz Alemao Anao. Consultar valor.",
   contato: "Ola! Gostaria de tirar duvidas sobre o processo By Imperio Dog.",
   sobre: "Ola! Quero conhecer mais sobre a criadora e o acompanhamento vitalicio.",
 } as const;
@@ -132,10 +132,11 @@ function describePuppy(puppy?: PuppyForMessage) {
   return "Spitz selecionado";
 }
 
+import { formatCentsToBRL } from "@/lib/price";
+
 function formatPrice(price_cents?: number | null) {
   if (typeof price_cents !== "number" || Number.isNaN(price_cents)) return null;
-  const value = price_cents / 100;
-  return `R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+  return formatCentsToBRL(price_cents);
 }
 
 export function generateWhatsAppMessage(

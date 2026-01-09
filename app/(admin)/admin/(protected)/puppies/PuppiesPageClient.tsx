@@ -1,6 +1,6 @@
 "use client";
 
-import { Filter, LayoutGrid, RotateCcw, SlidersHorizontal, TableProperties } from "lucide-react";
+import { Filter, RotateCcw, SlidersHorizontal } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 
@@ -10,7 +10,6 @@ import type { AdminPuppyListItem, AdminPuppySort, AdminPuppyStatus, ParsedPuppyF
 import { fixMojibake } from "@/lib/text/fixMojibake";
 const sanitizeText = (value: string) => fixMojibake(value) ?? value;
 
-import { PuppiesBoard } from "./PuppiesBoard";
 import { PuppiesTable } from "./PuppiesTable";
 
 type Props = {
@@ -22,15 +21,15 @@ type Props = {
   hasMore: boolean;
   statusSummary: Record<AdminPuppyStatus, number>;
   colorOptions: string[];
+  cityOptions: string[];
   basePath?: string;
 };
 
 type FilterFormState = {
   statuses: Set<AdminPuppyStatus>;
   colors: Set<string>;
+  city?: string;
   sex?: "male" | "female";
-  minPrice: string;
-  maxPrice: string;
   search: string;
   sort: AdminPuppySort;
 };
@@ -51,21 +50,18 @@ const SEX_OPTIONS = [
 
 const SORT_LABELS: Record<AdminPuppySort, string> = {
   recent: sanitizeText("Mais recentes"),
-  "price-asc": sanitizeText("Menor preço"),
-  "price-desc": sanitizeText("Maior preço"),
-  demand: sanitizeText("Maior demanda (score)"),
+  "status-available": sanitizeText("Disponíveis primeiro"),
+  "status-reserved": sanitizeText("Reservados primeiro"),
 };
 
-const VIEW_STORAGE_KEY = "byimperiodog:admin:puppies:view";
 const EMPTY_FILTERS: ParsedPuppyFilters = { statuses: [], colors: [] };
 
 function buildFormState(filters: ParsedPuppyFilters, sort: AdminPuppySort): FilterFormState {
   return {
     statuses: new Set(filters.statuses),
     colors: new Set(filters.colors),
+    city: filters.city,
     sex: filters.sex,
-    minPrice: filters.minPrice ? String(filters.minPrice) : "",
-    maxPrice: filters.maxPrice ? String(filters.maxPrice) : "",
     search: filters.search ?? "",
     sort,
   };
@@ -112,11 +108,10 @@ function getActiveTabId(statuses: Set<AdminPuppyStatus>): TabId | "custom" {
   return "custom";
 }
 
-export function PuppiesPageClient({ items, leadCounts, filters, sort, total, hasMore, statusSummary, colorOptions, basePath = "/admin/filhotes" }: Props) {
+export function PuppiesPageClient({ items, leadCounts, filters, sort, total, hasMore, statusSummary, colorOptions, cityOptions, basePath = "/admin/filhotes" }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { push } = useToast();
-  const [view, setView] = useState<"table" | "board">("table");
   const [mutatingId, setMutatingId] = useState<string | null>(null);
   const [formState, setFormState] = useState<FilterFormState>(() => buildFormState(filters, sort));
   const [isPending, startTransition] = useTransition();
@@ -125,34 +120,19 @@ export function PuppiesPageClient({ items, leadCounts, filters, sort, total, has
     setFormState(buildFormState(filters, sort));
   }, [filters, sort]);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const stored = window.localStorage.getItem(VIEW_STORAGE_KEY);
-    if (stored === "board" || stored === "table") {
-      setView(stored);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem(VIEW_STORAGE_KEY, view);
-  }, [view]);
-
   const applyFilters = (state: FilterFormState) => {
     const params = new URLSearchParams(searchParams?.toString() ?? "");
     params.delete("status");
     params.delete("color");
     params.delete("sex");
-    params.delete("priceMin");
-    params.delete("priceMax");
+    params.delete("city");
     params.delete("search");
     params.delete("sort");
 
     if (state.statuses.size) params.set("status", Array.from(state.statuses).join(","));
     if (state.colors.size) params.set("color", Array.from(state.colors).join(","));
     if (state.sex) params.set("sex", state.sex);
-    if (state.minPrice) params.set("priceMin", state.minPrice);
-    if (state.maxPrice) params.set("priceMax", state.maxPrice);
+    if (state.city) params.set("city", state.city);
     if (state.search.trim()) params.set("search", state.search.trim());
     if (state.sort !== "recent") params.set("sort", state.sort);
 
@@ -209,7 +189,7 @@ export function PuppiesPageClient({ items, leadCounts, filters, sort, total, has
   const handleStatusChange = async (id: string, status: AdminPuppyStatus) => {
     const isDestructive = status === "sold" || status === "unavailable";
     if (isDestructive && typeof window !== "undefined") {
-      const confirmed = window.confirm("Tem certeza? Esta a��o altera o status de forma definitiva.");
+      const confirmed = window.confirm("Tem certeza? Esta acao altera o status de forma definitiva.");
       if (!confirmed) return;
     }
     setMutatingId(id);
@@ -234,7 +214,7 @@ export function PuppiesPageClient({ items, leadCounts, filters, sort, total, has
 
   const handleDelete = async (id: string, name: string) => {
     if (typeof window !== "undefined") {
-      const confirmed = window.confirm("Excluir " + name + " permanentemente? Esta a��o n�o pode ser revertida.");
+      const confirmed = window.confirm("Excluir " + name + " permanentemente? Esta acao nao pode ser revertida.");
       if (!confirmed) return;
     }
     setMutatingId(id);
@@ -248,10 +228,36 @@ export function PuppiesPageClient({ items, leadCounts, filters, sort, total, has
         const payload = await res.json().catch(() => ({}));
         throw new Error(payload?.error || "Erro ao excluir o filhote");
       }
-      push({ type: "success", message: "Filhote exclu�do com sucesso." });
+      push({ type: "success", message: "Filhote excluido com sucesso." });
       router.refresh();
     } catch (error) {
       push({ type: "error", message: error instanceof Error ? error.message : "Erro ao excluir o filhote" });
+    } finally {
+      setMutatingId(null);
+    }
+  };
+
+  const handleDuplicate = async (id: string) => {
+    setMutatingId(id);
+    try {
+      const res = await fetch("/api/admin/puppies/duplicate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(payload?.error || "Falha ao duplicar filhote");
+      }
+      const newId = payload?.id as string | undefined;
+      push({ type: "success", message: "Filhote duplicado. Revise e publique." });
+      if (newId) {
+        router.push(`${basePath}/${newId}/editar`);
+      } else {
+        router.refresh();
+      }
+    } catch (error) {
+      push({ type: "error", message: error instanceof Error ? error.message : "Erro ao duplicar filhote" });
     } finally {
       setMutatingId(null);
     }
@@ -262,8 +268,7 @@ export function PuppiesPageClient({ items, leadCounts, filters, sort, total, has
     if (formState.statuses.size) count++;
     if (formState.colors.size) count++;
     if (formState.sex) count++;
-    if (formState.minPrice) count++;
-    if (formState.maxPrice) count++;
+    if (formState.city) count++;
     if (formState.search.trim()) count++;
     return count;
   }, [formState]);
@@ -272,10 +277,10 @@ export function PuppiesPageClient({ items, leadCounts, filters, sort, total, has
 
   return (
     <div className="space-y-4">
-      <section className="space-y-2 rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm">
+      <section className="admin-glass-card admin-interactive space-y-2 p-4">
         <div className="flex items-center justify-between">
-          <p className="text-sm font-semibold text-[var(--text)]">Filtrar por status</p>
-          <p className="text-xs text-[var(--text-muted)]">Aba ativa guia o estoque principal.</p>
+          <p className="text-sm font-semibold admin-text">Filtrar por status</p>
+          <p className="text-xs admin-text-muted">Aba ativa guia o estoque principal.</p>
         </div>
         <div role="tablist" aria-label="Visões rápidas por status" className="flex flex-wrap gap-2">
           {TAB_PRESETS.map((tab) => {
@@ -290,8 +295,8 @@ export function PuppiesPageClient({ items, leadCounts, filters, sort, total, has
                 onClick={() => handleTabChange(tab.id)}
                 className={`flex flex-col gap-1 rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition ${
                   isActive
-                    ? "border-emerald-600 bg-emerald-600 text-white"
-                    : "border-[var(--border)] bg-white text-[var(--text)] hover:border-emerald-300"
+                    ? "admin-btn-primary"
+                    : "admin-btn-glass admin-interactive"
                 } focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-500`}
               >
                 <span>{tab.label}</span>
@@ -307,30 +312,30 @@ export function PuppiesPageClient({ items, leadCounts, filters, sort, total, has
 
       <form
         onSubmit={handleSubmit}
-        className="space-y-4 rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm"
+        className="admin-glass-card admin-interactive space-y-4 p-4"
         aria-labelledby="filters-heading"
       >
         <div className="flex items-center gap-2">
-          <SlidersHorizontal className="h-4 w-4 text-[var(--text-muted)]" aria-hidden />
-          <h2 id="filters-heading" className="text-sm font-semibold text-[var(--text)]">
+          <SlidersHorizontal className="h-4 w-4 admin-text-muted" aria-hidden />
+          <h2 id="filters-heading" className="text-sm font-semibold admin-text">
             Filtros avançados {activeFilters ? `(${activeFilters})` : ""}
           </h2>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 lg:grid-cols-4">
           <fieldset className="space-y-2">
-            <legend className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Status</legend>
+            <legend className="text-xs font-semibold uppercase tracking-wide admin-text-muted">Status</legend>
             <div className="grid gap-2">
               {STATUS_OPTIONS.map((option) => {
                 const id = `status-${option.value}`;
                 return (
-                  <label key={option.value} htmlFor={id} className="inline-flex items-center gap-2 text-sm text-[var(--text)]">
+                  <label key={option.value} htmlFor={id} className="inline-flex items-center gap-2 text-sm admin-text">
                     <input
                       id={id}
                       type="checkbox"
                       checked={formState.statuses.has(option.value)}
                       onChange={() => toggleStatus(option.value)}
-                      className="h-4 w-4 rounded border-[var(--border)] text-emerald-600 focus:ring-emerald-500"
+                      className="h-4 w-4 rounded border-none bg-[rgba(var(--admin-surface-2),0.8)] text-emerald-500 focus:ring-emerald-500"
                     />
                     {option.label}
                   </label>
@@ -340,19 +345,19 @@ export function PuppiesPageClient({ items, leadCounts, filters, sort, total, has
           </fieldset>
 
           <fieldset className="space-y-2">
-            <legend className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Cor</legend>
+            <legend className="text-xs font-semibold uppercase tracking-wide admin-text-muted">Cor</legend>
             <div className="grid gap-2">
-              {colorOptions.length === 0 && <p className="text-xs text-[var(--text-muted)]">Sem cores cadastradas.</p>}
+              {colorOptions.length === 0 && <p className="text-xs admin-text-muted">Sem cores cadastradas.</p>}
               {colorOptions.map((color) => {
                 const id = `color-${color}`;
                 return (
-                  <label key={color} htmlFor={id} className="inline-flex items-center gap-2 text-sm text-[var(--text)] capitalize">
+                  <label key={color} htmlFor={id} className="inline-flex items-center gap-2 text-sm admin-text capitalize">
                     <input
                       id={id}
                       type="checkbox"
                       checked={formState.colors.has(color)}
                       onChange={() => toggleColor(color)}
-                      className="h-4 w-4 rounded border-[var(--border)] text-emerald-600 focus:ring-emerald-500"
+                      className="h-4 w-4 rounded border-none bg-[rgba(var(--admin-surface-2),0.8)] text-emerald-500 focus:ring-emerald-500"
                     />
                     {color.replace(/-/g, " ")}
                   </label>
@@ -361,48 +366,46 @@ export function PuppiesPageClient({ items, leadCounts, filters, sort, total, has
             </div>
           </fieldset>
 
-          <fieldset className="space-y-2">
-            <legend className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Sexo</legend>
-            <div className="flex flex-wrap gap-2">
-              {SEX_OPTIONS.map((option) => (
-                <button
-                  key={option.label}
-                  type="button"
-                  onClick={() => setFormState((prev) => ({ ...prev, sex: option.value }))}
-                  className={`rounded-full px-3 py-1 text-xs font-semibold ${formState.sex === option.value ? "bg-emerald-600 text-white" : "bg-[var(--surface)] text-[var(--text)]"}`}
-                  aria-pressed={formState.sex === option.value}
-                >
-                  {option.label}
-                </button>
-              ))}
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wide admin-text-muted">Sexo</p>
+              <div className="flex flex-wrap gap-2">
+                {SEX_OPTIONS.map((option) => (
+                  <button
+                    key={option.label}
+                    type="button"
+                    onClick={() => setFormState((prev) => ({ ...prev, sex: option.value }))}
+                    className={`rounded-full px-3 py-1 text-xs font-semibold admin-interactive ${formState.sex === option.value ? "admin-btn-primary" : "admin-btn-glass"}`}
+                    aria-pressed={formState.sex === option.value}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </fieldset>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold uppercase tracking-wide admin-text-muted" htmlFor="city-filter">
+                Cidade
+              </label>
+              <select
+                id="city-filter"
+                className="admin-select w-full"
+                value={formState.city ?? ""}
+                onChange={(e) => setFormState((prev) => ({ ...prev, city: e.target.value || undefined }))}
+              >
+                <option value="">Todas</option>
+                {cityOptions.map((city) => (
+                  <option key={city} value={city}>
+                    {city}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]" htmlFor="price-min">
-              Faixa de preço (R$)
-            </label>
-            <div className="flex items-center gap-2">
-              <input
-                id="price-min"
-                type="number"
-                inputMode="numeric"
-                placeholder="Mínimo"
-                value={formState.minPrice}
-                onChange={(e) => setFormState((prev) => ({ ...prev, minPrice: e.target.value }))}
-                className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-              />
-              <span className="text-sm text-[var(--text-muted)]">até</span>
-              <input
-                type="number"
-                inputMode="numeric"
-                placeholder="Máximo"
-                value={formState.maxPrice}
-                onChange={(e) => setFormState((prev) => ({ ...prev, maxPrice: e.target.value }))}
-                className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-              />
-            </div>
-            <label className="block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]" htmlFor="search-term">
+            <label className="block text-xs font-semibold uppercase tracking-wide admin-text-muted" htmlFor="search-term">
               Buscar por nome, slug ou cidade
             </label>
             <input
@@ -410,7 +413,8 @@ export function PuppiesPageClient({ items, leadCounts, filters, sort, total, has
               type="search"
               value={formState.search}
               onChange={(e) => setFormState((prev) => ({ ...prev, search: e.target.value }))}
-              className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-sm text-[var(--text)] focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+              className="admin-input w-full"
+              placeholder="Digite para filtrar"
             />
           </div>
         </div>
@@ -419,13 +423,13 @@ export function PuppiesPageClient({ items, leadCounts, filters, sort, total, has
           <button
             type="button"
             onClick={handleReset}
-            className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] px-3 py-1.5 text-sm font-semibold text-[var(--text)] hover:bg-[var(--surface-2)]"
+            className="admin-btn-ghost inline-flex items-center gap-2"
           >
             <RotateCcw className="h-4 w-4" aria-hidden /> Limpar filtros
           </button>
           <button
             type="submit"
-            className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700"
+            className="admin-btn-primary inline-flex items-center gap-2"
           >
             <Filter className="h-4 w-4" aria-hidden /> Aplicar filtros
           </button>
@@ -434,18 +438,18 @@ export function PuppiesPageClient({ items, leadCounts, filters, sort, total, has
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-1">
-          <p className="text-sm font-semibold text-[var(--text)]" role="status" aria-live="polite">
+          <p className="text-sm font-semibold admin-text" role="status" aria-live="polite">
             {formattedTotal} filhote(s) encontrados {hasMore ? "(há mais registros, refine a busca)" : ""}
           </p>
-          <p className="text-xs text-[var(--text-muted)]">Visão focada em estoque real, filtros aplicados via Supabase.</p>
+          <p className="text-xs admin-text-muted">Visão focada em estoque real, filtros aplicados via Supabase.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <label className="text-sm text-[var(--text)]">
+          <label className="text-sm admin-text">
             Ordenar por
             <select
               value={formState.sort}
               onChange={(e) => handleSortChange(e.target.value as AdminPuppySort)}
-              className="ml-2 rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+              className="admin-select ml-2"
             >
               {Object.entries(SORT_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>
@@ -454,32 +458,14 @@ export function PuppiesPageClient({ items, leadCounts, filters, sort, total, has
               ))}
             </select>
           </label>
-          <div className="inline-flex rounded-full border border-[var(--border)] bg-white p-1" role="group" aria-label="Alternar visualização">
-            <button
-              type="button"
-              onClick={() => setView("table")}
-              className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${view === "table" ? "bg-emerald-600 text-white" : "text-[var(--text)]"}`}
-              aria-pressed={view === "table"}
-            >
-              <TableProperties className="h-4 w-4" aria-hidden /> Tabela
-            </button>
-            <button
-              type="button"
-              onClick={() => setView("board")}
-              className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${view === "board" ? "bg-emerald-600 text-white" : "text-[var(--text)]"}`}
-              aria-pressed={view === "board"}
-            >
-              <LayoutGrid className="h-4 w-4" aria-hidden /> Kanban
-            </button>
-          </div>
         </div>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5" role="list" aria-label="Resumo por status">
         {STATUS_OPTIONS.map((option) => (
-          <div key={option.value} className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm" role="listitem">
-            <p className="font-semibold text-[var(--text)]">{option.label}</p>
-            <p className="text-xl font-bold text-[var(--text)]">{statusSummary[option.value] ?? 0}</p>
+          <div key={option.value} className="admin-glass-card admin-interactive px-3 py-2 text-sm" role="listitem">
+            <p className="font-semibold admin-text">{option.label}</p>
+            <p className="admin-kpi-value text-xl font-bold">{statusSummary[option.value] ?? 0}</p>
           </div>
         ))}
       </div>
@@ -488,18 +474,15 @@ export function PuppiesPageClient({ items, leadCounts, filters, sort, total, has
 
       {items.length === 0 ? (
         <EmptyState title="Nenhum filhote encontrado" description="Ajuste os filtros ou limpe para visualizar todo o estoque." actionLabel="Limpar filtros" onAction={handleReset} />
-      ) : view === "board" ? (
-        <PuppiesBoard items={items} leadCounts={leadCounts} onStatusChange={handleStatusChange} onDelete={handleDelete} mutatingId={mutatingId} basePath={basePath} />
       ) : (
         <PuppiesTable
           items={items}
           leadCounts={leadCounts}
           onStatusChange={handleStatusChange}
           onDelete={handleDelete}
+          onDuplicate={handleDuplicate}
           mutatingId={mutatingId}
           basePath={basePath}
-          sort={formState.sort}
-          onRequestSort={handleSortChange}
         />
       )}
     </div>

@@ -8,6 +8,7 @@ import { z } from "zod";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { trackLeadFormSubmit } from "@/lib/events";
+import { captureUtmFromLocation } from "@/lib/utm";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 
 type LeadFormContext = {
@@ -94,6 +95,9 @@ export default function LeadForm({ context, className }: Props) {
         page_color: context?.color,
         page_city: context?.city,
         page_intent: context?.intent,
+        page: typeof window !== "undefined" ? window.location.pathname : undefined,
+        page_url: typeof window !== "undefined" ? window.location.href : undefined,
+        ...captureUtmFromLocation(),
       };
 
       const response = await fetch("/api/leads", {
@@ -181,7 +185,9 @@ export default function LeadForm({ context, className }: Props) {
             autoComplete="tel"
             {...register("telefone")}
             onChange={(e) => {
-              const digits = e.target.value.replace(/\D/g, "").slice(0, 11);
+              const rawDigits = e.target.value.replace(/\D/g, "");
+              const normalized = rawDigits.startsWith("55") && rawDigits.length >= 12 ? rawDigits.slice(2) : rawDigits;
+              const digits = normalized.slice(0, 11);
               setValue("telefone", digits, { shouldValidate: true });
             }}
             aria-invalid={errors.telefone ? "true" : "false"}

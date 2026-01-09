@@ -43,13 +43,13 @@ export function LeadIntelCard({ leadId, initial }: { leadId: string; initial?: I
   };
 
   return (
-    <section className="space-y-3 rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm">
+    <section className="admin-glass-card admin-interactive space-y-3 p-4">
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Brain className="h-5 w-5 text-emerald-600" aria-hidden />
+          <Brain className="h-5 w-5" style={{ color: 'rgb(var(--admin-brand))' }} aria-hidden />
           <div>
-            <p className="text-sm font-semibold text-[var(--text)]">Lead Intelligence</p>
-            <p className="text-xs text-[var(--text-muted)]">Classificação automática e sugestões</p>
+            <p className="text-sm font-semibold admin-text">Lead Intelligence</p>
+            <p className="text-xs admin-text-muted">Classificação automática e sugestões</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -57,7 +57,7 @@ export function LeadIntelCard({ leadId, initial }: { leadId: string; initial?: I
             type="button"
             onClick={() => processIntel(true)}
             disabled={pending}
-            className="rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--text)] hover:bg-[var(--surface)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-500"
+            className="admin-btn-glass inline-flex items-center justify-center disabled:cursor-not-allowed disabled:opacity-60"
           >
             {pending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : "Processar IA"}
           </button>
@@ -65,7 +65,7 @@ export function LeadIntelCard({ leadId, initial }: { leadId: string; initial?: I
       </header>
 
       {error && (
-        <div className="flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+        <div className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm" style={{ borderColor: 'rgba(var(--admin-danger),0.35)', background: 'rgba(251, 113, 133, 0.12)', color: 'rgb(255,255,255)' }}>
           <AlertCircle className="h-4 w-4" aria-hidden />
           {error}
         </div>
@@ -85,14 +85,14 @@ export function LeadIntelCard({ leadId, initial }: { leadId: string; initial?: I
           <Info label="Prazo" value={insight.desired_timeframe ?? "—"} />
 
           <div className="md:col-span-2 space-y-2">
-            <p className="text-sm font-semibold text-[var(--text)]">Próximo passo</p>
-            <p className="text-sm text-[var(--text-muted)]">{insight.next_step || "Responder rapidamente com fotos/vídeo."}</p>
+            <p className="text-sm font-semibold admin-text">Próximo passo</p>
+            <p className="text-sm admin-text-muted">{insight.next_step || "Responder rapidamente com fotos/vídeo."}</p>
           </div>
 
           {insight.alerts && insight.alerts.length > 0 && (
             <div className="md:col-span-2 space-y-2">
-              <p className="text-sm font-semibold text-[var(--text)]">Alertas</p>
-              <ul className="list-disc space-y-1 pl-5 text-sm text-[var(--text-muted)]">
+              <p className="text-sm font-semibold admin-text">Alertas</p>
+              <ul className="list-disc space-y-1 pl-5 text-sm admin-text-muted">
                 {insight.alerts.map((a) => (
                   <li key={a}>{a}</li>
                 ))}
@@ -102,12 +102,16 @@ export function LeadIntelCard({ leadId, initial }: { leadId: string; initial?: I
 
           {insight.suggested_puppies && insight.suggested_puppies.length > 0 && (
             <div className="md:col-span-2 space-y-2">
-              <p className="text-sm font-semibold text-[var(--text)]">Sugestões de filhotes</p>
-              <ul className="space-y-2 text-sm text-[var(--text)]">
+              <p className="text-sm font-semibold admin-text">Sugestões de filhotes</p>
+              <ul className="space-y-2 text-sm admin-text">
                 {insight.suggested_puppies.map((s) => (
-                  <li key={s.puppy_id} className="flex items-center justify-between rounded-lg bg-[var(--surface)] px-3 py-2">
+                  <li
+                    key={s.puppy_id}
+                    className="flex items-center justify-between rounded-lg border px-3 py-2"
+                    style={{ borderColor: 'rgba(var(--admin-border),0.25)', background: 'rgba(var(--admin-surface-2),0.35)' }}
+                  >
                     <span>{s.name}</span>
-                    <span className="text-xs text-[var(--text-muted)]">{s.reason}</span>
+                    <span className="text-xs admin-text-muted">{s.reason}</span>
                   </li>
                 ))}
               </ul>
@@ -115,7 +119,7 @@ export function LeadIntelCard({ leadId, initial }: { leadId: string; initial?: I
           )}
         </div>
       ) : (
-        <p className="text-sm text-[var(--text-muted)]">Nenhum insight gerado ainda. Clique em “Processar IA”.</p>
+        <p className="text-sm admin-text-muted">Nenhum insight gerado ainda. Clique em “Processar IA”.</p>
       )}
     </section>
   );
@@ -123,9 +127,9 @@ export function LeadIntelCard({ leadId, initial }: { leadId: string; initial?: I
 
 function Info({ label, value }: { label: string; value: string }) {
   return (
-    <div className="space-y-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2">
-      <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">{label}</p>
-      <p className="text-sm font-semibold text-[var(--text)]">{value}</p>
+    <div className="space-y-1 rounded-lg border px-3 py-2" style={{ borderColor: 'rgba(var(--admin-border),0.25)', background: 'rgba(var(--admin-surface-2),0.35)' }}>
+      <p className="text-xs font-semibold uppercase tracking-wide admin-text-muted">{label}</p>
+      <p className="text-sm font-semibold admin-text">{value}</p>
     </div>
   );
 }

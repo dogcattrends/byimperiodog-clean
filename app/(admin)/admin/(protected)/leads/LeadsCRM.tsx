@@ -57,11 +57,11 @@ const formatDateTime = (value?: string | null) => {
 
 const buildWhatsappMessage = (lead: LeadListItem) => {
   const firstName = (lead.name || "").split(" ")[0] ?? "";
-  const desired = [lead.color, lead.preferredSex].filter((v): v is string => typeof v === "string" && v.length > 0).join(" â€¢ ");
+  const desired = [lead.color, lead.preferredSex].filter((v): v is string => typeof v === "string" && v.length > 0).join(" • ");
   const puppy = lead.matchedPuppy?.name;
-  return `Oi ${firstName || ""}! Somos da By ImpÃ©rio Dog. Recebemos seu interesse${desired ? ` (${desired})` : ""}${
-    puppy ? ` e jÃ¡ separamos o ${puppy}` : ""
-  }. Podemos falar por aqui e te mandar fotos/vÃ­deo?`;
+  return `Oi ${firstName || ""}! Somos da By Império Dog. Recebemos seu interesse${desired ? ` (${desired})` : ""}${
+    puppy ? ` e já separamos o ${puppy}` : ""
+  }. Podemos falar por aqui e te mandar fotos/vídeo?`;
 };
 
 const buildWhatsAppLink = (lead: LeadListItem) => {
@@ -151,16 +151,16 @@ export default function LeadsCRM({ filters, items, total, page, hasNext, statusS
   const handleCopyMessage = async (lead: LeadListItem) => {
     try {
       await navigator.clipboard.writeText(buildWhatsappMessage(lead));
-      push({ type: "success", message: "Mensagem copiada para a Ã¡rea de transferÃªncia" });
+      push({ type: "success", message: "Mensagem copiada para a área de transferência" });
     } catch {
-      push({ type: "error", message: "NÃ£o foi possÃ­vel copiar a mensagem" });
+      push({ type: "error", message: "Não foi possível copiar a mensagem" });
     }
   };
 
   const handleOpenWhatsApp = (lead: LeadListItem) => {
     const link = buildWhatsAppLink(lead);
     if (!link) {
-      push({ type: "error", message: "Telefone sem WhatsApp vÃ¡lido" });
+      push({ type: "error", message: "Telefone sem WhatsApp válido" });
       return;
     }
     window.open(link, "_blank", "noopener,noreferrer");
@@ -217,43 +217,44 @@ export default function LeadsCRM({ filters, items, total, page, hasNext, statusS
     <div className="space-y-6">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--text)]">Leads</h1>
-          <p className="text-sm text-[var(--text-muted)]">Mini-CRM com filtros, aÃ§Ãµes rÃ¡pidas e integraÃ§Ã£o com filhotes.</p>
+          <h1 className="text-2xl font-bold admin-text">Leads</h1>
+          <p className="text-sm admin-text-muted">Mini-CRM com filtros, ações rápidas e integração com filhotes.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={handleExportCsv}
-            className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-sm font-semibold text-[var(--text)] hover:bg-[var(--surface)]"
+            className="admin-btn-glass admin-interactive inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold"
           >
             <Download className="h-4 w-4" aria-hidden />
             Exportar CSV
           </button>
-          <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-sm text-[var(--text-muted)]">
+          <div className="admin-btn-glass inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm admin-text-muted">
             <TableProperties className="h-4 w-4" aria-hidden />
             {items.length} de {formattedTotal} leads
           </div>
         </div>
       </header>
 
-      <section className="space-y-4 rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm">
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text)]">
-            <Filter className="h-4 w-4 text-[var(--text-muted)]" aria-hidden />
+      <section className="admin-glass-card admin-stagger-item">
+        <form className="space-y-6" onSubmit={handleSubmit}>
+          <div className="flex items-center gap-2 text-sm font-semibold">
+            <Filter className="h-4 w-4 admin-pulse-ring" style={{ color: 'rgb(var(--admin-accent))' }} aria-hidden />
             Filtros do funil
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-4">
-            <fieldset className="space-y-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3">
-              <legend className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Status</legend>
+          <div className="admin-grid-responsive gap-4">
+            <fieldset className="space-y-3 rounded-xl p-4 admin-border-glow" style={{ background: 'rgba(var(--admin-surface), 0.5)' }}>
+              <legend className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'rgb(var(--admin-text-muted))' }}>Status</legend>
               <div className="flex flex-wrap gap-2">
                 {LEAD_STATUS_OPTIONS.map((status) => {
                   const checked = formState.statuses.has(status);
                   return (
-                    <label key={status} className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-semibold ring-1 ring-[var(--border)]">
+                    <label key={status} className="admin-badge admin-interactive admin-focus-ring inline-flex items-center gap-2" style={{ cursor: 'pointer' }}>
                       <input
                         type="checkbox"
-                        className="h-3 w-3 rounded border-[var(--border)] text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        className="h-3 w-3 rounded admin-focus-ring"
+                        style={{ accentColor: 'rgb(var(--admin-brand))' }}
                         checked={checked}
                         onChange={(event) => {
                           const next = new Set(formState.statuses);
@@ -268,16 +269,17 @@ export default function LeadsCRM({ filters, items, total, page, hasNext, statusS
               </div>
             </fieldset>
 
-            <fieldset className="space-y-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3">
-              <legend className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Cor desejada</legend>
+            <fieldset className="space-y-3 rounded-xl p-4 admin-border-glow" style={{ background: 'rgba(var(--admin-surface), 0.5)' }}>
+              <legend className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'rgb(var(--admin-text-muted))' }}>Cor desejada</legend>
               <div className="flex flex-wrap gap-2">
                 {colorOptions.map((color) => {
                   const checked = formState.colors.has(color);
                   return (
-                    <label key={color} className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-semibold ring-1 ring-[var(--border)]">
+                    <label key={color} className="admin-badge admin-interactive admin-focus-ring inline-flex items-center gap-2" style={{ cursor: 'pointer' }}>
                       <input
                         type="checkbox"
-                        className="h-3 w-3 rounded border-[var(--border)] text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        className="h-3 w-3 rounded admin-focus-ring"
+                        style={{ accentColor: 'rgb(var(--admin-brand))' }}
                         checked={checked}
                         onChange={(event) => {
                           const next = new Set(formState.colors);
@@ -289,16 +291,20 @@ export default function LeadsCRM({ filters, items, total, page, hasNext, statusS
                     </label>
                   );
                 })}
-                {colorOptions.length === 0 && <span className="text-xs text-[var(--text-muted)]">Sem cores cadastradas ainda.</span>}
+                {colorOptions.length === 0 && (
+                  <span className="text-xs" style={{ color: 'rgb(var(--admin-text-soft))' }}>
+                    Sem cores cadastradas ainda.
+                  </span>
+                )}
               </div>
             </fieldset>
 
-            <div className="space-y-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Cidade</p>
+            <div className="space-y-2 rounded-xl p-4 admin-border-glow" style={{ background: 'rgba(var(--admin-surface), 0.5)' }}>
+              <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'rgb(var(--admin-text-muted))' }}>Cidade</p>
               <select
                 value={formState.city}
                 onChange={(event) => setFormState((prev) => ({ ...prev, city: event.target.value }))}
-                className="w-full rounded-lg border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--text)] focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="admin-select w-full"
               >
                 <option value="">Todas</option>
                 {cityOptions.map((city) => (
@@ -309,8 +315,8 @@ export default function LeadsCRM({ filters, items, total, page, hasNext, statusS
               </select>
             </div>
 
-            <div className="space-y-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3">
-              <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+            <div className="space-y-2 rounded-xl p-4 admin-border-glow" style={{ background: 'rgba(var(--admin-surface), 0.5)' }}>
+              <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide" style={{ color: 'rgb(var(--admin-text-muted))' }}>
                 <CalendarRange className="h-4 w-4" aria-hidden />
                 Intervalo
               </p>
@@ -319,18 +325,18 @@ export default function LeadsCRM({ filters, items, total, page, hasNext, statusS
                   type="date"
                   value={formState.dateFrom}
                   onChange={(event) => setFormState((prev) => ({ ...prev, dateFrom: event.target.value }))}
-                  className="w-full rounded-lg border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--text)] focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                  className="admin-input w-full"
                   aria-label="Data inicial"
                 />
                 <input
                   type="date"
                   value={formState.dateTo}
                   onChange={(event) => setFormState((prev) => ({ ...prev, dateTo: event.target.value }))}
-                  className="w-full rounded-lg border border-[var(--border)] bg-white px-3 py-2 text-sm text-[var(--text)] focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                  className="admin-input w-full"
                   aria-label="Data final"
                 />
               </div>
-              <p className="text-xs text-[var(--text-muted)]">Filtra por data de criaÃ§Ã£o do lead.</p>
+              <p className="text-xs" style={{ color: 'rgb(var(--admin-text-soft))' }}>Filtra por data de criação do lead.</p>
             </div>
           </div>
 
@@ -338,13 +344,13 @@ export default function LeadsCRM({ filters, items, total, page, hasNext, statusS
             <button
               type="button"
               onClick={handleReset}
-              className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] px-4 py-1.5 text-sm font-semibold text-[var(--text)] hover:bg-[var(--surface-2)]"
+              className="admin-btn-ghost inline-flex items-center gap-2"
             >
               <RotateCcw className="h-4 w-4" aria-hidden /> Limpar filtros
             </button>
             <button
               type="submit"
-              className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700"
+              className="admin-btn-primary inline-flex items-center gap-2"
             >
               <Filter className="h-4 w-4" aria-hidden /> Aplicar
             </button>
@@ -362,7 +368,7 @@ export default function LeadsCRM({ filters, items, total, page, hasNext, statusS
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="space-y-1 text-sm text-[var(--text-muted)]">
-            <p className="font-semibold text-[var(--text)]">PÃ¡gina {page}</p>
+            <p className="font-semibold text-[var(--text)]">Página {page}</p>
             <p>
               Mostrando {items.length} de {formattedTotal} leads.
             </p>
@@ -376,14 +382,14 @@ export default function LeadsCRM({ filters, items, total, page, hasNext, statusS
             >
               <ArrowLeft className="h-4 w-4" aria-hidden /> Anterior
             </button>
-            <span aria-hidden>â€¢</span>
+            <span aria-hidden>•</span>
             <button
               type="button"
               onClick={() => handlePageChange(page + 1)}
               disabled={!canNext}
               className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-semibold disabled:opacity-40"
             >
-              PrÃ³xima <ArrowRight className="h-4 w-4" aria-hidden />
+              Próxima <ArrowRight className="h-4 w-4" aria-hidden />
             </button>
           </div>
         </div>
@@ -401,7 +407,7 @@ export default function LeadsCRM({ filters, items, total, page, hasNext, statusS
         {items.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface)] px-6 py-12 text-center">
             <p className="text-sm font-semibold text-[var(--text)]">Nenhum lead encontrado para esses filtros.</p>
-            <p className="text-xs text-[var(--text-muted)]">Tente ajustar o perÃ­odo ou limpar os filtros.</p>
+            <p className="text-xs text-[var(--text-muted)]">Tente ajustar o período ou limpar os filtros.</p>
           </div>
         ) : (
           <LeadsTable
@@ -442,7 +448,7 @@ function LeadsTable({
             <th className="px-4 py-3">Filhote</th>
             <th className="px-4 py-3">Status</th>
             <th className="px-4 py-3">Criado em</th>
-            <th className="px-4 py-3">AÃ§Ãµes</th>
+            <th className="px-4 py-3">Ações</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-[var(--border)] bg-white">

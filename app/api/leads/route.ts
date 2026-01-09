@@ -8,17 +8,37 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 // Schema de validação server-side alinhado com o funil de leads (contato + contexto + LGPD)
 const leadSchema = z.object({
-  nome: z.string().min(2),
-  telefone: z.string().min(10),
-  cidade: z.string().min(2),
-  estado: z.string().length(2).toUpperCase(),
+  nome: z.string().trim().min(2),
+  telefone: z
+    .string()
+    .transform((value) => {
+      const digits = value.replace(/\D+/g, "");
+      // Aceita número em E.164 (55 + DDD + número) e normaliza para DDD+número.
+      if (digits.startsWith("55") && digits.length >= 12) return digits.slice(2);
+      return digits;
+    })
+    .refine((value) => /^\d{10,11}$/.test(value), "Telefone inválido"),
+  cidade: z.string().trim().min(2),
+  estado: z.string().trim().length(2).toUpperCase(),
   sexo_preferido: z.enum(["macho", "femea", "tanto_faz"]).optional(),
   cor_preferida: z.string().optional(),
   prazo_aquisicao: z.enum(["imediato", "1_mes", "2_3_meses", "3_mais"]).optional(),
   mensagem: z.string().optional(),
-  consent_lgpd: z.boolean(),
+  email: z.string().trim().email().nullable().optional(),
+  consent_lgpd: z.literal(true),
   consent_version: z.string().default("1.0"),
   consent_timestamp: z.string().optional(),
+  // Tracking opcional (body)
+  utm_source: z.string().nullable().optional(),
+  utm_medium: z.string().nullable().optional(),
+  utm_campaign: z.string().nullable().optional(),
+  utm_content: z.string().nullable().optional(),
+  utm_term: z.string().nullable().optional(),
+  gclid: z.string().nullable().optional(),
+  fbclid: z.string().nullable().optional(),
+  // Página de origem (client)
+  page: z.string().nullable().optional(),
+  page_url: z.string().nullable().optional(),
   // Contexto opcional de página
   page_type: z.string().optional(),
   page_slug: z.string().optional(),
@@ -26,6 +46,37 @@ const leadSchema = z.object({
   page_city: z.string().optional(),
   page_intent: z.string().optional(),
 });
+
+function splitName(fullName: string): { first: string | null; last: string | null } {
+  const cleaned = fullName.trim().replace(/\s+/g, " ");
+  if (!cleaned) return { first: null, last: null };
+  const parts = cleaned.split(" ");
+  const first = parts[0] ?? null;
+  const last = parts.length > 1 ? parts.slice(1).join(" ") : null;
+  return { first, last };
+}
+
+function safePathFromReferer(referer: string | null): string | null {
+  if (!referer) return null;
+  try {
+    const u = new URL(referer);
+    return u.pathname;
+  } catch {
+    return null;
+  }
+}
+
+function buildPreferencia(data: {
+  sexo_preferido?: string;
+  cor_preferida?: string;
+  prazo_aquisicao?: string;
+}): string | null {
+  const parts: string[] = [];
+  if (data.sexo_preferido) parts.push(`sexo:${data.sexo_preferido}`);
+  if (data.cor_preferida) parts.push(`cor:${data.cor_preferida}`);
+  if (data.prazo_aquisicao) parts.push(`prazo:${data.prazo_aquisicao}`);
+  return parts.length ? parts.join(" | ") : null;
+}
 
 // Rate limiting simples (memória)
 const rateLimitMap = new Map<string, number[]>();
@@ -49,6 +100,36 @@ function checkRateLimit(ip: string): boolean {
   return true;
 }
 
+function extractMissingColumn(message: string): string | null {
+  const schemaCacheMatch = message.match(/Could not find the '([^']+)' column of 'leads' in the schema cache/i);
+  if (schemaCacheMatch?.[1]) return schemaCacheMatch[1];
+
+  const relationMatch = message.match(/column\s+"?([a-zA-Z0-9_]+)"?\s+of\s+relation\s+"?leads"?\s+does not exist/i);
+  if (relationMatch?.[1]) return relationMatch[1];
+
+  return null;
+}
+
+async function insertLeadResilient(payload: Record<string, unknown>) {
+  const sb = supabaseAdmin();
+  const current = { ...payload } as Record<string, unknown>;
+  let lastError: unknown = null;
+
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    const res = await sb.from("leads").insert(current).select("id").maybeSingle();
+    if (!res.error) return res;
+
+    lastError = res.error;
+    const missing = extractMissingColumn(res.error.message);
+    if (!missing || !(missing in current)) {
+      return res;
+    }
+    delete current[missing];
+  }
+
+  return { data: null, error: lastError as { message?: string } };
+}
+
 export async function POST(req: NextRequest) {
   const logger = createLogger("api:leads");
   try {
@@ -66,50 +147,82 @@ export async function POST(req: NextRequest) {
     const data = validation.data;
     const url = new URL(req.url);
 
-    // UTM params (query tem precedência, fallback no body)
-    const utm_source = url.searchParams.get("utm_source") ?? body.utm_source ?? null;
-    const utm_medium = url.searchParams.get("utm_medium") ?? body.utm_medium ?? null;
-    const utm_campaign = url.searchParams.get("utm_campaign") ?? body.utm_campaign ?? null;
-    const utm_content = url.searchParams.get("utm_content") ?? body.utm_content ?? null;
-    const utm_term = url.searchParams.get("utm_term") ?? body.utm_term ?? null;
+    const referer = req.headers.get("referer");
 
-    const insertResult = await supabaseAdmin()
-      .from("leads")
-      .insert({
-        nome: data.nome,
-        telefone: data.telefone,
-        cidade: data.cidade,
-        estado: data.estado,
-        sexo_preferido: data.sexo_preferido ?? null,
-        cor_preferida: data.cor_preferida ?? null,
-        prazo_aquisicao: data.prazo_aquisicao ?? null,
-        mensagem: data.mensagem ?? null,
-        consent_lgpd: data.consent_lgpd,
-        consent_version: data.consent_version,
-        consent_timestamp: data.consent_timestamp ?? new Date().toISOString(),
-        // Contexto
-        page: url.pathname,
-        page_type: data.page_type ?? null,
-        page_slug: data.page_slug ?? null,
-        page_color: data.page_color ?? null,
-        page_city: data.page_city ?? null,
-        page_intent: data.page_intent ?? null,
-        referer: req.headers.get("referer"),
-        gclid: url.searchParams.get("gclid"),
-        fbclid: url.searchParams.get("fbclid"),
-        ip_address: ip,
-        user_agent: req.headers.get("user-agent"),
-        // UTMs
-        utm_source,
-        utm_medium,
-        utm_campaign,
-        utm_content,
-        utm_term,
-        source: utm_source || "site_org",
-        status: "novo",
-      })
-      .select("id")
-      .maybeSingle();
+    // UTM params (query tem precedência, fallback no body)
+    const utm_source = url.searchParams.get("utm_source") ?? data.utm_source ?? (body.utm_source ?? null);
+    const utm_medium = url.searchParams.get("utm_medium") ?? data.utm_medium ?? (body.utm_medium ?? null);
+    const utm_campaign = url.searchParams.get("utm_campaign") ?? data.utm_campaign ?? (body.utm_campaign ?? null);
+    const utm_content = url.searchParams.get("utm_content") ?? data.utm_content ?? (body.utm_content ?? null);
+    const utm_term = url.searchParams.get("utm_term") ?? data.utm_term ?? (body.utm_term ?? null);
+
+    const gclid = url.searchParams.get("gclid") ?? data.gclid ?? (body.gclid ?? null);
+    const fbclid = url.searchParams.get("fbclid") ?? data.fbclid ?? (body.fbclid ?? null);
+
+    const originPage = data.page ?? safePathFromReferer(referer) ?? null;
+    const { first: first_name, last: last_name } = splitName(data.nome);
+    const preferencia = buildPreferencia(data);
+
+    const consentTimestamp = data.consent_timestamp ?? new Date().toISOString();
+    const notesPayload = {
+      consent_lgpd: data.consent_lgpd,
+      consent_version: data.consent_version,
+      consent_timestamp: consentTimestamp,
+      email: data.email ?? null,
+      page_type: data.page_type ?? null,
+      page_slug: data.page_slug ?? null,
+      page_intent: data.page_intent ?? null,
+      page: originPage,
+      page_url: data.page_url ?? null,
+      utm_source,
+      utm_medium,
+      utm_campaign,
+      utm_content,
+      utm_term,
+      gclid,
+      fbclid,
+    };
+
+    const insertResult = await insertLeadResilient({
+      nome: data.nome,
+      telefone: data.telefone,
+      phone: data.telefone,
+      first_name,
+      last_name,
+      cidade: data.cidade,
+      estado: data.estado,
+      preferencia,
+      sexo_preferido: data.sexo_preferido ?? null,
+      cor_preferida: data.cor_preferida ?? null,
+      prazo_aquisicao: data.prazo_aquisicao ?? null,
+      mensagem: data.mensagem ?? null,
+      consent_lgpd: data.consent_lgpd,
+      consent_version: data.consent_version,
+      consent_timestamp: consentTimestamp,
+      // Contexto
+      page: originPage,
+      page_type: data.page_type ?? null,
+      page_slug: data.page_slug ?? null,
+      page_color: data.page_color ?? null,
+      page_city: data.page_city ?? null,
+      page_intent: data.page_intent ?? null,
+      referer,
+      gclid,
+      fbclid,
+      ip_address: ip,
+      user_agent: req.headers.get("user-agent"),
+      // UTMs
+      utm_source,
+      utm_medium,
+      utm_campaign,
+      utm_content,
+      utm_term,
+      source: utm_source || "site_org",
+      status: "novo",
+      // Fallback de compatibilidade: se colunas LGPD/contexto não existirem,
+      // ainda persistimos num campo de texto (quando disponível).
+      notes: JSON.stringify(notesPayload),
+    });
 
     if (insertResult.error) {
       logger.error("Supabase error on lead insert", { error: insertResult.error });

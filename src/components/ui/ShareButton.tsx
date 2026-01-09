@@ -55,7 +55,10 @@ export default function ShareButton({ puppy, location = "card", className = "" }
       <button
         type="button"
         aria-label="Compartilhar este filhote"
-        onClick={onShare}
+        onClick={(event) => {
+          event.stopPropagation();
+          void onShare();
+        }}
         className={"flex h-11 w-11 items-center justify-center rounded-full bg-white text-emerald-600 shadow-lg ring-1 ring-black/5 transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 hover:bg-emerald-50 " + className}
       >
         <Share2 className="h-5 w-5" aria-hidden />

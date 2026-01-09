@@ -3,9 +3,24 @@ import { supabaseAdmin } from "./supabaseAdmin";
 
 const logger = createLogger("lead-download-token");
 
+function buildSupabasePublicObjectUrl(objectPath: string): string | null {
+  const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!base) return null;
+  const bucket = process.env.NEXT_PUBLIC_SUPABASE_BUCKET || "media";
+  const normalizedBase = base.replace(/\/$/, "");
+  const normalizedPath = objectPath.replace(/^\//, "");
+  return `${normalizedBase}/storage/v1/object/public/${bucket}/${normalizedPath}`;
+}
+
 const GUIDE_VERSION_PATHS: Record<string, string> = {
-  v1: process.env.GUIDE_FILE_V1_PATH || "/guia.pdf",
-  v2: process.env.GUIDE_FILE_V2_PATH || "/guia-v2.pdf",
+  v1:
+    process.env.GUIDE_FILE_V1_PATH ||
+    buildSupabasePublicObjectUrl("guides/guia.pdf") ||
+    "/guia.pdf",
+  v2:
+    process.env.GUIDE_FILE_V2_PATH ||
+    buildSupabasePublicObjectUrl("guides/guia-v2.pdf") ||
+    "/guia-v2.pdf",
 };
 
 const CURRENT_VERSION = process.env.GUIDE_CURRENT_VERSION || "v1";

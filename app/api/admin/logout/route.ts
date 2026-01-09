@@ -9,5 +9,7 @@ export async function POST() {
   clear("admin_email");
   clear("admin_name");
   clear("admin_user_id");
+  clear("admin_sb_at");
+  clear("admin_sb_rt");
   return NextResponse.json({ ok: true });
 }

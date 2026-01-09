@@ -17,6 +17,7 @@ import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { Button, StatusBadge } from "@/components/ui";
 import type { Puppy } from "@/domain/puppy";
 import { getNextImageProps } from "@/lib/images";
+import { formatCentsToBRL } from "@/lib/price";
 
 type Props = {
   puppy: Puppy;
@@ -26,18 +27,19 @@ type Props = {
 };
 
 export function PuppyHero({ puppy, whatsappLink, onFavorite, isFavorited }: Props) {
-  const priceFormatted = formatPrice(puppy.priceCents);
-  const location = [puppy.city, puppy.state].filter(Boolean).join(" / ");
+  const priceFormatted = typeof (puppy?.priceCents ?? null) === "number" && (puppy?.priceCents ?? 0) > 0 ? formatCentsToBRL(puppy!.priceCents!) : "Consultar valor";
+  const location = [puppy?.city, puppy?.state].filter(Boolean).join(" / ");
+  const safeStatus = (puppy?.status as string | undefined) ?? "disponivel";
 
   return (
     <section className="grid gap-6 lg:grid-cols-2 lg:gap-10" aria-labelledby="puppy-name">
       {/* Imagem principal com badge de status */}
       <div className="relative">
         <div className="aspect-[4/3] overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-50 shadow-lg">
-          {puppy.images?.[0] ? (
+          {puppy?.images?.[0] ? (
             <Image
-              {...getNextImageProps(puppy.slug, "hero", { priority: true })}
-              alt={`Filhote ${puppy.name} - Spitz Alemão Anão ${puppy.color}, ${translateSex(puppy.sex)}, ${location}`}
+              {...getNextImageProps(puppy?.slug ?? "", "hero", { priority: true })}
+              alt={`Filhote ${puppy?.name ?? "Filhote"} - Spitz Alemão Anão ${puppy?.color ?? ""}, ${translateSex(puppy?.sex)}, ${location}`}
               className="object-cover w-full h-full"
             />
           ) : (
@@ -49,7 +51,7 @@ export function PuppyHero({ puppy, whatsappLink, onFavorite, isFavorited }: Prop
 
         {/* Badge de status sobreposto */}
         <div className="absolute left-4 top-4">
-          <StatusBadge status={puppy.status as any} size="md" />
+          <StatusBadge status={safeStatus as any} size="md" />
         </div>
 
         {/* Botão de favoritar (opcional) */}
@@ -132,14 +134,7 @@ export function PuppyHero({ puppy, whatsappLink, onFavorite, isFavorited }: Prop
 }
 
 // Helpers
-function formatPrice(cents: number | null | undefined): string {
-  if (cents == null || cents <= 0) return "Consultar valor";
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-    maximumFractionDigits: 0,
-  }).format(cents / 100);
-}
+// price formatting centralized in `src/lib/price`
 
 function translateSex(sex?: string | null): string {
   if (!sex) return "não informado";

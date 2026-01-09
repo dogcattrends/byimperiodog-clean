@@ -35,20 +35,20 @@ export function LeadPuppyRecommenderCard({ leadId }: { leadId: string }) {
   };
 
   return (
-    <section className="space-y-3 rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm">
+    <section className="admin-glass-card admin-interactive space-y-3 p-4">
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Dog className="h-5 w-5 text-emerald-600" aria-hidden />
+          <Dog className="h-5 w-5" style={{ color: 'rgb(var(--admin-brand))' }} aria-hidden />
           <div>
-            <p className="text-sm font-semibold text-[var(--text)]">Recomendação de Filhote</p>
-            <p className="text-xs text-[var(--text-muted)]">IA recomenda o melhor match para este lead.</p>
+            <p className="text-sm font-semibold admin-text">Recomendação de Filhote</p>
+            <p className="text-xs admin-text-muted">IA recomenda o melhor match para este lead.</p>
           </div>
         </div>
         <button
           type="button"
           onClick={run}
           disabled={pending}
-          className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] px-3 py-1.5 text-xs font-semibold text-[var(--text)] hover:bg-[var(--surface)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-500"
+          className="admin-btn-glass inline-flex items-center gap-2 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {pending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Sparkles className="h-4 w-4" aria-hidden />}
           IA recomendar filhote
@@ -56,7 +56,7 @@ export function LeadPuppyRecommenderCard({ leadId }: { leadId: string }) {
       </header>
 
       {error && (
-        <div className="flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+        <div className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm" style={{ borderColor: 'rgba(var(--admin-danger),0.35)', background: 'rgba(251, 113, 133, 0.12)', color: 'rgb(255,255,255)' }}>
           <AlertCircle className="h-4 w-4" aria-hidden />
           {error}
         </div>
@@ -64,30 +64,35 @@ export function LeadPuppyRecommenderCard({ leadId }: { leadId: string }) {
 
       {rec ? (
         <div className="space-y-3">
-          <div className="rounded-lg bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text)]">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Raciocínio</p>
+          <div className="rounded-lg border px-3 py-2 text-sm" style={{ borderColor: 'rgba(var(--admin-border),0.25)', background: 'rgba(var(--admin-surface-2),0.35)' }}>
+            <p className="text-xs font-semibold uppercase tracking-wide admin-text-muted">Raciocínio</p>
             <p className="mt-1">{rec.reasoningText}</p>
-            <p className="mt-1 text-xs text-[var(--text-muted)]">
-              Score: <span className="font-semibold text-[var(--text)]">{rec.score}</span>
-              {rec.upsellOpportunity && " â€¢ Oportunidade de upsell"}
+            <p className="mt-1 text-xs admin-text-muted">
+              Score: <span className="font-semibold admin-text">{rec.score}</span>
+              {rec.upsellOpportunity && " • Oportunidade de upsell"}
             </p>
           </div>
           <div className="space-y-2">
-            <p className="text-sm font-semibold text-[var(--text)]">Top 3 sugestões</p>
+            <p className="text-sm font-semibold admin-text">Top 3 sugestões</p>
             <ul className="space-y-2">
               {rec.top3Matches.map((m, idx) => (
-                <li key={m.id} className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-white px-3 py-2 shadow-sm">
+                <li
+                  key={m.id}
+                  className="flex items-center justify-between rounded-lg border px-3 py-2"
+                  style={{ borderColor: 'rgba(var(--admin-border),0.25)', background: 'rgba(var(--admin-surface-2),0.35)' }}
+                >
                   <div>
-                    <p className="text-sm font-semibold text-[var(--text)]">
+                    <p className="text-sm font-semibold admin-text">
                       #{idx + 1} {m.name}
                     </p>
-                    <p className="text-xs text-[var(--text-muted)]">{m.reason}</p>
+                    <p className="text-xs admin-text-muted">{m.reason}</p>
                   </div>
-                  <div className="text-right text-xs text-[var(--text-muted)]">
-                    <p className="font-semibold text-[var(--text)]">{m.score} pts</p>
+                  <div className="text-right text-xs admin-text-muted">
+                    <p className="font-semibold admin-text">{m.score} pts</p>
                     <a
                       href={`/admin/filhotes/${m.id}`}
-                      className="text-emerald-700 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-500"
+                      className="underline-offset-2 hover:underline"
+                      style={{ color: 'rgb(var(--admin-brand-bright))' }}
                     >
                       Abrir filhote
                     </a>
@@ -95,13 +100,13 @@ export function LeadPuppyRecommenderCard({ leadId }: { leadId: string }) {
                 </li>
               ))}
               {rec.top3Matches.length === 0 && (
-                <li className="text-sm text-[var(--text-muted)]">Nenhuma sugestão disponível.</li>
+                <li className="text-sm admin-text-muted">Nenhuma sugestão disponível.</li>
               )}
             </ul>
           </div>
         </div>
       ) : (
-        <p className="text-sm text-[var(--text-muted)]">Clique em “IA recomendar filhote” para gerar sugestões.</p>
+        <p className="text-sm admin-text-muted">Clique em “IA recomendar filhote” para gerar sugestões.</p>
       )}
     </section>
   );

@@ -24,6 +24,20 @@ type BlogCardProps = {
   post: BlogCardPost;
 };
 
+function normalizeCoverUrl(value?: string | null) {
+  const trimmed = value?.trim();
+  if (!trimmed) return null;
+  if (trimmed.startsWith("/")) return trimmed;
+  const normalized = trimmed.startsWith("//") ? `https:${trimmed}` : trimmed;
+  try {
+    const url = new URL(normalized);
+    if (url.protocol === "http:" || url.protocol === "https:") return normalized;
+  } catch {
+    return null;
+  }
+  return null;
+}
+
 function formatDate(value?: string | null) {
   if (!value) return null;
   const date = new Date(value);
@@ -46,6 +60,7 @@ export default function BlogCard({ post }: BlogCardProps) {
   const articleHref = `/blog/${post.slug}`;
   const minutes = estimateMinutes(post.content_mdx ?? post.excerpt ?? "");
   const published = formatDate(post.published_at);
+  const coverUrl = normalizeCoverUrl(post.cover_url);
 
   const whatsappLink = buildWhatsAppLink({
     message: `Olá! Acabei de ler "${post.title}" e gostaria de receber orientação sobre Spitz Alemão Anão.`,
@@ -57,17 +72,19 @@ export default function BlogCard({ post }: BlogCardProps) {
 
   return (
     <article
-      className="group grid h-full grid-rows-[auto,1fr] overflow-hidden rounded-2xl border border-border bg-surface shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-lg focus-within:ring-2 focus-within:ring-brand"
+      className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-surface shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-lg focus-within:ring-2 focus-within:ring-brand/60 focus-within:ring-offset-2 focus-within:ring-offset-[var(--surface)]"
       aria-labelledby={`blog-card-title-${post.slug}`}
     >
+      <Link href={articleHref} className="absolute inset-0" aria-label={post.title} tabIndex={-1} />
+
       <figure className="relative aspect-[4/3] w-full overflow-hidden bg-surface-subtle">
-        {post.cover_url ? (
+        {coverUrl ? (
           <Image
-            src={post.cover_url}
+            src={coverUrl}
             alt={post.cover_alt || post.title}
             fill
             sizes={BLOG_CARD_SIZES}
-            className="object-cover transition duration-500 group-hover:scale-[1.04] group-focus:scale-[1.04] rounded-2xl"
+            className="object-cover transition-transform duration-500 will-change-transform group-hover:scale-[1.04]"
             placeholder="blur"
             blurDataURL={BLUR_DATA_URL}
             loading="lazy"
@@ -75,19 +92,41 @@ export default function BlogCard({ post }: BlogCardProps) {
             draggable={false}
           />
         ) : (
-          <div className="grid h-full w-full place-items-center text-xs font-semibold uppercase tracking-[0.3em] text-text-soft">
-            Conteúdo evergreen
+          <div className="flex h-full w-full flex-col items-center justify-center gap-2 border border-dashed border-border/60 bg-surface px-6 text-center">
+            <span className="text-xs font-semibold uppercase tracking-[0.28em] text-text-soft">Conteúdo evergreen</span>
+            <span className="max-w-[28ch] text-sm font-medium text-text-muted">
+              Este artigo não possui imagem de capa.
+            </span>
           </div>
         )}
+
+        {coverUrl ? (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/35 via-black/0" />
+        ) : null}
+
+        {coverUrl && published ? (
+          <span className="absolute left-3 top-3 rounded-full bg-black/65 px-3 py-1 text-[10px] font-semibold tracking-wide text-white">
+            {published}
+          </span>
+        ) : null}
+
+        {coverUrl && minutes ? (
+          <span className="absolute right-3 top-3 rounded-full bg-black/65 px-3 py-1 text-[10px] font-semibold tracking-wide text-white">
+            {minutes} min
+          </span>
+        ) : null}
       </figure>
 
-      <div className="flex flex-1 flex-col gap-4 p-6">
+      <div className="relative flex flex-1 flex-col gap-4 p-6">
         <header className="space-y-2">
           <h3
             id={`blog-card-title-${post.slug}`}
             className="line-clamp-2 text-lg font-semibold text-text group-hover:text-brand group-focus:text-brand transition-colors"
           >
-            <Link href={articleHref} className="transition hover:text-brand focus:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+            <Link
+              href={articleHref}
+              className="relative z-10 rounded-sm transition hover:text-brand focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+            >
               {post.title}
             </Link>
           </h3>
@@ -96,32 +135,27 @@ export default function BlogCard({ post }: BlogCardProps) {
           ) : null}
         </header>
 
-        <div className="mt-auto space-y-3">
-          <div className="flex items-center justify-between text-xs text-text-soft">
-            <span>{published || "Atualizado recentemente"}</span>
-            {minutes ? <span>{minutes} min</span> : null}
-          </div>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <Link
-              href={articleHref}
-              className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-full bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground shadow-sm transition-all duration-200 hover:bg-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
-              aria-label={`Ler artigo: ${post.title}`}
-            >
-              Ler artigo
-              <ArrowRight className="h-4 w-4" aria-hidden />
-            </Link>
-            <a
-              href={whatsappLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-emerald-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
-              title="Tirar dúvidas sobre este artigo no WhatsApp"
-              aria-label={`WhatsApp: dúvidas sobre ${post.title}`}
-            >
-              <WhatsAppIcon className="h-4 w-4" aria-hidden />
-              WhatsApp
-            </a>
-          </div>
+        <div className="mt-auto flex items-center justify-between gap-3">
+          <Link
+            href={articleHref}
+            className="relative z-10 inline-flex min-h-[44px] items-center gap-2 rounded-pill px-1 text-sm font-semibold text-text transition-colors hover:text-brand focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+            aria-label={`Ler artigo: ${post.title}`}
+          >
+            Ler artigo
+            <ArrowRight className="h-4 w-4" aria-hidden />
+          </Link>
+
+          <a
+            href={whatsappLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="relative z-10 inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-border bg-surface-subtle px-3 text-sm font-semibold text-text transition hover:border-brand focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+            title="Tirar dúvidas sobre este artigo no WhatsApp"
+            aria-label={`WhatsApp: dúvidas sobre ${post.title}`}
+          >
+            <WhatsAppIcon className="h-4 w-4" aria-hidden />
+            <span className="hidden sm:inline">WhatsApp</span>
+          </a>
         </div>
       </div>
     </article>

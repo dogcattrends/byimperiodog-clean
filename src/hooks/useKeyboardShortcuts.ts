@@ -13,6 +13,7 @@ export interface KeyboardShortcut {
 export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[], enabled = true) {
   useEffect(() => {
     if (!enabled) return;
+    if (typeof window === 'undefined') return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
       // Ignorar se estiver em input/textarea (exceto se for escape)
@@ -36,6 +37,8 @@ export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[], enabled = tr
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      if (typeof window !== 'undefined') window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [shortcuts, enabled]);
 }

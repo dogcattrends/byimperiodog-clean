@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(_req: Request, { params }: { params: { id: string } }) {
   const id = params.id;
   const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -12,6 +14,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   try {
     const url = `${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/puppies?id=eq.${encodeURIComponent(id)}&select=*`;
     const res = await fetch(url, {
+      cache: 'no-store',
       headers: {
         apikey: SUPABASE_KEY,
         Authorization: `Bearer ${SUPABASE_KEY}`,
@@ -29,7 +32,9 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
       return NextResponse.json({ error: 'Filhote não encontrado.' }, { status: 404 });
     }
 
-    return NextResponse.json({ data: data[0] });
+    const response = NextResponse.json({ data: data[0] });
+    response.headers.set('Cache-Control', 'no-store, max-age=0');
+    return response;
   } catch (err: any) {
     return NextResponse.json({ error: String(err?.message ?? err) }, { status: 500 });
   }

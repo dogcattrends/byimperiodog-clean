@@ -64,7 +64,7 @@ export function PostCard({
 
   return (
     <li className="group relative flex flex-col overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--surface)] shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl focus-within:ring-2 focus-within:ring-brand/60 focus-within:ring-offset-2 focus-within:ring-offset-[var(--surface)]">
-      <Link href={href} className="absolute inset-0" aria-label={title} tabIndex={-1}></Link>
+      <Link href={href} className="absolute inset-0" aria-label={title}></Link>
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-[var(--surface-2)]">
         {coverUrl ? (
           <Image

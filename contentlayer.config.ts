@@ -3,7 +3,6 @@ import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypePrettyCode from 'rehype-pretty-code';
 import rehypeSlug from 'rehype-slug';
 import remarkGfm from 'remark-gfm';
-// @ts-expect-error - tipos conflitantes de vfile entre dependências
 
 // Observação: os resolvers de computedFields usam cast interno para compatibilidade de tipos do Contentlayer.
 

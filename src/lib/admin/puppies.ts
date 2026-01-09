@@ -1,4 +1,10 @@
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import "server-only";
+
+import { cookies } from "next/headers";
+
+import { hasServiceRoleKey, supabaseAdmin } from "@/lib/supabaseAdmin";
+import { createSupabaseUserClient } from "@/lib/supabaseClient";
+import { supabasePublic } from "@/lib/supabasePublic";
 import type { Database } from "@/types/supabase";
 
 const STATUS_TO_DB = {
@@ -28,7 +34,7 @@ const DB_TO_STATUS = new Map<string, AdminPuppyStatus>([
   ["arquivado", "unavailable"],
 ]);
 
-const SORT_OPTIONS = ["recent", "price-asc", "price-desc", "demand"] as const;
+const SORT_OPTIONS = ["recent", "status-available", "status-reserved"] as const;
 
 export type AdminPuppyStatus = keyof typeof STATUS_TO_DB;
 export type AdminPuppySort = (typeof SORT_OPTIONS)[number];
@@ -36,9 +42,8 @@ export type AdminPuppySort = (typeof SORT_OPTIONS)[number];
 export type ParsedPuppyFilters = {
   statuses: AdminPuppyStatus[];
   colors: string[];
+  city?: string;
   sex?: "male" | "female";
-  minPrice?: number;
-  maxPrice?: number;
   search?: string;
 };
 
@@ -66,6 +71,7 @@ export type AdminPuppiesPayload = {
   hasMore: boolean;
   leadCounts: Record<string, number>;
   colorOptions: string[];
+  cityOptions: string[];
   statusSummary: Record<AdminPuppyStatus, number>;
 };
 
@@ -76,11 +82,15 @@ type PuppyRow = Database["public"]["Tables"]["puppies"]["Row"] & {
 type StatusAggRow = { status: string | null; count: number };
 
 type ColorRow = { color: string | null };
+type CityRow = { cidade: string | null };
+type CityRowAlt = { city: string | null };
+type ColorRowAlt = { cor: string | null };
 
 type LeadAggRow = { page_slug?: string | null; count: number };
 
 async function fetchLeadCounts(
-  supabase: ReturnType<typeof supabaseAdmin>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
   slugList: string[],
 ): Promise<Record<string, number>> {
   const { data, error } = await supabase
@@ -107,7 +117,6 @@ async function fetchLeadCounts(
 }
 
 const DEFAULT_LIMIT = 200;
-const NUMBER_REGEX = /^\d+(?:[.,]\d+)?$/;
 
 const normalizeSearch = (value?: string) => value?.normalize("NFD").replace(/[`´~^]/g, "").trim();
 
@@ -122,6 +131,8 @@ const slugifyValue = (value?: string | null) => {
 };
 
 const buildSlug = (row: PuppyRow) => {
+  const maybeSlug = (row as unknown as Record<string, unknown>).slug;
+  if (typeof maybeSlug === "string" && maybeSlug.trim()) return maybeSlug.trim();
   if (typeof row.codigo === "string" && row.codigo.trim()) return row.codigo.trim();
   return slugifyValue(row.nome ?? row.name ?? null);
 };
@@ -133,16 +144,6 @@ function parseList(param?: string | string[] | null): string[] {
     .split(/[,|]/)
     .map((chunk) => chunk.trim())
     .filter((s): s is string => typeof s === "string" && s.length > 0);
-}
-
-function parseNumber(param?: string | string[] | null): number | undefined {
-  if (!param) return undefined;
-  const raw = Array.isArray(param) ? param[0] : param;
-  if (!raw) return undefined;
-  const normalized = raw.replace(/\./g, "").replace(/,/g, ".");
-  if (!NUMBER_REGEX.test(normalized)) return undefined;
-  const parsed = Number(normalized);
-  return Number.isFinite(parsed) ? parsed : undefined;
 }
 
 function normalizeStatus(value?: string | null): AdminPuppyStatus {
@@ -174,7 +175,27 @@ function normalizePrice(row: PuppyRow): number {
 }
 
 function selectCover(row: PuppyRow): string | null {
+  const maybeMain = (row as Record<string, unknown>).main_image_url;
+  if (typeof maybeMain === "string" && maybeMain.length) return maybeMain;
+
   if (typeof row.cover_url === "string" && row.cover_url.length) return row.cover_url;
+
+  const gallery = (row as Record<string, unknown>).gallery;
+  if (typeof gallery === "string" && gallery.trim()) {
+    try {
+      const parsed = JSON.parse(gallery);
+      if (Array.isArray(parsed)) {
+        const first = parsed.find((x) => typeof x === "string" && x.length) as string | undefined;
+        if (first) return first;
+      }
+    } catch {
+      // ignore
+    }
+  }
+  if (Array.isArray(gallery)) {
+    const first = (gallery as unknown[]).find((x) => typeof x === "string" && (x as string).length) as string | undefined;
+    if (first) return first;
+  }
 
   const mediaSources = Array.isArray(row.media) ? row.media : [];
   for (const entry of mediaSources) {
@@ -216,15 +237,15 @@ export function parsePuppyFilters(searchParams: Record<string, string | string[]
     .filter((value): value is AdminPuppyStatus => value in STATUS_TO_DB);
 
   const colors = parseList(searchParams.color);
+  const cityParam = Array.isArray(searchParams.city) ? searchParams.city[0] : searchParams.city;
+  const city = cityParam && cityParam.trim() ? cityParam.trim() : undefined;
   const sexParam = Array.isArray(searchParams.sex) ? searchParams.sex[0] : searchParams.sex;
   const sex = sexParam === "male" || sexParam === "female" ? sexParam : undefined;
-  const minPrice = parseNumber(searchParams.priceMin);
-  const maxPrice = parseNumber(searchParams.priceMax);
   const search = normalizeSearch(Array.isArray(searchParams.search) ? searchParams.search[0] : searchParams.search) || undefined;
   const sortParam = Array.isArray(searchParams.sort) ? searchParams.sort[0] : searchParams.sort;
   const sort: AdminPuppySort = SORT_OPTIONS.includes(sortParam as AdminPuppySort) ? (sortParam as AdminPuppySort) : "recent";
 
-  const filters: ParsedPuppyFilters = { statuses, colors, sex, minPrice, maxPrice, search };
+  const filters: ParsedPuppyFilters = { statuses, colors, city, sex, search };
   return { filters, sort };
 }
 
@@ -237,11 +258,16 @@ export async function fetchAdminPuppies({
   sort: AdminPuppySort;
   limit?: number;
 }): Promise<AdminPuppiesPayload> {
-  const supabase = supabaseAdmin();
+  const token = cookies().get("admin_sb_at")?.value;
+  const supabase = hasServiceRoleKey()
+    ? supabaseAdmin()
+    : token
+      ? createSupabaseUserClient(token)
+      : supabasePublic();
   let query = supabase
     .from("puppies")
     .select(
-      "id,nome,name,status,color,cor,gender,sexo,price_cents,price,preco,created_at,cover_url,media,midia,catalog_ranking(score,flag,reason)",
+      "*,catalog_ranking(score,flag,reason)",
       { count: "exact" },
     )
     .limit(limit);
@@ -252,19 +278,23 @@ export async function fetchAdminPuppies({
   }
 
   if (filters.colors.length) {
-    query = query.in("color", filters.colors);
+    // suporta schema canonical (color) e legado (cor)
+    query = query.or(
+      [
+        `color.in.(${filters.colors.join(",")})`,
+        `cor.in.(${filters.colors.join(",")})`,
+      ].join(","),
+    );
+  }
+
+  if (filters.city) {
+    // suporta city (canonical) e cidade (legado)
+    query = query.or(`city.eq.${filters.city},cidade.eq.${filters.city}`);
   }
 
   if (filters.sex) {
     const dbSex = filters.sex === "male" ? "macho" : "femea";
-    query = query.or(`gender.eq.${filters.sex},sexo.eq.${dbSex}`);
-  }
-
-  if (typeof filters.minPrice === "number") {
-    query = query.gte("price_cents", Math.round(filters.minPrice * 100));
-  }
-  if (typeof filters.maxPrice === "number") {
-    query = query.lte("price_cents", Math.round(filters.maxPrice * 100));
+    query = query.or(`sex.eq.${filters.sex},gender.eq.${filters.sex},sexo.eq.${dbSex}`);
   }
 
   if (filters.search) {
@@ -275,33 +305,41 @@ export async function fetchAdminPuppies({
   }
 
   switch (sort) {
-    case "price-asc":
-      query = query.order("price_cents", { ascending: true, nullsLast: true }).order("created_at", { ascending: false });
-      break;
-    case "price-desc":
-      query = query.order("price_cents", { ascending: false, nullsLast: false }).order("created_at", { ascending: false });
-      break;
-    case "demand":
-      query = query
-        .order("score", { referencedTable: "catalog_ranking", ascending: false, nullsLast: true })
-        .order("created_at", { ascending: false });
-      break;
     default:
       query = query.order("created_at", { ascending: false });
   }
 
-  const [listRes, statusAggRes, colorRes] = await Promise.all([
+  const [listRes, statusAggRes] = await Promise.all([
     query,
     supabase.from("puppies").select("status, count:id", { group: "status" }),
-    supabase
-      .from("puppies")
-      .select("color")
-      .not("color", "is", null),
   ]);
+
+  // color options: tenta primeiro `color`, depois fallback `cor`.
+  let colorData: Array<ColorRow | ColorRowAlt> = [];
+  try {
+    const res = await supabase.from("puppies").select("color").not("color", "is", null);
+    if (res.error) throw res.error;
+    colorData = (res.data as ColorRow[]) ?? [];
+  } catch {
+    const res = await supabase.from("puppies").select("cor").not("cor", "is", null);
+    if (res.error) throw new Error(res.error.message);
+    colorData = (res.data as ColorRowAlt[]) ?? [];
+  }
+
+  // city options: tenta primeiro `cidade`, depois fallback `city`.
+  let cityData: Array<CityRow | CityRowAlt> = [];
+  try {
+    const res = await supabase.from("puppies").select("cidade").not("cidade", "is", null);
+    if (res.error) throw res.error;
+    cityData = (res.data as CityRow[]) ?? [];
+  } catch {
+    const res = await supabase.from("puppies").select("city").not("city", "is", null);
+    if (res.error) throw new Error(res.error.message);
+    cityData = (res.data as CityRowAlt[]) ?? [];
+  }
 
   if (listRes.error) throw new Error(listRes.error.message);
   if (statusAggRes.error) throw new Error(statusAggRes.error.message);
-  if (colorRes.error) throw new Error(colorRes.error.message);
 
   const rows = (listRes.data ?? []) as PuppyRow[];
   const items: AdminPuppyListItem[] = rows.map((row) => ({
@@ -312,8 +350,8 @@ export async function fetchAdminPuppies({
     rawStatus: row.status ?? "",
     color: (row.color ?? row.cor ?? null) as string | null,
     sex: normalizeSex(row),
-    city: null,
-    state: null,
+    city: (row as Record<string, unknown>).city ? String((row as Record<string, unknown>).city) : (row.cidade ?? null),
+    state: (row as Record<string, unknown>).state ? String((row as Record<string, unknown>).state) : (row.estado ?? null),
     priceCents: normalizePrice(row),
     createdAt: typeof row.created_at === "string" ? row.created_at : row.created_at ? new Date(row.created_at).toISOString() : new Date().toISOString(),
     imageUrl: selectCover(row),
@@ -338,8 +376,20 @@ export async function fetchAdminPuppies({
   }
 
   const colorOptions = Array.from(
-    new Set((colorRes.data as ColorRow[]).map((row) => row.color).filter((value): value is string => typeof value === "string" && value.length > 0)),
+    new Set(
+      (colorData as Array<ColorRow | ColorRowAlt>)
+        .map((row) => ("color" in row ? row.color : row.cor))
+        .filter((value): value is string => typeof value === "string" && value.length > 0),
+    ),
   ).sort();
+
+  const cityOptions = Array.from(
+    new Set(
+      (cityData as Array<CityRow | CityRowAlt>)
+        .map((row) => ("cidade" in row ? row.cidade : row.city))
+        .filter((value): value is string => typeof value === "string" && value.length > 0),
+    ),
+  ).sort((a, b) => a.localeCompare(b, "pt-BR"));
 
   const initialSummary: Record<AdminPuppyStatus, number> = {
     available: 0,
@@ -356,12 +406,29 @@ export async function fetchAdminPuppies({
 
   const total = listRes.count ?? items.length;
 
+  const applyStatusSort = (list: AdminPuppyListItem[], mode: AdminPuppySort) => {
+    if (mode === "recent") return list;
+    const priority =
+      mode === "status-available"
+        ? { available: 0, reserved: 1, coming_soon: 2, pending: 3, sold: 4, unavailable: 5 }
+        : { reserved: 0, available: 1, sold: 2, coming_soon: 3, pending: 4, unavailable: 5 };
+    return [...list].sort((a, b) => {
+      const pa = priority[a.status] ?? 99;
+      const pb = priority[b.status] ?? 99;
+      if (pa !== pb) return pa - pb;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+  };
+
+  const sortedItems = applyStatusSort(items, sort);
+
   return {
-    items,
+    items: sortedItems,
     total,
     hasMore: total > items.length,
     leadCounts,
     colorOptions,
+    cityOptions,
     statusSummary: initialSummary,
   };
 }

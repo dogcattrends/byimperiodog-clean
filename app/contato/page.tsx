@@ -39,14 +39,14 @@ const INSTAGRAM = process.env.NEXT_PUBLIC_INSTAGRAM_URL ?? "https://instagram.co
 const YOUTUBE = process.env.NEXT_PUBLIC_YOUTUBE_URL ?? "https://youtube.com/@byimperiodog";
 
 export const metadata = pageMetadata({
-  title: "Contato | By Imperio Dog",
+  title: "Contato | By Império Dog",
   description:
-    "Fale com a By Imperio Dog por WhatsApp, e-mail ou formulario. Resposta rapida e acompanhamento direto com a criadora do Spitz Alemao Anao (Lulu da Pomerania).",
+    "Fale com a By Império Dog por WhatsApp, e-mail ou formulário. Resposta rápida e acompanhamento direto com a criadora do Spitz Alemão Anão (Lulu da Pomerânia).",
   path: "/contato",
 });
 
 const CONTATO_SNIPPET =
-  "A pagina de contato indica os canais oficiais da By Imperio Dog e como falar com a criadora. Reune WhatsApp, e-mail, formulario e redes para tirar duvidas sobre disponibilidade, processo de compra e suporte. Use para enviar informacoes completas e receber orientacao adequada.";
+  "A página de contato indica os canais oficiais da By Império Dog e como falar com a criadora. Reúne WhatsApp, e-mail, formulário e redes para tirar dúvidas sobre disponibilidade, processo de compra e suporte. Use para enviar informações completas e receber orientação adequada.";
 
 
 const quickFaq = [
@@ -86,7 +86,7 @@ export default function ContatoPage() {
     name: "Contato | By Império Dog",
     description:
       "Fale com a By Império Dog por WhatsApp, e-mail ou formulário. Resposta rápida e acompanhamento direto com a criadora do Spitz Alemão Anão Lulu da Pomerânia.",
-    isPartOf: { "@type": "WebSite", url: SITE_URL.replace(/\/$/, ""), name: "By Imperio Dog" },
+    isPartOf: { "@type": "WebSite", url: SITE_URL.replace(/\/$/, ""), name: "By Império Dog" },
   };
 
   return (
@@ -129,23 +129,23 @@ export default function ContatoPage() {
         </div>
       </header>
       <section data-geo-answer="contato" className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-8 shadow-sm">
-        <h2 className="text-2xl font-semibold text-[var(--text)]">AnswerSnippet</h2>
+        <h2 className="text-2xl font-semibold text-[var(--text)]">Informações</h2>
         <p className="mt-3 text-sm text-[var(--text-muted)]">{CONTATO_SNIPPET}</p>
       </section>
       <section className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-8 shadow-sm">
-        <h2 className="text-2xl font-semibold text-[var(--text)]">Resumo para IA</h2>
+        <h2 className="text-2xl font-semibold text-[var(--text)]">Resumo</h2>
         <div className="mt-4">
-          <h3 className="text-sm font-semibold text-[var(--text)]">Definicao rapida</h3>
+          <h3 className="text-sm font-semibold text-[var(--text)]">Definição rápida</h3>
           <p className="mt-2 text-sm text-[var(--text-muted)]">
-            Esta pagina organiza os canais oficiais de contato da By Imperio Dog e orienta quando usar cada um deles.
+            Esta página organiza os canais oficiais de contato da By Império Dog e orienta quando usar cada um deles.
           </p>
         </div>
         <div className="mt-4">
           <h3 className="text-sm font-semibold text-[var(--text)]">Pontos principais</h3>
           <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-[var(--text-muted)]">
-            <li>O WhatsApp e o canal mais rapido para disponibilidade e duvidas iniciais.</li>
-            <li>O formulario ajuda a enviar contexto completo antes do retorno.</li>
-            <li>O e-mail e indicado para documentos, contratos e confirmacoes.</li>
+            <li>O WhatsApp é o canal mais rápido para disponibilidade e dúvidas iniciais.</li>
+            <li>O formulário ajuda a enviar contexto completo antes do retorno.</li>
+            <li>O e-mail é indicado para documentos, contratos e confirmações.</li>
           </ul>
         </div>
       </section>

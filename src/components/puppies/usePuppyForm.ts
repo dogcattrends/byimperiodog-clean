@@ -24,17 +24,17 @@ export function usePuppyForm({ mode, record, onSuccess }: UsePuppyFormOptions){
     if(normalized){
       return {
         codigo: normalized.codigo || '',
-        nome: normalized.nome,
-        gender: normalized.gender,
-        status: normalized.status,
-        color: normalized.color,
-  price_display: normalized.price_cents ? formatCentsToBRL(normalized.price_cents) : '',
-        nascimento: normalized.nascimento || '',
-        image_url: normalized.image_url || '',
-        descricao: normalized.descricao || '',
-        notes: normalized.notes || '',
-        video_url: normalized.video_url || '',
-        midia: normalized.midia,
+        nome: String(normalized.nome ?? ''),
+        gender: (String(normalized.gender ?? 'female') as 'female'|'male'),
+        status: (String(normalized.status ?? 'disponivel') as 'disponivel'|'reservado'|'vendido'),
+        color: String(normalized.color ?? ''),
+        price_display: typeof normalized.price_cents === 'number' && normalized.price_cents > 0 ? formatCentsToBRL(normalized.price_cents) : '',
+        nascimento: String(normalized.nascimento ?? ''),
+        image_url: String(normalized.image_url ?? ''),
+        descricao: String(normalized.descricao ?? ''),
+        notes: String(normalized.notes ?? ''),
+        video_url: String(normalized.video_url ?? ''),
+        midia: Array.isArray(normalized.midia) ? normalized.midia.filter((u): u is string => typeof u === 'string' && u.length > 0) : ([] as string[]),
       };
     }
     return { codigo:'', nome:'', gender:'female' as 'female'|'male', status:'disponivel' as 'disponivel'|'reservado'|'vendido', color:'', price_display:'', nascimento:'', image_url:'', descricao:'', notes:'', video_url:'', midia:[] as string[] };

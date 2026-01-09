@@ -23,13 +23,13 @@ export function TrustBlock({ title, description, items, className }: TrustBlockP
         <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[var(--text-muted)]">{title}</p>
         <p className="text-sm text-[var(--text)]">{description}</p>
       </div>
-      <div className="grid gap-3 sm:grid-cols-1 md:grid-cols-3 lg:flex lg:items-stretch lg:space-x-4">
+      <div className="grid !grid-cols-1 gap-4 sm:!grid-cols-2 lg:!grid-cols-3">
         {items.map((item, idx) => (
           <article
             key={item.label}
             className={classNames(
-              "rounded-xl bg-[var(--surface-2)] p-3 animate-fade-in-up flex flex-col justify-center gap-1 min-h-[64px]",
-              "lg:flex-1 lg:p-6 lg:min-h-[96px]"
+              "rounded-xl bg-[var(--surface-2)] p-3 animate-fade-in-up flex flex-col justify-center gap-1 min-h-[64px] min-w-0",
+              "lg:p-6 lg:min-h-[96px]"
             )}
             style={{ animationDelay: `${0.3 + idx * 0.1}s`, animationFillMode: "both" }}
           >

@@ -95,8 +95,10 @@ export function PuppyEditShell({ basePath }: Props) {
           mode="edit"
           record={record}
           onCompleted={() => {
-            router.push(basePath);
-            router.refresh();
+            router.replace(basePath);
+            setTimeout(() => {
+              router.refresh();
+            }, 0);
           }}
         />
       ) : null}

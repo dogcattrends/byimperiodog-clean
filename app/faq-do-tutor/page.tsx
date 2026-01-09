@@ -38,7 +38,7 @@ const faqItems = [
 ];
 
 const FAQ_SNIPPET =
-  "A pagina FAQ do Tutor responde as perguntas essenciais sobre preparo, rotina e suporte para Spitz Alemao Anao (Lulu da Pomerania). Reune cuidados nas primeiras 48 horas, exames, alimentacao e canais de acompanhamento. Serve como referencia rapida para tomar decisoes seguras antes e depois da chegada do filhote.";
+  "A página FAQ do Tutor responde as perguntas essenciais sobre preparo, rotina e suporte para Spitz Alemão Anão (Lulu da Pomerânia). Reúne cuidados nas primeiras 48 horas, exames, alimentação e canais de acompanhamento. Serve como referência rápida para tomar decisões seguras antes e depois da chegada do filhote.";
 
 const FAQ_SOURCES = [
   { label: "WSAVA - Global Nutrition Guidelines", url: "https://wsava.org/global-guidelines/global-nutrition-guidelines/" },
@@ -57,7 +57,7 @@ export const revalidate = 3600;
 
 export function generateMetadata(): Metadata {
   return pageMetadata({
-    title: "FAQ do Tutor | By Imperio Dog",
+    title: "FAQ do Tutor | By Império Dog",
     description:
       "Perguntas frequentes sobre preparo, saúde, socialização e suporte vitalício para o Spitz Alemão (Lulu da Pomerânia).",
     path,
@@ -86,10 +86,10 @@ export default function FaqDoTutorPage() {
     "@type": "WebPage",
     "@id": `${siteBase}${path}#webpage`,
     url: `${siteBase}${path}`,
-    name: "FAQ do Tutor | By Imperio Dog",
+    name: "FAQ do Tutor | By Império Dog",
     description:
       "Perguntas frequentes sobre preparo, saúde, socialização e suporte vitalício para o Spitz Alemão (Lulu da Pomerânia).",
-    isPartOf: { "@type": "WebSite", url: siteBase, name: "By Imperio Dog" },
+    isPartOf: { "@type": "WebSite", url: siteBase, name: "By Império Dog" },
   };
 
   return (
@@ -104,13 +104,13 @@ export default function FaqDoTutorPage() {
         </p>
       </header>
       <section data-geo-answer="faq-do-tutor" className="rounded-3xl border border-zinc-100 bg-white p-6 shadow-sm">
-        <h2 className="text-2xl font-semibold text-zinc-900">AnswerSnippet</h2>
+        <h2 className="text-2xl font-semibold text-zinc-900">Informações</h2>
         <p className="mt-3 text-sm text-zinc-600">{FAQ_SNIPPET}</p>
       </section>
 
 
       <section className="rounded-3xl border border-zinc-100 bg-white p-6 shadow-sm">
-        <h2 className="text-2xl font-semibold text-zinc-900">Resumo para IA</h2>
+        <h2 className="text-2xl font-semibold text-zinc-900">Resumo</h2>
         <div className="mt-4">
           <h3 className="text-sm font-semibold text-zinc-900">Definicao rapida</h3>
           <p className="mt-2 text-sm text-zinc-600">
@@ -122,7 +122,7 @@ export default function FaqDoTutorPage() {
           <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-zinc-600">
             <li>O checklist resume os primeiros cuidados em casa.</li>
             <li>O resumo cobre exames, vacinas e acompanhamento.</li>
-            <li>Os canais de suporte garantem orientacao continua.</li>
+            <li>Os canais de suporte garantem orientação contínua.</li>
           </ul>
         </div>
         <div className="mt-4">
@@ -243,7 +243,7 @@ export default function FaqDoTutorPage() {
         <div className="flex flex-wrap gap-3">
           <a
             href="https://wa.me/5511968633239?text=Olá! Preciso de orientação para o meu Spitz Alemão (Lulu da Pomerânia)."
-            className="inline-flex min-h-[48px] items-center justify-center rounded-full bg-emerald-600 px-6 text-sm font-semibold text-white shadow hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200 focus-visible:ring-offset-2"
+            className="btn-whatsapp inline-flex min-h-[48px] items-center justify-center rounded-full px-6 text-sm font-semibold shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]/40 focus-visible:ring-offset-2"
           >
             Falar no WhatsApp
           </a>

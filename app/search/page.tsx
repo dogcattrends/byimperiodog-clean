@@ -6,18 +6,18 @@ import SearchAssist from "@/components/search/SearchAssist";
 import { baseSiteMetadata, canonical } from "@/lib/seo.core";
 
 export const metadata: Metadata = baseSiteMetadata({
-  title: "Busca | By Imperio Dog",
-  description: "Pesquise conteudos e filhotes disponiveis pela By Imperio Dog.",
+  title: "Busca | By Império Dog",
+  description: "Pesquise conteúdos e filhotes disponíveis pela By Império Dog.",
   alternates: { canonical: canonical("/search") },
   robots: { index: false },
 });
 
 const SEARCH_SNIPPET =
-  "Use a busca para encontrar guias, paginas e filhotes disponiveis. O objetivo e agilizar o acesso a conteudos sobre Spitz Alemao Anao (Lulu da Pomerania), filtrando por temas de rotina, saude ou localidade. Resultados dependem do termo pesquisado e sao atualizados quando novas paginas sao publicadas.";
+  "Use a busca para encontrar guias, páginas e filhotes disponíveis. O objetivo é agilizar o acesso a conteúdos sobre Spitz Alemão Anão (Lulu da Pomerânia), filtrando por temas de rotina, saúde ou localidade. Resultados dependem do termo pesquisado e são atualizados quando novas páginas são publicadas.";
 
 const SEARCH_FAQ = [
-  { question: "Por que nao vejo resultados?", answer: "Tente termos mais curtos ou verifique a grafia." },
-  { question: "A busca inclui filhotes?", answer: "Sim, quando o termo coincide com o catalogo." },
+  { question: "Por que não vejo resultados?", answer: "Tente termos mais curtos ou verifique a grafia." },
+  { question: "A busca inclui filhotes?", answer: "Sim, quando o termo coincide com o catálogo." },
   { question: "Posso buscar por cidade?", answer: "Sim, use o nome da cidade ou estado." },
 ];
 

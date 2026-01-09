@@ -3,11 +3,11 @@ import FAQBlock from "@/components/answer/FAQBlock";
 export const revalidate = 0;
 
 const OBRIGADO_SNIPPET =
-  "Pagina de confirmacao de interesse enviada para a By Imperio Dog. Reforca os canais oficiais, prazos de retorno e proximos passos para seguir com a reserva. Use esta tela para salvar as informacoes e aguardar o contato direto da equipe.";
+  "Página de confirmação de interesse enviada para a By Império Dog. Reforça os canais oficiais, prazos de retorno e próximos passos para seguir com a reserva. Use esta tela para salvar as informações e aguardar o contato direto da equipe.";
 
 const OBRIGADO_FAQ = [
-  { question: "Quando serei contatado?", answer: "Em ate 24h uteis pela equipe oficial." },
-  { question: "Quais canais oficiais sao usados?", answer: "WhatsApp e Instagram @byimperiodog." },
+  { question: "Quando serei contatado?", answer: "Em até 24h úteis pela equipe oficial." },
+  { question: "Quais canais oficiais são usados?", answer: "WhatsApp e Instagram @byimperiodog." },
   { question: "Posso enviar uma nova mensagem?", answer: "Sim, use o WhatsApp informado para complementar seu pedido." },
 ];
 export default function ObrigadoPage() {

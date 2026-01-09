@@ -1,7 +1,8 @@
-import { normalizePuppyFromDB } from "@/lib/catalog/normalize";
+import { mapDbPuppyToDomain } from "@/lib/catalog/mapDbPuppyToDomain";
 import { supabaseAnon } from "@/lib/supabaseAnon";
+import { supabasePublic } from "@/lib/supabasePublic";
 
-import type { PuppyFilters, PuppySearchResult, PuppySortBy } from "../../domain/puppy";
+import type { PuppyFilters, PuppySearchResult, PuppySortBy, Puppy } from "../../domain/puppy";
 import type { City, Color, PuppyStatus } from "../../domain/taxonomies";
 import type { Database } from "../../types/supabase";
 import { supabaseAdmin } from "../supabaseAdmin";
@@ -43,7 +44,7 @@ export async function listPuppiesCatalog(
   sortBy: PuppySortBy = "recent",
   options: { limit?: number; offset?: number } = {}
 ): Promise<PuppySearchResult> {
-  const sb = supabaseAnon();
+  const sb = supabasePublic();
   let query = sb.from("puppies").select(PUBLIC_COLUMNS, { count: "exact" });
 
   // Se não especificar status, busca apenas disponíveis e reservados
@@ -72,25 +73,25 @@ export async function listPuppiesCatalog(
     };
   }
 
-  let puppies = (data || []).map(normalizePuppyFromDB);
+  let puppies = (data || []).map(mapDbPuppyToDomain);
 
   // Filtros client-side
   if (filters.colors?.length) {
-    puppies = puppies.filter((p: ReturnType<typeof normalizePuppyFromDB>) => filters.colors!.includes(p.color as Color));
+    puppies = puppies.filter((p: Puppy) => filters.colors!.includes(p.color as Color));
   }
   if (filters.cities?.length) {
-    puppies = puppies.filter((p: ReturnType<typeof normalizePuppyFromDB>) => filters.cities!.includes(p.city as City));
+    puppies = puppies.filter((p: Puppy) => filters.cities!.includes(p.city as City));
   }
   if (filters.minPrice !== undefined) {
-    puppies = puppies.filter((p: ReturnType<typeof normalizePuppyFromDB>) => p.priceCents >= filters.minPrice!);
+    puppies = puppies.filter((p: Puppy) => p.priceCents >= filters.minPrice!);
   }
   if (filters.maxPrice !== undefined) {
-    puppies = puppies.filter((p: ReturnType<typeof normalizePuppyFromDB>) => p.priceCents <= filters.maxPrice!);
+    puppies = puppies.filter((p: Puppy) => p.priceCents <= filters.maxPrice!);
   }
   if (filters.search) {
     const q = filters.search.toLowerCase();
     puppies = puppies.filter(
-      (p: ReturnType<typeof normalizePuppyFromDB>) => p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q) || (p.color as string).includes(q)
+      (p: Puppy) => p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q) || (p.color as string).includes(q)
     );
   }
 

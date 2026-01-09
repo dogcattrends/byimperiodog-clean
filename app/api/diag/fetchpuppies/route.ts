@@ -40,7 +40,7 @@ export async function GET(req: Request) {
     try {
       const { data, error } = await sb
         .from("puppies")
-        .select("id, nome, name, status, created_at, cover_url, media, midia")
+        .select("id, nome, name, status, created_at, cover_url, midia")
         .in("status", filters.status)
         .order("created_at", { ascending: false })
         .limit(limit);

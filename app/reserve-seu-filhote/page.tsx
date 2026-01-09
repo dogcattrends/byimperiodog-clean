@@ -129,7 +129,7 @@ export default function ReserveSeuFilhotePage() {
     name: "Reserve seu Filhote de Spitz Alemão Anão",
     description:
       "Garanta prioridade de escolha na próxima ninhada de Spitz Alemão Anão com processo transparente, socialização acompanhada e suporte vitalício.",
-    isPartOf: { "@type": "WebSite", url: SITE_URL, name: "By Imperio Dog" },
+    isPartOf: { "@type": "WebSite", url: SITE_URL, name: "By Império Dog" },
   };
 
   const faqLd = {

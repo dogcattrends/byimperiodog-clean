@@ -1,11 +1,13 @@
 "use client";
 
-import { Lock, Mail, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Loader2, Lock, Mail, Shield } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 export default function AdminLoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const loggedOut = searchParams.get("logout") === "1";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -15,13 +17,14 @@ export default function AdminLoginPage() {
     e.preventDefault();
     const emailTrimmed = email.trim();
     if (!emailTrimmed) {
-      setError("Informe um email valido.");
+      setError("Informe um email válido.");
       return;
     }
     if (!password) {
       setError("Informe a senha.");
       return;
     }
+
     setLoading(true);
     setError(null);
     try {
@@ -36,75 +39,123 @@ export default function AdminLoginPage() {
       }
       router.push("/admin/dashboard");
     } catch (err) {
-      setError((err as Error).message);
+      const message = (err as Error)?.message || "Falha no login.";
+      if (message.toLowerCase().includes("failed to fetch")) {
+        setError("Não foi possível conectar ao servidor. Verifique se o Next está rodando e tente novamente.");
+        return;
+      }
+      setError(message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="rounded-2xl border border-[var(--border)] bg-white p-8 shadow-lg">
-      <h1 className="text-2xl font-bold text-[var(--text)]">Acesso Admin</h1>
-      <p className="mt-2 text-sm text-[var(--text-muted)]">Use suas credenciais para entrar no painel.</p>
-
-      <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-        <label className="block text-sm font-semibold text-[var(--text)]">
-          Email
-          <div
-            className={`mt-2 flex items-center gap-2 rounded-lg border bg-[var(--surface)] px-3 py-2 focus-within:ring-2 focus-within:ring-emerald-500 ${
-              error?.toLowerCase().includes("email") ? "border-rose-300 ring-1 ring-rose-200" : "border-[var(--border)]"
-            }`}
-          >
-            <Mail className="h-4 w-4 text-[var(--text-muted)]" aria-hidden />
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-transparent text-sm text-[var(--text)] outline-none"
-              placeholder="admin@exemplo.com"
-              autoComplete="email"
-              aria-invalid={error?.toLowerCase().includes("email") || undefined}
-            />
+    <div className="w-full">
+      <div className="admin-glass-card admin-border-glow p-8">
+        <div className="mb-6 flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl" style={{ background: "rgba(var(--admin-brand), 0.12)" }}>
+            <Shield className="h-5 w-5" style={{ color: "rgb(var(--admin-brand))" }} aria-hidden />
           </div>
-        </label>
-
-        <label className="block text-sm font-semibold text-[var(--text)]">
-          Senha
-          <div
-            className={`mt-2 flex items-center gap-2 rounded-lg border bg-[var(--surface)] px-3 py-2 focus-within:ring-2 focus-within:ring-emerald-500 ${
-              error?.toLowerCase().includes("senha") || error?.toLowerCase().includes("login") ? "border-rose-300 ring-1 ring-rose-200" : "border-[var(--border)]"
-            }`}
-          >
-            <Lock className="h-4 w-4 text-[var(--text-muted)]" aria-hidden />
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-transparent text-sm text-[var(--text)] outline-none"
-              placeholder="********"
-              autoComplete="current-password"
-              aria-invalid={error?.toLowerCase().includes("senha") || undefined}
-            />
+          <div className="min-w-0">
+            <h1 className="text-lg font-semibold leading-tight" style={{ color: "rgb(var(--admin-text))" }}>
+              Painel Administrativo
+            </h1>
+            <p className="text-sm" style={{ color: "rgb(var(--admin-text-soft))" }}>
+              By Império Dog
+            </p>
           </div>
-        </label>
+        </div>
 
-        {error && (
-          <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700" role="alert">
-            {error}
+        {loggedOut ? (
+          <div className="admin-inline-message success" role="status" aria-live="polite">
+            <svg className="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+            <span>Sessão encerrada. Faça login novamente.</span>
           </div>
-        )}
+        ) : null}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="flex w-full items-center justify-center gap-2 rounded-full bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
-        >
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : null}
-          {loading ? "Entrando..." : "Entrar"}
-        </button>
-      </form>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <label className="block">
+            <span className="mb-2 block text-sm font-medium" style={{ color: "rgb(var(--admin-text-muted))" }}>
+              Email
+            </span>
+            <div
+              className="admin-interactive flex items-center gap-3 rounded-xl px-4 py-3"
+              style={{
+                background: "rgba(var(--admin-surface), 0.55)",
+                border: "1px solid rgba(var(--admin-border), 0.6)",
+              }}
+            >
+              <Mail className="h-4 w-4" style={{ color: "rgb(var(--admin-text-soft))" }} aria-hidden />
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="flex-1 bg-transparent text-sm outline-none"
+                style={{ color: "rgb(var(--admin-text))" }}
+                placeholder="admin@byimperiodog.com"
+                autoComplete="email"
+                aria-invalid={error?.toLowerCase().includes("email") || undefined}
+              />
+            </div>
+          </label>
+
+          <label className="block">
+            <span className="mb-2 block text-sm font-medium" style={{ color: "rgb(var(--admin-text-muted))" }}>
+              Senha
+            </span>
+            <div
+              className="admin-interactive flex items-center gap-3 rounded-xl px-4 py-3"
+              style={{
+                background: "rgba(var(--admin-surface), 0.55)",
+                border: "1px solid rgba(var(--admin-border), 0.6)",
+              }}
+            >
+              <Lock className="h-4 w-4" style={{ color: "rgb(var(--admin-text-soft))" }} aria-hidden />
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="flex-1 bg-transparent text-sm outline-none"
+                style={{ color: "rgb(var(--admin-text))" }}
+                placeholder="••••••••"
+                autoComplete="current-password"
+                aria-invalid={error?.toLowerCase().includes("senha") || undefined}
+              />
+            </div>
+          </label>
+
+          {error && (
+            <div className="admin-inline-message error" role="alert">
+              <svg className="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+              <span>{error}</span>
+            </div>
+          )}
+
+          <button type="submit" disabled={loading} className="admin-btn-primary w-full">
+            <span className="flex items-center justify-center gap-2">
+              {loading ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden /> : null}
+              <span>{loading ? "Autenticando..." : "Entrar"}</span>
+            </span>
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

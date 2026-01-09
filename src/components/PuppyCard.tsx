@@ -1,14 +1,13 @@
 "use client";
 
+/* eslint-disable jsx-a11y/no-noninteractive-element-to-interactive-role */
+
 import {
   Calendar,
-  ChevronRight,
   GraduationCap,
   Heart,
   MapPin,
-  MessageCircle,
   PawPrint,
-  Video,
   type LucideIcon,
 } from "lucide-react";
 import Image from "next/image";
@@ -16,12 +15,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { AI_BADGE_MAP, type AiBadgeConfig, type AiBadgeId } from "@/components/catalog/ai-badges";
 import ShareButton from "@/components/ui/ShareButton";
+import { titleCasePt } from "@/lib/formatters";
 import { PUPPY_CARD_SIZES } from "@/lib/image-sizes";
 import { optimizePuppyCardImage } from "@/lib/optimize-image";
 import { BLUR_DATA_URL } from "@/lib/placeholders";
 import type { ShareablePuppy } from "@/lib/sharePuppy";
 import track from "@/lib/track";
-import { buildWhatsAppLink } from "@/lib/whatsapp";
 
 type AiSeoCopy = {
   shortTitle?: string | null;
@@ -58,19 +57,18 @@ type Puppy = {
 
 const statusStyles: Record<string, { label: string; className: string }> = {
   disponivel: { label: "Disponível", className: "bg-emerald-100 text-emerald-800 ring-emerald-200" },
+  available: { label: "Disponível", className: "bg-emerald-100 text-emerald-800 ring-emerald-200" },
   reservado: { label: "Reservado", className: "bg-amber-100 text-amber-800 ring-amber-200" },
+  reserved: { label: "Reservado", className: "bg-amber-100 text-amber-800 ring-amber-200" },
   vendido: { label: "Vendido", className: "bg-rose-100 text-rose-800 ring-rose-200" },
+  sold: { label: "Vendido", className: "bg-rose-100 text-rose-800 ring-rose-200" },
+  pending: { label: "Em breve", className: "bg-slate-100 text-slate-800 ring-slate-200" },
+  coming_soon: { label: "Em breve", className: "bg-slate-100 text-slate-800 ring-slate-200" },
+  unavailable: { label: "Indisponível", className: "bg-zinc-100 text-zinc-800 ring-zinc-200" },
+  indisponivel: { label: "Indisponível", className: "bg-zinc-100 text-zinc-800 ring-zinc-200" },
 };
 
-function formatPrice(cents?: number | null) {
-  return typeof cents === "number"
-    ? new Intl.NumberFormat("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-        maximumFractionDigits: 0,
-      }).format(cents / 100)
-    : "Sob consulta";
-}
+// Use centralized price formatter from `src/lib/price`
 
 function formatBirthDate(value?: string | Date | null) {
   if (!value) return "Data a confirmar";
@@ -115,7 +113,7 @@ const InfoChip = ({ icon: Icon, label, value, helper, ariaLabel }: InfoChipProps
   <div
     role="group"
     aria-label={ariaLabel}
-    className="inline-flex flex-1 min-w-[180px] items-start gap-2 rounded-2xl border border-zinc-200/80 bg-white/90 px-3 py-2 text-left shadow-sm"
+    className="inline-flex w-full min-w-0 flex-1 items-start gap-2 rounded-2xl border border-zinc-200/80 bg-white/90 px-3 py-2 text-left shadow-sm"
   >
     <span className="mt-0.5 text-emerald-600" aria-hidden="true">
       <Icon className="h-4 w-4" aria-hidden="true" />
@@ -140,20 +138,19 @@ type PuppyCardProps = {
 };
 
 export default function PuppyCard({ p, cover, onOpen, priority = false, rankingFlags = "normal", aiBadges }: PuppyCardProps) {
-  const baseName = p.nome || p.name || "Filhote";
-  const color = p.cor || p.color || "Cor em avaliação";
+  const rawColor = (p.cor || p.color || "").trim();
+  const colorDisplay = rawColor ? titleCasePt(rawColor) : "Cor a definir";
   const gender = normalizeGender(p.sexo || p.sex || p.gender);
-  const price = formatPrice(p.priceCents ?? p.price_cents);
-  const status = statusStyles[p.status || "disponivel"] || statusStyles.disponivel;
+  const statusKey = (p.status || "disponivel").toString().toLowerCase();
+  const status = statusStyles[statusKey] || statusStyles.disponivel;
   const birthSource = p.nascimento || p.birthDate;
   const birthDateLabel = formatBirthDate(birthSource);
   const ageLabel = formatAge(birthSource);
-  const location = [p.city, p.state].filter(Boolean).join(", ") || "Bragança Paulista, SP";
+  const location = [p.city, p.state].filter(Boolean).join(", ") || "Local a confirmar";
   const hasVideo = Boolean(p.video_url || p.videoUrl);
 
   const aiSeo = (p.aiSeo || p.catalogSeo || null) as AiSeoCopy | null;
-  const rawShortTitle = aiSeo?.shortTitle || p.shortTitle || null;
-  const cardTitle = rawShortTitle && rawShortTitle.trim().length > 0 ? rawShortTitle.trim() : baseName;
+  const cardTitle = `Spitz Alemão Anão – ${gender} ${colorDisplay}`;
   const rawShortDescription = aiSeo?.shortDescription || p.shortDescription || null;
   const shortDescription =
     typeof rawShortDescription === "string" && rawShortDescription.trim().length > 0
@@ -164,20 +161,8 @@ export default function PuppyCard({ p, cover, onOpen, priority = false, rankingF
     if (!Array.isArray(rawSeoKeywords)) return [] as string[];
     return rawSeoKeywords.map((keyword) => keyword?.trim()).filter((keyword): keyword is string => Boolean(keyword));
   }, [rawSeoKeywords]);
-  const fallbackAlt = `Filhote Spitz Alemão Anão ${baseName} na cor ${color}, ${gender}, localizado em ${location}. Status ${status.label}.`;
+  const fallbackAlt = `Spitz Alemão Anão — ${gender} ${colorDisplay}. ${location}. Status ${status.label}.`;
   const imageAlt = aiSeo?.altText || p.altText || fallbackAlt;
-
-  const whatsappLink = useMemo(
-    () =>
-      buildWhatsAppLink({
-        message: `Olá! Vi o filhote ${baseName} (${color}, ${gender}) e quero entender disponibilidade, valor e condições.`,
-        utmSource: "site",
-        utmMedium: "grid_filhotes",
-        utmCampaign: "puppies_cta",
-        utmContent: "cta_whatsapp",
-      }),
-    [baseName, color, gender]
-  );
 
   const optimizedCover = useMemo(() => optimizePuppyCardImage(cover), [cover]);
   const resolvedBadges = useMemo<AiBadgeConfig[]>(() => {
@@ -239,7 +224,10 @@ export default function PuppyCard({ p, cover, onOpen, priority = false, rankingF
     return () => observer.disconnect();
   }, [p.id, seoKeywords]);
 
-  const cardAriaLabel = `Filhote ${cardTitle}, ${color}, ${gender}, ${status.label.toLowerCase()}`;
+  const microState = typeof p.state === "string" ? p.state.trim().toUpperCase() : "";
+  const microContext = `${microState || "Brasil"} • Entrega para todo Brasil`;
+
+  const cardAriaLabel = `${cardTitle}. Status ${status.label}. ${microContext}.`;
   const shareablePuppy: ShareablePuppy = {
     id: p.id,
     slug: (p as { slug?: string | null }).slug ?? undefined,
@@ -252,50 +240,76 @@ export default function PuppyCard({ p, cover, onOpen, priority = false, rankingF
     status: p.status ?? undefined,
   };
 
+  const handleOpen = () => {
+    onOpen?.();
+    track.event?.("open_details", { placement: "card", puppy_id: p.id });
+  };
+
   return (
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-to-interactive-role
     <article
       aria-label={cardAriaLabel}
-      className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-emerald-100/80 bg-white shadow-sm transition duration-200 hover:scale-[1.02] hover:shadow-xl focus-within:shadow-xl"
+      role="button"
+      tabIndex={0}
+      onClick={handleOpen}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          handleOpen();
+        }
+      }}
+      className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-emerald-100/80 bg-white shadow-sm transition duration-200 hover:scale-[1.02] hover:shadow-xl focus-within:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500"
+      data-evt="card_click"
+      data-id={p.id}
       data-ranking-flag={rankingFlags}
       ref={cardRef}
     >
       <div className="relative overflow-visible">
-        <button
-          type="button"
-          onClick={() => {
-            onOpen?.();
-            track.event?.("open_details", { placement: "card", puppy_id: p.id });
-          }}
-          className="relative block w-full overflow-hidden text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500"
-          data-evt="card_click"
-          data-id={p.id}
-          aria-label={`Abrir detalhes do filhote ${cardTitle}`}
-        >
-          <div className="relative aspect-[4/3] w-full overflow-hidden bg-zinc-100">
-            {!imgLoaded && optimizedCover ? <div className="absolute inset-0 animate-pulse bg-zinc-200" aria-hidden="true" /> : null}
-            {optimizedCover ? (
-              <Image
-                src={optimizedCover}
-                alt={imageAlt}
-                fill
-                priority={priority}
-                sizes={PUPPY_CARD_SIZES}
-                loading={priority ? "eager" : "lazy"}
-                placeholder="blur"
-                blurDataURL={BLUR_DATA_URL}
-                className={`object-cover transition duration-500 ${
-                  imgLoaded ? "opacity-100 group-hover:scale-105" : "opacity-0"
-                }`}
-                onLoad={() => setImgLoaded(true)}
-              />
+        <div className="relative block w-full min-w-0 overflow-hidden text-left">
+          <div className="relative aspect-[4/3] w-full min-w-0 overflow-hidden bg-zinc-100">
+            {hasVideo && (p.video_url || p.videoUrl) ? (
+              // Renderizar vídeo quando disponível
+              <video
+                className="absolute inset-0 h-full w-full object-cover"
+                controls
+                playsInline
+                poster={optimizedCover}
+                aria-label={`Vídeo do filhote ${cardTitle}`}
+                onClick={(event) => event.stopPropagation()}
+              >
+                <source src={(p.video_url ?? p.videoUrl) || undefined} type="video/mp4" />
+                <track kind="captions" />
+                <span className="text-sm text-zinc-600">Seu navegador não suporta vídeo em HTML5.</span>
+              </video>
             ) : (
-              <div className="absolute inset-0 grid place-items-center gap-2 text-sm text-zinc-500">
-                <PawPrint className="h-6 w-6" aria-hidden="true" />
-                <span>Imagem em atualização</span>
-              </div>
+              // Renderizar imagem quando não há vídeo
+              <>
+                {!imgLoaded && optimizedCover ? <div className="absolute inset-0 animate-pulse bg-zinc-200" aria-hidden="true" /> : null}
+                {optimizedCover ? (
+                  <Image
+                    src={optimizedCover}
+                    alt={imageAlt}
+                    fill
+                    priority={priority}
+                    sizes={PUPPY_CARD_SIZES}
+                    loading={priority ? "eager" : "lazy"}
+                    placeholder="blur"
+                    blurDataURL={BLUR_DATA_URL}
+                    className={`object-cover transition duration-500 ${
+                      imgLoaded ? "opacity-100 group-hover:scale-105" : "opacity-0"
+                    }`}
+                    onLoad={() => setImgLoaded(true)}
+                  />
+                ) : (
+                  <div className="absolute inset-0 grid place-items-center gap-2 text-sm text-zinc-500">
+                    <PawPrint className="h-6 w-6" aria-hidden="true" />
+                    <span>Imagem em atualização</span>
+                  </div>
+                )}
+              </>
             )}
           </div>
-        </button>
+        </div>
 
         <div className="absolute right-4 top-4 flex items-center gap-3 z-20">
           <button
@@ -329,10 +343,11 @@ export default function PuppyCard({ p, cover, onOpen, priority = false, rankingF
           >
             {status.label}
           </span>
-          <span className="text-base font-semibold text-emerald-700" aria-label={`Preço ${price}`}>
-            {price}
-          </span>
         </div>
+
+        <p className="-mt-2 text-xs font-medium text-zinc-600" aria-label={microContext}>
+          {microContext}
+        </p>
 
         {resolvedBadges.length > 0 && (
           <div className="flex flex-wrap gap-2" aria-label="Sinais de interesse previstos pela IA">
@@ -354,16 +369,9 @@ export default function PuppyCard({ p, cover, onOpen, priority = false, rankingF
         )}
 
         <div className="space-y-1">
-          <h3 className="text-lg font-semibold leading-snug text-zinc-900">
+          <h3 className="text-lg font-semibold leading-snug text-zinc-900 line-clamp-2">
             {cardTitle}
           </h3>
-          <p className="text-sm text-zinc-600">
-            <span className="font-medium text-zinc-800">{color}</span>
-            <span className="mx-1 text-zinc-400" aria-hidden="true">
-              •
-            </span>
-            <span>{gender}</span>
-          </p>
           {shortDescription ? (
             <p className="text-xs text-zinc-500 line-clamp-1" aria-label={`Resumo: ${shortDescription}`}>
               {shortDescription}
@@ -379,19 +387,7 @@ export default function PuppyCard({ p, cover, onOpen, priority = false, rankingF
         <div className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Destaques</p>
           <ul className="flex flex-wrap gap-2" aria-label="Destaques do filhote">
-            {hasVideo ? (
-              <li className="flex flex-1 min-w-[180px] items-center gap-3 rounded-2xl border border-zinc-200/80 bg-white px-3 py-2 shadow-sm" key="video" aria-label="Vídeo ao vivo disponível">
-                <span role="img" aria-label="Vídeo ao vivo disponível" className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
-                  <Video className="h-4 w-4" aria-hidden="true" />
-                </span>
-                <div className="text-sm">
-                  <p className="font-semibold text-zinc-900">Vídeo ao vivo</p>
-                  <p className="text-xs text-zinc-500">Atualize em tempo real</p>
-                </div>
-              </li>
-            ) : null}
-
-            <li className="flex flex-1 min-w-[180px] items-center gap-3 rounded-2xl border border-zinc-200/80 bg-white px-3 py-2 shadow-sm" key="mentoria" aria-label="Mentoria vitalícia inclusa">
+            <li className="flex w-full min-w-0 flex-1 items-center gap-3 rounded-2xl border border-zinc-200/80 bg-white px-3 py-2 shadow-sm" key="mentoria" aria-label="Mentoria vitalícia inclusa">
               <span role="img" aria-label="Mentoria vitalícia inclusa" className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
                 <GraduationCap className="h-4 w-4" aria-hidden="true" />
               </span>
@@ -403,34 +399,17 @@ export default function PuppyCard({ p, cover, onOpen, priority = false, rankingF
           </ul>
         </div>
 
-        <div className="mt-auto space-y-3">
-          <a
-            href={whatsappLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() => track.event?.("whatsapp_click", { placement: "card", action: "info", puppy_id: p.id })}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-base font-semibold text-white shadow-lg transition duration-200 hover:bg-emerald-500 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500"
-            data-evt="share_click"
-            data-id={`wa_info_${p.id}`}
-            aria-label={`Conversar no WhatsApp sobre o filhote ${cardTitle}`}
-          >
-            <MessageCircle className="h-5 w-5" aria-hidden="true" />
-            Falar no WhatsApp
-          </a>
-
+        <div className="mt-auto">
           <button
             type="button"
             onClick={() => {
-              onOpen?.();
-              track.event?.("open_details", { placement: "card", puppy_id: p.id, target: "cta_link" });
+              handleOpen();
+              track.event?.("cta_click", { placement: "card", puppy_id: p.id, action: "ver_detalhes_conversar" });
             }}
-            className="inline-flex w-full items-center justify-between text-sm font-semibold text-emerald-700 transition hover:text-emerald-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500"
-            data-evt="card_click"
-            data-id={p.id}
-            aria-label={`Ver detalhes completos do filhote ${cardTitle}`}
+            className="w-full rounded-2xl bg-emerald-600 px-5 py-3 text-base font-semibold text-white shadow-lg transition duration-200 hover:bg-emerald-500 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500"
+            aria-label={`Ver detalhes e conversar sobre ${cardTitle}`}
           >
-            <span>Ver detalhes do filhote</span>
-            <ChevronRight className="h-4 w-4" aria-hidden="true" />
+            Ver detalhes e conversar
           </button>
         </div>
       </div>

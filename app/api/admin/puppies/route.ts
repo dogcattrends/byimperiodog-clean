@@ -2,9 +2,11 @@ import type { NextRequest} from "next/server";
 import { NextResponse } from "next/server";
 
 import { requireAdmin } from "@/lib/adminAuth";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { clearAdminSupabaseCookies, isJwtExpiredError } from "@/lib/adminSession";
+import { supabaseAdminOrUser } from "@/lib/supabaseAdminOrUser";
 
-type SupabaseClient = ReturnType<typeof supabaseAdmin> | null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SupabaseClient = any | null;
 
 function parseStringList(input: unknown): string[] {
   if (!input) return [];
@@ -139,14 +141,26 @@ export async function GET(req: NextRequest) {
   const id = req.nextUrl.searchParams.get("id");
   if (!id) return NextResponse.json({ error: "id requerido" }, { status: 400 });
 
-  const supabase = supabaseAdmin();
+  const { client: supabase, mode } = supabaseAdminOrUser(req);
+  if (!supabase) {
+    return NextResponse.json(
+      { error: mode === "missing_token" ? "Sessao admin ausente. Refaça login." : "Cliente Supabase indisponível." },
+      { status: 401 },
+    );
+  }
   const { data, error } = await supabase
     .from("puppies")
     .select("*")
     .eq("id", id)
     .maybeSingle();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    if (isJwtExpiredError(error)) {
+      clearAdminSupabaseCookies();
+      return NextResponse.json({ error: "Sessão expirada. Refaça login." }, { status: 401 });
+    }
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
   const hydrated = await hydrateMedia(data, supabase);
   return NextResponse.json({ puppy: hydrated });

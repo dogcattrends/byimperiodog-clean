@@ -104,18 +104,18 @@ const BLOG_FAQ = [
 
 const HERO_LINKS = [
   {
-    title: "Filhotes disponiveis sob consulta",
-    description: "Acesso antecipado as ninhadas com saude validada e mentoria vitalicia.",
+    title: "Filhotes disponíveis sob consulta",
+    description: "Acesso antecipado às ninhadas com saúde validada e mentoria vitalícia.",
     href: "/filhotes",
   },
   {
-    title: "Processo By Imperio Dog",
-    description: "Entenda cada etapa: entrevista, socializacao, entrega humanizada e suporte 24h.",
+    title: "Processo By Império Dog",
+    description: "Entenda cada etapa: entrevista, socialização, entrega humanizada e suporte 24h.",
     href: "/sobre#processo",
   },
   {
     title: "FAQ para tutores",
-    description: "Perguntas frequentes sobre investimento, logistica e rotina em familia.",
+    description: "Perguntas frequentes sobre investimento, logística e rotina em família.",
     href: "/faq",
   },
 ];
@@ -125,7 +125,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = baseBlogMetadata({
   description:
-    "Conteudo evergreen e pratico sobre saude, rotina e comportamento do Spitz Alemao Anao (Lulu da Pomerânia).",
+    "Conteúdo evergreen e prático sobre saúde, rotina e comportamento do Spitz Alemão Anão (Lulu da Pomerânia).",
 });
 
 type PageSearchParams = {
@@ -181,12 +181,14 @@ export default async function BlogListPage({ searchParams }: { searchParams?: Pa
     );
   }
 
-  const filtered = searchTerm
-    ? pageData.posts.filter((post) => {
-        const target = `${post.title} ${post.excerpt ?? ""} ${post.category ?? ""}`.toLowerCase();
-        return target.includes(searchTerm.toLowerCase());
-      })
-    : pageData.posts;
+  const filtered = searchQuery
+    ? pageData.posts
+    : searchTerm
+      ? pageData.posts.filter((post) => {
+          const target = `${post.title} ${post.excerpt ?? ""} ${post.category ?? ""}`.toLowerCase();
+          return target.includes(searchTerm.toLowerCase());
+        })
+      : pageData.posts;
 
   const featured = filtered[0] ?? pageData.posts[0];
   const collections = buildCollections(filtered);
@@ -194,9 +196,9 @@ export default async function BlogListPage({ searchParams }: { searchParams?: Pa
   const otherCollections = collections.filter((collection) => collection.definition.id !== "guia-do-tutor");
 
   const metaTitleStr =
-    typeof metadata.title === "string" ? metadata.title : "Blog | By Imperio Dog";
+    typeof metadata.title === "string" ? metadata.title : "Blog | By Império Dog";
   const metaDescStr =
-    metadata.description || "Conteudo evergreen sobre saude, rotina e comportamento do Spitz Alemão Anão (Lulu da Pomerânia).";
+    metadata.description || "Conteúdo evergreen sobre saúde, rotina e comportamento do Spitz Alemão Anão (Lulu da Pomerânia).";
   const blogSchema = buildBlogSchema({
     url: SITE_ORIGIN,
     headline: metaTitleStr,
@@ -208,7 +210,7 @@ export default async function BlogListPage({ searchParams }: { searchParams?: Pa
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Inicio", item: `${SITE_ORIGIN}/` },
+      { "@type": "ListItem", position: 1, name: "Início", item: `${SITE_ORIGIN}/` },
       { "@type": "ListItem", position: 2, name: "Blog", item: `${SITE_ORIGIN}/blog` },
     ],
   };
@@ -235,7 +237,7 @@ export default async function BlogListPage({ searchParams }: { searchParams?: Pa
         data-geo-answer="blog-hub"
       >
         <h2 id="blog-answer-snippet" className="text-xl font-semibold text-zinc-900">
-          AnswerSnippet
+          Pílula da resposta
         </h2>
         <p className="mt-3 text-sm text-text-muted">{BLOG_SNIPPET}</p>
       </section>
@@ -340,14 +342,14 @@ function Hero({ searchTerm, links }: { searchTerm: string; links: Array<{ title:
     <header className="flex flex-col gap-8 rounded-3xl border border-border bg-surface p-8 shadow-soft sm:p-10 lg:flex-row lg:items-center">
       <div className="flex-1 space-y-4">
         <span className="inline-flex items-center gap-2 rounded-pill bg-brand/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.32em] text-brand">
-          Conteudo premium para tutores
+          Conteúdo premium para tutores
         </span>
         <h1 className="text-3xl font-serif text-text sm:text-4xl">
-          Blog By Imperio Dog: decisao com responsabilidade comeca pelo conhecimento.
+          Blog By Império Dog: decisão com responsabilidade começa pelo conhecimento.
         </h1>
         <p className="text-sm text-text-muted">
-          Damos transparencia total sobre rotina, saude e comportamento do Spitz Alemão Anão (Lulu da Pomerânia).
-          Leia os pilares evergreen e avance para o formulario sob consulta quando estiver pronto.
+          Damos transparência total sobre rotina, saúde e comportamento do Spitz Alemão Anão (Lulu da Pomerânia).
+          Leia os pilares evergreen e avance para o formulário sob consulta quando estiver pronto.
         </p>
         <form className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
           <label htmlFor="blog-search" className="sr-only">
@@ -357,7 +359,7 @@ function Hero({ searchTerm, links }: { searchTerm: string; links: Array<{ title:
             id="blog-search"
             name="q"
             defaultValue={searchTerm}
-            placeholder="Buscar por saude, rotina, comportamento..."
+            placeholder="Buscar por saúde, rotina, comportamento..."
             className="flex-1 rounded-pill border border-border bg-surface-subtle px-5 py-3 text-sm text-text focus:ring-2 focus:ring-brand/30"
           />
           <button
@@ -375,7 +377,7 @@ function Hero({ searchTerm, links }: { searchTerm: string; links: Array<{ title:
             href={link.href}
             className="group flex flex-col gap-2 rounded-2xl border border-border/60 bg-surface-subtle p-5 transition hover:-translate-y-1 hover:border-brand/70"
           >
-            <span className="text-xs font-semibold uppercase tracking-[0.3em] text-brand">Leia tambem</span>
+            <span className="text-xs font-semibold uppercase tracking-[0.3em] text-brand">Leia também</span>
             <h3 className="text-base font-semibold text-text group-hover:text-brand">{link.title}</h3>
             <p className="text-sm text-text-muted">{link.description}</p>
           </Link>
@@ -389,6 +391,7 @@ function FeaturedPost({ post }: { post: PublicPost }) {
   const formattedDate = formatDate(post.published_at || post.updated_at);
   const minutes = estimateReadingTime(post.content_mdx ?? post.excerpt ?? "");
   const href = `/blog/${post.slug}`;
+  const coverUrl = normalizeCoverUrl(post.cover_url);
 
   return (
     <article className="relative grid gap-6 overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-surface via-surface to-surface-subtle shadow-soft lg:grid-cols-[1.45fr,1fr]">
@@ -428,9 +431,9 @@ function FeaturedPost({ post }: { post: PublicPost }) {
         </div>
       </div>
       <div className="relative order-1 min-h-[240px] overflow-hidden bg-surface-subtle lg:order-2">
-        {post.cover_url ? (
+        {coverUrl ? (
           <Image
-            src={post.cover_url}
+            src={coverUrl}
             alt={post.cover_alt || post.title}
             fill
             priority
@@ -443,14 +446,31 @@ function FeaturedPost({ post }: { post: PublicPost }) {
             draggable={false}
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-sm font-semibold uppercase tracking-[0.28em] text-text-soft">
-            Conteudo exclusivo
+          <div className="flex h-full w-full flex-col items-center justify-center gap-2 border border-dashed border-border/60 bg-surface px-6 text-center">
+            <span className="text-xs font-semibold uppercase tracking-[0.28em] text-text-soft">Destaque</span>
+            <span className="max-w-[36ch] text-sm font-medium text-text-muted">
+              Este artigo está sem imagem de capa.
+            </span>
           </div>
         )}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/35 via-black/0" />
+        {coverUrl ? <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/35 via-black/0" /> : null}
       </div>
     </article>
   );
+}
+
+function normalizeCoverUrl(value?: string | null) {
+  const trimmed = value?.trim();
+  if (!trimmed) return null;
+  if (trimmed.startsWith("/")) return trimmed;
+  const normalized = trimmed.startsWith("//") ? `https:${trimmed}` : trimmed;
+  try {
+    const url = new URL(normalized);
+    if (url.protocol === "http:" || url.protocol === "https:") return normalized;
+  } catch {
+    return null;
+  }
+  return null;
 }
 
 function CategorySection({
@@ -477,9 +497,9 @@ function CategorySection({
         </Link>
       </div>
 
-      <p className="text-xs uppercase tracking-[0.3em] text-brand">{definition.highlight}</p>
+          <p className="text-sm font-semibold text-brand">{definition.highlight}</p>
 
-      <div className="grid auto-rows-fr gap-6 md:grid-cols-2">
+      <div className="grid auto-rows-fr gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {posts.map((post) => (
           <BlogCard key={post.id} post={post} />
         ))}
@@ -570,7 +590,7 @@ function buildBlogSchema({
     description,
     publisher: {
       "@type": "Organization",
-      name: "By Imperio Dog",
+      name: "By Império Dog",
       url: base,
     },
     blogPost: posts.map((post) => ({

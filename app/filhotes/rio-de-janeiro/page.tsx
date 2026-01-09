@@ -14,10 +14,10 @@ const WA_PHONE = process.env.NEXT_PUBLIC_WA_PHONE?.replace(/\D/g, "") || "551196
 const WA_LINK = `https://wa.me/${WA_PHONE}`;
 
 const RJ_SNIPPET =
-  "Resumo para tutores do Rio de Janeiro com orientacoes sobre entrega, visita e disponibilidade de filhotes de Spitz Alemao Anao (Lulu da Pomerania). A pagina explica o atendimento local, prazos e como falar com a equipe oficial antes de reservar.";
+  "Resumo para tutores do Rio de Janeiro com orientações sobre entrega, visita e disponibilidade de filhotes de Spitz Alemão Anão (Lulu da Pomerânia). A página explica o atendimento local, prazos e como falar com a equipe oficial antes de reservar.";
 
 export const metadata: Metadata = {
-  title: "Filhotes de Spitz Alemão Anão (Lulu da Pomerânia) no Rio de Janeiro (RJ) | By Imperio Dog",
+  title: "Filhotes de Spitz Alemão Anão (Lulu da Pomerânia) no Rio de Janeiro (RJ) | By Império Dog",
   description:
     "Compre filhotes de Spitz Alemão Anão (Lulu da Pomerânia) no Rio de Janeiro com entrega segura na capital, Niterói, região metropolitana e interior. Pedigree e suporte vitalício.",
   alternates: { canonical: canonical("/filhotes/rio-de-janeiro") },
@@ -82,7 +82,7 @@ export default function FilhotesRioDeJaneiroPage() {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "@id": `${SITE_URL}/filhotes/rio-de-janeiro#localbusiness`,
-    name: "By Imperio Dog - Filhotes no Rio de Janeiro",
+    name: "By Império Dog - Filhotes no Rio de Janeiro",
     url: `${SITE_URL}/filhotes/rio-de-janeiro`,
     image: `${SITE_URL}/spitz-hero-desktop.webp`,
     telephone: "+55 11 9 6863-3239",
@@ -171,7 +171,7 @@ export default function FilhotesRioDeJaneiroPage() {
               href={waLink}
               target="_blank"
               rel="noopener noreferrer"
-              className={cn(buttonVariants({ size: "lg" }), "gap-2 bg-[#25D366] hover:bg-[#20BA5A]")}
+              className={cn(buttonVariants({ size: "lg" }), "btn-whatsapp gap-2")}
             >
               <WhatsAppIcon className="h-5 w-5" />
               Falar com a Criadora
@@ -274,7 +274,7 @@ export default function FilhotesRioDeJaneiroPage() {
               href={waLink}
               target="_blank"
               rel="noopener noreferrer"
-              className={cn(buttonVariants({ size: "lg" }), "mt-6 gap-2 bg-[#25D366] hover:bg-[#20BA5A]")}
+              className={cn(buttonVariants({ size: "lg" }), "btn-whatsapp mt-6 gap-2")}
             >
               <WhatsAppIcon className="h-5 w-5" />
               Falar no WhatsApp

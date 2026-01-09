@@ -55,7 +55,7 @@ const STATUS_OPTIONS: { value: LeadStatus; label: string }[] = [
 
 const PRIORITY_LABELS = {
   alta: "Alta",
-  media: "MÃ©dia",
+  media: "Média",
   baixa: "Baixa",
 } as const;
 
@@ -74,7 +74,7 @@ const STATUS_SUGGESTION_TO_STATUS: Record<string, LeadStatus | null> = {
   perdido: "perdido",
 };
 
-const EMPTY_VALUE = "â€”";
+const EMPTY_VALUE = "—";
 
 const formatDateTime = (value?: string | null) => {
   if (!value) return EMPTY_VALUE;
@@ -90,9 +90,9 @@ const valueOrDash = (value?: string | null) => {
 
 const buildFallbackMessage = (lead: LeadDetailData, puppy?: LeadPuppyMatch | null) => {
   const firstName = (lead.name || "").split(" ")[0] ?? "";
-  const desired = [lead.preferredColor, lead.preferredSex].filter((v): v is string => typeof v === "string" && v.length > 0).join(" â€¢ ");
-  return `OlÃ¡ ${firstName || ""}! Somos da By ImpÃ©rio Dog. Vimos seu interesse${desired ? ` (${desired})` : ""}${
-    puppy ? ` e o ${puppy.name} combina muito com o que vocÃª procura` : ""
+  const desired = [lead.preferredColor, lead.preferredSex].filter((v): v is string => typeof v === "string" && v.length > 0).join(" • ");
+  return `Olá ${firstName || ""}! Somos da By Império Dog. Vimos seu interesse${desired ? ` (${desired})` : ""}${
+    puppy ? ` e o ${puppy.name} combina muito com o que você procura` : ""
   }. Podemos te enviar fotos e detalhes agora?`;
 };
 
@@ -165,7 +165,7 @@ export function LeadDetailClient({
       await navigator.clipboard.writeText(text);
       push({ type: "success", message: `Mensagem ${label.toLowerCase()} copiada` });
     } catch {
-      push({ type: "error", message: "NÃ£o foi possÃ­vel copiar" });
+      push({ type: "error", message: "Não foi possível copiar" });
     } finally {
       setCopyingStyle(null);
     }
@@ -174,11 +174,11 @@ export function LeadDetailClient({
   const insightTimestamp = insight?.processed_at ?? insight?.updated_at;
   const insightLabel = insightTimestamp
     ? new Date(insightTimestamp as string).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })
-    : "Ainda nÃ£o analisado";
+    : "Ainda não analisado";
 
   const openWhatsApp = () => {
     if (!whatsappLink) {
-      push({ type: "error", message: "Telefone sem WhatsApp vÃ¡lido" });
+      push({ type: "error", message: "Telefone sem WhatsApp válido" });
       return;
     }
     window.open(whatsappLink, "_blank", "noopener,noreferrer");
@@ -195,13 +195,13 @@ export function LeadDetailClient({
       });
       if (!response.ok) {
         const payload = await response.json().catch(() => ({}));
-        throw new Error(payload?.error || "Erro ao disparar reanÃ¡lise");
+        throw new Error(payload?.error || "Erro ao disparar reanálise");
       }
       track.event?.("cta_click", { ctaId: "lead_reanalyze", location: "admin_lead_detail", leadId: lead.id });
-      push({ type: "success", message: "ReanÃ¡lise solicitada. Atualize os dados em instantes." });
+      push({ type: "success", message: "Reanálise solicitada. Atualize os dados em instantes." });
       router.refresh();
     } catch (error) {
-      push({ type: "error", message: error instanceof Error ? error.message : "NÃ£o foi possÃ­vel reanalisar" });
+      push({ type: "error", message: error instanceof Error ? error.message : "Não foi possível reanalisar" });
     } finally {
       setReanalyzing(false);
     }
@@ -249,7 +249,7 @@ export function LeadDetailClient({
 
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[var(--border)] bg-white/80 p-4 text-sm text-[var(--text-muted)] shadow-sm">
         <p>
-          Ãšltima anÃ¡lise: <span className="font-semibold text-[var(--text)]">{insightLabel}</span>
+          Última análise: <span className="font-semibold text-[var(--text)]">{insightLabel}</span>
         </p>
         <button
           type="button"
@@ -270,7 +270,7 @@ export function LeadDetailClient({
             <Info label="Cor desejada" value={valueOrDash(lead.preferredColor)} />
             <Info label="Sexo" value={valueOrDash(lead.preferredSex)} />
             <Info label="Origem" value={valueOrDash(lead.origin)} />
-            <Info label="PÃ¡gina" value={valueOrDash(lead.page)} />
+            <Info label="Página" value={valueOrDash(lead.page)} />
             <Info label="Criado em" value={formatDateTime(lead.createdAt)} />
             <Info label="Atualizado em" value={formatDateTime(lead.updatedAt)} />
           </div>
@@ -289,7 +289,7 @@ export function LeadDetailClient({
 
         <div className="space-y-4 rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm">
           <div>
-            <p className="text-sm font-semibold text-[var(--text)]">Status rÃ¡pido</p>
+            <p className="text-sm font-semibold text-[var(--text)]">Status rápido</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {STATUS_OPTIONS.map((option) => (
                 <button
@@ -326,7 +326,7 @@ export function LeadDetailClient({
         <LeadLossCard
           loss={advisor.loss}
           copying={copyingStyle === "reactivation"}
-          onCopy={() => handleCopyMessage(advisor.loss.reactivationMessage, "reativaÃ§Ã£o", "reactivation")}
+          onCopy={() => handleCopyMessage(advisor.loss.reactivationMessage, "reativação", "reactivation")}
         />
       </section>
 
@@ -351,7 +351,7 @@ export function LeadDetailClient({
           </div>
         ) : (
           <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface)] p-4 text-sm text-[var(--text-muted)]">
-            Nenhum filhote associado. Use o card de recomendaÃ§Ã£o para sugerir matches.
+            Nenhum filhote associado. Use o card de recomendação para sugerir matches.
           </div>
         )}
         <LeadPuppyRecommenderCard leadId={lead.id} />
@@ -365,8 +365,8 @@ export function LeadDetailClient({
       <section className="rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm">
         <header className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-semibold text-[var(--text)]">HistÃ³rico de interaÃ§Ãµes</p>
-            <p className="text-xs text-[var(--text-muted)]">Mensagens automÃ¡ticas e registros manuais</p>
+            <p className="text-sm font-semibold text-[var(--text)]">Histórico de interações</p>
+            <p className="text-xs text-[var(--text-muted)]">Mensagens automáticas e registros manuais</p>
           </div>
           <Sparkles className="h-5 w-5 text-[var(--text-muted)]" aria-hidden />
         </header>
@@ -379,7 +379,7 @@ export function LeadDetailClient({
                 <span>{entry.type || EMPTY_VALUE}</span>
               </div>
               <p className="mt-1 font-semibold">{entry.status || "Evento"}</p>
-              <p className="text-sm text-[var(--text-muted)]">{entry.preview || "(sem conteÃºdo)"}</p>
+              <p className="text-sm text-[var(--text-muted)]">{entry.preview || "(sem conteúdo)"}</p>
             </li>
           ))}
         </ul>
