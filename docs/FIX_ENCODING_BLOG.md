@@ -1,7 +1,7 @@
 # ✅ Fix: Encoding UTF-8 Blog Corrigido
 
-**Data:** 26 de outubro de 2025  
-**Commits:** 78a578f, 01deb8e  
+**Data:** 26 de outubro de 2025 
+**Commits:** 78a578f, 01deb8e 
 **Status:** ✅ RESOLVIDO
 
 ---
@@ -12,11 +12,11 @@ O usuário reportou via screenshot que os caracteres acentuados no blog estavam 
 
 ### Caracteres Corrompidos (Mojibake):
 - `decisÃ£o` → deveria ser **decisão**
-- `comeÃ§a` → deveria ser **começa**  
+- `comeÃ§a` → deveria ser **começa** 
 - `vitalÃ­cia` → deveria ser **vitalícia**
 - `famÃ­lias` → deveria ser **famílias**
 - `socializaÃ§Ã£o` → deveria ser **socialização**
-- `disponÃveis` → deveria ser **disponíveis**
+- `disponíveis` → deveria ser **disponíveis**
 - `tambÃ©m` → deveria ser **também**
 - `saÃºde` → deveria ser **saúde**
 
@@ -30,12 +30,12 @@ O usuário reportou via screenshot que os caracteres acentuados no blog estavam 
 ## 🔍 Diagnóstico
 
 1. **Script de detecção:** `node scripts/check-encoding.mjs`
-   - Detectou **1291 ocorrências** em múltiplos arquivos
-   - Principais afetados: `app/blog/page.tsx`, componentes, SQL, tests
+ - Detectou **1291 ocorrências** em múltiplos arquivos
+ - Principais afetados: `app/blog/page.tsx`, componentes, SQL, tests
 
 2. **Arquivo crítico:** `app/blog/page.tsx`
-   - 11 ocorrências de mojibake no código-fonte
-   - Afetava diretamente a interface do blog visível ao usuário
+ - 11 ocorrências de mojibake no código-fonte
+ - Afetava diretamente a interface do blog visível ao usuário
 
 ---
 
@@ -62,8 +62,8 @@ node scripts/fix-encoding.mjs --write
 
 ### 3. Validações
 ```bash
-npm run typecheck  # ✅ PASS
-git status         # ✅ No errors
+npm run typecheck # ✅ PASS
+git status # ✅ No errors
 ```
 
 ---
@@ -111,9 +111,9 @@ Checklist premium e mentoria vitalícia para famílias exigentes.
 ### Mapa de Conversão:
 ```javascript
 const MOJIBAKE_MAP = {
-  'Ã¡': 'á', 'Ã©': 'é', 'Ã­': 'í', 'Ã³': 'ó', 'Ãº': 'ú',
-  'Ã£': 'ã', 'Ãµ': 'õ', 'Ã§': 'ç', 'Ãª': 'ê', 'Ã´': 'ô',
-  'Ã ': 'à', 'Ã¢': 'â', 'Ã¼': 'ü', 'Ã±': 'ñ'
+ 'Ã¡': 'á', 'Ã©': 'é', 'Ã­': 'í', 'Ã³': 'ó', 'Ãº': 'ú',
+ 'Ã£': 'ã', 'Ãµ': 'õ', 'Ã§': 'ç', 'Ãª': 'ê', 'Ã´': 'ô',
+ 'Ã ': 'à', 'Ã¢': 'â', 'Ã¼': 'ü', 'Ã±': 'ñ'
 };
 ```
 
@@ -124,8 +124,8 @@ const MOJIBAKE_MAP = {
 - **Arquivos analisados:** 500+
 - **Arquivos corrigidos:** 8 (app/blog/page.tsx + 7 via script)
 - **Ocorrências corrigidas:** 201 total
-  - 193 via script automático
-  - 8 manualmente em page.tsx
+ - 193 via script automático
+ - 8 manualmente em page.tsx
 - **Tempo de correção:** ~5 minutos
 - **Validações:** 100% PASS
 
@@ -151,11 +151,11 @@ indent_size = 2
 ### 2. VS Code Settings
 ```json
 {
-  "files.encoding": "utf8",
-  "files.autoGuessEncoding": false,
-  "[typescript]": {
-    "files.encoding": "utf8"
-  }
+ "files.encoding": "utf8",
+ "files.autoGuessEncoding": false,
+ "[typescript]": {
+ "files.encoding": "utf8"
+ }
 }
 ```
 
@@ -187,6 +187,6 @@ O problema de encoding foi **100% resolvido**. Todos os caracteres acentuados po
 
 ---
 
-**Última atualização:** 26 de outubro de 2025  
-**Responsável:** GitHub Copilot  
+**Última atualização:** 26 de outubro de 2025 
+**Responsável:** GitHub Copilot 
 **Commits:** 78a578f, 01deb8e

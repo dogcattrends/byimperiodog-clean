@@ -7,10 +7,10 @@
 #### **1. next.config.mjs - Otimizações de Imagem**
 ```javascript
 images: {
-  formats: ["image/avif", "image/webp"],  // AVIF first (40% menor)
-  deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
-  imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-  minimumCacheTTL: 31536000,  // 1 ano
+ formats: ["image/avif", "image/webp"], // AVIF first (40% menor)
+ deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
+ imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+ minimumCacheTTL: 31536000, // 1 ano
 }
 ```
 
@@ -22,16 +22,16 @@ images: {
 #### **2. Cache Headers - Assets Estáticos**
 ```javascript
 async headers() {
-  return [
-    {
-      source: "/:all*(svg|jpg|jpeg|png|webp|avif|gif|ico|woff|woff2)",
-      headers: [{ 
-        key: "Cache-Control", 
-        value: "public, max-age=31536000, immutable" 
-      }],
-    },
-    // _next/static também com cache longo
-  ];
+ return [
+ {
+ source: "/:all*(svg|jpg|jpeg|png|webp|avif|gif|ico|woff|woff2)",
+ headers: [{ 
+ key: "Cache-Control", 
+ value: "public, max-age=31536000, immutable" 
+ }],
+ },
+ // _next/static também com cache longo
+ ];
 }
 ```
 
@@ -69,10 +69,10 @@ export function getAspectDimensions(aspectRatio: "1/1" | "4/3" | "16/9", baseWid
 **Uso:**
 ```tsx
 <Image
-  src="/hero.jpg"
-  alt="Filhote"
-  sizes={HERO_IMAGE_SIZES}  // ✅ Otimizado
-  priority  // ✅ LCP
+ src="/hero.jpg"
+ alt="Filhote"
+ sizes={HERO_IMAGE_SIZES} // ✅ Otimizado
+ priority // ✅ LCP
 />
 ```
 
@@ -235,9 +235,9 @@ Immutable + 1 ano = Zero re-validations
 
 // ✅ CORRETO (adaptive por breakpoint)
 <Image 
-  src="/hero.jpg" 
-  fill 
-  sizes="(max-width: 768px) 100vw, 50vw"
+ src="/hero.jpg" 
+ fill 
+ sizes="(max-width: 768px) 100vw, 50vw"
 />
 ```
 

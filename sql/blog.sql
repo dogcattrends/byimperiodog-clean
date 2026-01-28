@@ -1,43 +1,43 @@
 -- Blog schema for By Império Dog
 create table if not exists public.blog_authors (
-  id uuid primary key default gen_random_uuid(),
-  name text not null,
-  bio text,
-  avatar_url text,
-  socials jsonb default '{}'::jsonb,
-  created_at timestamptz not null default now()
+ id uuid primary key default gen_random_uuid(),
+ name text not null,
+ bio text,
+ avatar_url text,
+ socials jsonb default '{}'::jsonb,
+ created_at timestamptz not null default now()
 );
 
 create table if not exists public.blog_posts (
-  id uuid primary key default gen_random_uuid(),
-  slug text not null unique,
-  title text not null,
-  subtitle text,
-  cover_url text,
-  excerpt text,
-  content_mdx text,
-  status text not null default 'draft' check (status in ('draft','review','scheduled','published','archived')),
-  scheduled_at timestamptz,
-  published_at timestamptz,
-  author_id uuid references public.blog_authors(id) on delete set null,
-  seo_title text,
-  seo_description text,
-  og_image_url text,
-  lang text default 'pt-BR',
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+ id uuid primary key default gen_random_uuid(),
+ slug text not null unique,
+ title text not null,
+ subtitle text,
+ cover_url text,
+ excerpt text,
+ content_mdx text,
+ status text not null default 'draft' check (status in ('draft','review','scheduled','published','archived')),
+ scheduled_at timestamptz,
+ published_at timestamptz,
+ author_id uuid references public.blog_authors(id) on delete set null,
+ seo_title text,
+ seo_description text,
+ og_image_url text,
+ lang text default 'pt-BR',
+ created_at timestamptz not null default now(),
+ updated_at timestamptz not null default now()
 );
 
 create table if not exists public.blog_tags (
-  id uuid primary key default gen_random_uuid(),
-  name text not null unique,
-  slug text not null unique
+ id uuid primary key default gen_random_uuid(),
+ name text not null unique,
+ slug text not null unique
 );
 
 create table if not exists public.blog_post_tags (
-  post_id uuid references public.blog_posts(id) on delete cascade,
-  tag_id uuid references public.blog_tags(id) on delete cascade,
-  primary key (post_id, tag_id)
+ post_id uuid references public.blog_posts(id) on delete cascade,
+ tag_id uuid references public.blog_tags(id) on delete cascade,
+ primary key (post_id, tag_id)
 );
 
 -- Índices para acelerar filtros por tag e post
@@ -47,8 +47,8 @@ create index if not exists idx_blog_post_tags_tag on public.blog_post_tags (tag_
 create or replace function public.blog_posts_touch()
 returns trigger language plpgsql as $$
 begin
-  new.updated_at = now();
-  return new;
+ new.updated_at = now();
+ return new;
 end;
 $$;
 
@@ -70,10 +70,10 @@ create index if not exists idx_blog_posts_slug on public.blog_posts (slug);
 create or replace function public.blog_posts_set_published_at()
 returns trigger language plpgsql as $$
 begin
-  if NEW.status = 'published' and (NEW.published_at is null) then
-    NEW.published_at = now();
-  end if;
-  return NEW;
+ if NEW.status = 'published' and (NEW.published_at is null) then
+ NEW.published_at = now();
+ end if;
+ return NEW;
 end; $$;
 
 drop trigger if exists t_blog_posts_set_published_at on public.blog_posts;

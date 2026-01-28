@@ -1,18 +1,21 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
+
 import { requireAdmin } from '@/lib/adminAuth';
 
 // Endpoint mock: aceita POST { title, date } e responde 204. Sem persistência real.
 export async function POST(req: NextRequest){
-  const auth = requireAdmin(req);
-  if (auth) return auth; // 401 se não autenticado
-  try {
-    const body = await req.json().catch(()=>({}));
-    if(!body?.title || !body?.date){
-      return NextResponse.json({ error:'title e date são obrigatórios' }, { status:400 });
-    }
-    // Aqui futuramente poderemos persistir em DB (Supabase)
-    return new NextResponse(null, { status:204 });
-  } catch (e:any){
-    return NextResponse.json({ error: String(e?.message||e) }, { status:500 });
-  }
+ const auth = requireAdmin(req);
+ if (auth) return auth; // 401 se não autenticado
+ try {
+ const body = await req.json().catch(()=>({}));
+ if(!body?.title || !body?.date){
+ return NextResponse.json({ error:'title e date são obrigatórios' }, { status:400 });
+ }
+ // Aqui futuramente poderemos persistir em DB (Supabase)
+ return new NextResponse(null, { status:204 });
+ } catch (e: unknown) {
+ const msg = typeof e === "object" && e !== null && "message" in e ? String((e as { message?: unknown }).message ?? e) : String(e);
+ return NextResponse.json({ error: msg }, { status:500 });
+ }
 }

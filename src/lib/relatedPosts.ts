@@ -1,46 +1,120 @@
-import { supabasePublic } from '@/lib/supabasePublic';
+import { sanityClient } from '@/lib/sanity/client';
 
-export type RelatedPost = { id:string; slug:string; title:string; excerpt:string|null; published_at:string|null; authorName?:string; authorSlug?:string };
-
-/**
- * Recupera posts relacionados combinando: categorias compartilhadas, tags (quando armazenadas via join), recência.
- * Estratégia: consulta supabase para categorias e autor do post base, depois busca candidatos e rankeia.
- */
-export function scoreRelatedPost(baseCategories: string[], candidate: any){
-  const pCats = (candidate.blog_post_categories||[]).map((c:any)=> c.blog_categories?.slug).filter(Boolean) as string[];
-  const sharedCats = pCats.filter(x=> baseCategories.includes(x)).length;
-  const days = candidate.published_at ? (Date.now() - new Date(candidate.published_at).getTime()) / 86400000 : 999;
-  const recencyScore = days < 1 ? 1.0 : days < 7 ? 0.8 : days < 30 ? 0.5 : 0.25;
-  return sharedCats * 2 + recencyScore;
+function uniqLower(values: unknown): string[] {
+	if (!Array.isArray(values)) return [];
+	const out: string[] = [];
+	const seen = new Set<string>();
+	for (const v of values) {
+		const s = typeof v === 'string' ? v.trim().toLowerCase() : '';
+		if (!s) continue;
+		if (seen.has(s)) continue;
+		seen.add(s);
+		out.push(s);
+	}
+	return out;
 }
 
-export async function getRelatedPosts(slug: string, limit = 8): Promise<RelatedPost[]> {
-  const sb = supabasePublic();
-  // Buscar base (incluindo categorias e autor)
-  const { data: base } = await sb.from('blog_posts')
-    .select('id,slug,title,excerpt,published_at, blog_authors(name,slug), blog_post_categories(category_id,blog_categories(name,slug))')
-    .eq('slug', slug).eq('status','published').maybeSingle();
-  if(!base) return [];
-  const catSlugs = (base.blog_post_categories||[]).map((c:any)=> c.blog_categories?.slug).filter(Boolean) as string[];
+export function scoreRelatedPost(baseCats: string[], candidate: any) {
+	const legacyCats = (candidate?.blog_post_categories || [])
+		.map((c: any) => c?.blog_categories?.slug)
+		.filter((s: any): s is string => typeof s === 'string');
+	const modernCats = uniqLower(candidate?.categories || []);
+	const candidateCats = modernCats.length ? modernCats : legacyCats;
 
-  // Buscar candidatos recentes (limite amplo)
-  const { data: candidates } = await sb.from('blog_posts')
-    .select('id,slug,title,excerpt,published_at, blog_authors(name,slug), blog_post_categories(category_id,blog_categories(slug))')
-    .eq('status','published')
-    .neq('slug', slug)
-    .order('published_at', { ascending:false })
-    .limit(120);
+	const shared = candidateCats.filter((c: string) => baseCats.includes(c)).length;
+	const pub = Date.parse(candidate?.published_at || '') || 0;
+	const ageDays = (Date.now() - pub) / 86400000;
+	const recencyScore = Math.max(0, 30 - ageDays);
+	return shared * 10 + recencyScore;
+}
 
-  const scored = (candidates||[]).map((p:any)=> ({ post: p, score: scoreRelatedPost(catSlugs, p) })).filter((x: { score:number })=> x.score > 0.3);
+export async function getRelatedPosts(slug: string, limit = 4) {
+	const base = await sanityClient.fetch<{
+		_id: string;
+		slug?: { current?: string } | null;
+		title?: string | null;
+		description?: string | null;
+		publishedAt?: string | null;
+		_updatedAt?: string | null;
+		status?: string | null;
+		category?: string | null;
+		categories?: Array<{ slug?: string | null; title?: string | null }> | null;
+	} | null>(
+		`*[_type == "post" && slug.current == $slug][0]{
+			_id,
+			slug,
+			title,
+			description,
+			publishedAt,
+			_updatedAt,
+			status,
+			category,
+			categories[]->{"slug": slug.current, title}
+		}`,
+		{ slug }
+	);
+	if (!base) return [];
+	if ((base.status ?? '') !== 'published') return [];
 
-  scored.sort((a: { score:number }, b: { score:number })=> b.score - a.score);
-  return scored.slice(0, limit).map((s: any)=> ({
-    id: s.post.id,
-    slug: s.post.slug,
-    title: s.post.title,
-    excerpt: s.post.excerpt,
-    published_at: s.post.published_at,
-    authorName: s.post.blog_authors?.name,
-    authorSlug: s.post.blog_authors?.slug
-  }));
+	const baseCats = uniqLower([
+		base.category ?? null,
+		...(Array.isArray(base.categories) ? base.categories.map((c) => c?.slug ?? c?.title ?? null) : []),
+	]);
+
+	const candidates = await sanityClient.fetch<Array<{
+		_id: string;
+		slug?: { current?: string } | null;
+		title?: string | null;
+		description?: string | null;
+		coverUrl?: string | null;
+		coverImage?: { asset?: { url?: string | null } | null } | null;
+		mainImage?: { asset?: { url?: string | null } | null } | null;
+		publishedAt?: string | null;
+		_updatedAt?: string | null;
+		category?: string | null;
+		categories?: Array<{ slug?: string | null; title?: string | null }> | null;
+		author?: { name?: string | null; slug?: string | null } | null;
+	}>>(
+		`*[_type == "post" && slug.current != $slug && status == "published"]
+		| order(coalesce(publishedAt, _updatedAt) desc)[0...140]{
+			_id,
+			slug,
+			title,
+			description,
+			coverUrl,
+			coverImage{asset->{url}},
+			mainImage{asset->{url}},
+			publishedAt,
+			_updatedAt,
+			category,
+			categories[]->{"slug": slug.current, title},
+			author->{name, "slug": slug.current}
+		}`,
+		{ slug }
+	);
+
+	const normalized = (candidates || []).map((c) => {
+		const categories = uniqLower([
+			c.category ?? null,
+			...(Array.isArray(c.categories) ? c.categories.map((x) => x?.slug ?? x?.title ?? null) : []),
+		]);
+		const published_at = c.publishedAt ?? c._updatedAt ?? null;
+		return {
+			id: c._id,
+			slug: c.slug?.current || c._id,
+			title: c.title ?? null,
+			excerpt: c.description ?? null,
+			published_at,
+			categories,
+			cover_url: c.coverUrl ?? c.coverImage?.asset?.url ?? c.mainImage?.asset?.url ?? null,
+			blog_authors: c.author ? { name: c.author.name ?? null, slug: c.author.slug ?? null } : null,
+		};
+	});
+
+	const scored = normalized
+		.map((c: any) => ({ c, score: scoreRelatedPost(baseCats, c) }))
+		.sort((a: any, b: any) => b.score - a.score)
+		.map((x: any) => x.c);
+
+	return scored.slice(0, limit);
 }

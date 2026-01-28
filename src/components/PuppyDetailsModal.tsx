@@ -1,324 +1,453 @@
-﻿"use client";
+"use client";
+/* eslint-disable import/order */
 
-import { Camera, Loader2, MapPin, PawPrint, ShieldCheck, Sparkles, Video, X } from "lucide-react";
-import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { RefObject } from "react";
 
-import { Modal } from "@/components/dashboard/Modal";
-import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
+import AccessibleModal from "@/components/ui/AccessibleModal";
+import ContactCTA from "@/components/ui/ContactCTA";
+import { PuppyDetails } from "@/components/puppy/PuppyDetails";
+import { PuppyGallery } from "@/components/puppy/PuppyGallery";
+import ShareButton from "@/components/ui/ShareButton";
+import { Button, Spinner, StatusBadge } from "@/components/ui";
+import { useToast } from "@/components/ui/toast";
 import type { Puppy } from "@/domain/puppy";
-import { supabasePublic } from "@/lib/supabasePublic";
-import { buildWhatsAppLink } from "@/lib/whatsapp";
+import { normalizePuppyFromDB } from "@/lib/catalog/normalize";
+import { saveLead } from "@/lib/data/supabase";
+import { titleCasePt } from "@/lib/formatters";
+import { formatCentsToBRL } from "@/lib/price";
+import type { ShareablePuppy } from "@/lib/sharePuppy";
+import track from "@/lib/track";
+import { buildQualifiedWhatsAppMessage, buildWhatsAppLink, WHATSAPP_NUMBER } from "@/lib/whatsapp";
+import { normalizeMedia } from "@/lib/puppyMedia";
+// `PuppyStatus` type was previously imported but is no longer required here.
 
-// Exibe detalhes ricos do filhote (fotos, vídeos e ficha rápida)
 type Props = {
-  id: string;
-  onClose: () => void;
+ id: string;
+ onClose: () => void;
+ restoreFocusRef?: RefObject<HTMLElement | null>;
 };
 
-export default function PuppyDetailsModal({ id, onClose }: Props) {
-  const [puppy, setPuppy] = useState<Puppy | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [activeMediaIndex, setActiveMediaIndex] = useState(0);
+export default function PuppyDetailsModal({ id, onClose, restoreFocusRef }: Props) {
+ const [puppy, setPuppy] = useState<Puppy | null>(null);
+ const [isLoading, setIsLoading] = useState(true);
+ const [errorMessage, setErrorMessage] = useState<string | null>(null);
+ const [reserveSubmitting, setReserveSubmitting] = useState(false);
+ const { push } = useToast();
+ const [open, setOpen] = useState(true);
 
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const { data, error } = await supabasePublic()
-          .from("puppies")
-          .select("*")
-          .eq("id", id)
-          .maybeSingle();
-        if (error) throw error;
-        if (!data) throw new Error("Filhote não encontrado.");
-        if (active) {
-          setPuppy(normalize(data));
-          setActiveMediaIndex(0);
-        }
-      } catch (e) {
-        if (active) setError((e as Error)?.message ?? "Erro ao carregar detalhes.");
-      } finally {
-        if (active) setLoading(false);
-      }
-    })();
-    return () => {
-      active = false;
-    };
-  }, [id]);
+ const handleClose = useCallback(() => {
+ setOpen(false);
+ onClose();
+ if (restoreFocusRef?.current) {
+ restoreFocusRef.current.focus({ preventScroll: true });
+ }
+ }, [onClose, restoreFocusRef]);
 
-  const mediaItems = useMemo(() => puppy?.images ?? [], [puppy]);
+ const getTrackingContext = useCallback(
+ (extra?: Record<string, unknown>) => {
+ const loc = typeof window !== "undefined" ? window.location : null;
+ const search = loc ? new URLSearchParams(loc.search) : null;
+ const deviceType =
+ typeof navigator !== "undefined" && /Mobi|Android|iPhone|iPad|Mobile/i.test(navigator.userAgent)
+ ? "mobile"
+ : "desktop";
 
-  const waLink = useMemo(() => {
-    if (!puppy) return "#";
-    return buildWhatsAppLink({
-      message: `Olá! Vi o filhote ${puppy.name} (${puppy.color}, ${translateSex(puppy.sex)}) e quero detalhes sobre disponibilidade e valor.`,
-      utmSource: "site",
-      utmMedium: "modal",
-      utmCampaign: "puppy_detail",
-      utmContent: puppy.slug || puppy.id,
-    });
-  }, [puppy]);
+ const context = {
+ slug: puppy?.slug ?? undefined,
+ puppy_id: puppy?.id ?? id,
+ page_path: loc?.pathname ?? undefined,
+ referrer: typeof document !== "undefined" ? document.referrer || undefined : undefined,
+ device_type: deviceType,
+ utm_source: search?.get("utm_source") ?? undefined,
+ utm_medium: search?.get("utm_medium") ?? undefined,
+ utm_campaign: search?.get("utm_campaign") ?? undefined,
+ utm_content: search?.get("utm_content") ?? undefined,
+ utm_term: search?.get("utm_term") ?? undefined,
+ ...extra,
+ };
 
-  return (
-    <Modal
-      open
-      onOpenChange={(open) => {
-        if (!open) onClose();
-      }}
-      title={puppy?.name ?? "Detalhes do filhote"}
-      description={puppy?.status ? `Status: ${translateStatus(puppy.status)}` : undefined}
-      size="lg"
-    >
-      {loading && (
-        <div className="flex items-center justify-center py-10 text-sm text-zinc-600" role="status" aria-live="polite">
-          <Loader2 className="mr-2 h-5 w-5 animate-spin" aria-hidden="true" />
-          Carregando detalhes...
-        </div>
-      )}
+ return context;
+ },
+ [id, puppy]
+ );
 
-      {error && (
-        <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert" aria-live="assertive">
-          {error}
-        </div>
-      )}
+ // Body scroll lock handled by AccessibleModal
 
-      {!loading && puppy && (
-        <div className="grid items-start gap-6 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:gap-8">
-          <div className="space-y-4">
-            <figure className="relative aspect-[4/3] overflow-hidden rounded-xl border border-[var(--border)] bg-zinc-50 lg:max-h-[520px]">
-              {mediaItems[activeMediaIndex] ? (
-                isVideo(mediaItems[activeMediaIndex]) ? (
-                  <video
-                    className="h-full w-full object-cover"
-                    controls
-                    aria-label={`Vídeo do filhote ${puppy.name}`}
-                    poster={mediaItems.find((m) => !isVideo(m))}
-                  >
-                    <source src={mediaItems[activeMediaIndex]} />
-                  </video>
-                ) : (
-                  <Image
-                    src={mediaItems[activeMediaIndex]}
-                    alt={`Filhote ${puppy.name}`}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 640px"
-                    priority
-                  />
-                )
-              ) : (
-                <div className="grid h-full place-items-center text-sm text-zinc-500">Sem imagem</div>
-              )}
-            </figure>
+ useEffect(() => {
+ const controller = new AbortController();
+ let isActive = true;
+ setIsLoading(true);
+ setErrorMessage(null);
+ setPuppy(null);
 
-            {mediaItems.length > 1 && (
-              <div className="flex gap-3 overflow-auto pb-2" aria-label="Galeria de fotos e vídeos do filhote">
-                {mediaItems.map((item, index) => {
-                  const isActive = index === activeMediaIndex;
-                  return (
-                    <button
-                      key={`${item}-${index}`}
-                      type="button"
-                      onClick={() => setActiveMediaIndex(index)}
-                      className={`relative h-16 w-20 shrink-0 overflow-hidden rounded-lg border transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2 ${
-                        isActive ? "border-[var(--brand)] ring-2 ring-[var(--brand)]/40" : "border-[var(--border)]"
-                      }`}
-                      aria-label={isVideo(item) ? `Selecionar vídeo ${index + 1}` : `Selecionar imagem ${index + 1}`}
-                      aria-pressed={isActive}
-                    >
-                      {isVideo(item) ? (
-                        <div className="flex h-full w-full items-center justify-center bg-zinc-900 text-[var(--brand-foreground)]">
-                          <Video className="h-5 w-5" aria-hidden="true" />
-                        </div>
-                      ) : (
-                        <Image src={item} alt="" fill className="object-cover" sizes="96px" />
-                      )}
-                      <span className="absolute bottom-1 right-1 rounded-full bg-black/70 px-2 py-0.5 text-[10px] text-white">
-                        {isVideo(item) ? "Vídeo" : "Foto"}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+ (async () => {
+ try {
+ const response = await fetch(`/api/puppies/${encodeURIComponent(id)}`, {
+ signal: controller.signal,
+ cache: "no-store",
+ });
 
-            {puppy.description && (
-              <div className="rounded-lg border border-[var(--border)] bg-white/70 p-4">
-                <h3 className="mb-2 text-base font-semibold text-[var(--text)]">Sobre esse filhote</h3>
-                <p className="whitespace-pre-line text-sm leading-relaxed text-zinc-700">{puppy.description}</p>
-              </div>
-            )}
-          </div>
+ if (!response.ok) {
+ const text = await response.text();
+ throw new Error(text || "Falha ao carregar detalhes do filhote.");
+ }
 
-          <div className="space-y-4">
-            <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 text-sm text-[var(--text)] shadow-sm">
-              <div className="flex items-start justify-between gap-3">
-                <h3 className="text-base font-semibold text-[var(--text)]">Ficha rápida</h3>
-                {puppy.status && (
-                  <span className="inline-flex items-center rounded-full border border-[var(--border)] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-                    {translateStatus(puppy.status)}
-                  </span>
-                )}
-              </div>
-              <dl className="mt-3 space-y-3 text-[var(--text-muted)]">
-                {puppy.priceCents != null && (
-                  <div className="flex items-center justify-between">
-                    <dt className="font-medium text-[var(--text)]">Investimento</dt>
-                    <dd className="text-[var(--text)]">{fmtPrice(puppy.priceCents)}</dd>
-                  </div>
-                )}
-                {puppy.color && (
-                  <div className="flex items-center justify-between">
-                    <dt>Cor</dt>
-                    <dd className="text-[var(--text)]">{puppy.color}</dd>
-                  </div>
-                )}
-                {puppy.sex && (
-                  <div className="flex items-center justify-between">
-                    <dt>Sexo</dt>
-                    <dd className="text-[var(--text)]">{translateSex(puppy.sex)}</dd>
-                  </div>
-                )}
-                {puppy.birthDate && (
-                  <div className="flex items-center justify-between">
-                    <dt>Nascimento</dt>
-                    <dd className="text-[var(--text)]">
-                      {new Date(puppy.birthDate).toLocaleDateString("pt-BR", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </dd>
-                  </div>
-                )}
-                {(puppy.city || puppy.state) && (
-                  <div className="flex items-center gap-2 text-[var(--text)]">
-                    <MapPin className="h-4 w-4 text-[var(--text-muted)]" aria-hidden="true" />
-                    <span>
-                      {puppy.city ?? ""} {puppy.state ? `/ ${puppy.state}` : ""}
-                    </span>
-                  </div>
-                )}
-                {puppy.aggregate_rating && (
-                  <div className="flex items-center gap-2">
-                    <PawPrint className="h-4 w-4 text-amber-500" aria-hidden="true" />
-                    <span className="text-[var(--text)]">
-                      {puppy.aggregate_rating.toFixed(1)} ({puppy.review_count ?? 0} avaliações)
-                    </span>
-                  </div>
-                )}
-              </dl>
-            </div>
+ const payload = await response.json();
+ const raw = payload?.data;
+ if (!isActive) return;
+ if (!raw) {
+ setErrorMessage("Filhote nao encontrado.");
+ return;
+ }
 
-            <div className="rounded-xl border border-[var(--border)] bg-white/80 p-4 text-sm text-[var(--text)] shadow-sm">
-              <h3 className="text-base font-semibold text-[var(--text)]">O que você recebe</h3>
-              <ul className="mt-3 space-y-2 text-[var(--text-muted)]">
-                <li className="flex items-start gap-2">
-                  <ShieldCheck className="mt-0.5 h-4 w-4 text-[var(--brand)]" aria-hidden="true" />
-                  Certificado digital, carteira de vacinação e orientação pós-venda.
-                </li>
-                <li className="flex items-start gap-2">
-                  <Sparkles className="mt-0.5 h-4 w-4 text-[var(--brand)]" aria-hidden="true" />
-                  Socialização guiada e acompanhamento na adaptação.
-                </li>
-                <li className="flex items-start gap-2">
-                  <Camera className="mt-0.5 h-4 w-4 text-[var(--brand)]" aria-hidden="true" />
-                  Chamadas de vídeo para ver o filhote antes de decidir.
-                </li>
-              </ul>
-            </div>
+ const normalized = normalizePuppyFromDB(raw);
+ setPuppy(normalized);
+ } catch (error) {
+ if (!isActive) return;
+ if ((error as { name?: string }).name === "AbortError") return;
+ setErrorMessage((error as Error)?.message || "Nao foi possivel carregar o filhote.");
+ } finally {
+ if (isActive) setIsLoading(false);
+ }
+ })();
 
-            <div className="flex flex-col gap-2">
-              <a
-                href={waLink}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--brand)] px-4 py-3 text-sm font-semibold text-[var(--brand-foreground)] shadow-sm transition hover:bg-[var(--brand)]/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2"
-              >
-                <WhatsAppIcon className="h-4 w-4" aria-hidden="true" />
-                Falar no WhatsApp
-              </a>
-              <button
-                type="button"
-                onClick={onClose}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[var(--border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--text)] shadow-sm transition hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2"
-              >
-                <X className="h-4 w-4" aria-hidden="true" />
-                Fechar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </Modal>
-  );
-}
+ return () => {
+ isActive = false;
+ controller.abort();
+ };
+ }, [id]);
 
-function fmtPrice(cents: number) {
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(
-    cents / 100
-  );
-}
+ // ESC fechando é suportado por AccessibleModal (Radix Dialog)
 
-function translateSex(sex?: string | null) {
-  if (!sex) return "Sexo não informado";
-  if (sex.toLowerCase() === "male") return "Macho";
-  if (sex.toLowerCase() === "female") return "Fêmea";
-  return sex;
-}
+ // Focus trap e retorno de foco são geridos por AccessibleModal
 
-function translateStatus(status?: string | null) {
-  if (!status) return "Disponível";
-  if (status.toLowerCase() === "reservado") return "Reservado";
-  if (status.toLowerCase() === "vendido") return "Vendido";
-  return "Disponível";
-}
+ useEffect(() => {
+ if (!puppy) return;
+ track.event?.("modal_open", getTrackingContext({ placement: "catalog_modal" }));
+ }, [getTrackingContext, puppy]);
 
-function normalize(p: any): Puppy {
-  // Suporta campos em português e inglês
-  const name = p.nome || p.name || "Filhote";
-  const color = p.cor || p.color || "Creme";
-  const genderValue = p.sexo || p.gender || p.sex;
-  const sex = genderValue === "femea" || genderValue === "female" ? "female" : "male";
+ // share payload removido do modal para evitar ações paralelas às CTAs principais
 
-  // Preço: converte de decimal para centavos se necessário
-  let priceCents = p.price_cents ?? p.priceCents ?? 0;
-  if (p.preco && !p.price_cents && !p.priceCents) {
-    const precoDecimal = parseFloat(p.preco);
-    priceCents = Math.round(precoDecimal * 100);
+ const whatsappLink = useMemo(() => {
+  const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://byimperio.dog";
+
+  if (!puppy) {
+   return buildWhatsAppLink({
+    message: buildQualifiedWhatsAppMessage({
+     origin: "catalog_modal",
+     canonicalUrl: baseUrl,
+    }),
+    utmSource: "site",
+    utmMedium: "modal",
+    utmCampaign: "filhotes",
+    utmContent: "cta_whatsapp",
+   });
   }
 
-  // Mapeia campo 'midia' do banco para 'images'
-  const midiaArray = p.midia || p.images || [];
-  const images = Array.isArray(midiaArray)
-    ? midiaArray
-        .filter((item: any) => item && (typeof item === "string" || item.url))
-        .map((item: any) => (typeof item === "string" ? item : item.url))
-        .filter((u: string) => /^https?:\/\//.test(u))
-    : [];
+  const sexLabel = translateSexLabel(puppy.sex);
+  const colorLabel = puppy.color ? titleCasePt(puppy.color) : "";
+  const location = [puppy.city, puppy.state].filter(Boolean).join(" / ");
+  const canonical = `${baseUrl}/filhotes/${puppy.slug ?? puppy.id}`;
 
-  return {
-    id: p.id,
-    slug: p.slug,
-    name,
-    description: p.descricao || p.description || "",
-    priceCents,
-    color,
-    sex,
-    birthDate: p.nascimento || p.birth_date || p.birthDate,
-    images,
-    city: p.city,
-    state: p.state,
-    status: p.status,
-    aggregate_rating: p.aggregate_rating,
-    review_count: p.review_count,
-  } as Puppy;
+  return buildWhatsAppLink({
+   message: buildQualifiedWhatsAppMessage({
+    origin: "catalog_modal",
+    canonicalUrl: canonical,
+    puppyName: puppy.name,
+    puppyColor: colorLabel,
+    puppySex: sexLabel,
+    puppyLocation: location,
+   }),
+   utmSource: "site",
+   utmMedium: "modal",
+   utmCampaign: "filhotes",
+   utmContent: puppy.slug ?? puppy.id,
+  });
+ }, [puppy]);
+
+ const openLink = useCallback((url: string) => {
+ const popup = window.open(url, "_blank", "noopener,noreferrer");
+ if (!popup) window.location.assign(url);
+ }, []);
+
+ const normalizedStatus = useMemo(() => normalizeStatusForCtas(puppy?.status), [puppy?.status]);
+ const isReservable = normalizedStatus === "available";
+ const reserveAction = isReservable ? "reserve" : "waitlist";
+ const reserveLabel = isReservable ? "Reservar" : "Entrar na lista";
+ const shareablePuppy = useMemo<ShareablePuppy | null>(() => {
+ if (!puppy) return null;
+ return {
+ id: puppy.id,
+ slug: puppy.slug ?? undefined,
+ name: puppy.name ?? "Filhote",
+ color: puppy.color ?? undefined,
+ sex: puppy.sex ?? undefined,
+ city: puppy.city ?? undefined,
+ state: puppy.state ?? undefined,
+ priceCents: puppy.priceCents ?? undefined,
+ status: puppy.status ?? undefined,
+ };
+ }, [puppy]);
+ const contactContext = useMemo(() => {
+ if (!puppy) return undefined;
+ return getTrackingContext({ placement: "modal", status: normalizedStatus, type: "contact" });
+ }, [getTrackingContext, normalizedStatus, puppy]);
+
+ const handleReserve = useCallback(async () => {
+ if (!puppy) return;
+ if (reserveSubmitting) return;
+
+ const location = [puppy.city, puppy.state].filter(Boolean).join(" / ");
+ const message =
+ reserveAction === "reserve"
+ ? `Ola! Quero reservar o filhote ${puppy.name}${location ? ` (${location})` : ""}. Pode me enviar os proximos passos?`
+ : `Ola! Quero entrar na lista para o filhote ${puppy.name}${location ? ` (${location})` : ""}. Pode me avisar quando houver disponibilidade?`;
+
+ const url = buildWhatsAppLink({
+ message,
+ utmSource: "site",
+ utmMedium: "modal",
+ utmCampaign: reserveAction,
+ utmContent: puppy.slug ?? puppy.id,
+ });
+
+ setReserveSubmitting(true);
+ const payload = getTrackingContext({ placement: "modal", status: normalizedStatus, action: reserveAction });
+ track.event?.("cta_click", { ...payload, type: "reserve" });
+ track.event?.("lead_submit", payload);
+
+ try {
+ await saveLead({
+ puppy_id: puppy.slug ?? puppy.id,
+ action: reserveAction,
+ status: normalizedStatus,
+ source: "modal",
+ });
+ push({ type: "success", message: "Perfeito — abrindo WhatsApp agora." });
+ track.event?.("lead_saved", { placement: "modal", puppy_id: puppy.id, action: reserveAction });
+ } catch {
+ push({ type: "error", message: "Nao foi possivel registrar seu pedido. Abrindo WhatsApp mesmo assim." });
+ track.event?.("lead_error", { placement: "modal", puppy_id: puppy.id, action: reserveAction });
+ } finally {
+ setReserveSubmitting(false);
+ openLink(url);
+ }
+ }, [getTrackingContext, normalizedStatus, openLink, puppy, push, reserveAction, reserveSubmitting]);
+
+ const priceLabel = puppy?.priceCents && puppy.priceCents > 0 ? formatCentsToBRL(puppy.priceCents) : "Consultar valor";
+ const locationLabel = puppy ? [puppy.city, puppy.state].filter(Boolean).join(" / ") : "";
+ const galleryMedia = useMemo(() => {
+ if (!puppy) return [];
+ const normalized = normalizeMedia(puppy);
+ if (normalized.length) {
+ return normalized
+ .map((item) => item.url)
+ .filter((url): url is string => typeof url === "string" && url.trim().length > 0 && url !== "undefined" && url !== "null");
+ }
+ return (puppy.images ?? []).filter((url): url is string => typeof url === "string" && url.trim().length > 0 && url !== "undefined" && url !== "null");
+ }, [puppy]);
+
+ const postersByUrl = useMemo<Record<string, string | undefined>>(() => {
+ if (!puppy) return {};
+ const normalized = normalizeMedia(puppy);
+ const out: Record<string, string | undefined> = {};
+ for (const item of normalized) {
+ if (!item?.url) continue;
+ if (item.poster) out[item.url] = item.poster;
+ }
+ return out;
+ }, [puppy]);
+
+ const chipLabel = useMemo(() => {
+ if (!puppy) return "";
+ const parts = [puppy.color ? titleCasePt(puppy.color) : null, puppy.sex ? translateSexLabel(puppy.sex) : null].filter(Boolean);
+ return parts.join(" • ");
+ }, [puppy]);
+
+ const modalTitle = useMemo(() => {
+ const base = "Spitz Alemão Anão Lulu da Pomerânia";
+ if (!puppy) return base;
+ const sex = puppy.sex ? translateSexLabel(puppy.sex) : "";
+ const color = puppy.color ? titleCasePt(puppy.color) : "";
+ const suffix = [sex, color].filter(Boolean).join(" ").trim();
+ return suffix ? `${base} – ${suffix}` : base;
+ }, [puppy]);
+
+ const forWhoText = useMemo(() => {
+ if (!puppy) return null;
+ const sex = puppy.sex ? translateSex(puppy.sex) : "";
+ const color = puppy.color ? titleCasePt(puppy.color) : "";
+ const subject = [sex, color].filter(Boolean).join(" ").trim();
+ const label = subject ? `${subject}` : "";
+ return `Ideal para quem quer um Spitz Alemão Anão Lulu da Pomerânia${label ? ` ${label}` : ""} com orientação antes de reservar.`;
+ }, [puppy]);
+
+ return (
+ <AccessibleModal
+ open={open}
+ onOpenChange={(o) => {
+ if (!o) handleClose();
+ }}
+ title={modalTitle}
+ description={locationLabel || undefined}
+ restoreFocusRef={restoreFocusRef}
+ size="xl"
+ className="sm:max-w-[960px] xl:max-w-[1160px]"
+ >
+ <div className="relative z-0 flex flex-col">
+ {isLoading ? (
+ <div className="flex min-h-[240px] flex-col items-center justify-center gap-3">
+ <Spinner size="xl" variant="brand" />
+ <p className="text-sm font-semibold text-zinc-700">Carregando informacoes do filhote...</p>
+ </div>
+ ) : errorMessage ? (
+ <div
+ role="alert"
+ className="flex min-h-[240px] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-rose-400 bg-rose-50 p-6 text-center text-sm text-rose-700"
+ >
+ <p>{errorMessage}</p>
+ <button
+ type="button"
+ onClick={handleClose}
+ className="rounded-full bg-rose-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white transition hover:bg-rose-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2"
+ >
+ Fechar modal
+ </button>
+ </div>
+ ) : puppy ? (
+ <div className="space-y-10 lg:space-y-8">
+ <div className="grid gap-8 lg:gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,0.65fr)]">
+ <div className="min-w-0 space-y-4 xl:sticky xl:top-6 xl:self-start">
+ <div className="-mx-4 sm:mx-0">
+ <PuppyGallery images={galleryMedia} postersByUrl={postersByUrl} name={puppy.name} />
+ </div>
+ </div>
+ <div className="min-w-0 flex flex-col gap-5 lg:gap-4">
+ {/* Bloco acima da dobra: Nome + Status + Preço + chip */}
+ <div className="flex flex-wrap items-start justify-between gap-3">
+ <div className="min-w-0">
+ {chipLabel && (
+ <div className="mt-2 inline-flex max-w-full items-center rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-semibold text-zinc-700">
+ <span className="truncate">{chipLabel}</span>
+ </div>
+ )}
+ {locationLabel && <p className="mt-2 text-sm text-zinc-600">{locationLabel}</p>}
+ </div>
+ <div className="flex items-center gap-2">
+ <StatusBadge status={resolveBadgeStatus(puppy.status)} />
+ {shareablePuppy ? <ShareButton puppy={shareablePuppy} location="modal" className="h-10 w-10" /> : null}
+ </div>
+ </div>
+
+ {forWhoText && (
+ <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+ <h3 className="text-sm font-semibold text-zinc-900">Para quem é</h3>
+ <p className="mt-2 text-sm text-zinc-700">{forWhoText}</p>
+ </div>
+ )}
+
+ <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+ <h3 className="text-sm font-semibold text-zinc-900">Próximo passo</h3>
+ <p className="mt-2 text-sm text-zinc-700">
+ Converse primeiro; se fizer sentido, a reserva vem depois — sem pressão.
+ </p>
+ </div>
+
+ <div className="space-y-2">
+ <p className="text-sm font-medium text-zinc-600">Valor do filhote + o que inclui</p>
+ <p className="text-3xl font-bold text-emerald-700">{priceLabel}</p>
+ <ul className="mt-1 space-y-1 text-sm text-zinc-700">
+ <li>Pedigree, contrato claro e garantia de saúde.</li>
+ <li>Exames e orientação de socialização personalizada.</li>
+ <li>Entrega segura e acompanhamento vitalício.</li>
+ </ul>
+ </div>
+
+ <div className="space-y-4">
+ <ContactCTA phone={WHATSAPP_NUMBER} waLink={whatsappLink} context={contactContext} />
+ <Button
+ type="button"
+ variant="ghost"
+ size="lg"
+ className="w-full rounded-full"
+ onClick={handleReserve}
+ disabled={reserveSubmitting}
+ aria-label={`${reserveLabel} (opcional) ${puppy.name}`}
+ >
+ {reserveSubmitting ? "Enviando..." : reserveLabel}
+ </Button>
+ <p className="text-xs text-zinc-500">WhatsApp é o caminho mais rápido. Reserva só depois.</p>
+ </div>
+
+ {/* Confiança (desktop) */}
+ <div className="hidden lg:block rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+ <h3 className="text-sm font-semibold text-zinc-900">Confianca</h3>
+ <ul className="mt-2 space-y-2 text-sm text-zinc-700">
+ <li>Garantia de saude e orientacao completa.</li>
+ <li>Reserva com acompanhamento e transparência.</li>
+ <li>Entrega/retirada combinada com seguranca.</li>
+ </ul>
+ </div>
+
+ {puppy.description && (
+ <p className="text-sm leading-relaxed text-zinc-600">{puppy.description}</p>
+ )}
+ <PuppyDetails puppy={puppy} />
+ </div>
+ </div>
+
+ </div>
+ ) : (
+ <div className="flex min-h-[240px] flex-col items-center justify-center gap-3 text-sm text-zinc-500">
+ <p>Filhote nao encontrado.</p>
+ <button
+ type="button"
+ onClick={handleClose}
+ className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-600 transition hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+ >
+ Voltar ao catalogo
+ </button>
+ </div>
+ )}
+ </div>
+ </AccessibleModal>
+ );
 }
 
-function isVideo(url: string) {
-  return /\.(mp4|webm|ogg)$/i.test(url);
+function translateSex(sex?: string | null): string {
+ if (!sex) return "filhote";
+ const normalized = sex.toLowerCase();
+ if (normalized === "male" || normalized === "macho") return "macho";
+ if (normalized === "female" || normalized === "femea") return "femea";
+ return sex;
+}
+
+function translateSexLabel(sex?: string | null): string {
+ const s = translateSex(sex);
+ if (s === "macho") return "Macho";
+ if (s === "femea") return "Femea";
+ return titleCasePt(s);
+}
+
+function normalizeStatusForCtas(status?: string | null): "available" | "reserved" | "sold" | "pending" | "unavailable" {
+ const normalized = (status ?? "available").toLowerCase();
+ if (["pending", "em-breve", "coming-soon"].includes(normalized)) return "pending";
+ if (["sold", "vendido"].includes(normalized)) return "sold";
+ if (["reserved", "reservado"].includes(normalized)) return "reserved";
+ if (["unavailable", "indisponivel"].includes(normalized)) return "unavailable";
+ return "available";
+}
+
+function resolveBadgeStatus(
+ status?: string | null
+): 'disponivel' | 'available' | 'reservado' | 'reserved' | 'vendido' | 'sold' | 'em-breve' | 'coming-soon' {
+ const normalized = (status ?? 'available').toLowerCase();
+ if (['pending', 'em-breve', 'coming-soon'].includes(normalized)) return 'em-breve';
+ if (['sold', 'vendido'].includes(normalized)) return 'sold';
+ if (['reserved', 'reservado'].includes(normalized)) return 'reserved';
+ if (['available', 'disponivel'].includes(normalized)) return 'available';
+ if (['unavailable', 'indisponivel'].includes(normalized)) return 'em-breve';
+
+ return 'available';
 }

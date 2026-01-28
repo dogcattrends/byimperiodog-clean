@@ -1,8 +1,8 @@
 # 🚀 DEPLOY URGENTE — Correção LCP Crítico
 
-**Data**: 25/10/2025  
-**Prioridade**: 🔴 **CRÍTICA**  
-**Problema**: LCP 11.6s (meta: <2.5s) — Performance 73/100  
+**Data**: 25/10/2025 
+**Prioridade**: 🔴 **CRÍTICA** 
+**Problema**: LCP 11.6s (meta: <2.5s) — Performance 73/100 
 **Causa**: Imagem hero de 2MB
 
 ---
@@ -13,9 +13,9 @@
 ```
 ❌ ANTES: spitz-hero-desktop.webp → 2MB (1,999KB)
 ✅ AGORA:
-   - spitz-hero-mobile.webp  → 22KB (640x427px)
-   - spitz-hero-tablet.webp  → 53KB (1024x683px)
-   - spitz-hero-desktop.webp → 109KB (1400x933px)
+ - spitz-hero-mobile.webp → 22KB (640x427px)
+ - spitz-hero-tablet.webp → 53KB (1024x683px)
+ - spitz-hero-desktop.webp → 109KB (1400x933px)
 
 📊 Total: 184KB vs 2MB = 92% de redução
 ```
@@ -35,9 +35,9 @@
 Get-ChildItem -Path "public" -Filter "*hero*" | Select-Object Name, Length
 
 # Deve mostrar:
-# spitz-hero-mobile.webp   → ~22KB
-# spitz-hero-tablet.webp   → ~53KB
-# spitz-hero-desktop.webp  → ~109KB
+# spitz-hero-mobile.webp → ~22KB
+# spitz-hero-tablet.webp → ~53KB
+# spitz-hero-desktop.webp → ~109KB
 # spitz-hero-desktop-original.webp → ~2MB (backup)
 ```
 
@@ -73,12 +73,12 @@ vercel --prod
 ```bash
 # 1. Aguardar 5 minutos para cache CDN propagar
 # 2. Testar PSI novamente:
-#    https://pagespeed.web.dev/analysis?url=https://byimperiodog.com.br
+# https://pagespeed.web.dev/analysis?url=https://byimperiodog.com.br
 
 # 3. Métricas esperadas:
-#    ✅ LCP: <2.5s (mobile) / <1.5s (desktop)
-#    ✅ Performance: ≥90 (mobile) / ≥95 (desktop)
-#    ✅ CLS: 0 (mantido)
+# ✅ LCP: <2.5s (mobile) / <1.5s (desktop)
+# ✅ Performance: ≥90 (mobile) / ≥95 (desktop)
+# ✅ CLS: 0 (mantido)
 ```
 
 ---
@@ -147,14 +147,14 @@ const HeavyComponent = dynamic(() => import('./Heavy'), { ssr: false })
 ```javascript
 // Configurar headers em vercel.json:
 {
-  "headers": [
-    {
-      "source": "/spitz-hero-(.*).webp",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
-      ]
-    }
-  ]
+ "headers": [
+ {
+ "source": "/spitz-hero-(.*).webp",
+ "headers": [
+ { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+ ]
+ }
+ ]
 }
 ```
 
@@ -162,14 +162,14 @@ const HeavyComponent = dynamic(() => import('./Heavy'), { ssr: false })
 
 ## ✅ Sign-off
 
-**Desenvolvedor**: GitHub Copilot + AI Assistant  
-**Data**: 25/10/2025 06:30 GMT-3  
-**Status**: ✅ PRONTO PARA DEPLOY  
+**Desenvolvedor**: GitHub Copilot + AI Assistant 
+**Data**: 25/10/2025 06:30 GMT-3 
+**Status**: ✅ PRONTO PARA DEPLOY 
 
-**Responsável pelo Deploy**: [SEU NOME]  
-**Data Deploy**: ___/___/_____  
-**PSI Pós-Deploy**: ___ (mobile) / ___ (desktop)  
-**LCP Pós-Deploy**: ___s (mobile) / ___s (desktop)  
+**Responsável pelo Deploy**: [SEU NOME] 
+**Data Deploy**: ___/___/_____ 
+**PSI Pós-Deploy**: ___ (mobile) / ___ (desktop) 
+**LCP Pós-Deploy**: ___s (mobile) / ___s (desktop) 
 
 ---
 

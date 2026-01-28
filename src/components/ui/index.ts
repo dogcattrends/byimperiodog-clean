@@ -1,3 +1,5 @@
+// CTA principal
+export { default as PrimaryCTA } from './PrimaryCTA';
 /**
  * UI COMPONENTS - By Império Dog Design System
  * 

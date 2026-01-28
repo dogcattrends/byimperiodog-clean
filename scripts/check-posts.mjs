@@ -1,45 +1,32 @@
-import { createClient } from '@supabase/supabase-js'
+import 'dotenv/config'
+import { createClient } from '@sanity/client'
 
-const supabaseUrl = 'https://npmnuihgydadihktglrd.supabase.co'
-const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5wbW51aWhneWRhZGloa3RnbHJkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NTY5MDA4NiwiZXhwIjoyMDcxMjY2MDg2fQ.IaBdH-IqdwNHNyDMREpYtRtwMEp5LIOirH1FHXWLiPw'
+const projectId = process.env.SANITY_PROJECT_ID ?? process.env.NEXT_PUBLIC_SANITY_PROJECT_ID
+const dataset = process.env.SANITY_DATASET ?? process.env.NEXT_PUBLIC_SANITY_DATASET
+const apiVersion = process.env.SANITY_API_VERSION ?? process.env.NEXT_PUBLIC_SANITY_API_VERSION ?? '2023-08-01'
+const token = process.env.SANITY_TOKEN
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey)
+if (!projectId || !dataset) {
+ throw new Error('SANITY_PROJECT_ID/SANITY_DATASET ausentes. Defina as variáveis para executar este script.')
+}
+
+const sanity = createClient({ projectId, dataset, apiVersion, token, useCdn: !token, perspective: token ? 'raw' : 'published' })
 
 async function checkPosts() {
-  // Verificar todos os posts
-  const { data: posts, error: statsError } = await supabase
-    .from('blog_posts')
-    .select('status')
+ const posts = await sanity.fetch(`*[_type=="post"]{_id,status, "slug": slug.current, title}`)
 
-  if (statsError) {
-    console.error('Erro ao verificar status dos posts:', statsError)
-    return
-  }
+ console.log('Posts no Sanity:', Array.isArray(posts) ? posts.length : 0)
+ if (Array.isArray(posts) && posts.length > 0) {
+ const statusCount = posts.reduce((acc, post) => {
+ const st = post.status || 'unknown'
+ acc[st] = (acc[st] || 0) + 1
+ return acc
+ }, {})
+ console.table(statusCount)
 
-  console.log('Status dos posts:', posts?.length || 0, 'posts encontrados')
-  if (posts && posts.length > 0) {
-    const statusCount = posts.reduce((acc, post) => {
-      acc[post.status] = (acc[post.status] || 0) + 1
-      return acc
-    }, {})
-    console.table(statusCount)
-  }
-
-  // Verificar um post de exemplo
-  const { data: sample, error: sampleError } = await supabase
-    .from('blog_posts')
-    .select('*')
-    .limit(1)
-
-  if (sampleError) {
-    console.error('Erro ao buscar post de exemplo:', sampleError)
-    return
-  }
-
-  if (sample && sample.length > 0) {
-    console.log('\nEstrutura de um post:')
-    console.log(JSON.stringify(sample[0], null, 2))
-  }
+ console.log('\nExemplo de post:')
+ console.log(JSON.stringify(posts[0], null, 2))
+ }
 }
 
 checkPosts()

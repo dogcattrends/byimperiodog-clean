@@ -55,24 +55,24 @@ import { User, Mail } from 'lucide-react';
 
 // Básico
 <Input
-  label="Nome completo"
-  placeholder="Digite seu nome"
-  required
+ label="Nome completo"
+ placeholder="Digite seu nome"
+ required
 />
 
 // Com ícones
 <Input
-  label="Email"
-  type="email"
-  leftIcon={<Mail className="h-4 w-4" />}
-  placeholder="seu@email.com"
+ label="Email"
+ type="email"
+ leftIcon={<Mail className="h-4 w-4" />}
+ placeholder="seu@email.com"
 />
 
 // Com validação
 <Input
-  label="Telefone"
-  error="Telefone inválido"
-  helper="Formato: (11) 98765-4321"
+ label="Telefone"
+ error="Telefone inválido"
+ helper="Formato: (11) 98765-4321"
 />
 ```
 
@@ -93,11 +93,11 @@ Campo de texto multilinha com contador.
 import { Textarea } from '@/components/ui';
 
 <Textarea
-  label="Mensagem"
-  placeholder="Digite sua mensagem..."
-  maxLength={500}
-  showCounter
-  helper="Descreva suas dúvidas sobre o filhote"
+ label="Mensagem"
+ placeholder="Digite sua mensagem..."
+ maxLength={500}
+ showCounter
+ helper="Descreva suas dúvidas sobre o filhote"
 />
 ```
 
@@ -118,15 +118,15 @@ Campo de seleção estilizado.
 import { Select } from '@/components/ui';
 
 const sexOptions = [
-  { value: 'male', label: 'Macho' },
-  { value: 'female', label: 'Fêmea' },
+ { value: 'male', label: 'Macho' },
+ { value: 'female', label: 'Fêmea' },
 ];
 
 <Select
-  label="Sexo"
-  options={sexOptions}
-  placeholder="Selecione o sexo"
-  required
+ label="Sexo"
+ options={sexOptions}
+ placeholder="Selecione o sexo"
+ required
 />
 ```
 
@@ -148,25 +148,25 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 
 // Composição básica
 <Card variant="elevated">
-  <CardHeader>
-    <CardTitle>Título do Card</CardTitle>
-    <CardDescription>Descrição opcional</CardDescription>
-  </CardHeader>
-  
-  <CardContent>
-    <p>Conteúdo principal do card...</p>
-  </CardContent>
-  
-  <CardFooter>
-    <Button>Ação</Button>
-  </CardFooter>
+ <CardHeader>
+ <CardTitle>Título do Card</CardTitle>
+ <CardDescription>Descrição opcional</CardDescription>
+ </CardHeader>
+ 
+ <CardContent>
+ <p>Conteúdo principal do card...</p>
+ </CardContent>
+ 
+ <CardFooter>
+ <Button>Ação</Button>
+ </CardFooter>
 </Card>
 
 // Card interativo
 <Card variant="default" interactive>
-  <CardContent>
-    Card clicável com hover effect
-  </CardContent>
+ <CardContent>
+ Card clicável com hover effect
+ </CardContent>
 </Card>
 ```
 
@@ -221,19 +221,19 @@ import { Alert } from '@/components/ui';
 
 // Variantes
 <Alert variant="success" title="Sucesso!" dismissible>
-  Operação concluída com sucesso!
+ Operação concluída com sucesso!
 </Alert>
 
 <Alert variant="error" title="Erro">
-  Não foi possível processar sua solicitação.
+ Não foi possível processar sua solicitação.
 </Alert>
 
 <Alert variant="warning" title="Atenção">
-  Verifique os dados antes de continuar.
+ Verifique os dados antes de continuar.
 </Alert>
 
 <Alert variant="info" title="Informação">
-  Este filhote está reservado até 15/12/2025.
+ Este filhote está reservado até 15/12/2025.
 </Alert>
 ```
 
@@ -281,18 +281,18 @@ Estado vazio com ícone e ação.
 import { EmptyState } from '@/components/ui';
 
 <EmptyState
-  variant="search"
-  title="Nenhum filhote encontrado"
-  description="Tente ajustar os filtros de busca ou entre em contato conosco."
-  action={{
-    label: "Limpar filtros",
-    onClick: handleClearFilters,
-    variant: "solid"
-  }}
-  secondaryAction={{
-    label: "Falar com atendente",
-    onClick: handleContact
-  }}
+ variant="search"
+ title="Nenhum filhote encontrado"
+ description="Tente ajustar os filtros de busca ou entre em contato conosco."
+ action={{
+ label: "Limpar filtros",
+ onClick: handleClearFilters,
+ variant: "solid"
+ }}
+ secondaryAction={{
+ label: "Falar com atendente",
+ onClick: handleContact
+ }}
 />
 ```
 
@@ -311,15 +311,15 @@ import { EmptyState } from '@/components/ui';
 ```tsx
 // Usando tokens CSS
 <div className="bg-[var(--brand)] text-[var(--brand-contrast)]">
-  Fundo com cor da marca
+ Fundo com cor da marca
 </div>
 
 // Usando tokens TypeScript
 import { colors } from '@/design-system/tokens';
 
 const styles = {
-  backgroundColor: colors.brand.DEFAULT,
-  color: colors.brand.contrast,
+ backgroundColor: colors.brand.DEFAULT,
+ color: colors.brand.contrast,
 };
 ```
 
@@ -336,9 +336,9 @@ const styles = {
 
 ```tsx
 // Usar escala consistente
-<div className="space-y-4">  {/* 16px entre filhos */}
-  <div className="p-6">       {/* 24px padding */}
-    <div className="gap-3">   {/* 12px gap */}
+<div className="space-y-4"> {/* 16px entre filhos */}
+ <div className="p-6"> {/* 24px padding */}
+ <div className="gap-3"> {/* 12px gap */}
 ```
 
 ---
@@ -359,14 +359,14 @@ Todos os componentes interativos têm foco visível automático:
 ```tsx
 // Input com label associado
 <Input
-  id="email"
-  label="Email"
-  aria-describedby="email-helper"
+ id="email"
+ label="Email"
+ aria-describedby="email-helper"
 />
 
 // Botão com ícone precisa aria-label
 <button aria-label="Fechar modal">
-  <X className="h-4 w-4" />
+ <X className="h-4 w-4" />
 </button>
 ```
 
@@ -377,12 +377,12 @@ Todas as combinações validadas para WCAG AA:
 ```tsx
 // ✅ Correto
 <div className="bg-[var(--brand)] text-[var(--brand-contrast)]">
-  Contraste validado (8.9:1)
+ Contraste validado (8.9:1)
 </div>
 
 // ⚠️ Cuidado
 <div className="bg-[var(--accent)] text-[var(--text)]">
-  Use accent-foreground para texto (3.2:1 insuficiente)
+ Use accent-foreground para texto (3.2:1 insuficiente)
 </div>
 ```
 
@@ -396,46 +396,46 @@ Todas as combinações validadas para WCAG AA:
 import { Input, Select, Textarea, Button, Alert } from '@/components/ui';
 
 function ContactForm() {
-  return (
-    <form className="space-y-6">
-      <Input
-        label="Nome"
-        placeholder="Seu nome completo"
-        required
-      />
-      
-      <Input
-        label="Email"
-        type="email"
-        placeholder="seu@email.com"
-        required
-      />
-      
-      <Select
-        label="Interesse"
-        options={[
-          { value: 'buy', label: 'Comprar filhote' },
-          { value: 'info', label: 'Informações gerais' },
-        ]}
-        required
-      />
-      
-      <Textarea
-        label="Mensagem"
-        placeholder="Como podemos ajudar?"
-        maxLength={500}
-        showCounter
-      />
-      
-      <Alert variant="info">
-        Respondemos em até 24 horas úteis.
-      </Alert>
-      
-      <Button type="submit" size="lg" className="w-full">
-        Enviar mensagem
-      </Button>
-    </form>
-  );
+ return (
+ <form className="space-y-6">
+ <Input
+ label="Nome"
+ placeholder="Seu nome completo"
+ required
+ />
+ 
+ <Input
+ label="Email"
+ type="email"
+ placeholder="seu@email.com"
+ required
+ />
+ 
+ <Select
+ label="Interesse"
+ options={[
+ { value: 'buy', label: 'Comprar filhote' },
+ { value: 'info', label: 'Informações gerais' },
+ ]}
+ required
+ />
+ 
+ <Textarea
+ label="Mensagem"
+ placeholder="Como podemos ajudar?"
+ maxLength={500}
+ showCounter
+ />
+ 
+ <Alert variant="info">
+ Respondemos em até 24 horas úteis.
+ </Alert>
+ 
+ <Button type="submit" size="lg" className="w-full">
+ Enviar mensagem
+ </Button>
+ </form>
+ );
 }
 ```
 
@@ -445,28 +445,28 @@ function ContactForm() {
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, Badge, Button } from '@/components/ui';
 
 function SimplePuppyCard({ puppy }) {
-  return (
-    <Card variant="elevated" interactive>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle>{puppy.name}</CardTitle>
-          <StatusBadge status={puppy.status} />
-        </div>
-      </CardHeader>
-      
-      <CardContent>
-        <p className="text-sm text-[var(--text-muted)]">
-          {puppy.color} • {puppy.gender}
-        </p>
-      </CardContent>
-      
-      <CardFooter>
-        <Button variant="outline" className="w-full">
-          Ver detalhes
-        </Button>
-      </CardFooter>
-    </Card>
-  );
+ return (
+ <Card variant="elevated" interactive>
+ <CardHeader>
+ <div className="flex items-center justify-between">
+ <CardTitle>{puppy.name}</CardTitle>
+ <StatusBadge status={puppy.status} />
+ </div>
+ </CardHeader>
+ 
+ <CardContent>
+ <p className="text-sm text-[var(--text-muted)]">
+ {puppy.color} • {puppy.gender}
+ </p>
+ </CardContent>
+ 
+ <CardFooter>
+ <Button variant="outline" className="w-full">
+ Ver detalhes
+ </Button>
+ </CardFooter>
+ </Card>
+ );
 }
 ```
 
@@ -480,16 +480,16 @@ function SimplePuppyCard({ puppy }) {
 import { Button, ButtonProps } from '@/components/ui';
 
 function WhatsAppButton(props: ButtonProps) {
-  return (
-    <Button
-      variant="solid"
-      className="bg-[var(--whatsapp)] hover:bg-[var(--whatsapp)]/90"
-      {...props}
-    >
-      <WhatsAppIcon className="h-4 w-4" />
-      {props.children}
-    </Button>
-  );
+ return (
+ <Button
+ variant="solid"
+ className="bg-[var(--whatsapp)] hover:bg-[var(--whatsapp)]/90"
+ {...props}
+ >
+ <WhatsAppIcon className="h-4 w-4" />
+ {props.children}
+ </Button>
+ );
 }
 ```
 
@@ -498,7 +498,7 @@ function WhatsAppButton(props: ButtonProps) {
 ```tsx
 // Usando CSS custom properties
 <div style={{ '--accent': '#FF6B6B' }}>
-  <Button>Botão com cor personalizada</Button>
+ <Button>Botão com cor personalizada</Button>
 </div>
 ```
 

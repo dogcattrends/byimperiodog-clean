@@ -115,32 +115,32 @@ import { dispatchWebhookEvent } from '@/lib/webhooks/dispatcher';
 
 // Notificar lead de formulário
 await dispatchWebhookEvent('lead_form_submit', {
-  name: 'João Silva',
-  email: 'joao@example.com',
-  phone: '11999999999',
-  message: 'Quero adotar um filhote'
+ name: 'João Silva',
+ email: 'joao@example.com',
+ phone: '11999999999',
+ message: 'Quero adotar um filhote'
 }, {
-  page_url: '/reserve-seu-filhote',
-  user_agent: req.headers['user-agent']
+ page_url: '/reserve-seu-filhote',
+ user_agent: req.headers['user-agent']
 });
 ```
 
 **Formato do Payload:**
 ```json
 {
-  "event": "lead_form_submit",
-  "timestamp": "2024-01-15T10:30:00Z",
-  "data": {
-    "name": "João Silva",
-    "email": "joao@example.com",
-    "phone": "11999999999"
-  },
-  "metadata": {
-    "user_agent": "Mozilla/5.0...",
-    "ip": "192.168.1.1",
-    "page_url": "/reserve-seu-filhote",
-    "referrer": "https://google.com"
-  }
+ "event": "lead_form_submit",
+ "timestamp": "2024-01-15T10:30:00Z",
+ "data": {
+ "name": "João Silva",
+ "email": "joao@example.com",
+ "phone": "11999999999"
+ },
+ "metadata": {
+ "user_agent": "Mozilla/5.0...",
+ "ip": "192.168.1.1",
+ "page_url": "/reserve-seu-filhote",
+ "referrer": "https://google.com"
+ }
 }
 ```
 
@@ -185,23 +185,23 @@ User-Agent: ByImperioDog-Webhook/1.0
 ```typescript
 // Variante de Controle
 {
-  name: "Pixel Original",
-  meta_pixel_id: "123456789012345",
-  ga4_id: "G-ABC123456"
+ name: "Pixel Original",
+ meta_pixel_id: "123456789012345",
+ ga4_id: "G-ABC123456"
 }
 
 // Variante de Teste
 {
-  name: "Pixel Novo",
-  meta_pixel_id: "999888777666555",
-  ga4_id: "G-XYZ789012"
+ name: "Pixel Novo",
+ meta_pixel_id: "999888777666555",
+ ga4_id: "G-XYZ789012"
 }
 
 // Configuração
 {
-  name: "Teste Facebook Pixel Novo",
-  description: "Comparar performance do pixel antigo vs novo",
-  traffic_split: 50 // 50% dos usuários participam
+ name: "Teste Facebook Pixel Novo",
+ description: "Comparar performance do pixel antigo vs novo",
+ traffic_split: 50 // 50% dos usuários participam
 }
 ```
 
@@ -219,69 +219,69 @@ User-Agent: ByImperioDog-Webhook/1.0
 #### `webhooks`
 ```sql
 CREATE TABLE webhooks (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  url TEXT NOT NULL,
-  events TEXT[] NOT NULL,
-  status TEXT DEFAULT 'active',
-  secret TEXT,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW(),
-  last_triggered_at TIMESTAMP,
-  error_count INTEGER DEFAULT 0,
-  success_count INTEGER DEFAULT 0
+ id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+ name TEXT NOT NULL,
+ url TEXT NOT NULL,
+ events TEXT[] NOT NULL,
+ status TEXT DEFAULT 'active',
+ secret TEXT,
+ created_at TIMESTAMP DEFAULT NOW(),
+ updated_at TIMESTAMP DEFAULT NOW(),
+ last_triggered_at TIMESTAMP,
+ error_count INTEGER DEFAULT 0,
+ success_count INTEGER DEFAULT 0
 );
 ```
 
 #### `webhook_deliveries`
 ```sql
 CREATE TABLE webhook_deliveries (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  webhook_id UUID REFERENCES webhooks(id) ON DELETE CASCADE,
-  event TEXT NOT NULL,
-  payload JSONB NOT NULL,
-  status TEXT DEFAULT 'pending',
-  response_status INTEGER,
-  response_body TEXT,
-  attempts INTEGER DEFAULT 1,
-  created_at TIMESTAMP DEFAULT NOW(),
-  delivered_at TIMESTAMP
+ id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+ webhook_id UUID REFERENCES webhooks(id) ON DELETE CASCADE,
+ event TEXT NOT NULL,
+ payload JSONB NOT NULL,
+ status TEXT DEFAULT 'pending',
+ response_status INTEGER,
+ response_body TEXT,
+ attempts INTEGER DEFAULT 1,
+ created_at TIMESTAMP DEFAULT NOW(),
+ delivered_at TIMESTAMP
 );
 ```
 
 #### `pixel_experiments`
 ```sql
 CREATE TABLE pixel_experiments (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  description TEXT,
-  status TEXT DEFAULT 'draft',
-  traffic_split INTEGER DEFAULT 50,
-  control_variant_id UUID REFERENCES pixel_variants(id),
-  test_variant_id UUID REFERENCES pixel_variants(id),
-  start_date TIMESTAMP,
-  end_date TIMESTAMP,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW(),
-  winner_variant_id UUID
+ id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+ name TEXT NOT NULL,
+ description TEXT,
+ status TEXT DEFAULT 'draft',
+ traffic_split INTEGER DEFAULT 50,
+ control_variant_id UUID REFERENCES pixel_variants(id),
+ test_variant_id UUID REFERENCES pixel_variants(id),
+ start_date TIMESTAMP,
+ end_date TIMESTAMP,
+ created_at TIMESTAMP DEFAULT NOW(),
+ updated_at TIMESTAMP DEFAULT NOW(),
+ winner_variant_id UUID
 );
 ```
 
 #### `pixel_variants`
 ```sql
 CREATE TABLE pixel_variants (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  meta_pixel_id TEXT,
-  ga4_id TEXT,
-  gtm_id TEXT,
-  tiktok_pixel_id TEXT,
-  google_ads_id TEXT,
-  linkedin_partner_id TEXT,
-  twitter_pixel_id TEXT,
-  pinterest_tag_id TEXT,
-  snapchat_pixel_id TEXT,
-  created_at TIMESTAMP DEFAULT NOW()
+ id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+ name TEXT NOT NULL,
+ meta_pixel_id TEXT,
+ ga4_id TEXT,
+ gtm_id TEXT,
+ tiktok_pixel_id TEXT,
+ google_ads_id TEXT,
+ linkedin_partner_id TEXT,
+ twitter_pixel_id TEXT,
+ pinterest_tag_id TEXT,
+ snapchat_pixel_id TEXT,
+ created_at TIMESTAMP DEFAULT NOW()
 );
 ```
 
@@ -292,63 +292,63 @@ CREATE TABLE pixel_variants (
 ### Para executar o sistema:
 
 1. **Criar tabelas no Supabase:**
-   - Execute os scripts SQL acima no Supabase SQL Editor
+ - Execute os scripts SQL acima no Supabase SQL Editor
 
 2. **Configurar ambiente:**
-   - Certifique-se de que `NEXT_PUBLIC_SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` estão configurados
+ - Certifique-se de que `NEXT_PUBLIC_SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` estão configurados
 
 3. **Testar funcionalidades:**
-   ```bash
-   # Iniciar servidor
-   npm run dev
-   
-   # Acessar admin
-   http://localhost:3000/admin/settings/tracking
-   http://localhost:3000/admin/webhooks
-   http://localhost:3000/admin/pixel-experiments
-   http://localhost:3000/admin/analytics
-   
-   # Executar testes E2E
-   npx playwright test tests/e2e/tracking.spec.ts
-   ```
+ ```bash
+ # Iniciar servidor
+ npm run dev
+ 
+ # Acessar admin
+ http://localhost:3000/admin/settings/tracking
+ http://localhost:3000/admin/webhooks
+ http://localhost:3000/admin/pixel-experiments
+ http://localhost:3000/admin/analytics
+ 
+ # Executar testes E2E
+ npx playwright test tests/e2e/tracking.spec.ts
+ ```
 
 4. **Integrar dispatcher de webhooks:**
-   - Adicione chamadas para `dispatchWebhookEvent()` nos formulários de lead
-   - Exemplo: ao enviar formulário de reserva, notificar webhooks
+ - Adicione chamadas para `dispatchWebhookEvent()` nos formulários de lead
+ - Exemplo: ao enviar formulário de reserva, notificar webhooks
 
 5. **Implementar atribuição de experimentos:**
-   - Criar lógica para atribuir usuários a variantes A/B
-   - Salvar em cookie ou session storage
-   - Usar variante correta ao carregar pixels
+ - Criar lógica para atribuir usuários a variantes A/B
+ - Salvar em cookie ou session storage
+ - Usar variante correta ao carregar pixels
 
 ---
 
 ## 📝 Checklist de Implementação
 
 - [x] Dashboard de Analytics
-  - [x] Tipos TypeScript
-  - [x] API endpoint
-  - [x] Página de visualização (existente)
-  
+ - [x] Tipos TypeScript
+ - [x] API endpoint
+ - [x] Página de visualização (existente)
+ 
 - [x] Testes E2E com Playwright
-  - [x] Testes de configuração
-  - [x] Testes de validação
-  - [x] Testes de injeção de scripts
-  - [x] Testes de API
-  
+ - [x] Testes de configuração
+ - [x] Testes de validação
+ - [x] Testes de injeção de scripts
+ - [x] Testes de API
+ 
 - [x] Webhooks de Eventos
-  - [x] Tipos TypeScript
-  - [x] APIs CRUD
-  - [x] Dispatcher com retry
-  - [x] Página de gerenciamento
-  - [x] Endpoint de teste
-  
+ - [x] Tipos TypeScript
+ - [x] APIs CRUD
+ - [x] Dispatcher com retry
+ - [x] Página de gerenciamento
+ - [x] Endpoint de teste
+ 
 - [x] A/B Testing de Pixels
-  - [x] Tipos TypeScript
-  - [x] APIs de experimentos
-  - [x] API de resultados
-  - [x] Página de gerenciamento
-  - [x] Cálculo de significância estatística
+ - [x] Tipos TypeScript
+ - [x] APIs de experimentos
+ - [x] API de resultados
+ - [x] Página de gerenciamento
+ - [x] Cálculo de significância estatística
 
 ---
 

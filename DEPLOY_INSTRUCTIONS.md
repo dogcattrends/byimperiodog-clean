@@ -75,12 +75,12 @@ git push origin main
 ### 2️⃣ Monitorar Deploy
 
 1. **GitHub Actions**: Acesse `https://github.com/dogcattrends/byimperiodog-clean/actions`
-   - Aguardar workflow `deploy-vercel.yml` completar
-   - Verificar logs de build (deve passar sem erros)
+ - Aguardar workflow `deploy-vercel.yml` completar
+ - Verificar logs de build (deve passar sem erros)
 
 2. **Vercel Dashboard**: Acesse `https://vercel.com/seu-usuario/seu-projeto`
-   - Verificar deployment status
-   - Copiar URL de produção (ex: `https://byimperiodog.vercel.app`)
+ - Verificar deployment status
+ - Copiar URL de produção (ex: `https://byimperiodog.vercel.app`)
 
 ### 3️⃣ Validar Environment Variables
 

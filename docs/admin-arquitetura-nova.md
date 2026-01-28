@@ -10,11 +10,11 @@
 
 ## Layout e navegação
 - Layout protegido em `(protected)` com sidebar modular:
-  - Dashboard
-  - Estoque de Filhotes
-  - Leads & Funil
-  - Relatórios
-  - Config & Tracking
+ - Dashboard
+ - Estoque de Filhotes
+ - Leads & Funil
+ - Relatórios
+ - Config & Tracking
 - Topbar minimalista; logout direto. Nav com destaque da rota atual (AdminNav client).
 - Rotas admin com `robots: noindex`.
 

@@ -1,6 +1,6 @@
 # Relatório de Otimizações - byimperiodog-clean
 
-**Data:** 23 de outubro de 2025  
+**Data:** 23 de outubro de 2025 
 **Objetivo:** Atingir PageSpeed Insights 100/100 (Mobile ≥95, Desktop 100) + A11y AA + CRO otimizado
 
 ---
@@ -93,13 +93,13 @@
 ### P0-4: Blog Cards CRO ✅
 **Mudanças:**
 - **Dual CTAs por card:**
-  - Primary: "Ler artigo" (brand button)
-  - Secondary: "💬 Falar sobre isso" (WhatsApp + UTM)
+ - Primary: "Ler artigo" (brand button)
+ - Secondary: "💬 Falar sobre isso" (WhatsApp + UTM)
 - **UTM tracking:** `utm_source=blog&utm_medium=card&utm_campaign=post-{slug}`
 - **Guia do Tutor Section:**
-  - Destacado com gradient border
-  - Featured styling diferenciado
-  - Conversion CTAs prioritários
+ - Destacado com gradient border
+ - Featured styling diferenciado
+ - Conversion CTAs prioritários
 
 **Arquivos:** `app/blog/page.tsx` (CategorySection, GuiaDoTutorSection)
 
@@ -137,38 +137,38 @@
 **Componentes refatorados (6 arquivos):**
 
 1. **Navbar.tsx**
-   - Removido: AnimatePresence, motion.div, motion.aside
-   - Substituído: CSS transitions com Radix Dialog data-state
-   - Transitions: `opacity-0 data-[state=open]:opacity-100 transition-opacity duration-200`
+ - Removido: AnimatePresence, motion.div, motion.aside
+ - Substituído: CSS transitions com Radix Dialog data-state
+ - Transitions: `opacity-0 data-[state=open]:opacity-100 transition-opacity duration-200`
 
 2. **Testimonials.tsx**
-   - Removido: useReducedMotion (framer), motion.figure
-   - Adicionado: Custom matchMedia hook
-   - CSS Animation: `.animate-fade-in` com @keyframes
+ - Removido: useReducedMotion (framer), motion.figure
+ - Adicionado: Custom matchMedia hook
+ - CSS Animation: `.animate-fade-in` com @keyframes
 
 3. **PuppiesGrid.tsx**
-   - Removido: AnimatePresence wrapper em grid
-   - Resultado: Plain divs com CSS transitions
+ - Removido: AnimatePresence wrapper em grid
+ - Resultado: Plain divs com CSS transitions
 
 4. **RecentPostsSection.tsx**
-   - Dynamic import com `ssr: false`
-   - Code-splitting para RecentPostsListAnimated
+ - Dynamic import com `ssr: false`
+ - Code-splitting para RecentPostsListAnimated
 
 5. **BlogRecentStaggerClient.tsx**
-   - Removido imports não utilizados
+ - Removido imports não utilizados
 
 6. **FloatingCTA** (se existente)
-   - Refatorado para CSS animations
+ - Refatorado para CSS animations
 
 **CSS additions:**
 ```css
 /* design-system/tokens.css */
 @keyframes fade-in {
-  from { opacity: 0; transform: scale(1.02); }
-  to { opacity: 1; transform: scale(1); }
+ from { opacity: 0; transform: scale(1.02); }
+ to { opacity: 1; transform: scale(1); }
 }
 .animate-fade-in {
-  animation: fade-in 450ms cubic-bezier(0.16, 0.84, 0.44, 1) forwards;
+ animation: fade-in 450ms cubic-bezier(0.16, 0.84, 0.44, 1) forwards;
 }
 ```
 
@@ -221,35 +221,35 @@
 **Open Graph Metadata:**
 ```tsx
 export const metadata: Metadata = {
-  title: "...",
-  description: "...",
-  alternates: { canonical: "/blog" },
-  openGraph: {
-    type: "website",
-    url: process.env.NEXT_PUBLIC_SITE_URL + "/blog",
-    title: "...",
-    description: "...",
-  }
+ title: "...",
+ description: "...",
+ alternates: { canonical: "/blog" },
+ openGraph: {
+ type: "website",
+ url: process.env.NEXT_PUBLIC_SITE_URL + "/blog",
+ title: "...",
+ description: "...",
+ }
 };
 ```
 
 **JSON-LD Structured Data:**
 
 1. **Organization** (Home)
-   - Nome, logo, contato
-   - Social profiles
+ - Nome, logo, contato
+ - Social profiles
 
 2. **WebSite** (Home)
-   - SearchAction para /search
+ - SearchAction para /search
 
 3. **BreadcrumbList** (Blog, Sobre, Filhotes)
-   - Navegação hierárquica
+ - Navegação hierárquica
 
 4. **FAQPage** (Filhotes)
-   - Perguntas frequentes sobre aquisi��o respons�vel
+ - Perguntas frequentes sobre aquisi��o respons�vel
 
 5. **Article** (Blog posts)
-   - headline, author, datePublished, image
+ - headline, author, datePublished, image
 
 **Arquivos:**
 - `app/page.tsx`
@@ -264,42 +264,42 @@ export const metadata: Metadata = {
 **LeadForm.tsx enhancements:**
 
 1. **Validação React Hook Form + Zod:**
-   ```tsx
-   const schema = z.object({
-     nome: z.string().min(2, "Informe seu nome completo"),
-     telefone: z.string().min(10).regex(/^\d{10,11}$/),
-     consent_lgpd: z.literal(true, { errorMap: () => ({ message: "Aceite obrigatório" }) })
-   });
-   ```
+ ```tsx
+ const schema = z.object({
+ nome: z.string().min(2, "Informe seu nome completo"),
+ telefone: z.string().min(10).regex(/^\d{10,11}$/),
+ consent_lgpd: z.literal(true, { errorMap: () => ({ message: "Aceite obrigatório" }) })
+ });
+ ```
 
 2. **Advanced Analytics Tracking:**
-   ```tsx
-   // Success event
-   gtag("event", "lead_form_submit", {
-     form_location: "lead-form-main",
-     interest: data.sexo_preferido || "not_specified",
-     prazo: data.prazo_aquisicao || "not_specified",
-     phone_valid: data.telefone.length >= 10,
-   });
-   
-   // Error event
-   gtag("event", "lead_form_error", {
-     form_location: "lead-form-main",
-     error_message: errorMsg,
-   });
-   ```
+ ```tsx
+ // Success event
+ gtag("event", "lead_form_submit", {
+ form_location: "lead-form-main",
+ interest: data.sexo_preferido || "not_specified",
+ prazo: data.prazo_aquisicao || "not_specified",
+ phone_valid: data.telefone.length >= 10,
+ });
+ 
+ // Error event
+ gtag("event", "lead_form_error", {
+ form_location: "lead-form-main",
+ error_message: errorMsg,
+ });
+ ```
 
 3. **Type-safe gtag:**
-   ```tsx
-   const win = window as unknown as { gtag?: (...args: unknown[]) => void };
-   if (typeof win.gtag === "function") { ... }
-   ```
+ ```tsx
+ const win = window as unknown as { gtag?: (...args: unknown[]) => void };
+ if (typeof win.gtag === "function") { ... }
+ ```
 
 4. **aria-describedby error linking:**
-   ```tsx
-   <input aria-describedby={errors.nome ? "erro-nome" : undefined} />
-   <p id="erro-nome">{errors.nome?.message}</p>
-   ```
+ ```tsx
+ <input aria-describedby={errors.nome ? "erro-nome" : undefined} />
+ <p id="erro-nome">{errors.nome?.message}</p>
+ ```
 
 **StickyCTA.tsx (NEW):**
 - Mobile-only sticky WhatsApp button
@@ -336,10 +336,10 @@ CHROME_INTERSTITIAL_ERROR: Chrome prevented page load with an interstitial
 2. Pressionar F12 (DevTools)
 3. Navegar para aba "Lighthouse"
 4. Configurar:
-   - ✓ Performance
-   - ✓ Accessibility
-   - ✓ Best Practices
-   - ✓ SEO
+ - ✓ Performance
+ - ✓ Accessibility
+ - ✓ Best Practices
+ - ✓ SEO
 5. Device: Mobile e Desktop (rodar separadamente)
 6. Clicar "Analyze page load"
 7. Salvar relatório HTML
@@ -359,10 +359,10 @@ CHROME_INTERSTITIAL_ERROR: Chrome prevented page load with an interstitial
 
 1. Acessar: https://pagespeed.web.dev/
 2. Inserir URLs:
-   - `https://seu-dominio.com/`
-   - `https://seu-dominio.com/blog`
-   - `https://seu-dominio.com/filhotes`
-   - `https://seu-dominio.com/sobre`
+ - `https://seu-dominio.com/`
+ - `https://seu-dominio.com/blog`
+ - `https://seu-dominio.com/filhotes`
+ - `https://seu-dominio.com/sobre`
 3. Analisar Mobile e Desktop
 4. Baixar relatórios JSON/HTML
 
@@ -378,9 +378,9 @@ CHROME_INTERSTITIAL_ERROR: Chrome prevented page load with an interstitial
 1. Acessar: https://www.webpagetest.org/
 2. Inserir URL de produção
 3. Configurar:
-   - Location: São Paulo ou Rio de Janeiro (mais próximo)
-   - Browser: Chrome
-   - Connection: 4G (mobile) / Cable (desktop)
+ - Location: São Paulo ou Rio de Janeiro (mais próximo)
+ - Browser: Chrome
+ - Connection: 4G (mobile) / Cable (desktop)
 4. Rodar teste
 5. Analisar filmstrip, waterfall, Core Web Vitals
 
@@ -392,9 +392,9 @@ Com todas as otimizações aplicadas, os scores esperados são:
 
 ### Mobile
 - **Performance:** ≥95 (target: 97-99)
-  - LCP: <2.5s
-  - TBT: <200ms
-  - CLS: <0.1
+ - LCP: <2.5s
+ - TBT: <200ms
+ - CLS: <0.1
 - **Accessibility:** 100
 - **Best Practices:** 100
 - **SEO:** 100
@@ -455,11 +455,11 @@ SUPABASE_SERVICE_ROLE_KEY=...
 **netlify.toml:**
 ```toml
 [build]
-  command = "npm run build"
-  publish = ".next"
+ command = "npm run build"
+ publish = ".next"
 
 [[plugins]]
-  package = "@netlify/plugin-nextjs"
+ package = "@netlify/plugin-nextjs"
 ```
 
 **Deploy:**
@@ -550,6 +550,6 @@ Considerar adicionar:
 
 ---
 
-**Última atualização:** 23 de outubro de 2025  
-**Build version:** Production optimized  
+**Última atualização:** 23 de outubro de 2025 
+**Build version:** Production optimized 
 **Status:** ✅ Pronto para deploy e validação PSI

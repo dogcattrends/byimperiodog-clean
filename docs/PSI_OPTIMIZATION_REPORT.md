@@ -1,8 +1,8 @@
 # 📊 PageSpeed Insights - Relatório de Otimização
 
-**Data**: 27/10/2025  
-**URL**: https://www.byimperiodog.com.br/  
-**Dispositivo**: Mobile (Moto G Power emulado, 4G lento)  
+**Data**: 27/10/2025 
+**URL**: https://www.byimperiodog.com.br/ 
+**Dispositivo**: Mobile (Moto G Power emulado, 4G lento) 
 
 ---
 
@@ -43,11 +43,11 @@
 **Depois**:
 ```tsx
 <Image
-  src="/spitz-hero-desktop.webp"
-  fill
-  priority
-  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 640px"
-  placeholder="blur"
+ src="/spitz-hero-desktop.webp"
+ fill
+ priority
+ sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 640px"
+ placeholder="blur"
 />
 ```
 
@@ -64,8 +64,8 @@
 **Estratégia**:
 ```tsx
 const PuppiesGrid = dynamic(() => import("@/components/PuppiesGrid"), { 
-  ssr: true, 
-  loading: () => <div className="h-96 animate-pulse bg-gray-100" />
+ ssr: true, 
+ loading: () => <div className="h-96 animate-pulse bg-gray-100" />
 });
 ```
 
@@ -102,13 +102,13 @@ const PuppiesGrid = dynamic(() => import("@/components/PuppiesGrid"), {
 **Implementação**:
 ```tsx
 {!isAdminRoute && pathname === "/" && (
-  <link
-    rel="preload"
-    as="image"
-    href="/spitz-hero-desktop.webp"
-    type="image/webp"
-    fetchPriority="high"
-  />
+ <link
+ rel="preload"
+ as="image"
+ href="/spitz-hero-desktop.webp"
+ type="image/webp"
+ fetchPriority="high"
+ />
 )}
 ```
 
@@ -200,9 +200,9 @@ _*Real-World: Estimativa com 4G normal + Vercel CDN cache_
 - **Route**: 10.1 kB
 - **First Load JS**: 223 kB
 - **Shared chunks**: 87.4 kB
-  - `chunks/7023`: 31.7 kB
-  - `chunks/fd9d1056`: 53.6 kB
-  - Other: 2.07 kB
+ - `chunks/7023`: 31.7 kB
+ - `chunks/fd9d1056`: 53.6 kB
+ - Other: 2.07 kB
 
 ### **Status**: ✅ Dentro do target (≤180KB first paint)
 
@@ -282,6 +282,6 @@ _*Real-World: Estimativa com 4G normal + Vercel CDN cache_
 
 ---
 
-**Autor**: GitHub Copilot  
-**Data**: 27/10/2025  
+**Autor**: GitHub Copilot 
+**Data**: 27/10/2025 
 **Status**: ✅ Otimizações de performance concluídas

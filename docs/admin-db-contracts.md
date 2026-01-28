@@ -35,8 +35,9 @@ Este documento mapeia cada tela do admin para as tabelas/colunas do Supabase e o
 - **Pendências**: `/api/admin/settings` deve aceitar/retornar esses campos; hoje input assume string → se `custom_pixels` vier array precisa de UI própria.
 
 ## Blog admin (analytics/comments/editor/preview/schedule)
-- **Tabela**: `blog_posts` (id, slug, title, subtitle, excerpt, content_mdx, cover_url/alt, published_at/created_at/updated_at, status, author_id, seo_title/description, category, tags, lang). Autores em `blog_authors`.
-- **Pendências**: páginas analytics/comments estão marcadas como TODO/mocks; decidir se serão ligadas ou removidas.
+- **Editorial (fonte de verdade)**: Sanity (`post`, `author`, `category`, `tag`) via `src/lib/sanity/*`.
+- **Operacional (Supabase)**: `blog_comments`, `blog_post_revisions`, `blog_post_embeddings`, `blog_post_schedule_events`, `media_assets`, `post_media` (preferir `post_slug`/`entity_ref`).
+- **Pendências**: páginas analytics/comments ainda têm TODO/mocks; decidir se serão ligadas às tabelas operacionais ou removidas.
 
 ## Content/Media/Web-stories/Relatórios/Experiments
 - **Status**: principalmente mock/placeholder. Não há ligação clara com tabelas; definir tabelas ou ocultar.
@@ -50,17 +51,17 @@ Este documento mapeia cada tela do admin para as tabelas/colunas do Supabase e o
 - **Puppies**: requer `puppies` com campos listados; uploads dependem de storage público.
 - **Leads**: requer `leads`; opcional `lead_interactions`; vínculo com puppy ainda não usado.
 - **Config/Tracking**: requer `admin_config` e `tracking_settings` com id "default".
-- **Blog**: `blog_posts`, `blog_authors`; contentlayer pode continuar para MDX estático.
+- **Blog**: Sanity para editorial; Supabase apenas operacional. Contentlayer pode continuar como fallback estático onde fizer sentido.
 - **Analytics**: depende das tabelas acima estarem populadas.
 
 ## Ações recomendadas antes de aplicar nas páginas
 1) Validar schema no Supabase: criar migrações para `tracking_settings`, `admin_config`, `catalog_ai_events`, `lead_interactions`, `admin_users` se faltarem; garantir colunas `slug` NOT NULL em `puppies`.
 2) Padronizar nomes: usar snake_case no banco (e.g., `price_cents`, `birth_date`, `ready_for_adoption_date`) e mapear no app via tipos de `lib/db/types.ts`.
 3) Atualizar chamadas:
-   - `/api/admin/puppies/route.ts`: type guard de midia (string | {url|src}); mapear para `midia` jsonb.
-   - `PuppiesPageClient`: usar `PuppyRow` e mapear datas string → Date apenas no cliente.
-   - `LeadsCRM`: usar `LeadRow`, remover aliases antigos se banco já padronizado.
-   - Config/Tracking forms: tipar payloads com `AdminConfigRow` e `TrackingSettingsRow`; garantir POST envia null para campos vazios.
+ - `/api/admin/puppies/route.ts`: type guard de midia (string | {url|src}); mapear para `midia` jsonb.
+ - `PuppiesPageClient`: usar `PuppyRow` e mapear datas string → Date apenas no cliente.
+ - `LeadsCRM`: usar `LeadRow`, remover aliases antigos se banco já padronizado.
+ - Config/Tracking forms: tipar payloads com `AdminConfigRow` e `TrackingSettingsRow`; garantir POST envia null para campos vazios.
 4) Remover mocks/legado: `content/page.tsx`, `settings/page.tsx`, `leads/mock-data.ts`, `blog/page.old.tsx` se não usados.
 5) Documentar relações: se lead puder referenciar puppy, adicionar `puppy_id` em `leads` e usar no admin (recomendações/filtragem).
 

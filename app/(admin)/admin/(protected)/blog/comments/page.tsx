@@ -1,11 +1,40 @@
 "use client";
 // Página de moderação de comentários (mínima / placeholder)
 // TODO: Restaurar UI completa se existia anteriormente (filtros, threads, ações em massa).
-import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { BlogSubnav } from '@/components/admin/BlogSubnav';
+import React, { useEffect, useState } from 'react';
 
-interface CommentRow { id:string; post_id:string; author?:string|null; content?:string|null; status?:string|null; created_at?:string; }
+import { BlogSubnav } from '../../../../../../src/components/admin/BlogSubnav';
+
+interface CommentRow {
+	id: string;
+	post_id: string;
+	author_name?: string | null;
+	author_email?: string | null;
+	body?: string | null;
+	approved?: boolean | null;
+	created_at?: string;
+	// aliases retornados pela API (compat)
+	author?: string | null;
+	content?: string | null;
+	status?: string | null;
+}
+
+function formatStatus(row: CommentRow) {
+	if (row.approved === true) return 'Aprovado';
+	if (row.approved === false) return 'Pendente';
+	if (row.status === 'approved') return 'Aprovado';
+	if (row.status === 'pending') return 'Pendente';
+	return '—';
+}
+
+function resolveAuthor(row: CommentRow) {
+	return row.author ?? row.author_name ?? '—';
+}
+
+function resolveBody(row: CommentRow) {
+	return row.content ?? row.body ?? '';
+}
 
 export default function BlogCommentsModeration(){
 	const [items,setItems]=useState<CommentRow[]>([]);
@@ -45,9 +74,9 @@ export default function BlogCommentsModeration(){
 							{items.map(c=> (
 								<tr key={c.id} className="odd:bg-white even:bg-zinc-50">
 									<td className="p-2 border"><Link className="underline" href={`/admin/blog/editor?id=${c.post_id}`}>{c.post_id.slice(0,6)}</Link></td>
-									<td className="p-2 border max-w-[140px] truncate" title={c.author||''}>{c.author||'—'}</td>
-									<td className="p-2 border max-w-[280px] truncate" title={c.content||''}>{c.content||''}</td>
-									<td className="p-2 border">{c.status||'—'}</td>
+									<td className="p-2 border max-w-[140px] truncate" title={String(resolveAuthor(c) || '')}>{resolveAuthor(c)}</td>
+									<td className="p-2 border max-w-[280px] truncate" title={String(resolveBody(c) || '')}>{resolveBody(c)}</td>
+									<td className="p-2 border">{formatStatus(c)}</td>
 									<td className="p-2 border whitespace-nowrap">{c.created_at? new Date(c.created_at).toLocaleDateString('pt-BR'): '—'}</td>
 								</tr>
 							))}

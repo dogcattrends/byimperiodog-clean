@@ -1,392 +1,511 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
-import { Filter, LayoutGrid, Loader2, RotateCcw, SlidersHorizontal, TableProperties } from "lucide-react";
+import { Filter, RotateCcw, SlidersHorizontal } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState, useTransition } from "react";
 
+import { LoadingState, EmptyState } from "@/components/ui/states";
 import { useToast } from "@/components/ui/toast";
+import type { AdminPuppyListItem, AdminPuppySort, AdminPuppyStatus, ParsedPuppyFilters } from "@/lib/admin/puppies";
+import { fixMojibake } from "@/lib/text/fixMojibake";
+const sanitizeText = (value: string) => fixMojibake(value) ?? value;
 
-import { PuppiesBoard } from "./PuppiesBoard";
 import { PuppiesTable } from "./PuppiesTable";
-import type { AdminPuppyListItem, AdminPuppySort, AdminPuppyStatus, ParsedPuppyFilters } from "./queries";
 
 type Props = {
-  items: AdminPuppyListItem[];
-  leadCounts: Record<string, number>;
-  filters: ParsedPuppyFilters;
-  sort: AdminPuppySort;
-  total: number;
-  hasMore: boolean;
-  statusSummary: Record<AdminPuppyStatus, number>;
-  colorOptions: string[];
+ items: AdminPuppyListItem[];
+ leadCounts: Record<string, number>;
+ filters: ParsedPuppyFilters;
+ sort: AdminPuppySort;
+ total: number;
+ hasMore: boolean;
+ statusSummary: Record<AdminPuppyStatus, number>;
+ colorOptions: string[];
+ cityOptions: string[];
+ basePath?: string;
 };
 
 type FilterFormState = {
-  statuses: Set<AdminPuppyStatus>;
-  colors: Set<string>;
-  sex?: "male" | "female";
-  minPrice: string;
-  maxPrice: string;
-  search: string;
-  sort: AdminPuppySort;
+ statuses: Set<AdminPuppyStatus>;
+ colors: Set<string>;
+ city?: string;
+ state?: string;
+ sex?: "male" | "female";
+ search: string;
+ sort: AdminPuppySort;
 };
 
 const STATUS_OPTIONS: { value: AdminPuppyStatus; label: string }[] = [
-  { value: "available", label: "Disponível" },
-  { value: "coming_soon", label: "Em breve" },
-  { value: "reserved", label: "Reservado" },
-  { value: "sold", label: "Vendido" },
-  { value: "unavailable", label: "Arquivado" },
+ { value: "available", label: sanitizeText("Disponível") },
+ { value: "coming_soon", label: sanitizeText("Em breve") },
+ { value: "reserved", label: sanitizeText("Reservado") },
+ { value: "sold", label: sanitizeText("Vendido") },
+ { value: "unavailable", label: sanitizeText("Arquivado") },
 ];
 
 const SEX_OPTIONS = [
-  { value: undefined, label: "Ambos" },
-  { value: "male" as const, label: "Machos" },
-  { value: "female" as const, label: "Fêmeas" },
+ { value: undefined, label: sanitizeText("Ambos") },
+ { value: "male" as const, label: sanitizeText("Machos") },
+ { value: "female" as const, label: sanitizeText("Fêmeas") },
 ];
 
 const SORT_LABELS: Record<AdminPuppySort, string> = {
-  recent: "Mais recentes",
-  "price-asc": "Menor preço",
-  "price-desc": "Maior preço",
-  demand: "Maior demanda (score)",
+ recent: sanitizeText("Mais recentes"),
+ "status-available": sanitizeText("Disponíveis primeiro"),
+ "status-reserved": sanitizeText("Reservados primeiro"),
 };
 
-const VIEW_STORAGE_KEY = "byimperiodog:admin:puppies:view";
 const EMPTY_FILTERS: ParsedPuppyFilters = { statuses: [], colors: [] };
 
-function buildFormState(filters: ParsedPuppyFilters, sort: AdminPuppySort): FilterFormState {
-  return {
-    statuses: new Set(filters.statuses),
-    colors: new Set(filters.colors),
-    sex: filters.sex,
-    minPrice: filters.minPrice ? String(filters.minPrice) : "",
-    maxPrice: filters.maxPrice ? String(filters.maxPrice) : "",
-    search: filters.search ?? "",
-    sort,
-  };
+function buildFormState(filters: ParsedPuppyFilters, sort: AdminPuppySort, stateParam?: string): FilterFormState {
+ return {
+ statuses: new Set(filters.statuses),
+ colors: new Set(filters.colors),
+ city: filters.city,
+ state: stateParam?.trim() ? stateParam.trim().toUpperCase() : undefined,
+ sex: filters.sex,
+ search: filters.search ?? "",
+ sort,
+ };
 }
 
-export function PuppiesPageClient({ items, leadCounts, filters, sort, total, hasMore, statusSummary, colorOptions }: Props) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const { push } = useToast();
-  const [view, setView] = useState<"table" | "board">("table");
-  const [mutatingId, setMutatingId] = useState<string | null>(null);
-  const [formState, setFormState] = useState<FilterFormState>(() => buildFormState(filters, sort));
-  const [isPending, startTransition] = useTransition();
+type TabId = "available" | "reserved" | "soldArchived";
 
-  useEffect(() => {
-    setFormState(buildFormState(filters, sort));
-  }, [filters, sort]);
+type TabPreset = {
+ id: TabId;
+ label: string;
+ helper: string;
+ statuses: AdminPuppyStatus[];
+};
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const stored = window.localStorage.getItem(VIEW_STORAGE_KEY);
-    if (stored === "board" || stored === "table") {
-      setView(stored);
-    }
-  }, []);
+const TAB_PRESETS: TabPreset[] = [
+ {
+ id: "available",
+ label: sanitizeText("Disponíveis"),
+ helper: sanitizeText("Estoque liberado para campanha"),
+ statuses: ["available"],
+ },
+ {
+ id: "reserved",
+ label: sanitizeText("Reservados"),
+ helper: sanitizeText("Confirmações aguardando contrato"),
+ statuses: ["reserved"],
+ },
+ {
+ id: "soldArchived",
+ label: sanitizeText("Vendidos / Arquivados"),
+ helper: sanitizeText("Histórico entregue ou inativo"),
+ statuses: ["sold", "unavailable"],
+ },
+];
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem(VIEW_STORAGE_KEY, view);
-  }, [view]);
-
-  const applyFilters = (state: FilterFormState) => {
-    const params = new URLSearchParams(searchParams?.toString() ?? "");
-    params.delete("status");
-    params.delete("color");
-    params.delete("sex");
-    params.delete("priceMin");
-    params.delete("priceMax");
-    params.delete("search");
-    params.delete("sort");
-
-    if (state.statuses.size) params.set("status", Array.from(state.statuses).join(","));
-    if (state.colors.size) params.set("color", Array.from(state.colors).join(","));
-    if (state.sex) params.set("sex", state.sex);
-    if (state.minPrice) params.set("priceMin", state.minPrice);
-    if (state.maxPrice) params.set("priceMax", state.maxPrice);
-    if (state.search.trim()) params.set("search", state.search.trim());
-    if (state.sort !== "recent") params.set("sort", state.sort);
-
-    const query = params.toString();
-    startTransition(() => {
-      router.push(query ? `/admin/puppies?${query}` : "/admin/puppies");
-    });
-  };
-
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    applyFilters(formState);
-  };
-
-  const handleReset = () => {
-    setFormState(buildFormState(EMPTY_FILTERS, "recent"));
-    startTransition(() => router.push("/admin/puppies"));
-  };
-
-  const handleSortChange = (nextSort: AdminPuppySort) => {
-    const nextState: FilterFormState = { ...formState, sort: nextSort };
-    setFormState(nextState);
-    applyFilters(nextState);
-  };
-
-  const toggleStatus = (status: AdminPuppyStatus) => {
-    setFormState((prev) => {
-      const next = new Set(prev.statuses);
-      if (next.has(status)) next.delete(status);
-      else next.add(status);
-      return { ...prev, statuses: next };
-    });
-  };
-
-  const toggleColor = (color: string) => {
-    setFormState((prev) => {
-      const next = new Set(prev.colors);
-      if (next.has(color)) next.delete(color);
-      else next.add(color);
-      return { ...prev, colors: next };
-    });
-  };
-
-  const handleStatusChange = async (id: string, status: AdminPuppyStatus) => {
-    const isDestructive = status === "sold" || status === "unavailable";
-    if (isDestructive && typeof window !== "undefined") {
-      const confirmed = window.confirm("Tem certeza? Esta ação altera o status de forma definitiva.");
-      if (!confirmed) return;
-    }
-    setMutatingId(id);
-    try {
-      const res = await fetch("/api/admin/puppies/status", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, status }),
-      });
-      if (!res.ok) {
-        const payload = await res.json().catch(() => ({}));
-        throw new Error(payload?.error || "Erro ao atualizar status");
-      }
-      push({ type: "success", message: "Status atualizado com sucesso." });
-      router.refresh();
-    } catch (error) {
-      push({ type: "error", message: error instanceof Error ? error.message : "Erro ao atualizar status" });
-    } finally {
-      setMutatingId(null);
-    }
-  };
-
-  const activeFilters = useMemo(() => {
-    let count = 0;
-    if (formState.statuses.size) count++;
-    if (formState.colors.size) count++;
-    if (formState.sex) count++;
-    if (formState.minPrice) count++;
-    if (formState.maxPrice) count++;
-    if (formState.search.trim()) count++;
-    return count;
-  }, [formState]);
-
-  const formattedTotal = new Intl.NumberFormat("pt-BR").format(total);
-
-  return (
-    <div className="space-y-4">
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-4 rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm"
-        aria-labelledby="filters-heading"
-      >
-        <div className="flex items-center gap-2">
-          <SlidersHorizontal className="h-4 w-4 text-[var(--text-muted)]" aria-hidden />
-          <h2 id="filters-heading" className="text-sm font-semibold text-[var(--text)]">
-            Filtros avançados {activeFilters ? `(${activeFilters})` : ""}
-          </h2>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <fieldset className="space-y-2">
-            <legend className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Status</legend>
-            <div className="grid gap-2">
-              {STATUS_OPTIONS.map((option) => {
-                const id = `status-${option.value}`;
-                return (
-                  <label key={option.value} htmlFor={id} className="inline-flex items-center gap-2 text-sm text-[var(--text)]">
-                    <input
-                      id={id}
-                      type="checkbox"
-                      checked={formState.statuses.has(option.value)}
-                      onChange={() => toggleStatus(option.value)}
-                      className="h-4 w-4 rounded border-[var(--border)] text-emerald-600 focus:ring-emerald-500"
-                    />
-                    {option.label}
-                  </label>
-                );
-              })}
-            </div>
-          </fieldset>
-
-          <fieldset className="space-y-2">
-            <legend className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Cor</legend>
-            <div className="grid gap-2">
-              {colorOptions.length === 0 && <p className="text-xs text-[var(--text-muted)]">Sem cores cadastradas.</p>}
-              {colorOptions.map((color) => {
-                const id = `color-${color}`;
-                return (
-                  <label key={color} htmlFor={id} className="inline-flex items-center gap-2 text-sm text-[var(--text)] capitalize">
-                    <input
-                      id={id}
-                      type="checkbox"
-                      checked={formState.colors.has(color)}
-                      onChange={() => toggleColor(color)}
-                      className="h-4 w-4 rounded border-[var(--border)] text-emerald-600 focus:ring-emerald-500"
-                    />
-                    {color.replace(/-/g, " ")}
-                  </label>
-                );
-              })}
-            </div>
-          </fieldset>
-
-          <fieldset className="space-y-2">
-            <legend className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Sexo</legend>
-            <div className="flex flex-wrap gap-2">
-              {SEX_OPTIONS.map((option) => (
-                <button
-                  key={option.label}
-                  type="button"
-                  onClick={() => setFormState((prev) => ({ ...prev, sex: option.value }))}
-                  className={`rounded-full px-3 py-1 text-xs font-semibold ${formState.sex === option.value ? "bg-emerald-600 text-white" : "bg-[var(--surface)] text-[var(--text)]"}`}
-                  aria-pressed={formState.sex === option.value}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </fieldset>
-
-          <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]" htmlFor="price-min">
-              Faixa de preço (R$)
-            </label>
-            <div className="flex items-center gap-2">
-              <input
-                id="price-min"
-                type="number"
-                inputMode="numeric"
-                placeholder="Mínimo"
-                value={formState.minPrice}
-                onChange={(e) => setFormState((prev) => ({ ...prev, minPrice: e.target.value }))}
-                className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-              />
-              <span className="text-sm text-[var(--text-muted)]">até</span>
-              <input
-                type="number"
-                inputMode="numeric"
-                placeholder="Máximo"
-                value={formState.maxPrice}
-                onChange={(e) => setFormState((prev) => ({ ...prev, maxPrice: e.target.value }))}
-                className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-              />
-            </div>
-            <label className="block text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]" htmlFor="search-term">
-              Buscar por nome, slug ou cidade
-            </label>
-            <input
-              id="search-term"
-              type="search"
-              value={formState.search}
-              onChange={(e) => setFormState((prev) => ({ ...prev, search: e.target.value }))}
-              className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-sm text-[var(--text)] focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-            />
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <button
-            type="button"
-            onClick={handleReset}
-            className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] px-3 py-1.5 text-sm font-semibold text-[var(--text)] hover:bg-[var(--surface-2)]"
-          >
-            <RotateCcw className="h-4 w-4" aria-hidden /> Limpar filtros
-          </button>
-          <button
-            type="submit"
-            className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700"
-          >
-            <Filter className="h-4 w-4" aria-hidden /> Aplicar filtros
-          </button>
-        </div>
-      </form>
-
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="space-y-1">
-          <p className="text-sm font-semibold text-[var(--text)]" role="status" aria-live="polite">
-            {formattedTotal} filhote(s) encontrados {hasMore ? "(há mais registros, refine a busca)" : ""}
-          </p>
-          <p className="text-xs text-[var(--text-muted)]">Visão focada em estoque real, filtros aplicados via Supabase.</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <label className="text-sm text-[var(--text)]">
-            Ordenar por
-            <select
-              value={formState.sort}
-              onChange={(e) => handleSortChange(e.target.value as AdminPuppySort)}
-              className="ml-2 rounded-full border border-[var(--border)] bg-white px-3 py-1.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-            >
-              {Object.entries(SORT_LABELS).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <div className="inline-flex rounded-full border border-[var(--border)] bg-white p-1" role="group" aria-label="Alternar visualização">
-            <button
-              type="button"
-              onClick={() => setView("table")}
-              className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${view === "table" ? "bg-emerald-600 text-white" : "text-[var(--text)]"}`}
-              aria-pressed={view === "table"}
-            >
-              <TableProperties className="h-4 w-4" aria-hidden /> Tabela
-            </button>
-            <button
-              type="button"
-              onClick={() => setView("board")}
-              className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${view === "board" ? "bg-emerald-600 text-white" : "text-[var(--text)]"}`}
-              aria-pressed={view === "board"}
-            >
-              <LayoutGrid className="h-4 w-4" aria-hidden /> Kanban
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5" role="list" aria-label="Resumo por status">
-        {STATUS_OPTIONS.map((option) => (
-          <div key={option.value} className="rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm" role="listitem">
-            <p className="font-semibold text-[var(--text)]">{option.label}</p>
-            <p className="text-xl font-bold text-[var(--text)]">{statusSummary[option.value] ?? 0}</p>
-          </div>
-        ))}
-      </div>
-
-      {isPending && (
-        <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800" role="status" aria-live="polite">
-          <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Atualizando dados...
-        </div>
-      )}
-
-      {items.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface)] px-6 py-12 text-center">
-          <p className="text-sm font-semibold text-[var(--text)]">Nenhum filhote encontrado para este filtro.</p>
-          <p className="text-xs text-[var(--text-muted)]">Ajuste os filtros ou limpe para visualizar todo o estoque.</p>
-        </div>
-      ) : view === "board" ? (
-        <PuppiesBoard items={items} leadCounts={leadCounts} onStatusChange={handleStatusChange} mutatingId={mutatingId} />
-      ) : (
-        <PuppiesTable items={items} leadCounts={leadCounts} onStatusChange={handleStatusChange} mutatingId={mutatingId} />
-      )}
-    </div>
-  );
+function getActiveTabId(statuses: Set<AdminPuppyStatus>): TabId | "custom" {
+ const normalized = Array.from(statuses).sort();
+ for (const tab of TAB_PRESETS) {
+ const target = [...tab.statuses].sort();
+ if (normalized.length !== target.length) continue;
+ const matches = target.every((value, index) => value === normalized[index]);
+ if (matches) return tab.id;
+ }
+ return "custom";
 }
+
+export function PuppiesPageClient({ items, leadCounts, filters, sort, total, hasMore, statusSummary, colorOptions, cityOptions, basePath = "/admin/filhotes" }: Props) {
+ const router = useRouter();
+ const searchParams = useSearchParams();
+ const queryState = searchParams?.get("state") ?? undefined;
+ const { push } = useToast();
+ const [mutatingId, setMutatingId] = useState<string | null>(null);
+ const [formState, setFormState] = useState<FilterFormState>(() => buildFormState(filters, sort, queryState));
+ const [isPending, startTransition] = useTransition();
+
+ useEffect(() => {
+ setFormState(buildFormState(filters, sort, queryState));
+ }, [filters, sort, queryState]);
+
+ const applyFilters = (state: FilterFormState) => {
+ const params = new URLSearchParams(searchParams?.toString() ?? "");
+ params.delete("status");
+ params.delete("color");
+ params.delete("sex");
+ params.delete("city");
+ params.delete("search");
+ params.delete("sort");
+
+ if (state.statuses.size) params.set("status", Array.from(state.statuses).join(","));
+ if (state.colors.size) params.set("color", Array.from(state.colors).join(","));
+ if (state.sex) params.set("sex", state.sex);
+ if (state.city) params.set("city", state.city);
+ if (state.search.trim()) params.set("search", state.search.trim());
+ if (state.sort !== "recent") params.set("sort", state.sort);
+ if (state.state) params.set("state", state.state);
+ else params.delete("state");
+
+ const query = params.toString();
+ startTransition(() => {
+ router.push(query ? `${basePath}?${query}` : basePath);
+ });
+ };
+
+ const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+ event.preventDefault();
+ applyFilters(formState);
+ };
+
+ const handleReset = () => {
+ setFormState(buildFormState(EMPTY_FILTERS, "recent"));
+ startTransition(() => router.push(basePath));
+ };
+
+ const handleSortChange = (nextSort: AdminPuppySort) => {
+ const nextState: FilterFormState = { ...formState, sort: nextSort };
+ setFormState(nextState);
+ applyFilters(nextState);
+ };
+
+ const toggleStatus = (status: AdminPuppyStatus) => {
+ setFormState((prev) => {
+ const next = new Set(prev.statuses);
+ if (next.has(status)) next.delete(status);
+ else next.add(status);
+ return { ...prev, statuses: next };
+ });
+ };
+
+ const activeTabId = useMemo(() => getActiveTabId(formState.statuses), [formState.statuses]);
+
+ const handleTabChange = (tabId: TabId) => {
+ const nextTab = TAB_PRESETS.find((tab) => tab.id === tabId);
+ if (!nextTab) return;
+ const nextState: FilterFormState = { ...formState, statuses: new Set(nextTab.statuses) };
+ setFormState(nextState);
+ applyFilters(nextState);
+ };
+
+ const toggleColor = (color: string) => {
+ setFormState((prev) => {
+ const next = new Set(prev.colors);
+ if (next.has(color)) next.delete(color);
+ else next.add(color);
+ return { ...prev, colors: next };
+ });
+ };
+
+ const handleStatusChange = async (id: string, status: AdminPuppyStatus) => {
+ const isDestructive = status === "sold" || status === "unavailable";
+ if (isDestructive && typeof window !== "undefined") {
+ const confirmed = window.confirm("Tem certeza? Esta acao altera o status de forma definitiva.");
+ if (!confirmed) return;
+ }
+ setMutatingId(id);
+ try {
+ const res = await fetch("/api/admin/puppies/status", {
+ method: "POST",
+ headers: { "Content-Type": "application/json" },
+ body: JSON.stringify({ id, status }),
+ });
+ if (!res.ok) {
+ const payload = await res.json().catch(() => ({}));
+ throw new Error(payload?.error || "Erro ao atualizar status");
+ }
+ push({ type: "success", message: "Status atualizado com sucesso." });
+ router.refresh();
+ } catch (error) {
+ push({ type: "error", message: error instanceof Error ? error.message : "Erro ao atualizar status" });
+ } finally {
+ setMutatingId(null);
+ }
+ };
+
+ const handleDelete = async (id: string, name: string) => {
+ if (typeof window !== "undefined") {
+ const confirmed = window.confirm("Excluir " + name + " permanentemente? Esta acao nao pode ser revertida.");
+ if (!confirmed) return;
+ }
+ setMutatingId(id);
+ try {
+ const res = await fetch("/api/admin/puppies/delete", {
+ method: "POST",
+ headers: { "Content-Type": "application/json" },
+ body: JSON.stringify({ id }),
+ });
+ if (!res.ok) {
+ const payload = await res.json().catch(() => ({}));
+ throw new Error(payload?.error || "Erro ao excluir o filhote");
+ }
+ push({ type: "success", message: "Filhote excluido com sucesso." });
+ router.refresh();
+ } catch (error) {
+ push({ type: "error", message: error instanceof Error ? error.message : "Erro ao excluir o filhote" });
+ } finally {
+ setMutatingId(null);
+ }
+ };
+
+ const handleDuplicate = async (id: string) => {
+ setMutatingId(id);
+ try {
+ const res = await fetch("/api/admin/puppies/duplicate", {
+ method: "POST",
+ headers: { "Content-Type": "application/json" },
+ body: JSON.stringify({ id }),
+ });
+ const payload = await res.json().catch(() => ({}));
+ if (!res.ok) {
+ throw new Error(payload?.error || "Falha ao duplicar filhote");
+ }
+ const newId = payload?.id as string | undefined;
+ push({ type: "success", message: "Filhote duplicado. Revise e publique." });
+ if (newId) {
+ router.push(`${basePath}/${newId}/editar`);
+ } else {
+ router.refresh();
+ }
+ } catch (error) {
+ push({ type: "error", message: error instanceof Error ? error.message : "Erro ao duplicar filhote" });
+ } finally {
+ setMutatingId(null);
+ }
+ };
+
+ const activeFilters = useMemo(() => {
+ let count = 0;
+ if (formState.statuses.size) count++;
+ if (formState.colors.size) count++;
+ if (formState.sex) count++;
+ if (formState.city) count++;
+ if (formState.search.trim()) count++;
+ return count;
+ }, [formState]);
+
+ const formattedTotal = new Intl.NumberFormat("pt-BR").format(total);
+
+ return (
+ <div className="space-y-4">
+ <section className="admin-glass-card admin-interactive space-y-2 p-4">
+ <div className="flex items-center justify-between">
+ <p className="text-sm font-semibold admin-text">Filtrar por status</p>
+ <p className="text-xs admin-text-muted">Aba ativa guia o estoque principal.</p>
+ </div>
+ <div role="tablist" aria-label="Visões rápidas por status" className="flex flex-wrap gap-2">
+ {TAB_PRESETS.map((tab) => {
+ const count = tab.statuses.reduce((acc, status) => acc + (statusSummary[status] ?? 0), 0);
+ const isActive = activeTabId === tab.id;
+ return (
+ <button
+ key={tab.id}
+ type="button"
+ role="tab"
+ aria-selected={isActive}
+ onClick={() => handleTabChange(tab.id)}
+ className={`flex flex-col gap-1 rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition ${
+ isActive
+ ? "admin-btn-primary"
+ : "admin-btn-glass admin-interactive"
+ } focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-500`}
+ >
+ <span>{tab.label}</span>
+ <span className="text-xs font-normal text-[color:inherit]">{tab.helper}</span>
+ <span className="text-xs font-normal text-[var(--text-muted)]" aria-live="polite">
+ {count} filhote{count === 1 ? "" : "s"}
+ </span>
+ </button>
+ );
+ })}
+ </div>
+ </section>
+
+ <form
+ onSubmit={handleSubmit}
+ className="admin-glass-card admin-interactive space-y-4 p-4"
+ aria-labelledby="filters-heading"
+ >
+ <div className="flex items-center gap-2">
+ <SlidersHorizontal className="h-4 w-4 admin-text-muted" aria-hidden />
+ <h2 id="filters-heading" className="text-sm font-semibold admin-text">
+ Filtros avançados {activeFilters ? `(${activeFilters})` : ""}
+ </h2>
+ </div>
+
+ <div className="grid gap-4 lg:grid-cols-4">
+ <fieldset className="space-y-2">
+ <legend className="text-xs font-semibold uppercase tracking-wide admin-text-muted">Status</legend>
+ <div className="grid gap-2">
+ {STATUS_OPTIONS.map((option) => {
+ const id = `status-${option.value}`;
+ return (
+ <label key={option.value} htmlFor={id} className="inline-flex items-center gap-2 text-sm admin-text">
+ <input
+ id={id}
+ type="checkbox"
+ checked={formState.statuses.has(option.value)}
+ onChange={() => toggleStatus(option.value)}
+ className="h-4 w-4 rounded border-none bg-[rgba(var(--admin-surface-2),0.8)] text-emerald-500 focus:ring-emerald-500"
+ />
+ {option.label}
+ </label>
+ );
+ })}
+ </div>
+ </fieldset>
+
+ <fieldset className="space-y-2">
+ <legend className="text-xs font-semibold uppercase tracking-wide admin-text-muted">Cor</legend>
+ <div className="grid gap-2">
+ {colorOptions.length === 0 && <p className="text-xs admin-text-muted">Sem cores cadastradas.</p>}
+ {colorOptions.map((color) => {
+ const id = `color-${color}`;
+ return (
+ <label key={color} htmlFor={id} className="inline-flex items-center gap-2 text-sm admin-text capitalize">
+ <input
+ id={id}
+ type="checkbox"
+ checked={formState.colors.has(color)}
+ onChange={() => toggleColor(color)}
+ className="h-4 w-4 rounded border-none bg-[rgba(var(--admin-surface-2),0.8)] text-emerald-500 focus:ring-emerald-500"
+ />
+ {color.replace(/-/g, " ")}
+ </label>
+ );
+ })}
+ </div>
+ </fieldset>
+
+ <div className="space-y-3">
+ <div className="space-y-2">
+ <p className="text-xs font-semibold uppercase tracking-wide admin-text-muted">Sexo</p>
+ <div className="flex flex-wrap gap-2">
+ {SEX_OPTIONS.map((option) => (
+ <button
+ key={option.label}
+ type="button"
+ onClick={() => setFormState((prev) => ({ ...prev, sex: option.value }))}
+ className={`rounded-full px-3 py-1 text-xs font-semibold admin-interactive ${formState.sex === option.value ? "admin-btn-primary" : "admin-btn-glass"}`}
+ aria-pressed={formState.sex === option.value}
+ >
+ {option.label}
+ </button>
+ ))}
+ </div>
+ </div>
+
+ <div className="space-y-1">
+ <label className="text-xs font-semibold uppercase tracking-wide admin-text-muted" htmlFor="city-filter">
+ Cidade
+ </label>
+ <select
+ id="city-filter"
+ className="admin-select w-full"
+ value={formState.city ?? ""}
+ onChange={(e) => setFormState((prev) => ({ ...prev, city: e.target.value || undefined }))}
+ >
+ <option value="">Todas</option>
+ {cityOptions.map((city) => (
+ <option key={city} value={city}>
+ {city}
+ </option>
+ ))}
+ </select>
+ </div>
+ </div>
+
+ <div className="space-y-2">
+ <label className="block text-xs font-semibold uppercase tracking-wide admin-text-muted" htmlFor="search-term">
+ Buscar por nome, slug ou cidade
+ </label>
+ <input
+ id="search-term"
+ type="search"
+ value={formState.search}
+ onChange={(e) => setFormState((prev) => ({ ...prev, search: e.target.value }))}
+ className="admin-input w-full"
+ placeholder="Digite para filtrar"
+ />
+ </div>
+ </div>
+
+ <div className="flex flex-wrap items-center justify-between gap-3">
+ <button
+ type="button"
+ onClick={handleReset}
+ className="admin-btn-ghost inline-flex items-center gap-2"
+ >
+ <RotateCcw className="h-4 w-4" aria-hidden /> Limpar filtros
+ </button>
+ <button
+ type="submit"
+ className="admin-btn-primary inline-flex items-center gap-2"
+ >
+ <Filter className="h-4 w-4" aria-hidden /> Aplicar filtros
+ </button>
+ </div>
+ </form>
+
+ <div className="flex flex-wrap items-center justify-between gap-3">
+ <div className="space-y-1">
+ <p className="text-sm font-semibold admin-text" role="status" aria-live="polite">
+ {formattedTotal} filhote(s) encontrados {hasMore ? "(há mais registros, refine a busca)" : ""}
+ </p>
+ <p className="text-xs admin-text-muted">Visão focada em estoque real, filtros aplicados via Supabase.</p>
+ </div>
+ <div className="flex flex-wrap items-center gap-3">
+ <label className="text-sm admin-text">
+ Ordenar por
+ <select
+ value={formState.sort}
+ onChange={(e) => handleSortChange(e.target.value as AdminPuppySort)}
+ className="admin-select ml-2"
+ >
+ {Object.entries(SORT_LABELS).map(([value, label]) => (
+ <option key={value} value={value}>
+ {label}
+ </option>
+ ))}
+ </select>
+ </label>
+ </div>
+ </div>
+
+ <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5" role="list" aria-label="Resumo por status">
+ {STATUS_OPTIONS.map((option) => (
+ <div key={option.value} className="admin-glass-card admin-interactive px-3 py-2 text-sm" role="listitem">
+ <p className="font-semibold admin-text">{option.label}</p>
+ <p className="admin-kpi-value text-xl font-bold">{statusSummary[option.value] ?? 0}</p>
+ </div>
+ ))}
+ </div>
+
+ {isPending && <LoadingState message="Atualizando dados..." />}
+
+ {items.length === 0 ? (
+ <EmptyState title="Nenhum filhote encontrado" description="Ajuste os filtros ou limpe para visualizar todo o estoque." actionLabel="Limpar filtros" onAction={handleReset} />
+ ) : (
+ <PuppiesTable
+ items={items}
+ leadCounts={leadCounts}
+ onStatusChange={handleStatusChange}
+ onDelete={handleDelete}
+ onDuplicate={handleDuplicate}
+ mutatingId={mutatingId}
+ basePath={basePath}
+ />
+ )}
+ </div>
+ );
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

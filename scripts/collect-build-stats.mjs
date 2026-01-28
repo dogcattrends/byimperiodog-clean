@@ -21,43 +21,43 @@ function fileSize(path){ try { return statSync(path).size; } catch { return 0; }
 const buildManifestRaw = safeRead(buildManifestPath);
 const appBuildManifestRaw = safeRead(appBuildManifestPath);
 if(!buildManifestRaw || !appBuildManifestRaw){
-  console.error('Missing build manifests. Run `npm run build` first.');
-  process.exit(1);
+ console.error('Missing build manifests. Run `npm run build` first.');
+ process.exit(1);
 }
 
 const buildManifest = JSON.parse(buildManifestRaw);
 const appBuildManifest = JSON.parse(appBuildManifestRaw);
 
 function aggregateFiles(files){
-  const map = {};
-  for(const f of files){
-    const abs = resolve(root, '.next', f.replace(/^\//,''));
-    map[f] = { bytes: fileSize(abs) };
-  }
-  return map;
+ const map = {};
+ for(const f of files){
+ const abs = resolve(root, '.next', f.replace(/^\//,''));
+ map[f] = { bytes: fileSize(abs) };
+ }
+ return map;
 }
 
 const pages = buildManifest.pages || {};
 const appPages = appBuildManifest.pages || {};
 
 function flattenPages(obj){
-  const out = {};
-  for(const k of Object.keys(obj)){
-    const files = obj[k];
-    out[k] = files.map(f=> ({ file:f, bytes: fileSize(resolve(root,'.next',f)) }));
-  }
-  return out;
+ const out = {};
+ for(const k of Object.keys(obj)){
+ const files = obj[k];
+ out[k] = files.map(f=> ({ file:f, bytes: fileSize(resolve(root,'.next',f)) }));
+ }
+ return out;
 }
 
 const result = {
-  generatedAt: now,
-  commit,
-  node: process.version,
-  packageVersion: packageJson.version,
-  pages: flattenPages(pages),
-  appPages: flattenPages(appPages),
-  totalAppJs: 0,
-  totalSharedJs: 0,
+ generatedAt: now,
+ commit,
+ node: process.version,
+ packageVersion: packageJson.version,
+ pages: flattenPages(pages),
+ appPages: flattenPages(appPages),
+ totalAppJs: 0,
+ totalSharedJs: 0,
 };
 
 // Rough totals: sum JS in shared chunk keys

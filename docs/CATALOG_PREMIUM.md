@@ -1,36 +1,36 @@
-# 🎨 Catálogo de Filhotes Premium v2.0
+# ðŸŽ¨ CatÃ¡logo de Filhotes Premium v2.0
 
-## 📋 Visão Geral
+## ðŸ“‹ VisÃ£o Geral
 
-Redesign completo do módulo de catálogo de filhotes com foco em:
+Redesign completo do mÃ³dulo de catÃ¡logo de filhotes com foco em:
 - **UX Premium**: Inspirado em Airbnb, Farfetch e Petlove
-- **Conversão**: Micro-interações e CTAs otimizados
+- **ConversÃ£o**: Micro-interaÃ§Ãµes e CTAs otimizados
 - **Acessibilidade**: WCAG 2.2 AA/AAA
 - **SEO**: JSON-LD estruturado por produto
 - **Performance**: Core Web Vitals otimizados
-- **Design System**: Tokens consistentes e escaláveis
+- **Design System**: Tokens consistentes e escalÃ¡veis
 
 ---
 
-## 🏗️ Arquitetura
+## ðŸ—ï¸ Arquitetura
 
 ### Componentes Criados
 
 1. **`PuppyCardPremium.tsx`** (`src/components/catalog/`)
-   - Card individual de filhote
-   - Design premium com micro-interações
-   - JSON-LD de produto integrado
-   - Estados de CTA (idle, loading, hover, pressed)
-   - Acessibilidade completa
+ - Card individual de filhote
+ - Design premium com micro-interaÃ§Ãµes
+ - JSON-LD de produto integrado
+ - Estados de CTA (idle, loading, hover, pressed)
+ - Acessibilidade completa
 
 2. **`PuppiesGridPremium.tsx`** (`src/components/`)
-   - Grid responsivo mobile-first
-   - Sistema de filtros integrado
-   - Estados: loading, empty, error
-   - Busca em tempo real
-   - Contagem de resultados
+ - Grid responsivo mobile-first
+ - Sistema de filtros integrado
+ - Estados: loading, empty, error
+ - Busca em tempo real
+ - Contagem de resultados
 
-### Integração
+### IntegraÃ§Ã£o
 
 A home page (`app/page.tsx`) agora usa o componente premium:
 
@@ -40,74 +40,74 @@ A home page (`app/page.tsx`) agora usa o componente premium:
 
 ---
 
-## ✨ Funcionalidades Principais
+## âœ¨ Funcionalidades Principais
 
 ### Card Premium
 
 #### Visual
-- **Imagem 4:3**: Proporção padronizada
+- **Imagem 4:3**: ProporÃ§Ã£o padronizada
 - **Badges**: Status (disponível/reservado/vendido) + Preço
-- **Botão Favoritar**: Ícone de coração com animação
+- **BotÃ£o Favoritar**: Ãcone de coraÃ§Ã£o com animaÃ§Ã£o
 - **Gradiente Overlay**: Efeito hover sutil
 - **Sombra Elevada**: Hover com `shadow-xl` e cor emerald
 
-#### Conteúdo Semântico
+#### ConteÃºdo SemÃ¢ntico
 ```html
 <article itemScope itemType="https://schema.org/Product">
-  <h3 itemprop="name">Nome do Filhote</h3>
-  <div itemprop="color">Cor • Sexo • Idade</div>
-  <ul aria-label="Benefícios inclusos">
-    <li>Pedigree CBKC + Microchip</li>
-    <li>Vacinas e vermífugos em dia</li>
-    <li>Mentoria vitalícia</li>
-  </ul>
+ <h3 itemprop="name">Nome do Filhote</h3>
+ <div itemprop="color">Cor â€¢ Sexo â€¢ Idade</div>
+ <ul aria-label="BenefÃ­cios inclusos">
+ <li>Pedigree Pedigree + Microchip</li>
+ <li>Vacinas e vermÃ­fugos em dia</li>
+ <li>Mentoria vitalÃ­cia</li>
+ </ul>
 </article>
 ```
 
 #### CTAs Hierarquizados
 
-**Primário**: "Quero esse filhote"
+**PrimÃ¡rio**: "Quero esse filhote"
 - WhatsApp direto
-- Estados: idle → loading → success
-- Animação de loading
+- Estados: idle â†’ loading â†’ success
+- AnimaÃ§Ã£o de loading
 - Gradiente emerald
 
-**Secundários**: 
-- **Vídeo**: Solicita vídeo atualizado
+**SecundÃ¡rios**: 
+- **VÃ­deo**: Solicita vÃ­deo atualizado
 - **Visita**: Agenda visita presencial
 - **Detalhes**: Abre modal
 
 #### Acessibilidade
-- ✅ `aria-label` em todos os botões
-- ✅ `aria-pressed` no favorito
-- ✅ Foco visível (`focus-visible:ring-2`)
-- ✅ Contraste mínimo 4.5:1
-- ✅ Hierarquia de headings (h2 → h3)
-- ✅ `role="status"` nos badges
-- ✅ Textos alternativos descritivos
+ - ✓ `aria-label` em todos os botões
+ - ✓ `aria-pressed` no favorito
+ - ✓ Foco visível (`focus-visible:ring-2`)
+ - ✓ Contraste mínimo 4.5:1
+ - ✓ Hierarquia de headings (h2 → h3)
+ - ✓ `role="status"` nos badges
+ - ✓ Textos alternativos descritivos
 
 ### Grid Premium
 
 #### Filtros
-- **Busca**: Nome, cor, características
-- **Sexo**: Macho / Fêmea
-- **Cor**: Dropdown dinâmico
-- **Status**: Disponível / Reservado
+ - **Busca**: Nome, cor, características
+ - **Sexo**: Macho / Fêmea
+ - **Cor**: Dropdown dinâmico
+ - **Status**: Disponível / Reservado
 
 #### Estados
 - **Loading**: 8 skeleton cards animados
-- **Empty**: Ilustração + CTAs (limpar filtros + WhatsApp)
+- **Empty**: IlustraÃ§Ã£o + CTAs (limpar filtros + WhatsApp)
 - **Error**: Mensagem + retry button
 
 #### Performance
 - `lazy` loading em imagens (exceto 4 primeiras)
-- `priority` nas primeiras 4 imagens
-- Filtros com `useTransition` (não bloqueia UI)
-- Memoização de listas filtradas
+ - `priority` nas primeiras 4 imagens
+ - Filtros com `useTransition` (não bloqueia UI)
+ - Memoização de listas filtradas
 
 ---
 
-## 🎯 SEO Técnico
+## ðŸŽ¯ SEO TÃ©cnico
 
 ### JSON-LD por Produto
 
@@ -115,27 +115,27 @@ Cada card gera structured data completa:
 
 ```json
 {
-  "@context": "https://schema.org",
-  "@type": "Product",
-  "name": "Filhote Spitz Alemão Anão Branco Fêmea",
-  "description": "...",
-  "image": "https://...",
-  "brand": {
-    "@type": "Brand",
-    "name": "By Império Dog"
-  },
-  "offers": {
-    "@type": "Offer",
-    "priceCurrency": "BRL",
-    "price": 7500,
-    "availability": "https://schema.org/InStock",
-    "itemCondition": "https://schema.org/NewCondition"
-  },
-  "additionalProperty": [
-    { "@type": "PropertyValue", "name": "Cor", "value": "Branco" },
-    { "@type": "PropertyValue", "name": "Sexo", "value": "Fêmea" },
-    { "@type": "PropertyValue", "name": "Idade", "value": "2 meses" }
-  ]
+ "@context": "https://schema.org",
+ "@type": "Product",
+ "name": "Filhote Spitz Alemão Anão Branco Fêmea",
+ "description": "...",
+ "image": "https://...",
+ "brand": {
+ "@type": "Brand",
+ "name": "By Império Dog"
+ },
+ "offers": {
+ "@type": "Offer",
+ "priceCurrency": "BRL",
+ "price": 7500,
+ "availability": "https://schema.org/InStock",
+ "itemCondition": "https://schema.org/NewCondition"
+ },
+ "additionalProperty": [
+ { "@type": "PropertyValue", "name": "Cor", "value": "Branco" },
+ { "@type": "PropertyValue", "name": "Sexo", "value": "Fêmea" },
+ { "@type": "PropertyValue", "name": "Idade", "value": "2 meses" }
+ ]
 }
 ```
 
@@ -143,30 +143,30 @@ Cada card gera structured data completa:
 
 ```html
 <article itemScope itemType="https://schema.org/Product">
-  <h3 itemprop="name">...</h3>
-  <div itemprop="offers" itemScope itemType="https://schema.org/Offer">
-    <meta itemprop="priceCurrency" content="BRL" />
-    <meta itemprop="price" content="7500" />
-  </div>
+ <h3 itemprop="name">...</h3>
+ <div itemprop="offers" itemScope itemType="https://schema.org/Offer">
+ <meta itemprop="priceCurrency" content="BRL" />
+ <meta itemprop="price" content="7500" />
+ </div>
 </article>
 ```
 
 ---
 
-## 🎨 Design System
+## ðŸŽ¨ Design System
 
 ### Cores
 
 **Status Badges**:
-- Disponível: `bg-emerald-100 text-emerald-800 ring-emerald-300`
-- Reservado: `bg-amber-100 text-amber-800 ring-amber-300`
-- Vendido: `bg-rose-100 text-rose-800 ring-rose-300`
+ - Disponível: `bg-emerald-100 text-emerald-800 ring-emerald-300`
+ - Reservado: `bg-amber-100 text-amber-800 ring-amber-300`
+ - Vendido: `bg-rose-100 text-rose-800 ring-rose-300`
 
 **CTAs**:
-- Primário: `bg-gradient-to-r from-emerald-600 to-emerald-500`
-- Secundário: `border-zinc-200 bg-white hover:bg-zinc-50`
+- PrimÃ¡rio: `bg-gradient-to-r from-emerald-600 to-emerald-500`
+- SecundÃ¡rio: `border-zinc-200 bg-white hover:bg-zinc-50`
 
-### Espaçamentos
+### EspaÃ§amentos
 
 - **Container**: `px-4 sm:px-6 lg:px-8`
 - **Card padding**: `p-5` (20px)
@@ -175,20 +175,20 @@ Cada card gera structured data completa:
 
 ### Tipografia
 
-- **Título card**: `text-lg font-semibold` (18px)
+- **TÃ­tulo card**: `text-lg font-semibold` (18px)
 - **Metadados**: `text-sm` (14px)
-- **Benefícios**: `text-xs` (12px)
-- **CTA primário**: `text-sm font-semibold`
+- **BenefÃ­cios**: `text-xs` (12px)
+- **CTA primÃ¡rio**: `text-sm font-semibold`
 
 ### Bordas e Sombras
 
 - **Border radius**: `rounded-2xl` (16px)
-- **Sombra card**: `shadow-sm` → `hover:shadow-xl`
+- **Sombra card**: `shadow-sm` â†’ `hover:shadow-xl`
 - **Ring focus**: `ring-2 ring-emerald-500 ring-offset-2`
 
 ---
 
-## 📱 Responsividade
+## ðŸ“± Responsividade
 
 ### Breakpoints
 
@@ -203,15 +203,15 @@ Cada card gera structured data completa:
 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4
 ```
 
-### Adaptações Mobile
+### AdaptaÃ§Ãµes Mobile
 
-- CTAs secundários: Texto reduzido (`sm:inline`)
-- Filtros: Expansível em accordion
+- CTAs secundÃ¡rios: Texto reduzido (`sm:inline`)
+- Filtros: ExpansÃ­vel em accordion
 - Grid: Auto-ajuste de altura (`auto-rows-fr`)
 
 ---
 
-## ⚡ Performance
+## âš¡ Performance
 
 ### Core Web Vitals
 
@@ -233,18 +233,18 @@ grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4
 ### Bundle Size
 
 - Dynamic imports: `PuppiesGridPremium`
-- Tree-shaking: Ícones individuais (lucide-react)
-- Code splitting automático
+- Tree-shaking: Ãcones individuais (lucide-react)
+- Code splitting automÃ¡tico
 
 ---
 
-## 🔄 Migração
+## ðŸ”„ MigraÃ§Ã£o
 
 ### Componentes Antigos
 
 Os componentes originais permanecem intactos:
-- `PuppyCard.tsx` → Mantido para `/filhotes`
-- `PuppiesGrid.tsx` → Mantido para outras páginas
+- `PuppyCard.tsx` â†’ Mantido para `/filhotes`
+- `PuppiesGrid.tsx` â†’ Mantido para outras pÃ¡ginas
 
 ### Rollback
 
@@ -257,7 +257,7 @@ const PuppiesGrid = dynamic(() => import("@/components/PuppiesGrid"));
 
 ---
 
-## 🧪 Testes
+## ðŸ§ª Testes
 
 ### Checklist Manual
 
@@ -270,8 +270,8 @@ const PuppiesGrid = dynamic(() => import("@/components/PuppiesGrid"));
 - [ ] Empty state com filtros ativos
 - [ ] Error state com retry
 - [ ] Responsividade mobile/desktop
-- [ ] Navegação por teclado
-- [ ] Screen reader compatível
+- [ ] NavegaÃ§Ã£o por teclado
+- [ ] Screen reader compatÃ­vel
 
 ### Lighthouse
 
@@ -283,97 +283,97 @@ Validar:
 
 ---
 
-## 📊 Analytics
+## ðŸ“Š Analytics
 
 ### Eventos Trackeados
 
 ```typescript
 track.event?.("puppy_like_toggle", {
-  puppy_id: string,
-  liked: boolean,
-  placement: "catalog_premium"
+ puppy_id: string,
+ liked: boolean,
+ placement: "catalog_premium"
 });
 
 track.event?.("whatsapp_click", {
-  placement: "catalog_card_premium",
-  action: "main_cta" | "video" | "visit",
-  puppy_id: string
+ placement: "catalog_card_premium",
+ action: "main_cta" | "video" | "visit",
+ puppy_id: string
 });
 
 track.event?.("open_details", {
-  placement: "catalog_card_premium",
-  puppy_id: string,
-  target: "modal"
+ placement: "catalog_card_premium",
+ puppy_id: string,
+ target: "modal"
 });
 
 track.event?.("list_loaded", {
-  count: number,
-  version: "premium"
+ count: number,
+ version: "premium"
 });
 ```
 
 ---
 
-## 🚀 Próximos Passos
+## ðŸš€ PrÃ³ximos Passos
 
 ### Melhorias Futuras
 
 1. **Galeria de Imagens**
-   - Carrossel no card (swipe mobile)
-   - Thumbnails secundárias
+ - Carrossel no card (swipe mobile)
+ - Thumbnails secundÃ¡rias
 
-2. **Comparação**
-   - Checkbox para selecionar
-   - Modal comparativo
+2. **ComparaÃ§Ã£o**
+ - Checkbox para selecionar
+ - Modal comparativo
 
 3. **Wishlist Persistente**
-   - LocalStorage
-   - Sync com conta
+ - LocalStorage
+ - Sync com conta
 
 4. **Realtime**
-   - Websocket para status
-   - Notificação "novo filhote"
+ - Websocket para status
+ - NotificaÃ§Ã£o "novo filhote"
 
-5. **Filtros Avançados**
-   - Faixa de preço (slider)
-   - Idade (mín/máx)
-   - Ordenação (preço, data, popularidade)
+5. **Filtros AvanÃ§ados**
+ - Faixa de preÃ§o (slider)
+ - Idade (mÃ­n/mÃ¡x)
+ - OrdenaÃ§Ã£o (preÃ§o, data, popularidade)
 
 6. **Social Proof**
-   - Badge "Mais popular"
-   - "X pessoas visualizaram hoje"
-   - Reviews e ratings
+ - Badge "Mais popular"
+ - "X pessoas visualizaram hoje"
+ - Reviews e ratings
 
 ---
 
-## 📝 Notas Técnicas
+## ðŸ“ Notas TÃ©cnicas
 
 ### Compatibilidade
 
-- ✅ Next.js 14+ App Router
-- ✅ React Server/Client Components
-- ✅ TypeScript strict mode
-- ✅ Tailwind CSS v3+
+- âœ… Next.js 14+ App Router
+- âœ… React Server/Client Components
+- âœ… TypeScript strict mode
+- âœ… Tailwind CSS v3+
 
-### Dependências
+### DependÃªncias
 
-Nenhuma dependência adicional necessária. Usa apenas:
-- `lucide-react` (já instalado)
+Nenhuma dependÃªncia adicional necessÃ¡ria. Usa apenas:
+- `lucide-react` (jÃ¡ instalado)
 - `next/image` (nativo)
 - Libs internas do projeto
 
 ### Breaking Changes
 
-**Nenhum**. O sistema é 100% retrocompatível.
+**Nenhum**. O sistema Ã© 100% retrocompatÃ­vel.
 
 ---
 
-## 👥 Créditos
+## ðŸ‘¥ CrÃ©ditos
 
 Design System inspirado em:
 - **Airbnb**: Grid e cards
-- **Farfetch**: Micro-interações
-- **Petlove**: CTAs e benefícios
+- **Farfetch**: Micro-interaÃ§Ãµes
+- **Petlove**: CTAs e benefÃ­cios
 
 Implementado seguindo:
 - WCAG 2.2 Guidelines
@@ -382,13 +382,14 @@ Implementado seguindo:
 
 ---
 
-## 📞 Suporte
+## ðŸ“ž Suporte
 
-Para dúvidas ou ajustes:
+Para dÃºvidas ou ajustes:
 1. Consulte este README
-2. Revise comentários no código
+2. Revise comentÃ¡rios no cÃ³digo
 3. Teste em ambiente local
 
-**Versão**: 2.0.0  
-**Data**: Dezembro 2025  
-**Status**: ✅ Production Ready
+**VersÃ£o**: 2.0.0 
+**Data**: Dezembro 2025 
+**Status**: âœ… Production Ready
+

@@ -1,6 +1,8 @@
 #!/usr/bin/env tsx
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 import fs from 'node:fs';
 import path from 'node:path';
+
 import { createClient } from '@supabase/supabase-js';
 
 function loadEnvLocal() {
@@ -51,7 +53,7 @@ async function seedPuppies() {
 			price_cents: 850000,
 			status: 'disponivel',
 			midia: JSON.stringify([
-				'/spitz-hero-desktop.webp',
+				'/spitz-hero-desktop.webp?v=20260111',
 				'/spitz-hero-mobile.png',
 			]),
 		},
@@ -63,7 +65,7 @@ async function seedPuppies() {
 			price_cents: 790000,
 			status: 'disponivel',
 			midia: JSON.stringify([
-				'/spitz-hero-desktop.webp',
+				'/spitz-hero-desktop.webp?v=20260111',
 				'/1.png',
 			]),
 		},
@@ -75,7 +77,7 @@ async function seedPuppies() {
 			price_cents: 920000,
 			status: 'reservado',
 			midia: JSON.stringify([
-				'/spitz-hero-desktop.webp',
+				'/spitz-hero-desktop.webp?v=20260111',
 			]),
 		},
 	];

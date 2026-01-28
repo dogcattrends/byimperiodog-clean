@@ -2,38 +2,38 @@
 -- Consistent with existing Supabase SQL style
 
 create table if not exists public.integrations (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null,
-  provider text not null check (provider in ('facebook','google_analytics','google_tag_manager','tiktok')),
-  access_token text not null,
-  refresh_token text,
-  expires_at timestamptz,
-  provider_account_id text,
-  metadata jsonb default '{}'::jsonb,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+ id uuid primary key default gen_random_uuid(),
+ user_id uuid not null,
+ provider text not null check (provider in ('facebook','google_analytics','google_tag_manager','tiktok')),
+ access_token text not null,
+ refresh_token text,
+ expires_at timestamptz,
+ provider_account_id text,
+ metadata jsonb default '{}'::jsonb,
+ created_at timestamptz not null default now(),
+ updated_at timestamptz not null default now()
 );
 
 create table if not exists public.tracking_settings (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null,
-  facebook_pixel_id text,
-  ga_measurement_id text,
-  gtm_container_id text,
-  tiktok_pixel_id text,
-  is_facebook_pixel_enabled boolean not null default false,
-  is_ga_enabled boolean not null default false,
-  is_gtm_enabled boolean not null default false,
-  is_tiktok_enabled boolean not null default false,
-  updated_at timestamptz not null default now()
+ id uuid primary key default gen_random_uuid(),
+ user_id uuid not null,
+ facebook_pixel_id text,
+ ga_measurement_id text,
+ gtm_container_id text,
+ tiktok_pixel_id text,
+ is_facebook_pixel_enabled boolean not null default false,
+ is_ga_enabled boolean not null default false,
+ is_gtm_enabled boolean not null default false,
+ is_tiktok_enabled boolean not null default false,
+ updated_at timestamptz not null default now()
 );
 
 -- Touch triggers to keep updated_at fresh
 create or replace function public.touch_updated_at()
 returns trigger language plpgsql as $$
 begin
-  new.updated_at = now();
-  return new;
+ new.updated_at = now();
+ return new;
 end;
 $$;
 

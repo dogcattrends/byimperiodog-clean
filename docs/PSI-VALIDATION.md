@@ -25,8 +25,8 @@ Saída esperada (OK por item):
 2) Validação manual (DevTools)
 - Abra a home em produção → aba Network
 - Selecione:
-  - `spitz-hero-desktop.webp` (direto do public)
-  - qualquer `/_next/image?...`
+ - `spitz-hero-desktop.webp` (direto do public)
+ - qualquer `/_next/image?...`
 - Confirme os headers conforme acima
 
 Se qualquer item falhar, abra `next.config.mjs` e verifique a função `headers()`; por padrão, este projeto já define:

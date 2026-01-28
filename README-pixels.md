@@ -8,7 +8,7 @@ SUPABASE_SERVICE_ROLE_KEY=...
 ```tsx
 import TrackingScripts from "@/components/TrackingScripts";
 <body>
-  <TrackingScripts />
-  {children}
+ <TrackingScripts />
+ {children}
 </body>
 ```

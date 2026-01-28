@@ -40,10 +40,10 @@ Na mesma tela (OAuth consent screen):
 2. Vá em **"Scopes"** (Escopos)
 3. Clique em **"ADD OR REMOVE SCOPES"**
 4. Adicione:
-   - `https://www.googleapis.com/auth/analytics.readonly`
-   - `https://www.googleapis.com/auth/analytics.edit`
-   - `https://www.googleapis.com/auth/tagmanager.readonly`
-   - `https://www.googleapis.com/auth/analytics.manage.users.readonly` ← **ADICIONAR ESTE**
+ - `https://www.googleapis.com/auth/analytics.readonly`
+ - `https://www.googleapis.com/auth/analytics.edit`
+ - `https://www.googleapis.com/auth/tagmanager.readonly`
+ - `https://www.googleapis.com/auth/analytics.manage.users.readonly` ← **ADICIONAR ESTE**
 5. Clique em **"UPDATE"** e **"SAVE AND CONTINUE"**
 
 ### 4. Reiniciar Servidor
@@ -89,12 +89,12 @@ Se tiver registros, o OAuth funcionou!
 
 ## 📝 Resumo do que foi feito:
 
-✅ Credenciais OAuth criadas no Google Cloud  
-✅ Client ID e Secret configurados no `.env.local`  
-✅ TEST_USER_ID adicionado  
-✅ Código de auto-fetch implementado  
-✅ SQL schema atualizado (constraints)  
-⚠️ Falta: Executar SQL no Supabase  
-⚠️ Falta: Adicionar test user no Google Console  
+✅ Credenciais OAuth criadas no Google Cloud 
+✅ Client ID e Secret configurados no `.env.local` 
+✅ TEST_USER_ID adicionado 
+✅ Código de auto-fetch implementado 
+✅ SQL schema atualizado (constraints) 
+⚠️ Falta: Executar SQL no Supabase 
+⚠️ Falta: Adicionar test user no Google Console 
 
 Após completar os passos 1 e 2, tudo vai funcionar! 🚀

@@ -1,0 +1,1533 @@
+/**
+ * Admin Panel Exclusive Styles
+ * Tema imersivo dark com glassmorphism
+ */
+
+:root {
+  /* Admin NEON FLUORESCENT - Inovador e Acessível */
+    --admin-bg: 10 15 30; /* #0a0f1e - deep blue dark */
+    --admin-surface: 20 30 50; /* #141e32 - navy surface */
+    --admin-surface-2: 30 45 70; /* #1e2d46 - lighter navy */
+    --admin-border: 59 130 246; /* #3b82f6 - blue-500 NEON */
+    
+    --admin-text: 255 255 255; /* #ffffff - pure white */
+    --admin-text-muted: 226 232 240; /* #e2e8f0 - slate-200 */
+    --admin-text-soft: 148 163 184; /* #94a3b8 - slate-400 */
+    
+    /* Neon Cyan/Teal */
+    --admin-brand: 34 211 238; /* #22d3ee - cyan-400 FLUOR */
+    --admin-brand-bright: 103 232 249; /* #67e8f9 - cyan-300 */
+    --admin-brand-dim: 6 182 212; /* #06b6d4 - cyan-500 */
+    
+    /* Neon Purple/Magenta */
+    --admin-accent: 217 70 239; /* #d946ef - fuchsia-500 FLUOR */
+    --admin-accent-bright: 240 171 252; /* #f0abfc - fuchsia-300 */
+    --admin-accent-dim: 192 38 211; /* #c026d3 - fuchsia-600 */
+    
+    /* Neon Status Colors */
+    --admin-danger: 251 113 133; /* #fb7185 - rose-400 */
+    --admin-success: 34 197 94; /* #22c55e - green-500 */
+    --admin-warning: 251 191 36; /* #fbbf24 - amber-400 */
+    
+    /* Glassmorphism NEON FLUOR */
+    --admin-glass-bg: rgba(20, 30, 50, 0.7);
+    --admin-glass-border: linear-gradient(135deg, rgba(34, 211, 238, 0.4), rgba(217, 70, 239, 0.4));
+    --admin-glass-shadow: 0 0 30px rgba(34, 211, 238, 0.2), 0 0 60px rgba(217, 70, 239, 0.15), 0 8px 32px rgba(0, 0, 0, 0.4);
+    
+    /* Border Radius Innovation */
+    --admin-radius-sm: 12px;
+    --admin-radius: 20px;
+    --admin-radius-lg: 24px;
+    --admin-radius-xl: 32px;
+}
+
+/* ====================
+   FORÇA DARK EM TUDO
+   ==================== */
+
+/* Força TODOS os elementos dentro do admin a serem dark */
+.admin-container *:not(svg):not(path):not(circle):not(polyline):not(line):not(rect):not(g) {
+  /* Força cores dark em TUDO - sem exceções */
+  color: inherit !important;
+}
+
+/* Sobrescreve absolutamente TODAS as classes bg-white/bg-gray/bg-zinc NEON */
+.admin-container [class*="bg-white"],
+.admin-container [class*="bg-gray-"],
+.admin-container [class*="bg-zinc-"],
+.admin-container [class*="bg-slate-"],
+.admin-container [class*="bg-stone-"],
+.admin-container [class*="bg-neutral-"] {
+  background: rgba(30, 41, 59, 0.8) !important;
+  backdrop-filter: blur(12px) !important;
+  border-color: rgb(100, 116, 139) !important;
+  color: rgb(248, 250, 252) !important;
+}
+
+/* PREVINE ELEMENTOS BRANCOS NO HOVER - MANTÉM NEON */
+.admin-container [class*="hover:bg-white"]:hover,
+.admin-container [class*="hover:bg-gray"]:hover,
+.admin-container [class*="hover:bg-zinc"]:hover,
+.admin-container [class*="hover:bg-slate"]:hover,
+.admin-container button:hover:not([class*="admin-btn"]),
+.admin-container div:hover[class*="rounded"],
+.admin-container span:hover[class*="rounded"] {
+  background: rgba(30, 45, 70, 0.7) !important;
+  border-color: rgb(34, 211, 238) !important;
+  color: rgb(255, 255, 255) !important;
+}
+
+/* FORÇA NEON EM TODOS OS ELEMENTOS ROUNDED (badges, pills, etc) */
+.admin-container [class*="rounded-full"]:not([class*="admin-btn"]):not(input),
+.admin-container [class*="rounded-full"]:not([class*="admin-badge"]) {
+  background: rgba(30, 45, 70, 0.5) !important;
+  color: rgb(255, 255, 255) !important;
+  border: 2px solid rgba(34, 211, 238, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.admin-container [class*="rounded-full"]:not([class*="admin-btn"]):not(input):hover,
+.admin-container [class*="rounded-full"]:not([class*="admin-badge"]):hover {
+  background: rgba(30, 45, 70, 0.8) !important;
+  border-color: rgb(34, 211, 238) !important;
+  box-shadow: 0 0 25px rgba(34, 211, 238, 0.5), 0 0 50px rgba(217, 70, 239, 0.3) !important;
+  transform: translateY(-2px) scale(1.06) !important;
+}
+
+/* ====================
+   FORÇA NEON EM TABELAS
+   ==================== */
+
+/* Table cells - NEON ESCURO */
+.admin-container table,
+.admin-container tbody,
+.admin-container thead,
+.admin-container tr,
+.admin-container td,
+.admin-container th {
+  background: rgba(30, 45, 70, 0.5) !important;
+  color: rgb(255, 255, 255) !important;
+  border-color: rgba(34, 211, 238, 0.2) !important;
+}
+
+/* Headers de tabela - SUPER VISÍVEIS */
+.admin-container thead th,
+.admin-container thead td {
+  background: rgba(15, 25, 45, 0.8) !important;
+  color: rgb(255, 255, 255) !important;
+  font-weight: 700 !important;
+  border-bottom: 2px solid rgba(34, 211, 238, 0.3) !important;
+}
+
+/* Rows de tabela */
+.admin-container tbody tr {
+  background: rgba(30, 45, 70, 0.4) !important;
+  border-bottom: 1px solid rgba(34, 211, 238, 0.15) !important;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  position: relative !important;
+}
+
+.admin-container tbody tr:hover {
+  background: linear-gradient(135deg, rgba(30, 45, 70, 0.7), rgba(30, 45, 70, 0.5)) !important;
+  border-bottom: 2px solid rgb(34, 211, 238) !important;
+  box-shadow: 0 0 30px rgba(34, 211, 238, 0.4), 0 0 60px rgba(217, 70, 239, 0.2), inset 0 1px 0 rgba(34, 211, 238, 0.3) !important;
+  transform: scale(1.01) !important;
+}
+
+/* Células individuais */
+.admin-container td {
+  color: rgb(255, 255, 255) !important;
+  padding: 0.75rem 1rem !important;
+}
+
+.admin-container th {
+  color: rgb(248, 250, 252) !important;
+  text-transform: uppercase !important;
+  font-size: 0.75rem !important;
+  letter-spacing: 0.05em !important;
+  padding: 1rem !important;
+}
+
+/* Admin container - NEON FLUOR background dinâmico */
+.admin-container {
+  background: linear-gradient(135deg, rgb(10, 15, 30) 0%, rgb(20, 30, 50) 50%, rgb(15, 25, 45) 100%);
+  background-size: 200% 200%;
+  animation: gradient-bg 15s ease infinite;
+  color: rgb(255, 255, 255);
+  min-height: 100vh;
+  position: relative;
+}
+
+.admin-container::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 20% 50%, rgba(34, 211, 238, 0.08) 0%, transparent 50%),
+              radial-gradient(circle at 80% 80%, rgba(217, 70, 239, 0.08) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes gradient-bg {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Glass card effect NEON FLUOR - Ultra Arredondado */
+.admin-glass-card {
+  background: var(--admin-glass-bg);
+  backdrop-filter: blur(20px) saturate(200%);
+  -webkit-backdrop-filter: blur(20px) saturate(200%);
+  border: 2px solid transparent;
+  border-radius: var(--admin-radius-lg);
+  background-image: linear-gradient(var(--admin-glass-bg), var(--admin-glass-bg)),
+                    linear-gradient(135deg, rgba(34, 211, 238, 0.4), rgba(217, 70, 239, 0.4));
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  box-shadow: var(--admin-glass-shadow);
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(34, 211, 238, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.admin-glass-card:hover::before {
+  left: 100%;
+}
+
+.admin-glass-card:hover {
+  border-color: rgba(52, 211, 153, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+}
+
+/* Gradient overlay para cards importantes */
+.admin-card-gradient {
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-card-gradient::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(16, 185, 129, 0.05) 0%, 
+    rgba(251, 191, 36, 0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.admin-card-gradient:hover::before {
+  opacity: 1;
+}
+
+/* Status indicators */
+.admin-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.admin-status-online {
+  background: rgba(34, 197, 94, 0.1);
+  color: rgb(var(--admin-success));
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.admin-status-offline {
+  background: rgba(239, 68, 68, 0.1);
+  color: rgb(var(--admin-danger));
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.admin-status-warning {
+  background: rgba(251, 146, 60, 0.1);
+  color: rgb(var(--admin-warning));
+  border: 1px solid rgba(251, 146, 60, 0.2);
+}
+
+/* Pulse animation para status live */
+@keyframes admin-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.admin-pulse {
+  animation: admin-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Glow effect para elementos ativos */
+.admin-glow {
+  box-shadow: 
+    0 0 20px rgba(16, 185, 129, 0.3),
+    0 0 40px rgba(16, 185, 129, 0.1);
+}
+
+/* Button styles */
+.admin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.admin-btn-primary {
+  background: linear-gradient(135deg, rgb(34, 211, 238) 0%, rgb(217, 70, 239) 100%);
+  color: rgb(10, 15, 30);
+  font-weight: 700;
+  border-radius: 20px;
+  padding: 0.875rem 2rem;
+  font-size: 0.9375rem;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 30px rgba(34, 211, 238, 0.4), 0 0 60px rgba(217, 70, 239, 0.3), 0 4px 20px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s ease;
+}
+
+.admin-btn-primary:hover {
+  transform: translateY(-2px) scale(1.02);
+  background: linear-gradient(135deg, rgb(103, 232, 249) 0%, rgb(240, 171, 252) 100%);
+  box-shadow: 0 0 40px rgba(34, 211, 238, 0.6), 0 0 80px rgba(217, 70, 239, 0.5), 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+.admin-btn-primary:hover::before {
+  left: 100%;
+}
+
+.admin-btn-primary:focus-visible {
+  outline: 3px solid rgb(34, 211, 238);
+  outline-offset: 4px;
+}
+
+.admin-btn-primary:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.admin-btn-secondary {
+  background: rgb(var(--admin-surface-2));
+  color: rgb(var(--admin-text));
+  border-color: rgb(var(--admin-border));
+}
+
+.admin-btn-secondary:hover {
+  background: rgb(var(--admin-surface));
+  border-color: rgb(var(--admin-brand));
+}
+
+/* Sidebar styles */
+.admin-sidebar {
+  background: var(--admin-glass-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-right: 1px solid var(--admin-glass-border);
+}
+
+.admin-nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgb(var(--admin-text-muted));
+  transition: all 0.2s ease;
+}
+
+.admin-nav-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 0;
+  background: rgb(var(--admin-brand));
+  border-radius: 0 2px 2px 0;
+  transition: height 0.2s ease;
+}
+
+.admin-nav-item:hover {
+  background: rgb(var(--admin-surface-2));
+  color: rgb(var(--admin-text));
+}
+
+.admin-nav-item.active {
+  background: rgba(16, 185, 129, 0.1);
+  color: rgb(var(--admin-brand-bright));
+}
+
+.admin-nav-item.active::before {
+  height: 60%;
+}
+
+/* KPI Card */
+.admin-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.admin-kpi-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgb(var(--admin-text-muted));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.admin-kpi-value {
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1;
+  background: linear-gradient(135deg, rgb(34, 211, 238), rgb(217, 70, 239), rgb(34, 211, 238));
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 15px rgba(34, 211, 238, 0.5)) drop-shadow(0 0 30px rgba(217, 70, 239, 0.3));
+  animation: gradient-shift 3s ease infinite;
+}
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% center; }
+  50% { background-position: 100% center; }
+}
+
+.admin-kpi-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.admin-kpi-trend.up {
+  color: rgb(var(--admin-success));
+}
+
+.admin-kpi-trend.down {
+  color: rgb(var(--admin-danger));
+}
+
+/* Scrollbar customizado */
+.admin-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.admin-scrollbar::-webkit-scrollbar-track {
+  background: rgb(var(--admin-surface));
+  border-radius: 4px;
+}
+
+.admin-scrollbar::-webkit-scrollbar-thumb {
+  background: rgb(var(--admin-border));
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.admin-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--admin-brand-dim));
+}
+
+/* Loading shimmer effect */
+@keyframes admin-shimmer {
+  0% {
+    background-position: -468px 0;
+  }
+  100% {
+    background-position: 468px 0;
+  }
+}
+
+.admin-skeleton {
+  background: linear-gradient(
+    to right,
+    rgb(var(--admin-surface)) 0%,
+    rgb(var(--admin-surface-2)) 20%,
+    rgb(var(--admin-surface)) 40%,
+    rgb(var(--admin-surface)) 100%
+  );
+  background-size: 800px 104px;
+  animation: admin-shimmer 1.5s infinite linear;
+  border-radius: 0.5rem;
+}
+
+/* Badge */
+.admin-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.admin-badge-success {
+  background: rgba(34, 197, 94, 0.15);
+  color: rgb(74, 222, 128);
+  border: 2px solid rgba(34, 197, 94, 0.5);
+  border-radius: 16px;
+  padding: 0.375rem 1rem;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.3s ease;
+}
+
+.admin-badge-success:hover {
+  background: rgba(34, 197, 94, 0.35) !important;
+  border-color: rgb(74, 222, 128) !important;
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.6), 0 0 40px rgba(34, 197, 94, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+  transform: translateY(-2px) scale(1.08) !important;
+}
+
+.admin-badge-warning {
+  background: rgba(251, 191, 36, 0.15);
+  color: rgb(251, 191, 36);
+  border: 2px solid rgba(251, 191, 36, 0.5);
+  border-radius: 16px;
+  padding: 0.375rem 1rem;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.3s ease;
+}
+
+.admin-badge-warning:hover {
+  background: rgba(251, 191, 36, 0.35) !important;
+  border-color: rgb(251, 191, 36) !important;
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.6), 0 0 40px rgba(251, 191, 36, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+  transform: translateY(-2px) scale(1.08) !important;
+}
+
+.admin-badge-danger {
+  background: rgba(251, 113, 133, 0.15);
+  color: rgb(251, 113, 133);
+  border: 2px solid rgba(251, 113, 133, 0.5);
+  border-radius: 16px;
+  padding: 0.375rem 1rem;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  box-shadow: 0 0 20px rgba(251, 113, 133, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.3s ease;
+}
+
+.admin-badge-danger:hover {
+  background: rgba(251, 113, 133, 0.35) !important;
+  border-color: rgb(251, 113, 133) !important;
+  box-shadow: 0 0 20px rgba(251, 113, 133, 0.6), 0 0 40px rgba(251, 113, 133, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+  transform: translateY(-2px) scale(1.08) !important;
+}
+
+.admin-badge-info {
+  background: rgba(34, 211, 238, 0.15);
+  color: rgb(103, 232, 249);
+  border: 2px solid rgba(34, 211, 238, 0.5);
+  border-radius: 16px;
+  padding: 0.375rem 1rem;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.3s ease;
+}
+
+.admin-badge-info:hover {
+  background: rgba(34, 211, 238, 0.35) !important;
+  border-color: rgb(103, 232, 249) !important;
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.6), 0 0 40px rgba(34, 211, 238, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+  transform: translateY(-2px) scale(1.08) !important;
+}
+
+/* Divider com gradiente */
+.admin-divider {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgb(var(--admin-border)),
+    transparent
+  );
+  margin: 1.5rem 0;
+}
+
+/* Card header */
+.admin-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgb(var(--admin-border));
+}
+
+.admin-card-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: rgb(var(--admin-text));
+}
+
+.admin-card-subtitle {
+  font-size: 0.875rem;
+  color: rgb(var(--admin-text-muted));
+  margin-top: 0.25rem;
+}
+
+/* ========================================
+   MICRO-INTERAÇÕES AVANÇADAS
+   ======================================== */
+
+/* Hover lift com shadow dinâmica */
+.admin-interactive {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.admin-interactive:hover {
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 0 35px rgba(34, 211, 238, 0.3), 0 0 70px rgba(217, 70, 239, 0.2), 0 12px 40px rgba(0, 0, 0, 0.3);
+}
+
+.admin-interactive:focus-within {
+  outline: 3px solid rgb(34, 211, 238);
+  outline-offset: 3px;
+}
+
+.admin-interactive:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+}
+
+/* Ripple effect para cliques */
+.admin-ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-ripple::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(52, 211, 153, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.admin-ripple:active::after {
+  width: 300px;
+  height: 300px;
+}
+
+/* Magnetic hover - elementos atraem cursor */
+.admin-magnetic {
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Smooth scale on hover */
+.admin-scale-hover {
+  transition: transform 0.2s ease-out;
+}
+
+.admin-scale-hover:hover {
+  transform: scale(1.05);
+}
+
+/* Gradient border animation */
+.admin-border-glow {
+  position: relative;
+  border: 1px solid rgba(52, 211, 153, 0.2);
+  transition: border-color 0.3s;
+}
+
+.admin-border-glow::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, 
+    rgba(16, 185, 129, 0.4),
+    rgba(251, 191, 36, 0.4),
+    rgba(16, 185, 129, 0.4)
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.admin-border-glow:hover::before {
+  opacity: 1;
+}
+
+/* Pulse notification dot */
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.7);
+  }
+  100% {
+    box-shadow: 0 0 0 8px rgba(251, 191, 36, 0);
+  }
+}
+
+.admin-pulse-ring {
+  animation: pulse-ring 1.5s infinite;
+}
+
+/* Skeleton loader com shimmer melhorado */
+@keyframes shimmer-advanced {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.admin-skeleton-advanced {
+  background: linear-gradient(
+    90deg,
+    rgba(17, 24, 32, 0.5) 0%,
+    rgba(52, 211, 153, 0.1) 50%,
+    rgba(17, 24, 32, 0.5) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer-advanced 2s infinite;
+  border-radius: var(--admin-radius);
+}
+
+/* Smooth color transition */
+.admin-color-transition {
+  transition: color 0.3s, background-color 0.3s, border-color 0.3s;
+}
+
+/* Stagger animation para listas */
+@keyframes fade-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.admin-stagger-item {
+  animation: fade-slide-up 0.4s ease-out backwards;
+}
+
+.admin-stagger-item:nth-child(1) { animation-delay: 0.05s; }
+.admin-stagger-item:nth-child(2) { animation-delay: 0.1s; }
+.admin-stagger-item:nth-child(3) { animation-delay: 0.15s; }
+.admin-stagger-item:nth-child(4) { animation-delay: 0.2s; }
+.admin-stagger-item:nth-child(5) { animation-delay: 0.25s; }
+.admin-stagger-item:nth-child(n+6) { animation-delay: 0.3s; }
+
+/* Focus visible melhorado */
+.admin-focus-ring:focus-visible {
+  outline: 2px solid rgb(var(--admin-brand));
+  outline-offset: 2px;
+  border-radius: var(--admin-radius);
+}
+
+/* Glow on active state */
+.admin-active-glow.active {
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.4),
+              inset 0 0 20px rgba(16, 185, 129, 0.1);
+}
+
+/* ========================================
+   RESPONSIVIDADE MOBILE
+   ======================================== */
+
+/* Breakpoints Mobile First */
+@media (max-width: 768px) {
+  .admin-container {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .admin-sidebar {
+    position: fixed;
+    left: -100%;
+    top: 0;
+    height: 100vh;
+    width: 280px;
+    z-index: 50;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .admin-sidebar.mobile-open {
+    left: 0;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+  }
+
+  .admin-main-content {
+    width: 100%;
+    padding: 1rem;
+  }
+
+  /* Header mobile sticky */
+  .admin-header-mobile {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: var(--admin-glass-bg);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(var(--admin-border), 0.5);
+    padding: 0.75rem 1rem;
+  }
+
+  /* KPIs empilhados */
+  .admin-kpi {
+    font-size: 1.75rem;
+  }
+
+  .admin-kpi-value {
+    font-size: 2rem;
+  }
+
+  /* Cards com espaçamento reduzido */
+  .admin-glass-card {
+    padding: 1rem;
+  }
+
+  /* Botões full width */
+  .admin-btn-mobile-full {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Grid responsivo */
+  .admin-grid-responsive {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  /* Texto menor em mobile */
+  .admin-mobile-text-sm {
+    font-size: 0.875rem;
+  }
+
+  /* Ocultar labels em mobile */
+  .admin-mobile-hide-label .admin-label {
+    display: none;
+  }
+
+  /* Tables scroll horizontal */
+  .admin-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-table {
+    min-width: 640px;
+  }
+}
+
+/* Tablet */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .admin-sidebar {
+    width: 240px;
+  }
+
+  .admin-grid-responsive {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Desktop largo */
+@media (min-width: 1440px) {
+  .admin-main-content {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .admin-grid-responsive {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Touch targets maiores em touch devices */
+@media (hover: none) and (pointer: coarse) {
+  .admin-btn,
+  .admin-nav-item,
+  .admin-interactive {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Reduce motion para acessibilidade */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Dark mode support (já é dark, mas previne override) */
+@media (prefers-color-scheme: light) {
+  .admin-container {
+    color-scheme: dark;
+  }
+}
+
+/* Grid utility classes */
+.admin-grid-1 { grid-template-columns: 1fr; }
+.admin-grid-2 { grid-template-columns: repeat(2, 1fr); }
+.admin-grid-3 { grid-template-columns: repeat(3, 1fr); }
+.admin-grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+@media (max-width: 768px) {
+  .admin-grid-2,
+  .admin-grid-3,
+  .admin-grid-4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Spacing utilities mobile */
+.admin-space-mobile-2 { gap: 0.5rem; }
+.admin-space-mobile-4 { gap: 1rem; }
+.admin-space-mobile-6 { gap: 1.5rem; }
+
+/* ========================================
+   COMPONENTES EXTRAS
+   ======================================== */
+
+/* Override global para páginas admin - força dark sempre */
+.admin-container input,
+.admin-container select,
+.admin-container textarea {
+  background: rgba(var(--admin-surface), 0.8) !important;
+  color: rgb(var(--admin-text)) !important;
+  border-color: rgba(var(--admin-border), 1) !important;
+}
+
+.admin-container input::placeholder,
+.admin-container select::placeholder,
+.admin-container textarea::placeholder {
+  color: rgb(var(--admin-text-muted)) !important;
+}
+
+.admin-container input:focus,
+.admin-container select:focus,
+.admin-container textarea:focus {
+  border-color: rgb(var(--admin-brand)) !important;
+  background: rgba(var(--admin-surface-2), 0.9) !important;
+}
+
+/* Force dark em todos os backgrounds brancos */
+.admin-container .bg-white,
+.admin-container [class*="bg-white"],
+.admin-container .bg-zinc-,
+.admin-container [class*="bg-zinc-"],
+.admin-container .bg-gray-,
+.admin-container [class*="bg-gray-"] {
+  background: rgba(var(--admin-surface), 0.5) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+/* Botões que não são admin-btn mas precisam do estilo */
+.admin-container button[type="button"]:not([class*="admin-btn"]),
+.admin-container button[type="submit"]:not([class*="admin-btn"]) {
+  background: rgba(var(--admin-surface), 0.8) !important;
+  color: rgb(var(--admin-text)) !important;
+  border-color: rgba(var(--admin-border), 1) !important;
+  transition: all 0.2s !important;
+}
+
+.admin-container button[type="button"]:hover:not([class*="admin-btn"]),
+.admin-container button[type="submit"]:hover:not([class*="admin-btn"]) {
+  background: rgba(var(--admin-surface-2), 1) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* ====================
+   TABELAS - NEON FLUOR
+   ==================== */
+
+/* Célula individual de nome/ID - NEON FLUOR */
+.admin-container td:first-child {
+  color: rgb(255, 255, 255) !important;
+  font-weight: 600 !important;
+}
+
+/* Textos que são span, p dentro de tabelas - NEON */
+.admin-container td span,
+.admin-container td p,
+.admin-container td div {
+  color: rgb(255, 255, 255) !important;
+}
+
+/* Textos mutados dentro de tabelas - MAIS VISÍVEIS */
+.admin-container td span.text-muted,
+.admin-container td span[class*="text-gray-"],
+.admin-container td span[class*="text-slate-"] {
+  color: rgb(226, 232, 240) !important;
+  font-weight: 400 !important;
+}
+
+/* Status badges dentro de tabelas */
+.admin-container td .admin-badge,
+.admin-container td [class*="badge"] {
+  color: inherit !important;
+}
+
+.admin-container button[type="button"]:hover:not([class*="admin-btn"]),
+.admin-container button[type="submit"]:hover:not([class*="admin-btn"]) {
+  background: rgba(var(--admin-surface-2), 1) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Checkboxes e radios */
+.admin-container input[type="checkbox"],
+.admin-container input[type="radio"] {
+  accent-color: rgb(var(--admin-brand)) !important;
+  background: rgba(var(--admin-surface), 0.8) !important;
+  border-color: rgba(var(--admin-border), 1) !important;
+}
+
+/* Fieldsets e legends */
+.admin-container fieldset {
+  border-color: rgba(var(--admin-border), 0.5) !important;
+}
+
+.admin-container legend {
+  color: rgb(var(--admin-text-muted)) !important;
+}
+
+/* Divs com bordas e backgrounds específicos */
+.admin-container div[class*="border"][class*="bg-"] {
+  background: rgba(var(--admin-surface), 0.5) !important;
+  border-color: rgba(var(--admin-border), 1) !important;
+}
+
+/* Força text colors */
+.admin-container .text-zinc-,
+.admin-container [class*="text-zinc-"],
+.admin-container .text-gray-,
+.admin-container [class*="text-gray-"],
+.admin-container .text-slate-,
+.admin-container [class*="text-slate-"] {
+  color: rgb(var(--admin-text)) !important;
+}
+
+/* Labels */
+.admin-container label {
+  color: rgb(var(--admin-text)) !important;
+}
+
+/* Spans de texto muted */
+.admin-container span[class*="text-muted"] {
+  color: rgb(var(--admin-text-muted)) !important;
+}
+
+/* Selects específicos - force dark */
+.admin-container select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e") !important;
+  background-position: right 0.5rem center !important;
+  background-repeat: no-repeat !important;
+  background-size: 1.5em 1.5em !important;
+  padding-right: 2.5rem !important;
+}
+
+/* Sobrescreve TODAS as classes de background claro */
+.admin-container [class*="bg-emerald-50"],
+.admin-container [class*="bg-emerald-100"],
+.admin-container [class*="bg-rose-50"],
+.admin-container [class*="bg-rose-100"],
+.admin-container [class*="bg-amber-50"],
+.admin-container [class*="bg-amber-100"],
+.admin-container [class*="bg-blue-50"],
+.admin-container [class*="bg-blue-100"],
+.admin-container [class*="bg-green-50"],
+.admin-container [class*="bg-green-100"],
+.admin-container [class*="bg-purple-50"],
+.admin-container [class*="bg-purple-100"],
+.admin-container [class*="bg-zinc-50"],
+.admin-container [class*="bg-zinc-100"],
+.admin-container [class*="bg-zinc-200"] {
+  background: rgba(var(--admin-surface), 0.5) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+/* Sobrescreve TODAS as classes de borda clara */
+.admin-container [class*="border-emerald-100"],
+.admin-container [class*="border-emerald-200"],
+.admin-container [class*="border-rose-100"],
+.admin-container [class*="border-rose-200"],
+.admin-container [class*="border-amber-100"],
+.admin-container [class*="border-amber-200"],
+.admin-container [class*="border-blue-100"],
+.admin-container [class*="border-blue-200"],
+.admin-container [class*="border-green-100"],
+.admin-container [class*="border-green-200"],
+.admin-container [class*="border-purple-100"],
+.admin-container [class*="border-purple-200"],
+.admin-container [class*="border-zinc-100"],
+.admin-container [class*="border-zinc-200"] {
+  border-color: rgba(var(--admin-border), 1) !important;
+}
+
+/* Garante que inputs number não tenham spinner branco */
+.admin-container input[type="number"]::-webkit-inner-spin-button,
+.admin-container input[type="number"]::-webkit-outer-spin-button {
+  opacity: 0.5;
+}
+
+/* Override para placeholders em todos os inputs */
+.admin-container input::-webkit-input-placeholder,
+.admin-container textarea::-webkit-input-placeholder,
+.admin-container select::-webkit-input-placeholder {
+  color: rgb(var(--admin-text-soft)) !important;
+  opacity: 0.7 !important;
+}
+
+.admin-container input::-moz-placeholder,
+.admin-container textarea::-moz-placeholder,
+.admin-container select::-moz-placeholder {
+  color: rgb(var(--admin-text-soft)) !important;
+  opacity: 0.7 !important;
+}
+
+/* Helper global para cards */
+.admin-page-card {
+  background: var(--admin-glass-bg);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(var(--admin-border), 1);
+  border-radius: var(--admin-radius);
+  padding: 1.5rem;
+  box-shadow: var(--admin-glass-shadow);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admin-page-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(16, 185, 129, 0.15);
+}
+
+/* Loading spinner com gradient */
+.admin-spinner {
+  display: inline-block;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid rgba(var(--admin-brand), 0.2);
+  border-top-color: rgb(var(--admin-brand));
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Toast notification */
+.admin-toast {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  max-width: 360px;
+  background: var(--admin-glass-bg);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(var(--admin-border), 1);
+  border-radius: var(--admin-radius);
+  padding: 1rem 1.25rem;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  animation: toast-slide-in 0.3s ease-out;
+  z-index: 9999;
+}
+
+@keyframes toast-slide-in {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.admin-toast.success {
+  border-left: 3px solid rgb(var(--admin-success));
+}
+
+.admin-toast.error {
+  border-left: 3px solid rgb(var(--admin-danger));
+}
+
+.admin-toast.warning {
+  border-left: 3px solid rgb(var(--admin-warning));
+}
+
+/* Tooltip */
+.admin-tooltip {
+  position: relative;
+  cursor: help;
+}
+
+.admin-tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.5rem 0.75rem;
+  background: rgba(var(--admin-surface-2), 0.95);
+  backdrop-filter: blur(8px);
+  color: rgb(var(--admin-text));
+  font-size: 0.75rem;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  border: 1px solid rgba(var(--admin-border), 0.5);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.admin-tooltip:hover::after {
+  opacity: 1;
+}
+
+/* Progress bar */
+.admin-progress {
+  width: 100%;
+  height: 6px;
+  background: rgba(var(--admin-border), 0.3);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.admin-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, 
+    rgb(var(--admin-brand-dim)),
+    rgb(var(--admin-brand)),
+    rgb(var(--admin-brand-bright))
+  );
+  border-radius: 999px;
+  transition: width 0.3s ease-out;
+  animation: shimmer-bar 2s infinite;
+}
+
+@keyframes shimmer-bar {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Empty state */
+.admin-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  min-height: 300px;
+}
+
+.admin-empty-icon {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 1rem;
+  opacity: 0.4;
+  color: rgb(var(--admin-text-muted));
+}
+
+/* Divider com gradiente */
+.admin-divider-gradient {
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(var(--admin-border), 0.5),
+    rgba(var(--admin-brand), 0.3),
+    rgba(var(--admin-border), 0.5),
+    transparent
+  );
+  margin: 1.5rem 0;
+}
+
+/* Avatar com status */
+.admin-avatar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(var(--admin-brand), 0.2), rgba(var(--admin-accent), 0.2));
+  border: 2px solid rgba(var(--admin-border), 0.5);
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.admin-avatar-status {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid rgb(var(--admin-bg));
+  background: rgb(var(--admin-success));
+}
+
+.admin-avatar-status.offline {
+  background: rgb(var(--admin-text-soft));
+}
+
+/* Code block */
+.admin-code {
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 0.875rem;
+  padding: 1rem;
+  background: rgba(var(--admin-surface-2), 0.8);
+  border: 1px solid rgba(var(--admin-border), 0.5);
+  border-radius: var(--admin-radius);
+  overflow-x: auto;
+  color: rgb(var(--admin-brand-bright));
+}
+
+/* Success/Error messages inline */
+.admin-inline-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--admin-radius);
+  font-size: 0.875rem;
+}
+
+.admin-inline-message.success {
+  background: rgba(var(--admin-success), 0.1);
+  border: 1px solid rgba(var(--admin-success), 0.3);
+  color: rgb(var(--admin-success));
+}
+
+.admin-inline-message.error {
+  background: rgba(var(--admin-danger), 0.1);
+  border: 1px solid rgba(var(--admin-danger), 0.3);
+  color: rgb(var(--admin-danger));
+}
+
+.admin-inline-message.warning {
+  background: rgba(var(--admin-warning), 0.1);
+  border: 1px solid rgba(var(--admin-warning), 0.3);
+  color: rgb(var(--admin-warning));
+}
+
+/* ====================
+   FORÇA INPUTS NEON FLUORESCENTES
+   ==================== */
+
+/* INPUTS, SELECTS, TEXTAREAS - NEON FLUOR ULTRA ARREDONDADOS */
+.admin-container input:not([type="checkbox"]):not([type="radio"]),
+.admin-container select,
+.admin-container textarea {
+  background: rgba(30, 45, 70, 0.5) !important;
+  color: rgb(255, 255, 255) !important;
+  border: 2px solid transparent !important;
+  border-radius: 20px !important;
+  font-weight: 500 !important;
+  font-size: 1.125rem !important;
+  padding: 1.25rem 1.5rem !important;
+  min-height: 56px !important;
+  line-height: 1.5 !important;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  background-image: linear-gradient(rgba(30, 45, 70, 0.5), rgba(30, 45, 70, 0.5)),
+                    linear-gradient(135deg, rgba(34, 211, 238, 0.3), rgba(217, 70, 239, 0.3)) !important;
+  background-origin: border-box !important;
+  background-clip: padding-box, border-box !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+.admin-container input:not([type="checkbox"]):not([type="radio"]):focus,
+.admin-container select:focus,
+.admin-container textarea:focus {
+  background: rgba(30, 45, 70, 0.8) !important;
+  background-image: linear-gradient(rgba(30, 45, 70, 0.8), rgba(30, 45, 70, 0.8)),
+                    linear-gradient(135deg, rgb(34, 211, 238), rgb(217, 70, 239)) !important;
+  background-origin: border-box !important;
+  background-clip: padding-box, border-box !important;
+  box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.3), 0 0 30px rgba(34, 211, 238, 0.4), 0 0 60px rgba(217, 70, 239, 0.2) !important;
+  outline: 3px solid rgb(34, 211, 238) !important;
+  outline-offset: 3px !important;
+  transform: translateY(-1px) !important;
+}
+
+.admin-container input::placeholder,
+.admin-container select::placeholder,
+.admin-container textarea::placeholder {
+  color: rgb(148, 163, 184) !important;
+  font-weight: 400 !important;
+}
+
+.admin-container input:not([type="checkbox"]):not([type="radio"]):hover,
+.admin-container select:hover,
+.admin-container textarea:hover {
+  background: rgba(30, 45, 70, 0.65) !important;
+  background-image: linear-gradient(rgba(30, 45, 70, 0.65), rgba(30, 45, 70, 0.65)),
+                    linear-gradient(135deg, rgba(34, 211, 238, 0.4), rgba(217, 70, 239, 0.4)) !important;
+  background-origin: border-box !important;
+  background-clip: padding-box, border-box !important;
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.3), 0 0 40px rgba(217, 70, 239, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* CHECKBOXES E RADIOS - NEON FLUOR */
+.admin-container input[type="checkbox"],
+.admin-container input[type="radio"] {
+  width: 1.25rem !important;
+  height: 1.25rem !important;
+  accent-color: rgb(34, 211, 238) !important;
+  cursor: pointer !important;
+  border: 2px solid rgba(34, 211, 238, 0.5) !important;
+  background: rgba(30, 45, 70, 0.5) !important;
+  border-radius: 6px !important;
+  transition: all 0.3s ease !important;
+}
+
+.admin-container input[type="checkbox"]:checked,
+.admin-container input[type="radio"]:checked {
+  background: linear-gradient(135deg, rgb(34, 211, 238), rgb(217, 70, 239)) !important;
+  border-color: rgb(34, 211, 238) !important;
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.5), 0 0 40px rgba(217, 70, 239, 0.3) !important;
+}
+
+.admin-container input[type="checkbox"]:focus-visible,
+.admin-container input[type="radio"]:focus-visible {
+  outline: 3px solid rgb(34, 211, 238) !important;
+  outline-offset: 3px !important;
+}
+
+/* LABELS - SEMPRE VISÍVEIS COM CONTRAST WCAG AAA */
+.admin-container label {
+  color: rgb(255, 255, 255) !important;
+  font-weight: 600 !important;
+  font-size: 0.9375rem !important;
+}
+
+/* LEGENDAS - ACESSÍVEIS */
+.admin-container legend {
+  color: rgb(226, 232, 240) !important;
+  font-weight: 700 !important;
+  font-size: 1rem !important;
+}
+
+/* SELECT ARROW NEON FLUOR */
+.admin-container select {
+  background-image: linear-gradient(rgba(30, 45, 70, 0.5), rgba(30, 45, 70, 0.5)),
+                    linear-gradient(135deg, rgba(34, 211, 238, 0.3), rgba(217, 70, 239, 0.3)),
+                    url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2322d3ee' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3e%3c/svg%3e") !important;
+  background-position: 0 0, 0 0, right 0.75rem center !important;
+  background-repeat: no-repeat, no-repeat, no-repeat !important;
+  background-size: auto, auto, 1.5em 1.5em !important;
+  padding-right: 3rem !important;
+}
+
+/* Spinner inputs (number) - remover setas padrão */
+.admin-container input[type="number"]::-webkit-outer-spin-button,
+.admin-container input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0 !important;
+}
+
+.admin-container input[type="number"] {
+  -moz-appearance: textfield !important;
+}
+
+/* TODOS OS TEXTOS VISÍVEIS */
+.admin-container p,
+.admin-container span:not(.admin-kpi-value),
+.admin-container h1,
+.admin-container h2,
+.admin-container h3,
+.admin-container h4,
+.admin-container h5,
+.admin-container h6,
+.admin-container li,
+.admin-container td,
+.admin-container th {
+  color: rgb(248, 250, 252) !important;
+}
+
+/* Textos muted permanecem visíveis mas suaves */
+.admin-container [class*="text-muted"],
+.admin-container [class*="admin-text-muted"] {
+  color: rgb(203, 213, 225) !important;
+}
+
+/* Botões sempre com bom contraste */
+.admin-container button:not(.admin-btn-primary):not(.admin-btn-ghost):not(.admin-btn-glass) {
+  color: rgb(248, 250, 252) !important;
+  font-weight: 500 !important;
+}

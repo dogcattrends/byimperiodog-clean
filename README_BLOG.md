@@ -6,11 +6,11 @@ Implementação de blog com Next.js (App Router), Contentlayer (MDX) e fallback 
 ## Estrutura
 - Contentlayer: `content/posts/*.mdx`
 - Rotas principais:
-  - `/blog` listagem + busca + tag
-  - `/blog/[slug]` post
-  - `/api/ai/*` endpoints IA (seo, captions, recommend)
-  - `/api/search` busca híbrida simples (FTS + vetor se RPCs configuradas)
-  - `/og` geração de imagem OG dinâmica
+ - `/blog` listagem + busca + tag
+ - `/blog/[slug]` post
+ - `/api/ai/*` endpoints IA (seo, captions, recommend)
+ - `/api/search` busca híbrida simples (FTS + vetor se RPCs configuradas)
+ - `/og` geração de imagem OG dinâmica
 
 ## Criar Post MDX
 1. Adicionar arquivo em `content/posts/nome-do-post.mdx` com frontmatter:

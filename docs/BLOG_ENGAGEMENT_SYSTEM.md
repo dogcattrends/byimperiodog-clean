@@ -34,16 +34,16 @@
 
 #### 📦 **CTAs Condicionais (baseados em categoria/título)**
 1. **Filhotes Disponíveis** - Aparece em posts sobre filhotes
-   - Link para `/filhotes`
-   
+ - Link para `/filhotes`
+ 
 2. **Guia de Cuidados** - Aparece em posts sobre cuidados/saúde
-   - Link para `/contato?assunto=guia`
+ - Link para `/contato?assunto=guia`
 
 3. **Mais Artigos** - Sempre visível
-   - Link para `/blog`
+ - Link para `/blog`
 
 4. **Sobre Nós** - Sempre visível
-   - Link para `/sobre`
+ - Link para `/sobre`
 
 #### 📧 **Newsletter CTA**
 - Formulário de inscrição
@@ -74,7 +74,7 @@ const whatsappNumber = '5511999999999'; // ⚠️ ATUALIZAR COM NÚMERO REAL
 
 **Plataformas:**
 - 📱 WhatsApp
-- 👍 Facebook  
+- 👍 Facebook 
 - 🐦 Twitter/X
 - 🔗 Copiar Link (com feedback visual)
 
@@ -132,31 +132,31 @@ const whatsappNumber = '5511999999999'; // ⚠️ ATUALIZAR COM NÚMERO REAL
 ### Submissão
 ```
 Usuário preenche formulário
-  ↓
+ ↓
 POST /api/blog/comments
-  ↓
+ ↓
 Validação (Zod + Rate Limiting)
-  ↓
+ ↓
 Salva no Supabase (status='pending')
-  ↓
+ ↓
 Toast: "Aguarde aprovação da moderação"
 ```
 
 ### Aprovação
 ```
 Admin acessa painel de moderação
-  ↓
+ ↓
 Aprova comentário (status='approved')
-  ↓
+ ↓
 Comentário aparece publicamente
 ```
 
 ### Listagem
 ```
 GET /api/blog/comments?post_id=xxx
-  ↓
+ ↓
 Retorna apenas comentários approved=true
-  ↓
+ ↓
 Exibido no componente Comments
 ```
 
@@ -190,16 +190,16 @@ Usado em:
 
 ```sql
 CREATE TABLE blog_comments (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  post_id UUID REFERENCES blog_posts(id) NOT NULL,
-  author_name TEXT,
-  author_email TEXT,
-  body TEXT NOT NULL,
-  approved BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMP DEFAULT NOW()
+ id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+ post_slug TEXT NOT NULL,
+ author_name TEXT,
+ author_email TEXT,
+ body TEXT NOT NULL,
+ approved BOOLEAN DEFAULT FALSE,
+ created_at TIMESTAMP DEFAULT NOW()
 );
 
-CREATE INDEX idx_blog_comments_post_id ON blog_comments(post_id);
+CREATE INDEX idx_blog_comments_post_slug ON blog_comments(post_slug);
 CREATE INDEX idx_blog_comments_approved ON blog_comments(approved);
 ```
 
@@ -236,19 +236,19 @@ CREATE INDEX idx_blog_comments_approved ON blog_comments(approved);
 
 ### Analytics para Implementar
 1. **Cliques em CTAs**
-   - WhatsApp Float
-   - CTAs de conversão
-   - Links de filhotes
+ - WhatsApp Float
+ - CTAs de conversão
+ - Links de filhotes
 
 2. **Engajamento Social**
-   - Compartilhamentos por plataforma
-   - Comentários submetidos
-   - Taxa de aprovação de comentários
+ - Compartilhamentos por plataforma
+ - Comentários submetidos
+ - Taxa de aprovação de comentários
 
 3. **Conversões**
-   - Newsletter signups
-   - Cliques WhatsApp → contato
-   - Página filhotes → contato
+ - Newsletter signups
+ - Cliques WhatsApp → contato
+ - Página filhotes → contato
 
 ---
 

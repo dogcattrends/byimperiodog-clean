@@ -9,11 +9,11 @@
  * Breakpoints padrão (Tailwind)
  */
 export const BREAKPOINTS = {
-  sm: 640,
-  md: 768,
-  lg: 1024,
-  xl: 1280,
-  "2xl": 1536,
+ sm: 640,
+ md: 768,
+ lg: 1024,
+ xl: 1280,
+ "2xl": 1536,
 } as const;
 
 /**
@@ -68,53 +68,53 @@ export const MODAL_IMAGE_SIZES = "(max-width: 768px) 90vw, 80vw";
  * // "(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
  */
 export function generateSizes(columns: {
-  sm?: number;
-  md?: number;
-  lg?: number;
-  xl?: number;
-  "2xl"?: number;
+ sm?: number;
+ md?: number;
+ lg?: number;
+ xl?: number;
+ "2xl"?: number;
 }): string {
-  const sizes: string[] = [];
-  
-  if (columns.sm) {
-    sizes.push(`(max-width: ${BREAKPOINTS.sm}px) ${Math.floor(100 / columns.sm)}vw`);
-  }
-  if (columns.md) {
-    sizes.push(`(max-width: ${BREAKPOINTS.md}px) ${Math.floor(100 / columns.md)}vw`);
-  }
-  if (columns.lg) {
-    sizes.push(`(max-width: ${BREAKPOINTS.lg}px) ${Math.floor(100 / columns.lg)}vw`);
-  }
-  if (columns.xl) {
-    sizes.push(`(max-width: ${BREAKPOINTS.xl}px) ${Math.floor(100 / columns.xl)}vw`);
-  }
-  
-  // Fallback: usar última coluna definida ou 100vw
-  const lastCol = columns["2xl"] || columns.xl || columns.lg || columns.md || columns.sm || 1;
-  sizes.push(`${Math.floor(100 / lastCol)}vw`);
-  
-  return sizes.join(", ");
+ const sizes: string[] = [];
+ 
+ if (columns.sm) {
+ sizes.push(`(max-width: ${BREAKPOINTS.sm}px) ${Math.floor(100 / columns.sm)}vw`);
+ }
+ if (columns.md) {
+ sizes.push(`(max-width: ${BREAKPOINTS.md}px) ${Math.floor(100 / columns.md)}vw`);
+ }
+ if (columns.lg) {
+ sizes.push(`(max-width: ${BREAKPOINTS.lg}px) ${Math.floor(100 / columns.lg)}vw`);
+ }
+ if (columns.xl) {
+ sizes.push(`(max-width: ${BREAKPOINTS.xl}px) ${Math.floor(100 / columns.xl)}vw`);
+ }
+ 
+ // Fallback: usar última coluna definida ou 100vw
+ const lastCol = columns["2xl"] || columns.xl || columns.lg || columns.md || columns.sm || 1;
+ sizes.push(`${Math.floor(100 / lastCol)}vw`);
+ 
+ return sizes.join(", ");
 }
 
 /**
  * Helper: Calcular width/height ideais baseado em aspect ratio
  */
 export function getAspectDimensions(
-  aspectRatio: "1/1" | "4/3" | "16/9" | "3/4",
-  baseWidth: number
+ aspectRatio: "1/1" | "4/3" | "16/9" | "3/4",
+ baseWidth: number
 ): { width: number; height: number } {
-  const ratios = {
-    "1/1": 1,
-    "4/3": 4 / 3,
-    "16/9": 16 / 9,
-    "3/4": 3 / 4,
-  };
-  
-  const ratio = ratios[aspectRatio];
-  return {
-    width: baseWidth,
-    height: Math.round(baseWidth / ratio),
-  };
+ const ratios = {
+ "1/1": 1,
+ "4/3": 4 / 3,
+ "16/9": 16 / 9,
+ "3/4": 3 / 4,
+ };
+ 
+ const ratio = ratios[aspectRatio];
+ return {
+ width: baseWidth,
+ height: Math.round(baseWidth / ratio),
+ };
 }
 
 /**
@@ -122,8 +122,8 @@ export function getAspectDimensions(
  * Usar em <head> para imagens hero
  */
 export function generatePreloadLink(
-  href: string,
-  type: "image/avif" | "image/webp" | "image/jpeg" = "image/avif"
+ href: string,
+ type: "image/avif" | "image/webp" | "image/jpeg" = "image/avif"
 ): string {
-  return `<link rel="preload" as="image" href="${href}" type="${type}" fetchpriority="high" />`;
+ return `<link rel="preload" as="image" href="${href}" type="${type}" fetchpriority="high" />`;
 }

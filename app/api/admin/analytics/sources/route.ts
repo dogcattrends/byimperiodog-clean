@@ -1,17 +1,21 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest} from "next/server";
+import { NextResponse } from "next/server";
+
+export const dynamic = "force-dynamic";
+
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 function authed(req: NextRequest) {
-  return req.cookies.get("admin_auth")?.value === "1" || (req.headers.get("x-admin-pass") === process.env.ADMIN_PASS);
+ return req.cookies.get("admin_auth")?.value === "1" || (req.headers.get("x-admin-pass") === process.env.ADMIN_PASS);
 }
 
 export async function GET(req: NextRequest) {
-  if (!authed(req)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  const { searchParams } = new URL(req.url);
-  const tz = searchParams.get("tz") || "America/Sao_Paulo";
-  const days = parseInt(searchParams.get("days") || "14", 10);
+ if (!authed(req)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+ const { searchParams } = new URL(req.url);
+ const tz = searchParams.get("tz") || "America/Sao_Paulo";
+ const days = parseInt(searchParams.get("days") || "14", 10);
 
-  const { data, error } = await supabaseAdmin().rpc("distinct_sources", { tz, days });
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ sources: (data || []).map((r: any) => r.source) });
+ const { data, error } = await supabaseAdmin().rpc("distinct_sources", { tz, days });
+ if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+ return NextResponse.json({ sources: (data || []).map((r: Record<string, unknown>) => String(r.source ?? "")) });
 }

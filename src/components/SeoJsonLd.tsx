@@ -6,21 +6,21 @@ import React from 'react';
 type JsonLd = Record<string, any> | Array<Record<string, any>>;
 
 function safeStringify(data: JsonLd) {
-  try {
-    return JSON.stringify(data);
-  } catch {
-    return 'null';
-  }
+ try {
+ return JSON.stringify(data);
+ } catch {
+ return 'null';
+ }
 }
 
 export function SeoJsonLd({ data }: { data: JsonLd }) {
-  return (
-    <script
-      type="application/ld+json"
-      suppressHydrationWarning
-      dangerouslySetInnerHTML={{ __html: safeStringify(data) }}
-    />
-  );
+ return (
+ <script
+ type="application/ld+json"
+ suppressHydrationWarning
+ dangerouslySetInnerHTML={{ __html: safeStringify(data) }}
+ />
+ );
 }
 
 export default SeoJsonLd;

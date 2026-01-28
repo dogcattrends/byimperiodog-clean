@@ -1,0 +1,9 @@
+﻿/* TEAM */
+Editorial: By Imperio Dog - equipe editorial
+Contato: contato@byimperiodog.com.br
+Local: Braganca Paulista, SP, Brasil
+
+/* SITE */
+Tecnologia: Next.js (App Router)
+Conteudo: guias, blog, catalogo de filhotes
+Atualizado: 2026-01-02

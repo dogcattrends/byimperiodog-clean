@@ -6,10 +6,10 @@ Estrutura:
 
 ```
 app/(admin)/admin/
-  (auth)/layout.tsx        -> chama redirectIfAuthed(); somente /admin/login
-  (auth)/login/page.tsx    -> página de login (client)
-  (protected)/layout.tsx   -> chama requireAdminLayout(); envolve ToastProvider
-  (protected)/dashboard/... etc
+ (auth)/layout.tsx -> chama redirectIfAuthed(); somente /admin/login
+ (auth)/login/page.tsx -> página de login (client)
+ (protected)/layout.tsx -> chama requireAdminLayout(); envolve ToastProvider
+ (protected)/dashboard/... etc
 ```
 
 `src/lib/adminAuth.ts` expõe:

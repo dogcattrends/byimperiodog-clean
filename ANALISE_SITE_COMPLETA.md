@@ -1,7 +1,7 @@
 # 📊 Análise Completa do Site - By Império Dog
 
-**Data:** 1 de dezembro de 2025  
-**Versão Next.js:** 14.2.4  
+**Data:** 1 de dezembro de 2025 
+**Versão Next.js:** 14.2.4 
 **Ambiente:** Desenvolvimento local (localhost:3000)
 
 ---
@@ -55,7 +55,7 @@
 <Header />
 <SkipLink /> // a11y
 <main id="conteudo-principal" role="main">
-  {children}
+ {children}
 </main>
 <Footer />
 <FloatingPuppiesCTA /> // CTA fixo
@@ -95,10 +95,10 @@
 #### Meta Tags Dinâmicas
 ```tsx
 export const metadata: Metadata = {
-  title: "Spitz Alemão Anão (Lulu da Pomerânia) | By Império Dog",
-  description: "...",
-  alternates: { canonical: "/" },
-  openGraph: { type: "website", url: "/", ... }
+ title: "Spitz Alemão Anão Lulu da Pomerânia | By Império Dog",
+ description: "...",
+ alternates: { canonical: "/" },
+ openGraph: { type: "website", url: "/", ... }
 };
 ```
 
@@ -127,7 +127,7 @@ localBusinessLd = buildLocalBusinessLD(siteUrl);
 ```tsx
 // Preload de LCP
 <link rel="preload" as="image" href="/spitz-hero-desktop.avif" 
-      type="image/avif" fetchPriority="high" />
+ type="image/avif" fetchPriority="high" />
 ```
 **Sugestões:**
 - ✅ Preload implementado para hero
@@ -201,8 +201,8 @@ localBusinessLd = buildLocalBusinessLD(siteUrl);
 #### Tabelas Admin
 ```tsx
 <table>
-  <thead><tr><th>Nome</th>...</tr></thead>
-  // falta <caption> ou aria-label na table
+ <thead><tr><th>Nome</th>...</tr></thead>
+ // falta <caption> ou aria-label na table
 </table>
 ```
 **Ação:** Adicionar `<caption>` ou `aria-label="Lista de filhotes"`.
@@ -220,7 +220,7 @@ localBusinessLd = buildLocalBusinessLD(siteUrl);
 ```tsx
 // Tailwind breakpoints usados
 sm: 640px
-md: 768px  // grid-cols-2, col-span-7
+md: 768px // grid-cols-2, col-span-7
 lg: 1024px // px-8, max-w-7xl
 xl: 1280px
 ```
@@ -246,7 +246,7 @@ xl: 1280px
 ```tsx
 // Tabelas podem precisar scroll horizontal
 <div className="overflow-x-auto">
-  <table className="min-w-full">
+ <table className="min-w-full">
 ```
 **Status:** ✅ Implementado parcialmente
 
@@ -259,9 +259,9 @@ xl: 1280px
 #### Viewport Meta
 ```tsx
 export const viewport = {
-  width: "device-width",
-  initialScale: 1,
-  viewportFit: "cover",
+ width: "device-width",
+ initialScale: 1,
+ viewportFit: "cover",
 };
 ```
 ✅ Correto.
@@ -275,13 +275,13 @@ export const viewport = {
 #### Code Splitting e Lazy Loading
 ```tsx
 const PuppiesGridPremium = dynamic(
-  () => import("@/components/PuppiesGridPremium"),
-  { ssr: true, loading: () => <Skeleton /> }
+ () => import("@/components/PuppiesGridPremium"),
+ { ssr: true, loading: () => <Skeleton /> }
 );
 
 const Testimonials = dynamic(
-  () => import("@/components/Testimonials"),
-  { ssr: false } // defer não-crítico
+ () => import("@/components/Testimonials"),
+ { ssr: false } // defer não-crítico
 );
 ```
 ✅ **Reduz JS inicial** e TBT.
@@ -290,7 +290,7 @@ const Testimonials = dynamic(
 ```tsx
 // AVIF > WebP (30-50% menor)
 <link rel="preload" as="image" href="/spitz-hero-desktop.avif" 
-      type="image/avif" fetchPriority="high" />
+ type="image/avif" fetchPriority="high" />
 ```
 ✅ Formato moderno, preload de LCP.
 
@@ -326,7 +326,7 @@ export const revalidate = 60; // 1 minuto
 
 // Reservar espaço para anúncios/banners
 <div className="aspect-[16/9] bg-zinc-100">
-  {/* conteúdo assíncrono */}
+ {/* conteúdo assíncrono */}
 </div>
 ```
 
@@ -372,14 +372,14 @@ requireAdminLayout(); // guard em /admin/(protected)
 **Ação:** Adicionar headers de segurança no `next.config.mjs`:
 ```js
 async headers() {
-  return [{
-    source: '/(.*)',
-    headers: [
-      { key: 'X-Frame-Options', value: 'DENY' },
-      { key: 'X-Content-Type-Options', value: 'nosniff' },
-      { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-    ],
-  }];
+ return [{
+ source: '/(.*)',
+ headers: [
+ { key: 'X-Frame-Options', value: 'DENY' },
+ { key: 'X-Content-Type-Options', value: 'nosniff' },
+ { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+ ],
+ }];
 }
 ```
 
@@ -388,17 +388,17 @@ async headers() {
 ## 🐛 Issues Críticas Encontradas
 
 ### 1. PWA Manifest - Ícones Ausentes ❌
-**Erro:** 404 em `/icons/icon-192.png` e `/icons/icon-512.png`  
-**Impacto:** PWA não funciona, baixa pontuação Lighthouse  
+**Erro:** 404 em `/icons/icon-192.png` e `/icons/icon-512.png` 
+**Impacto:** PWA não funciona, baixa pontuação Lighthouse 
 **Ação:** Criar ícones ou remover do `manifest.ts`
 
 ### 2. API `/api/admin/leads/count` - 500 Error ⚠️
-**Erro:** Query string muito longa causa erro no servidor  
-**Impacto:** Contagem de leads não carrega na tabela admin  
+**Erro:** Query string muito longa causa erro no servidor 
+**Impacto:** Contagem de leads não carrega na tabela admin 
 **Ação:** Usar POST em vez de GET, ou limitar slugs por requisição
 
 ### 3. ToastProvider Context ✅ (Resolvido)
-**Era:** `useToast: ToastProvider ausente`  
+**Era:** `useToast: ToastProvider ausente` 
 **Fix:** Adicionado `<ToastProvider>` no layout admin
 
 ---
@@ -487,5 +487,5 @@ Com as melhorias sugeridas implementadas, o site pode facilmente atingir **⭐�
 
 ---
 
-*Relatório gerado automaticamente via análise de código-fonte.*  
+*Relatório gerado automaticamente via análise de código-fonte.* 
 *Para dúvidas ou sugestões, consulte a documentação interna.*

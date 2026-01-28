@@ -2,12 +2,15 @@
 import type { Route } from "next";
 
 export const routes = {
-  home: '/' as Route,
-  sobre: '/sobre' as Route,
-  filhotes: '/filhotes' as Route,
-  contato: '/contato' as Route,
-  politica: '/politica-de-privacidade' as Route,
-  blog: '/blog' as Route,
+ home: '/' as Route,
+ sobre: '/sobre' as Route,
+ filhotes: '/filhotes' as Route,
+ comprar: '/comprar-spitz-anao' as Route,
+ preco: '/preco-spitz-anao' as Route,
+ criador: '/criador-spitz-confiavel' as Route,
+ contato: '/contato' as Route,
+ politica: '/politica-de-privacidade' as Route,
+ blog: '/blog' as Route,
 };
 
 export type AppRoutes = Route;

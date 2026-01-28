@@ -11,5 +11,8 @@ export * from "./puppy";
 // Taxonomies and enums
 export * from "./taxonomies";
 
+// Helper para labels
+export * from "./puppyMeta";
+
 // Business configuration
 export * from "./config";

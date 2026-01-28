@@ -8,9 +8,9 @@ Local development
 
 CI / Deployment (GitHub Actions + Vercel)
 - Do not store secrets in the repository. Instead, add them to GitHub Secrets:
-  - `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`
-  - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (if needed for build)
-  - `OPENAI_API_KEY` (server-only)
+ - `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`
+ - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (if needed for build)
+ - `OPENAI_API_KEY` (server-only)
 - The GitHub Actions workflow reads these secrets and injects them into the Build step.
 
 Security notes

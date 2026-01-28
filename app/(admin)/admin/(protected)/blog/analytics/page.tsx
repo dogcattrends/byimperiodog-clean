@@ -1,6 +1,7 @@
 // Página simplificada de Analytics do Blog (temporária)
 // TODO: Restaurar versão completa se necessário (gráficos detalhados, etc.)
 import React from 'react';
+
 import { BlogSubnav } from '@/components/admin/BlogSubnav';
 import ReindexEmbeddingsButton from '@/components/admin/ReindexEmbeddingsButton';
 

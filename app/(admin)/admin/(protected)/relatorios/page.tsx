@@ -1,18 +1,26 @@
-import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Relatórios | Admin",
-  robots: { index: false, follow: false },
-};
+'use client';
+
+import { useState } from "react";
+
+import { useBlogAnalytics } from "./useBlogAnalytics";
 
 export default function RelatoriosPage() {
-  return (
-    <div className="space-y-3">
-      <h1 className="text-2xl font-bold text-[var(--text)]">Relatórios & Métricas</h1>
-      <p className="text-sm text-[var(--text-muted)]">Em breve: leads por dia, filhotes vendidos, funil de conversão.</p>
-      <div className="rounded-2xl border border-[var(--border)] bg-white p-4 text-sm text-[var(--text-muted)]">
-        Placeholder para gráficos e KPIs. Ajuste conforme dados reais do Supabase.
-      </div>
-    </div>
-  );
+ const [period] = useState("30d");
+ const [author] = useState("");
+ const [category] = useState("");
+ const { error, isLoading } = useBlogAnalytics({
+ period,
+ author: author.trim() || undefined,
+ category: category.trim() || undefined,
+ });
+ return (
+ <div className="space-y-3">
+ <h1 className="text-2xl font-bold text-[var(--text)]">Relatórios & Métricas</h1>
+ {/* ...existing code... */}
+ {error && <div className="text-red-600">Erro ao carregar analytics: {error.message}</div>}
+ {isLoading && <div className="text-[var(--text-muted)]">Carregando métricas...</div>}
+ </div>
+ );
 }
+

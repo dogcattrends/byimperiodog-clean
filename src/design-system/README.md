@@ -81,10 +81,10 @@
 
 **Paleta Base**
 ```css
---brand: #1f4d3a          /* Verde primário */
---brand-teal: #0ea5a3     /* Turquesa accent */
---accent: #f3b562         /* Dourado/Âmbar */
---whatsapp: #1f8a5c       /* WhatsApp green */
+--brand: #1f4d3a /* Verde primário */
+--brand-teal: #0ea5a3 /* Turquesa accent */
+--accent: #f3b562 /* Dourado/Âmbar */
+--whatsapp: #1f8a5c /* WhatsApp green */
 --success: #2f855a
 --warning: #c27803
 --error: #c53030
@@ -92,12 +92,12 @@
 
 **Semantic Colors**
 ```css
---bg: #faf5ef             /* Background padrão */
---surface: #ffffff        /* Superfícies/cards */
---surface-2: #f5ebdf      /* Superfícies secundárias */
---border: #e2d6c7         /* Bordas padrão */
---text: #2a231f           /* Texto primário */
---text-muted: #7a6a5f     /* Texto secundário */
+--bg: #faf5ef /* Background padrão */
+--surface: #ffffff /* Superfícies/cards */
+--surface-2: #f5ebdf /* Superfícies secundárias */
+--border: #e2d6c7 /* Bordas padrão */
+--text: #2a231f /* Texto primário */
+--text-muted: #7a6a5f /* Texto secundário */
 ```
 
 **Contraste AA Validado**
@@ -110,59 +110,59 @@
 
 **Escala Fluida (clamp)**
 ```css
---font-size-xs:   clamp(0.72rem, 0.69rem + 0.15vw, 0.78rem)
---font-size-sm:   clamp(0.82rem, 0.78rem + 0.20vw, 0.90rem)
+--font-size-xs: clamp(0.72rem, 0.69rem + 0.15vw, 0.78rem)
+--font-size-sm: clamp(0.82rem, 0.78rem + 0.20vw, 0.90rem)
 --font-size-base: clamp(0.95rem, 0.90rem + 0.30vw, 1.05rem)
---font-size-md:   clamp(1.05rem, 1.00rem + 0.40vw, 1.18rem)
---font-size-lg:   clamp(1.20rem, 1.10rem + 0.60vw, 1.42rem)
---font-size-xl:   clamp(1.45rem, 1.30rem + 0.90vw, 1.78rem)
---font-size-2xl:  clamp(1.75rem, 1.55rem + 1.20vw, 2.20rem)
---font-size-3xl:  clamp(2.10rem, 1.85rem + 1.60vw, 2.70rem)
---font-size-4xl:  clamp(2.55rem, 2.20rem + 2.10vw, 3.25rem)
+--font-size-md: clamp(1.05rem, 1.00rem + 0.40vw, 1.18rem)
+--font-size-lg: clamp(1.20rem, 1.10rem + 0.60vw, 1.42rem)
+--font-size-xl: clamp(1.45rem, 1.30rem + 0.90vw, 1.78rem)
+--font-size-2xl: clamp(1.75rem, 1.55rem + 1.20vw, 2.20rem)
+--font-size-3xl: clamp(2.10rem, 1.85rem + 1.60vw, 2.70rem)
+--font-size-4xl: clamp(2.55rem, 2.20rem + 2.10vw, 3.25rem)
 ```
 
 **Line Heights**
 ```css
---line-tight:   1.15    /* Headings */
---line-snug:    1.25    /* Subtítulos */
---line-normal:  1.45    /* Corpo de texto */
---line-relaxed: 1.65    /* Leitura longa */
+--line-tight: 1.15 /* Headings */
+--line-snug: 1.25 /* Subtítulos */
+--line-normal: 1.45 /* Corpo de texto */
+--line-relaxed: 1.65 /* Leitura longa */
 ```
 
 ### Espaçamento
 
 **Escala Consistente (baseada em Tailwind)**
 ```
-0.5 = 2px   (gap, padding micro)
-1   = 4px
-2   = 8px   (gap padrão entre elementos inline)
-3   = 12px
-4   = 16px  (padding interno de componentes)
-5   = 20px
-6   = 24px  (spacing entre seções)
-8   = 32px
-10  = 40px
-12  = 48px  (spacing entre blocos)
-16  = 64px
-20  = 80px
-24  = 96px  (spacing hero sections)
+0.5 = 2px (gap, padding micro)
+1 = 4px
+2 = 8px (gap padrão entre elementos inline)
+3 = 12px
+4 = 16px (padding interno de componentes)
+5 = 20px
+6 = 24px (spacing entre seções)
+8 = 32px
+10 = 40px
+12 = 48px (spacing entre blocos)
+16 = 64px
+20 = 80px
+24 = 96px (spacing hero sections)
 ```
 
 ### Radius
 
 ```css
---radius-sm:  4px    /* Badges, pills */
---radius-md:  8px    /* Inputs, buttons */
---radius-lg:  14px   /* Cards pequenos */
---radius-2xl: 28px   /* Cards grandes, modals */
+--radius-sm: 4px /* Badges, pills */
+--radius-md: 8px /* Inputs, buttons */
+--radius-lg: 14px /* Cards pequenos */
+--radius-2xl: 28px /* Cards grandes, modals */
 ```
 
 ### Sombras
 
 ```css
---shadow-sm:      0 1px 2px rgba(0,0,0,0.04)     /* Inputs */
---shadow-md:      0 2px 6px rgba(0,0,0,0.06)     /* Cards hover */
---shadow-lg:      0 4px 16px rgba(0,0,0,0.08)    /* Modals */
+--shadow-sm: 0 1px 2px rgba(0,0,0,0.04) /* Inputs */
+--shadow-md: 0 2px 6px rgba(0,0,0,0.06) /* Cards hover */
+--shadow-lg: 0 4px 16px rgba(0,0,0,0.08) /* Modals */
 --shadow-xl-soft: 0 8px 32px -4px rgba(0,0,0,0.06) /* Hero cards */
 ```
 
@@ -208,12 +208,12 @@
 **Estrutura**
 ```tsx
 <Card>
-  <CardHeader>
-    <CardTitle />
-    <CardDescription />
-  </CardHeader>
-  <CardContent />
-  <CardFooter />
+ <CardHeader>
+ <CardTitle />
+ <CardDescription />
+ </CardHeader>
+ <CardContent />
+ <CardFooter />
 </Card>
 ```
 
@@ -301,40 +301,40 @@
 ```
 src/
 ├── design-system/
-│   ├── README.md              (este arquivo)
-│   ├── tokens.ts              (tokens TypeScript)
-│   ├── tokens.css             (tokens CSS)
-│   └── typography.ts          (helpers de tipografia)
+│ ├── README.md (este arquivo)
+│ ├── tokens.ts (tokens TypeScript)
+│ ├── tokens.css (tokens CSS)
+│ └── typography.ts (helpers de tipografia)
 │
 ├── components/
-│   ├── ui/                    (componentes base)
-│   │   ├── button.tsx         ✅
-│   │   ├── input.tsx          ✅
-│   │   ├── select.tsx         ❌
-│   │   ├── textarea.tsx       ❌
-│   │   ├── checkbox.tsx       ❌
-│   │   ├── radio.tsx          ❌
-│   │   ├── card.tsx           ❌
-│   │   ├── badge.tsx          ❌
-│   │   ├── alert.tsx          ❌
-│   │   ├── skeleton.tsx       ✅ (parcial)
-│   │   ├── spinner.tsx        ❌
-│   │   ├── dialog.tsx         ✅
-│   │   ├── tooltip.tsx        ✅
-│   │   └── toast.tsx          ✅
-│   │
-│   ├── catalog/               (componentes de catálogo)
-│   │   └── PuppyCardPremium.tsx ✅
-│   │
-│   └── puppy/                 (componentes de produto)
-│       ├── PuppyHero.tsx      ✅
-│       ├── PuppyGallery.tsx   ✅
-│       ├── PuppyDetails.tsx   ✅
-│       ├── PuppyBenefits.tsx  ✅
-│       ├── PuppyTrust.tsx     ✅
-│       ├── PuppyActions.tsx   ✅
-│       ├── PuppyActionsClient.tsx ✅
-│       └── PuppyRelated.tsx   ✅
+│ ├── ui/ (componentes base)
+│ │ ├── button.tsx ✅
+│ │ ├── input.tsx ✅
+│ │ ├── select.tsx ❌
+│ │ ├── textarea.tsx ❌
+│ │ ├── checkbox.tsx ❌
+│ │ ├── radio.tsx ❌
+│ │ ├── card.tsx ❌
+│ │ ├── badge.tsx ❌
+│ │ ├── alert.tsx ❌
+│ │ ├── skeleton.tsx ✅ (parcial)
+│ │ ├── spinner.tsx ❌
+│ │ ├── dialog.tsx ✅
+│ │ ├── tooltip.tsx ✅
+│ │ └── toast.tsx ✅
+│ │
+│ ├── catalog/ (componentes de catálogo)
+│ │ └── PuppyCardPremium.tsx ✅
+│ │
+│ └── puppy/ (componentes de produto)
+│ ├── PuppyHero.tsx ✅
+│ ├── PuppyGallery.tsx ✅
+│ ├── PuppyDetails.tsx ✅
+│ ├── PuppyBenefits.tsx ✅
+│ ├── PuppyTrust.tsx ✅
+│ ├── PuppyActions.tsx ✅
+│ ├── PuppyActionsClient.tsx ✅
+│ └── PuppyRelated.tsx ✅
 ```
 
 ---
