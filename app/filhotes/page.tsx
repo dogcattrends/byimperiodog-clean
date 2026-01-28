@@ -8,6 +8,9 @@ import { pageMetadata } from "@/lib/seo";
 import { supabasePublic } from "@/lib/supabasePublic";
 import { TRUST_BLOCK_ITEMS } from "@/lib/trust-data";
 
+// Force dynamic rendering to prevent hydration mismatch
+export const dynamic = "force-dynamic";
+
 // Using a server-rendered catalog to guarantee SSR content. Mantemos o mesmo card/layout
 // em todas as páginas para simplificar a experiência.
 
@@ -107,7 +110,6 @@ export const metadata = pageMetadata({
  path: "/filhotes",
 });
 
-export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 async function fetchPuppies(filters: CatalogFilters): Promise<CatalogPuppy[]> {
