@@ -29,6 +29,7 @@ const nextConfig = {
  deviceSizes: [360, 414, 640, 768, 1024, 1280, 1536],
  imageSizes: [16, 24, 32, 48, 64, 96, 128, 160, 256, 320],
  minimumCacheTTL: 31536000,
+ unoptimized: true, // Disable image optimization for Netlify compatibility
 
  remotePatterns: [
  { protocol: "https", hostname: "images.unsplash.com" },
