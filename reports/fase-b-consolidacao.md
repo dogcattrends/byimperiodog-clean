@@ -1,6 +1,6 @@
 # Relatório de Consolidação - Fase B
 
-**Data:** 7 de janeiro de 2026  
+**Data:** 7 de janeiro de 2026 
 **Fase:** B - Unificar clients/helpers
 
 ## SEO Helpers Consolidados ✅
@@ -12,14 +12,14 @@
 
 ### Depois (fonte única)
 - **src/lib/seo.ts** (370 linhas) - Arquivo consolidado com todas as funções
-  - Constants (SITE_ORIGIN, SITE_BRAND_NAME)
-  - Canonical URL helpers (canonical, buildCanonical)
-  - Robots configuration (resolveRobots, ROBOTS_DEFAULT, ROBOTS_PREVIEW)
-  - Base metadata builders (baseSiteMetadata, baseBlogMetadata, buildBlogPostMetadata, buildPostMetadata)
-  - Page metadata (pageMetadata, baseMetaOverrides)
-  - JSON-LD schemas (blogJsonLdOrg, buildAuthorJsonLd)
-  - Admin metadata (adminNoIndexMetadata)
-  
+ - Constants (SITE_ORIGIN, SITE_BRAND_NAME)
+ - Canonical URL helpers (canonical, buildCanonical)
+ - Robots configuration (resolveRobots, ROBOTS_DEFAULT, ROBOTS_PREVIEW)
+ - Base metadata builders (baseSiteMetadata, baseBlogMetadata, buildBlogPostMetadata, buildPostMetadata)
+ - Page metadata (pageMetadata, baseMetaOverrides)
+ - JSON-LD schemas (blogJsonLdOrg, buildAuthorJsonLd)
+ - Admin metadata (adminNoIndexMetadata)
+ 
 - **src/lib/seo.core.ts** - Mantido como re-export para backward compatibility (DEPRECATED)
 - **src/lib/seo.blog.ts** - Mantido como re-export para backward compatibility (DEPRECATED)
 

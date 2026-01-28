@@ -128,15 +128,15 @@ Documentação técnica completa incluindo:
 
 #### 🎯 CTAs
 - [x] **Principal**: "Quero esse filhote" (WhatsApp)
-  - Estados: idle, loading, hover, pressed
-  - Gradiente emerald
-  - Ícone WhatsApp
-  - Loading spinner
-  
+ - Estados: idle, loading, hover, pressed
+ - Gradiente emerald
+ - Ícone WhatsApp
+ - Loading spinner
+ 
 - [x] **Secundários**:
-  - Vídeo (solicita vídeo)
-  - Visita (agenda visita)
-  - Detalhes (abre modal)
+ - Vídeo (solicita vídeo)
+ - Visita (agenda visita)
+ - Detalhes (abre modal)
 
 #### ♿ Acessibilidade
 - [x] aria-label em todos os botões
@@ -230,29 +230,29 @@ Documentação técnica completa incluindo:
 ```typescript
 // Like/Unlike
 track.event?.("puppy_like_toggle", {
-  puppy_id: string,
-  liked: boolean,
-  placement: "catalog_premium"
+ puppy_id: string,
+ liked: boolean,
+ placement: "catalog_premium"
 });
 
 // WhatsApp CTAs
 track.event?.("whatsapp_click", {
-  placement: "catalog_card_premium",
-  action: "main_cta" | "video" | "visit",
-  puppy_id: string
+ placement: "catalog_card_premium",
+ action: "main_cta" | "video" | "visit",
+ puppy_id: string
 });
 
 // Abrir detalhes
 track.event?.("open_details", {
-  placement: "catalog_card_premium",
-  puppy_id: string,
-  target: "modal"
+ placement: "catalog_card_premium",
+ puppy_id: string,
+ target: "modal"
 });
 
 // Lista carregada
 track.event?.("list_loaded", {
-  count: number,
-  version: "premium"
+ count: number,
+ version: "premium"
 });
 ```
 
@@ -355,34 +355,34 @@ Nenhum arquivo foi deletado, rollback é instantâneo.
 
 ### Curto Prazo (1-2 semanas)
 1. **A/B Testing**
-   - Comparar conversão antiga vs. nova
-   - Medir tempo de engajamento
-   - Otimizar CTAs baseado em dados
+ - Comparar conversão antiga vs. nova
+ - Medir tempo de engajamento
+ - Otimizar CTAs baseado em dados
 
 2. **Ajustes Finos**
-   - Feedback de usuários reais
-   - Ajustar cores/espaçamentos se necessário
-   - Otimizar textos de benefícios
+ - Feedback de usuários reais
+ - Ajustar cores/espaçamentos se necessário
+ - Otimizar textos de benefícios
 
 ### Médio Prazo (1-2 meses)
 3. **Galeria Avançada**
-   - Carrossel de imagens no card
-   - Lightbox premium
-   - Vídeos inline
+ - Carrossel de imagens no card
+ - Lightbox premium
+ - Vídeos inline
 
 4. **Comparação**
-   - Checkbox para selecionar múltiplos
-   - Modal de comparação lado a lado
-   - Exportar comparação PDF
+ - Checkbox para selecionar múltiplos
+ - Modal de comparação lado a lado
+ - Exportar comparação PDF
 
 ### Longo Prazo (3+ meses)
 5. **Features Avançadas**
-   - Wishlist com localStorage
-   - Notificações de novos filhotes
-   - Chat ao vivo integrado
-   - Realtime status updates
-   - Reviews e ratings
-   - Social sharing
+ - Wishlist com localStorage
+ - Notificações de novos filhotes
+ - Chat ao vivo integrado
+ - Realtime status updates
+ - Reviews e ratings
+ - Social sharing
 
 ---
 
@@ -413,6 +413,6 @@ O módulo de catálogo premium está **100% implementado e funcional**. Todas as
 
 ---
 
-**Versão**: 2.0.0  
-**Data**: Dezembro 2025  
+**Versão**: 2.0.0 
+**Data**: Dezembro 2025 
 **Autor**: GitHub Copilot (Claude Sonnet 4.5)

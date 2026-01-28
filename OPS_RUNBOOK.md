@@ -10,8 +10,8 @@ Significado do relatório `reports/preflight-vercel.md`
 
 Como usar
 1. Certifique-se de ter as variáveis essenciais em `.env.local`:
-   - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
-   - `OPENAI_API_KEY` é apenas um aviso se ausente.
+ - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+ - `OPENAI_API_KEY` é apenas um aviso se ausente.
 2. Rodar localmente:
 ```bash
 npm run preflight
@@ -21,25 +21,25 @@ npm run preflight
 Checklist para Vercel (variáveis de ambiente recomendadas):
 
 - **Supabase:**
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY`
+ - `NEXT_PUBLIC_SUPABASE_URL`
+ - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+ - `SUPABASE_SERVICE_ROLE_KEY`
 
 - **Sanity (se usado em produção):**
-   - `SANITY_PROJECT_ID`
-   - `SANITY_DATASET`
-   - `SANITY_API_TOKEN` (se o build precisa acessar o Studio/API privada)
+ - `SANITY_PROJECT_ID`
+ - `SANITY_DATASET`
+ - `SANITY_API_TOKEN` (se o build precisa acessar o Studio/API privada)
 
 - **OpenAI / AI providers:**
-   - `OPENAI_API_KEY` (ou `AI_FALLBACK_API_KEY` / provider-specific keys)
+ - `OPENAI_API_KEY` (ou `AI_FALLBACK_API_KEY` / provider-specific keys)
 
 - **Next/Auth / runtime:**
-   - `NEXTAUTH_URL` (se aplicável)
-   - `NEXTAUTH_SECRET` (se aplicável)
-   - `NEXT_PUBLIC_SITE_URL` (útil para sitemaps/SEO)
+ - `NEXTAUTH_URL` (se aplicável)
+ - `NEXTAUTH_SECRET` (se aplicável)
+ - `NEXT_PUBLIC_SITE_URL` (útil para sitemaps/SEO)
 
 - **Observabilidade / pixels:**
-   - `GA4_ID`, `GTM_ID`, `META_PIXEL_ID` (opcionais conforme uso)
+ - `GA4_ID`, `GTM_ID`, `META_PIXEL_ID` (opcionais conforme uso)
 
 Adicione essas chaves em Settings → Environment Variables do projeto Vercel antes do deploy.
 

@@ -21,17 +21,17 @@ Copie o conteúdo abaixo e cole no SQL Editor:
 -- Experiments A/B tables for testing and optimizations
 
 create table if not exists public.experiments (
-  id uuid primary key default gen_random_uuid(),
-  key text unique not null,
-  name text not null,
-  description text,
-  status text not null default 'draft', -- 'draft'|'running'|'paused'|'completed'
-  audience text, -- optional targeting rules (JSON or simple tag)
-  variants jsonb not null default '[]'::jsonb, -- array of { key, label, weight }
-  starts_at timestamptz,
-  ends_at timestamptz,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+ id uuid primary key default gen_random_uuid(),
+ key text unique not null,
+ name text not null,
+ description text,
+ status text not null default 'draft', -- 'draft'|'running'|'paused'|'completed'
+ audience text, -- optional targeting rules (JSON or simple tag)
+ variants jsonb not null default '[]'::jsonb, -- array of { key, label, weight }
+ starts_at timestamptz,
+ ends_at timestamptz,
+ created_at timestamptz not null default now(),
+ updated_at timestamptz not null default now()
 );
 
 create index if not exists idx_experiments_status on public.experiments (status);
@@ -57,17 +57,17 @@ comment on column public.experiments.variants is 'Array of variant definitions w
 1. No menu lateral, clique em **Table Editor**
 2. Procure a tabela **experiments** na lista
 3. Deve aparecer com as seguintes colunas:
-   - `id` (uuid)
-   - `key` (text)
-   - `name` (text)
-   - `description` (text)
-   - `status` (text)
-   - `audience` (text)
-   - `variants` (jsonb)
-   - `starts_at` (timestamptz)
-   - `ends_at` (timestamptz)
-   - `created_at` (timestamptz)
-   - `updated_at` (timestamptz)
+ - `id` (uuid)
+ - `key` (text)
+ - `name` (text)
+ - `description` (text)
+ - `status` (text)
+ - `audience` (text)
+ - `variants` (jsonb)
+ - `starts_at` (timestamptz)
+ - `ends_at` (timestamptz)
+ - `created_at` (timestamptz)
+ - `updated_at` (timestamptz)
 
 ### 6. Configurar RLS (Row Level Security) - OPCIONAL
 
@@ -78,13 +78,13 @@ Se quiser restringir acesso:
 alter table public.experiments enable row level security;
 
 create policy "Experiments públicos são visíveis"
-  on public.experiments for select
-  using (status = 'running');
+ on public.experiments for select
+ using (status = 'running');
 
 -- Admin pode fazer tudo (requer autenticação)
 create policy "Admin full access"
-  on public.experiments
-  using (auth.role() = 'service_role');
+ on public.experiments
+ using (auth.role() = 'service_role');
 ```
 
 ## ✅ Validação
@@ -95,14 +95,14 @@ Após aplicar a migração, execute este SQL para testar:
 -- Inserir experimento de teste
 insert into public.experiments (key, name, description, status, variants)
 values (
-  'test-experiment',
-  'Teste de A/B',
-  'Experimento de teste para validação',
-  'draft',
-  '[
-    {"key": "control", "label": "Controle", "weight": 50},
-    {"key": "variant-a", "label": "Variante A", "weight": 50}
-  ]'::jsonb
+ 'test-experiment',
+ 'Teste de A/B',
+ 'Experimento de teste para validação',
+ 'draft',
+ '[
+ {"key": "control", "label": "Controle", "weight": 50},
+ {"key": "variant-a", "label": "Variante A", "weight": 50}
+ ]'::jsonb
 );
 
 -- Verificar se foi criado
@@ -130,8 +130,8 @@ Execute primeiro:
 create or replace function public._touch_updated_at()
 returns trigger language plpgsql as $$
 begin
-  new.updated_at = now();
-  return new;
+ new.updated_at = now();
+ return new;
 end;
 $$;
 ```

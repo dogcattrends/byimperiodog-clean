@@ -11,15 +11,15 @@ Objetivo: garantir que o ambiente local execute os mesmos comandos do CI antes d
 
 ## Procedimento
 1. **Preparar ambiente**
-   - Feche editores/terminales que possam travar binários (`resolver.win32-x64-msvc.node`).
-   - Execute `npm ci` manualmente até completar; uma falha por EPERM no Windows geralmente indica que um arquivo está em uso.
+ - Feche editores/terminales que possam travar binários (`resolver.win32-x64-msvc.node`).
+ - Execute `npm ci` manualmente até completar; uma falha por EPERM no Windows geralmente indica que um arquivo está em uso.
 2. **Rodar preflight**
-   - Execute `npm run preflight`. O script dispara `npm ci`, gera o conteúdo do Contentlayer quando necessário, executa `npm run check:all`, `npm run seo:audit` e `npm run build` na ordem definida.
-   - A execução é interrompida no primeiro erro detectado, portanto qualquer etapa com `FAIL` implica em bloqueio do deploy.
-   - O resultado é salvo em `reports/preflight-<timestamp>.json`.
+ - Execute `npm run preflight`. O script dispara `npm ci`, gera o conteúdo do Contentlayer quando necessário, executa `npm run check:all`, `npm run seo:audit` e `npm run build` na ordem definida.
+ - A execução é interrompida no primeiro erro detectado, portanto qualquer etapa com `FAIL` implica em bloqueio do deploy.
+ - O resultado é salvo em `reports/preflight-<timestamp>.json`.
 3. **Analisar relatório**
-   - O JSON contém `status`, `durationMs`, `stdout`, `stderr` e `exitCode` para cada etapa, além da flag `success`.
-   - Como o preflight trava no primeiro erro, etapas posteriores aparecem no relatório com `status = FAIL` e `exitCode = null` quando o binário não foi executado.
+ - O JSON contém `status`, `durationMs`, `stdout`, `stderr` e `exitCode` para cada etapa, além da flag `success`.
+ - Como o preflight trava no primeiro erro, etapas posteriores aparecem no relatório com `status = FAIL` e `exitCode = null` quando o binário não foi executado.
 
 ## Requisitos para sucesso
 - `npm ci` deve concluir sem erros para garantir `next`, `tsc`, `vitest`, `tsx` e binários nativos registrados.

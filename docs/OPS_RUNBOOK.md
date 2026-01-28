@@ -5,17 +5,17 @@ Operacoes de By Imperio Dog combinam scripts locais (`scripts/*`), workflows em 
 
 ## Rotinas
 - **Diaria**
-  - Conferir logs mais recentes dos testes em `reports/build-stats-latest.json` e `contentlayer.log` (gerados pelo workflow `ci-debug.yml`). Compare o tempo de build e falhas em `build.log`.
-  - Rodar `npm run seo:audit` localmente se houve atualizacoes de SEO e revisar `reports/optimization-summary.md`.
-  - Validar eventos no painel de Analytics (`app/api/analytics/route.ts`) usando `GET /api/analytics?window=24h` com `x-admin-token`. Caso o endpoint retorne stub, confirme se `SUPABASE_SERVICE_ROLE_KEY` esta corretamente definido.
+ - Conferir logs mais recentes dos testes em `reports/build-stats-latest.json` e `contentlayer.log` (gerados pelo workflow `ci-debug.yml`). Compare o tempo de build e falhas em `build.log`.
+ - Rodar `npm run seo:audit` localmente se houve atualizacoes de SEO e revisar `reports/optimization-summary.md`.
+ - Validar eventos no painel de Analytics (`app/api/analytics/route.ts`) usando `GET /api/analytics?window=24h` com `x-admin-token`. Caso o endpoint retorne stub, confirme se `SUPABASE_SERVICE_ROLE_KEY` esta corretamente definido.
 - **Semanal**
-  - Executar `npm run check:all` (typecheck + lint + test + check of encoding + banned words) para detectar regressao antes do deploy. Use `reports/lighthouse-mobile.report.json` e `reports/perf-baseline.md` para comparar metricas.
-  - Regerar artefatos de `scripts/seo-audit.ts` e `scripts/a11y-contrast.mjs` para manter a base de indicadores.
-  - Verificar scripts de IA (`scripts/ai-tasks-worker.mjs` e `scripts/auto-sales-worker.ts`) no status do Supabase (`ai_tasks`, `ai_generation_sessions`).
+ - Executar `npm run check:all` (typecheck + lint + test + check of encoding + banned words) para detectar regressao antes do deploy. Use `reports/lighthouse-mobile.report.json` e `reports/perf-baseline.md` para comparar metricas.
+ - Regerar artefatos de `scripts/seo-audit.ts` e `scripts/a11y-contrast.mjs` para manter a base de indicadores.
+ - Verificar scripts de IA (`scripts/ai-tasks-worker.mjs` e `scripts/auto-sales-worker.ts`) no status do Supabase (`ai_tasks`, `ai_generation_sessions`).
 - **On demand**
-  - `npm run seo:audit` antes de pushs de conteudo novo.
-  - `scripts/check-banned-words.mjs` e `scripts/check-encoding.mjs` sempre que for mexer em massa nos posts.
-  - `scripts/verify-cache-headers.mjs` quando alterar headers de cache ou CDN.
+ - `npm run seo:audit` antes de pushs de conteudo novo.
+ - `scripts/check-banned-words.mjs` e `scripts/check-encoding.mjs` sempre que for mexer em massa nos posts.
+ - `scripts/verify-cache-headers.mjs` quando alterar headers de cache ou CDN.
 
 ## Workflows e gates
 - **`ci-debug.yml`**: roda `npm ci`, `npx contentlayer build`, `npm run build --no-lint`. Logs (`contentlayer.log`, `build.log`) ficam em artefatos e ajudam a diagnosticar regressao.

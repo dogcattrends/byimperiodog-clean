@@ -11,31 +11,31 @@ import { analyzeImageQuality } from '../../scripts/image-pipeline/quality-analyz
 import { uploadBatchToSupabase } from '../../scripts/image-pipeline/supabase-storage';
 
 export interface UploadImageOptions {
-  puppyId: string;
-  slug: string;
-  color?: string;
-  sex?: 'male' | 'female';
-  useSupabase?: boolean;
+ puppyId: string;
+ slug: string;
+ color?: string;
+ sex?: 'male' | 'female';
+ useSupabase?: boolean;
 }
 
 export interface UploadImageResult {
-  success: boolean;
-  images: ProcessedImage[];
-  urls: {
-    hero?: string;
-    card?: string;
-    thumbnail?: string;
-  };
-  errors: string[];
-  quality?: {
-    passed: boolean;
-    issues: Array<{
-      severity: 'error' | 'warning' | 'info';
-      message: string;
-    }>;
-    ai?: PuppyImageAIResult;
-    vision?: PuppyVisionInsights;
-  };
+ success: boolean;
+ images: ProcessedImage[];
+ urls: {
+ hero?: string;
+ card?: string;
+ thumbnail?: string;
+ };
+ errors: string[];
+ quality?: {
+ passed: boolean;
+ issues: Array<{
+ severity: 'error' | 'warning' | 'info';
+ message: string;
+ }>;
+ ai?: PuppyImageAIResult;
+ vision?: PuppyVisionInsights;
+ };
 }
 
 /**
@@ -43,139 +43,139 @@ export interface UploadImageResult {
  * Uso no admin após upload de arquivo
  */
 export async function uploadPuppyImage(
-  file: File | string,
-  options: UploadImageOptions
+ file: File | string,
+ options: UploadImageOptions
 ): Promise<UploadImageResult> {
-  const errors: string[] = [];
-  let filePath: string;
+ const errors: string[] = [];
+ let filePath: string;
 
-  try {
-    // 1. Converter File para caminho temporário se necessário
-    if (typeof file === 'string') {
-      filePath = file;
-    } else {
-      // Salvar File em pasta temporária
-      filePath = await saveTemporaryFile(file);
-    }
+ try {
+ // 1. Converter File para caminho temporário se necessário
+ if (typeof file === 'string') {
+ filePath = file;
+ } else {
+ // Salvar File em pasta temporária
+ filePath = await saveTemporaryFile(file);
+ }
 
-    // 2. Analisar qualidade
-    const qualityReport = await analyzeImageQuality(filePath);
-    const aiQuality = await analyzePuppyImage(filePath, {
-      puppyName: options.slug,
-    });
-    const visionInsights = await analyzePuppyVision(filePath, {
-      puppyName: options.slug,
-      cardTitle: `Qualidade • ${options.slug}`,
-      colorHint: options.color,
-      sexHint: options.sex === 'male' ? 'macho' : options.sex === 'female' ? 'femea' : undefined,
-    });
+ // 2. Analisar qualidade
+ const qualityReport = await analyzeImageQuality(filePath);
+ const aiQuality = await analyzePuppyImage(filePath, {
+ puppyName: options.slug,
+ });
+ const visionInsights = await analyzePuppyVision(filePath, {
+ puppyName: options.slug,
+ cardTitle: `Qualidade • ${options.slug}`,
+ colorHint: options.color,
+ sexHint: options.sex === 'male' ? 'macho' : options.sex === 'female' ? 'femea' : undefined,
+ });
 
-    // registro de qualidade detectado (removido logs para conformidade ESLint)
+ // registro de qualidade detectado (removido logs para conformidade ESLint)
 
-    // 3. Processar imagem
-    const processResult = await processImage(filePath, {
-      slug: options.slug,
-      color: options.color,
-      sex: options.sex,
-    });
+ // 3. Processar imagem
+ const processResult = await processImage(filePath, {
+ slug: options.slug,
+ color: options.color,
+ sex: options.sex,
+ });
 
-    if (!processResult.success) {
-      errors.push(...processResult.errors);
-      return {
-        success: false,
-        images: [],
-        urls: {},
-        errors,
-      };
-    }
+ if (!processResult.success) {
+ errors.push(...processResult.errors);
+ return {
+ success: false,
+ images: [],
+ urls: {},
+ errors,
+ };
+ }
 
-    // 4. Upload para Supabase (se habilitado)
-    const urls: UploadImageResult['urls'] = {};
+ // 4. Upload para Supabase (se habilitado)
+ const urls: UploadImageResult['urls'] = {};
 
-    if (options.useSupabase) {
-      const uploadResults = await uploadBatchToSupabase(
-        processResult.images,
-        options.puppyId
-      );
+ if (options.useSupabase) {
+ const uploadResults = await uploadBatchToSupabase(
+ processResult.images,
+ options.puppyId
+ );
 
-      // Extrair URLs por tamanho
-      for (const [key, result] of uploadResults.entries()) {
-        if (result.success && result.cdnUrl) {
-          const [size] = key.split('-');
-          urls[size as keyof typeof urls] = result.cdnUrl;
-        }
-      }
-    } else {
-      // URLs locais
-      urls.hero = processResult.images.find(
-        (i) => i.size === 'hero' && i.format === 'webp'
-      )?.url;
-      urls.card = processResult.images.find(
-        (i) => i.size === 'card' && i.format === 'webp'
-      )?.url;
-      urls.thumbnail = processResult.images.find(
-        (i) => i.size === 'thumbnail' && i.format === 'webp'
-      )?.url;
-    }
+ // Extrair URLs por tamanho
+ for (const [key, result] of uploadResults.entries()) {
+ if (result.success && result.cdnUrl) {
+ const [size] = key.split('-');
+ urls[size as keyof typeof urls] = result.cdnUrl;
+ }
+ }
+ } else {
+ // URLs locais
+ urls.hero = processResult.images.find(
+ (i) => i.size === 'hero' && i.format === 'webp'
+ )?.url;
+ urls.card = processResult.images.find(
+ (i) => i.size === 'card' && i.format === 'webp'
+ )?.url;
+ urls.thumbnail = processResult.images.find(
+ (i) => i.size === 'thumbnail' && i.format === 'webp'
+ )?.url;
+ }
 
-    // 5. Limpar arquivo temporário
-    if (typeof file !== 'string') {
-      await cleanupTemporaryFile(filePath);
-    }
+ // 5. Limpar arquivo temporário
+ if (typeof file !== 'string') {
+ await cleanupTemporaryFile(filePath);
+ }
 
-    return {
-      success: true,
-      images: processResult.images,
-      urls,
-      errors,
-      quality: {
-        passed: qualityReport.passed,
-        issues: qualityReport.issues,
-        ai: aiQuality,
-        vision: visionInsights,
-      },
-    };
-  } catch (error) {
-    const message = `Erro ao processar upload: ${error instanceof Error ? error.message : 'Desconhecido'}`;
-    errors.push(message);
+ return {
+ success: true,
+ images: processResult.images,
+ urls,
+ errors,
+ quality: {
+ passed: qualityReport.passed,
+ issues: qualityReport.issues,
+ ai: aiQuality,
+ vision: visionInsights,
+ },
+ };
+ } catch (error) {
+ const message = `Erro ao processar upload: ${error instanceof Error ? error.message : 'Desconhecido'}`;
+ errors.push(message);
 
-    return {
-      success: false,
-      images: [],
-      urls: {},
-      errors,
-    };
-  }
+ return {
+ success: false,
+ images: [],
+ urls: {},
+ errors,
+ };
+ }
 }
 
 /**
  * Salva File temporariamente para processamento
  */
 async function saveTemporaryFile(file: File): Promise<string> {
-  const fs = await import('fs/promises');
-  const path = await import('path');
-  const os = await import('os');
+ const fs = await import('fs/promises');
+ const path = await import('path');
+ const os = await import('os');
 
-  const tempDir = path.join(os.tmpdir(), 'puppy-uploads');
-  await fs.mkdir(tempDir, { recursive: true });
+ const tempDir = path.join(os.tmpdir(), 'puppy-uploads');
+ await fs.mkdir(tempDir, { recursive: true });
 
-  const tempPath = path.join(tempDir, `${Date.now()}-${file.name}`);
-  const buffer = await file.arrayBuffer();
-  await fs.writeFile(tempPath, Buffer.from(buffer));
+ const tempPath = path.join(tempDir, `${Date.now()}-${file.name}`);
+ const buffer = await file.arrayBuffer();
+ await fs.writeFile(tempPath, Buffer.from(buffer));
 
-  return tempPath;
+ return tempPath;
 }
 
 /**
  * Remove arquivo temporário
  */
 async function cleanupTemporaryFile(filePath: string): Promise<void> {
-  try {
-    const fs = await import('fs/promises');
-    await fs.unlink(filePath);
-  } catch (error) {
-    // ignorar falha na limpeza temporária (não bloquear fluxo)
-  }
+ try {
+ const fs = await import('fs/promises');
+ await fs.unlink(filePath);
+ } catch (error) {
+ // ignorar falha na limpeza temporária (não bloquear fluxo)
+ }
 }
 
 /**
@@ -186,29 +186,29 @@ export const adminUploadExample = `
 import { uploadPuppyImage } from '@/lib/admin-upload';
 
 async function handleUpload(formData: FormData) {
-  const file = formData.get('image') as File;
-  const puppyId = formData.get('puppyId') as string;
-  const slug = formData.get('slug') as string;
+ const file = formData.get('image') as File;
+ const puppyId = formData.get('puppyId') as string;
+ const slug = formData.get('slug') as string;
 
-  const result = await uploadPuppyImage(file, {
-    puppyId,
-    slug,
-    color: 'branco',
-    sex: 'male',
-    useSupabase: true, // ou false para salvar localmente
-  });
+ const result = await uploadPuppyImage(file, {
+ puppyId,
+ slug,
+ color: 'branco',
+ sex: 'male',
+ useSupabase: true, // ou false para salvar localmente
+ });
 
-  if (!result.success) {
-    return { error: result.errors.join(', ') };
-  }
+ if (!result.success) {
+ return { error: result.errors.join(', ') };
+ }
 
-  // Salvar URLs no banco de dados
-  await db.puppies.update(puppyId, {
-    imageHero: result.urls.hero,
-    imageCard: result.urls.card,
-    imageThumbnail: result.urls.thumbnail,
-  });
+ // Salvar URLs no banco de dados
+ await db.puppies.update(puppyId, {
+ imageHero: result.urls.hero,
+ imageCard: result.urls.card,
+ imageThumbnail: result.urls.thumbnail,
+ });
 
-  return { success: true, urls: result.urls };
+ return { success: true, urls: result.urls };
 }
 `;

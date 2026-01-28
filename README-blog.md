@@ -3,7 +3,7 @@ Blog - By Império Dog
 Visão geral
 - Páginas: `/blog` (lista), `/blog/[slug]` (post), e `/blog/tag/[slug]` (listagem por tag).
 - Conteúdo principal em Supabase + MDX (renderizado com `next-mdx-remote`).
-- Foco editorial: Spitz Alemão (Lulu da Pomerânia) — todo o fluxo de IA e SEO favorece esse tema.
+- Foco editorial: Spitz Alemão Lulu da Pomerânia — todo o fluxo de IA e SEO favorece esse tema.
 
 Fluxo profissional (Admin)
 - Editor do blog: `/admin/blog` e `/admin/blog/editor`.

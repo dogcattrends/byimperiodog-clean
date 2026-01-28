@@ -1,7 +1,7 @@
 # 🚀 Otimização de Performance - byimperiodog.com.br
 
-**Data**: 25 de outubro de 2025  
-**Objetivo**: Melhorar PageSpeed Insights de 73/100 (mobile) para 90-95/100  
+**Data**: 25 de outubro de 2025 
+**Objetivo**: Melhorar PageSpeed Insights de 73/100 (mobile) para 90-95/100 
 **Problema Crítico**: LCP de 11.6s no mobile causado por imagem hero de 2MB
 
 ---
@@ -26,7 +26,7 @@
 ## 🎯 Estratégia de Otimização
 
 ### P0: Image Optimization (Crítico - 92% redução)
-**Problema**: Hero image `spitz-hero-desktop.webp` com 2MB causando LCP de 11.6s  
+**Problema**: Hero image `spitz-hero-desktop.webp` com 2MB causando LCP de 11.6s 
 **Solução**: Criar 3 breakpoints responsivos com Sharp
 
 #### Implementação
@@ -60,7 +60,7 @@
 ---
 
 ### P0.5: Accessibility Fixes
-**Problema**: Contraste de 2.26:1 em bullets do Hero (WCAG AA requer ≥4.5:1)  
+**Problema**: Contraste de 2.26:1 em bullets do Hero (WCAG AA requer ≥4.5:1) 
 **Solução**: Trocar `text-zinc-400` por `text-zinc-600`
 
 **Arquivo**: `src/components/sections/Hero.tsx` (linhas 137-141)
@@ -94,7 +94,7 @@ const TrackingScripts = NextDynamic(() => import("@/components/TrackingScripts")
 **Arquivo**: `next.config.mjs`
 ```javascript
 experimental: {
-  optimizePackageImports: ['lucide-react', '@radix-ui/react-icons']
+ optimizePackageImports: ['lucide-react', '@radix-ui/react-icons']
 }
 ```
 
@@ -137,26 +137,26 @@ productionBrowserSourceMaps: false,
 **Arquivo**: `vercel.json`
 ```json
 {
-  "headers": [
-    {
-      "source": "/:all*(svg|jpg|jpeg|png|webp|avif|gif|ico|woff|woff2)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/_next/static/:path*",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    }
-  ]
+ "headers": [
+ {
+ "source": "/:all*(svg|jpg|jpeg|png|webp|avif|gif|ico|woff|woff2)",
+ "headers": [
+ {
+ "key": "Cache-Control",
+ "value": "public, max-age=31536000, immutable"
+ }
+ ]
+ },
+ {
+ "source": "/_next/static/:path*",
+ "headers": [
+ {
+ "key": "Cache-Control",
+ "value": "public, max-age=31536000, immutable"
+ }
+ ]
+ }
+ ]
 }
 ```
 
@@ -178,14 +178,14 @@ productionBrowserSourceMaps: false,
 **Commit**: `69b21ec`
 
 1. **`app/layout.tsx`**: 
-   - ✅ Corrigida ordem de imports (ESLint import/order)
-   - ✅ Adicionada linha em branco entre grupos
+ - ✅ Corrigida ordem de imports (ESLint import/order)
+ - ✅ Adicionada linha em branco entre grupos
 
 2. **`src/lib/errors.ts`**:
-   - ✅ Removido `@ts-expect-error` desnecessário (cause nativa)
+ - ✅ Removido `@ts-expect-error` desnecessário (cause nativa)
 
 3. **`src/lib/logger.ts`**:
-   - ✅ Corrigida tipagem do `console[method]` com type assertion
+ - ✅ Corrigida tipagem do `console[method]` com type assertion
 
 **Build Status**: ✅ 111 páginas geradas, typecheck passou, 224kB home mantida
 
@@ -270,7 +270,7 @@ f89d0ad - perf(lcp): optimize hero images 2MB → 22-109KB (92% reduction)
 .\scripts\check-psi.ps1
 
 # Ou abrir manualmente:
-# Mobile:  https://pagespeed.web.dev/analysis?url=https://byimperiodog.com.br
+# Mobile: https://pagespeed.web.dev/analysis?url=https://byimperiodog.com.br
 # Desktop: https://pagespeed.web.dev/analysis?url=https://byimperiodog.com.br&strategy=desktop
 ```
 
@@ -280,9 +280,9 @@ f89d0ad - perf(lcp): optimize hero images 2MB → 22-109KB (92% reduction)
 2. DevTools → Network → Disable Cache
 3. Hard Refresh (Ctrl+Shift+R)
 4. Verificar hero images:
-   - spitz-hero-mobile.webp: ~22KB
-   - spitz-hero-tablet.webp: ~53KB
-   - spitz-hero-desktop.webp: ~109KB
+ - spitz-hero-mobile.webp: ~22KB
+ - spitz-hero-tablet.webp: ~53KB
+ - spitz-hero-desktop.webp: ~109KB
 5. Headers → Cache-Control: public, max-age=31536000, immutable
 ```
 
@@ -338,5 +338,5 @@ lighthouse https://byimperiodog.com.br --view --preset=mobile --throttling.cpuSl
 
 ---
 
-**Status**: 🔄 Deploy em andamento (aguardar 10-15 min)  
+**Status**: 🔄 Deploy em andamento (aguardar 10-15 min) 
 **Próximo**: Validar PSI e atualizar este documento com resultados reais

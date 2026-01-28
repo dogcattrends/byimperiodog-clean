@@ -6,26 +6,26 @@ const _client: MeiliSearchClient | null = null;
 export function getMeili(): MeiliSearchClient | null { return _client; }
 
 export type BlogSearchDoc = {
-  id: string;
-  slug: string;
-  title: string;
-  excerpt?: string | null;
-  content?: string | null;
-  tags?: string[];
-  categories?: string[];
-  author?: string | null;
-  published_at?: string | null;
+ id: string;
+ slug: string;
+ title: string;
+ excerpt?: string | null;
+ content?: string | null;
+ tags?: string[];
+ categories?: string[];
+ author?: string | null;
+ published_at?: string | null;
 };
 
-export const BLOG_INDEX = 'blog_posts';
+export const BLOG_INDEX = 'blog';
 
 export async function ensureBlogIndex(){
-  // Stub: sempre retorna false (índice não disponível)
-  return false;
+ // Stub: sempre retorna false (índice não disponível)
+ return false;
 }
 
 export async function meiliSearchBlog(q: string){
-  // Stub: sem resultados
-  void q;
-  return { hits: [], estimatedTotalHits: 0 };
+ // Stub: sem resultados
+ void q;
+ return { hits: [], estimatedTotalHits: 0 };
 }

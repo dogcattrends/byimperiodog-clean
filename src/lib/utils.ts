@@ -2,6 +2,6 @@
 import { formatCentsToBRL } from "@/lib/price";
 
 export function fmtPrice(price: number | null | undefined) {
-  if (typeof price !== "number") return "Consultar valor";
-  return formatCentsToBRL(price);
+ if (typeof price !== "number") return "Consultar valor";
+ return formatCentsToBRL(price);
 }

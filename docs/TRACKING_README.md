@@ -1,7 +1,7 @@
 # 🎯 Sistema de Tracking (Pixels & Analytics) - Documentação Completa
 
-> **By Império Dog** - Sistema completo de gerenciamento de pixels e analytics  
-> **Data:** 28 de novembro de 2025  
+> **By Império Dog** - Sistema completo de gerenciamento de pixels e analytics 
+> **Data:** 28 de novembro de 2025 
 > **Stack:** Next.js 14 + TypeScript + Supabase
 
 ---
@@ -10,13 +10,13 @@
 
 Sistema completo de configuração e gerenciamento de pixels (Facebook, Google Analytics, TikTok, Pinterest, etc.) com:
 
-✅ **Backend completo** com validações robustas  
-✅ **Painel admin** intuitivo para configuração  
-✅ **Injeção automática** de scripts no frontend  
-✅ **Botões de teste** para validar pixels em tempo real  
-✅ **Testes automatizados** unitários e de integração  
-✅ **Segurança** com tokens secretos protegidos  
-✅ **TypeScript** com tipagem forte em todo código  
+✅ **Backend completo** com validações robustas 
+✅ **Painel admin** intuitivo para configuração 
+✅ **Injeção automática** de scripts no frontend 
+✅ **Botões de teste** para validar pixels em tempo real 
+✅ **Testes automatizados** unitários e de integração 
+✅ **Segurança** com tokens secretos protegidos 
+✅ **TypeScript** com tipagem forte em todo código 
 
 ---
 
@@ -26,61 +26,61 @@ Sistema completo de configuração e gerenciamento de pixels (Facebook, Google A
 
 ```
 app/
-  api/
-    settings/
-      tracking/
-        route.ts                    # GET público (sem tokens secretos)
-    admin/
-      settings/
-        route.ts                    # GET/POST admin (ATUALIZADO)
+ api/
+ settings/
+ tracking/
+ route.ts # GET público (sem tokens secretos)
+ admin/
+ settings/
+ route.ts # GET/POST admin (ATUALIZADO)
 
 src/
-  types/
-    tracking.ts                     # Interfaces TypeScript
-  lib/
-    tracking/
-      validators.ts                 # Validadores para IDs
-      examples.ts                   # Exemplos de uso
+ types/
+ tracking.ts # Interfaces TypeScript
+ lib/
+ tracking/
+ validators.ts # Validadores para IDs
+ examples.ts # Exemplos de uso
 ```
 
 ### Frontend
 
 ```
 app/
-  (admin)/
-    admin/
-      (protected)/
-        settings/
-          tracking/
-            page.tsx                # Página admin de configuração
+ (admin)/
+ admin/
+ (protected)/
+ settings/
+ tracking/
+ page.tsx # Página admin de configuração
 
 src/
-  components/
-    admin/
-      TestPixelButton.tsx          # Botão para testar pixels
-  hooks/
-    useTracking.ts                 # Hook React para tracking
+ components/
+ admin/
+ TestPixelButton.tsx # Botão para testar pixels
+ hooks/
+ useTracking.ts # Hook React para tracking
 ```
 
 ### Testes
 
 ```
 tests/
-  lib/
-    tracking/
-      validators.test.ts           # Testes unitários validadores
-  api/
-    tracking/
-      integration.test.ts          # Testes de integração
+ lib/
+ tracking/
+ validators.test.ts # Testes unitários validadores
+ api/
+ tracking/
+ integration.test.ts # Testes de integração
 ```
 
 ### Documentação
 
 ```
 docs/
-  TRACKING_BACKEND.md              # Doc completa do backend
-  TRACKING_QA_CHECKLIST.md         # Checklist de QA
-  TRACKING_README.md               # Este arquivo
+ TRACKING_BACKEND.md # Doc completa do backend
+ TRACKING_QA_CHECKLIST.md # Checklist de QA
+ TRACKING_README.md # Este arquivo
 ```
 
 ---
@@ -126,24 +126,24 @@ const response = await fetch('/api/settings/tracking');
 const { settings } = await response.json();
 
 console.log(settings.meta_pixel_id); // "1234567890123456"
-console.log(settings.ga4_id);        // "G-ABCD12345"
+console.log(settings.ga4_id); // "G-ABCD12345"
 ```
 
 **Response:**
 ```json
 {
-  "settings": {
-    "gtm_id": "GTM-ABC123",
-    "ga4_id": "G-ABCD12345",
-    "meta_pixel_id": "1234567890123456",
-    "tiktok_pixel_id": "C123ABC456DEF",
-    "google_ads_id": "AW-123456789",
-    "pinterest_tag_id": "1234567890123",
-    "hotjar_id": "123456",
-    "clarity_id": "abcdef123456",
-    "meta_domain_verify": "abcd1234",
-    "custom_pixels": []
-  }
+ "settings": {
+ "gtm_id": "GTM-ABC123",
+ "ga4_id": "G-ABCD12345",
+ "meta_pixel_id": "1234567890123456",
+ "tiktok_pixel_id": "C123ABC456DEF",
+ "google_ads_id": "AW-123456789",
+ "pinterest_tag_id": "1234567890123",
+ "hotjar_id": "123456",
+ "clarity_id": "abcdef123456",
+ "meta_domain_verify": "abcd1234",
+ "custom_pixels": []
+ }
 }
 ```
 
@@ -156,7 +156,7 @@ Busca TODAS as configurações (incluindo tokens secretos).
 **Exemplo:**
 ```typescript
 const response = await fetch('/api/admin/settings', {
-  credentials: 'include'
+ credentials: 'include'
 });
 const { settings } = await response.json();
 
@@ -174,21 +174,21 @@ Atualiza configurações de tracking.
 **Exemplo:**
 ```typescript
 const response = await fetch('/api/admin/settings', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  credentials: 'include',
-  body: JSON.stringify({
-    meta_pixel_id: '1234567890123456',
-    ga4_id: 'G-ABCD12345'
-  })
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ credentials: 'include',
+ body: JSON.stringify({
+ meta_pixel_id: '1234567890123456',
+ ga4_id: 'G-ABCD12345'
+ })
 });
 
 const data = await response.json();
 
 if (!response.ok) {
-  console.error('Erro:', data.error);
+ console.error('Erro:', data.error);
 } else {
-  console.log('Salvo:', data.settings);
+ console.log('Salvo:', data.settings);
 }
 ```
 
@@ -215,28 +215,28 @@ import { useTracking } from '@/hooks/useTracking';
 
 // Frontend público
 function MyComponent() {
-  const { settings, loading } = useTracking();
-  
-  if (loading) return <div>Carregando...</div>;
-  
-  return <div>Pixel ID: {settings?.meta_pixel_id}</div>;
+ const { settings, loading } = useTracking();
+ 
+ if (loading) return <div>Carregando...</div>;
+ 
+ return <div>Pixel ID: {settings?.meta_pixel_id}</div>;
 }
 
 // Painel admin
 function AdminComponent() {
-  const { settings, updateSettings } = useTracking({ admin: true });
-  
-  const handleSave = async () => {
-    const result = await updateSettings({
-      meta_pixel_id: '1234567890123456'
-    });
-    
-    if (result.success) {
-      alert('Salvo!');
-    }
-  };
-  
-  return <button onClick={handleSave}>Salvar</button>;
+ const { settings, updateSettings } = useTracking({ admin: true });
+ 
+ const handleSave = async () => {
+ const result = await updateSettings({
+ meta_pixel_id: '1234567890123456'
+ });
+ 
+ if (result.success) {
+ alert('Salvo!');
+ }
+ };
+ 
+ return <button onClick={handleSave}>Salvar</button>;
 }
 ```
 
@@ -248,19 +248,19 @@ function AdminComponent() {
 import { TestPixelButton } from '@/components/admin/TestPixelButton';
 
 function PixelConfig() {
-  return (
-    <div>
-      <TestPixelButton 
-        pixelType="facebook" 
-        pixelId="1234567890123456" 
-      />
-      
-      <TestPixelButton 
-        pixelType="google-analytics" 
-        pixelId="G-ABCD12345" 
-      />
-    </div>
-  );
+ return (
+ <div>
+ <TestPixelButton 
+ pixelType="facebook" 
+ pixelId="1234567890123456" 
+ />
+ 
+ <TestPixelButton 
+ pixelType="google-analytics" 
+ pixelId="G-ABCD12345" 
+ />
+ </div>
+ );
 }
 ```
 
@@ -326,8 +326,8 @@ vitest
 
 ```
 tests/
-  lib/tracking/validators.test.ts      # Testes unitários
-  api/tracking/integration.test.ts     # Testes de integração
+ lib/tracking/validators.test.ts # Testes unitários
+ api/tracking/integration.test.ts # Testes de integração
 ```
 
 ---
@@ -378,29 +378,29 @@ Já existe no banco em `sql/site_settings.sql`.
 **Estrutura:**
 ```sql
 create table if not exists public.site_settings (
-  id int primary key default 1 check (id = 1),
-  
-  -- IDs públicos
-  gtm_id text,
-  ga4_id text,
-  meta_pixel_id text,
-  tiktok_pixel_id text,
-  google_ads_id text,
-  google_ads_label text,
-  pinterest_tag_id text,
-  hotjar_id text,
-  clarity_id text,
-  meta_domain_verify text,
-  custom_pixels jsonb default '[]'::jsonb,
-  
-  -- Tokens privados (server-side only)
-  fb_capi_token text,
-  tiktok_api_token text,
-  
-  -- Meta de posts
-  weekly_post_goal int default 7,
-  
-  updated_at timestamptz not null default now()
+ id int primary key default 1 check (id = 1),
+ 
+ -- IDs públicos
+ gtm_id text,
+ ga4_id text,
+ meta_pixel_id text,
+ tiktok_pixel_id text,
+ google_ads_id text,
+ google_ads_label text,
+ pinterest_tag_id text,
+ hotjar_id text,
+ clarity_id text,
+ meta_domain_verify text,
+ custom_pixels jsonb default '[]'::jsonb,
+ 
+ -- Tokens privados (server-side only)
+ fb_capi_token text,
+ tiktok_api_token text,
+ 
+ -- Meta de posts
+ weekly_post_goal int default 7,
+ 
+ updated_at timestamptz not null default now()
 );
 ```
 
@@ -421,21 +421,21 @@ Usar `fb_capi_token` para enviar eventos server-side:
 ```typescript
 // src/lib/tracking/conversionsAPI.ts
 export async function sendFacebookConversion(event: string, data: any) {
-  const token = process.env.FB_CAPI_TOKEN; // Pegar do banco
-  
-  await fetch(`https://graph.facebook.com/v18.0/PIXEL_ID/events`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      access_token: token,
-      data: [{
-        event_name: event,
-        event_time: Math.floor(Date.now() / 1000),
-        user_data: { /* hash de dados do usuário */ },
-        custom_data: data,
-      }],
-    }),
-  });
+ const token = process.env.FB_CAPI_TOKEN; // Pegar do banco
+ 
+ await fetch(`https://graph.facebook.com/v18.0/PIXEL_ID/events`, {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({
+ access_token: token,
+ data: [{
+ event_name: event,
+ event_time: Math.floor(Date.now() / 1000),
+ user_data: { /* hash de dados do usuário */ },
+ custom_data: data,
+ }],
+ }),
+ });
 }
 ```
 
@@ -508,6 +508,6 @@ Sistema completo de tracking implementado com:
 
 ---
 
-**Desenvolvido por:** By Império Dog  
-**Data:** 28 de novembro de 2025  
+**Desenvolvido por:** By Império Dog 
+**Data:** 28 de novembro de 2025 
 **Versão:** 1.0.0

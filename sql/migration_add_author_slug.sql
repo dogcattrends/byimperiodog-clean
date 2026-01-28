@@ -8,10 +8,10 @@ where (slug is null or slug = '') and name is not null;
 create or replace function public.blog_authors_slug_before()
 returns trigger language plpgsql as $$
 begin
-  if NEW.slug is null or NEW.slug = '' then
-    NEW.slug := lower(regexp_replace(coalesce(NEW.name,''),'[^a-z0-9]+','-','g'));
-  end if;
-  return NEW;
+ if NEW.slug is null or NEW.slug = '' then
+ NEW.slug := lower(regexp_replace(coalesce(NEW.name,''),'[^a-z0-9]+','-','g'));
+ end if;
+ return NEW;
 end;$$;
 
 drop trigger if exists t_blog_authors_slug_before on public.blog_authors;

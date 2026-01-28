@@ -13,30 +13,30 @@ Este documento mapeia rotas, handlers, libs e componentes existentes do Admin pa
 
 ## Rotas do Admin (páginas)
 - `/admin`
-  - `app/(admin)/admin/page.tsx`
-  - `app/(admin)/admin/layout.tsx` (SEO off, SkipLink, sidebar/topbar)
-  - `app/(admin)/admin/guard-layout.tsx`
+ - `app/(admin)/admin/page.tsx`
+ - `app/(admin)/admin/layout.tsx` (SEO off, SkipLink, sidebar/topbar)
+ - `app/(admin)/admin/guard-layout.tsx`
 - Login/Auth
-  - `app/(admin)/admin/(auth)/layout.tsx`
-  - `app/(admin)/admin/(auth)/login/page.tsx`
+ - `app/(admin)/admin/(auth)/layout.tsx`
+ - `app/(admin)/admin/(auth)/login/page.tsx`
 - Protegidas
-  - Dashboard: `app/(admin)/admin/(protected)/dashboard/page.tsx`
-  - Analytics: `app/(admin)/admin/(protected)/analytics/page.tsx`
-  - Blog (lista): `app/(admin)/admin/(protected)/blog/page.tsx`
-  - Blog Editor: `app/(admin)/admin/(protected)/blog/editor/page.tsx`
-  - Blog Wizard: `app/(admin)/admin/(protected)/blog/editor/wizard/page.tsx`
-  - Blog Schedule: `app/(admin)/admin/(protected)/blog/schedule/page.tsx`
-  - Blog Comments: `app/(admin)/admin/(protected)/blog/comments/page.tsx`
-  - Blog Analytics: `app/(admin)/admin/(protected)/blog/analytics/page.tsx`
-  - Preview: `app/(admin)/admin/(protected)/blog/preview/[id]/page.tsx`
-  - Media: `app/(admin)/admin/(protected)/media/page.tsx`
-  - Experiments: `app/(admin)/admin/(protected)/experiments/page.tsx`
-  - System Health: `app/(admin)/admin/(protected)/system/health/page.tsx`
-  - Settings: `app/(admin)/admin/(protected)/settings/page.tsx`
-  - Content: `app/(admin)/admin/(protected)/content/page.tsx`
-  - Content Editor: `app/(admin)/admin/(protected)/content/editor/page.tsx`
-  - Content Calendar: `app/(admin)/admin/(protected)/content/calendar/page.tsx`
-  - Puppies (ex.: CRUD de filhotes): várias páginas/comp.
+ - Dashboard: `app/(admin)/admin/(protected)/dashboard/page.tsx`
+ - Analytics: `app/(admin)/admin/(protected)/analytics/page.tsx`
+ - Blog (lista): `app/(admin)/admin/(protected)/blog/page.tsx`
+ - Blog Editor: `app/(admin)/admin/(protected)/blog/editor/page.tsx`
+ - Blog Wizard: `app/(admin)/admin/(protected)/blog/editor/wizard/page.tsx`
+ - Blog Schedule: `app/(admin)/admin/(protected)/blog/schedule/page.tsx`
+ - Blog Comments: `app/(admin)/admin/(protected)/blog/comments/page.tsx`
+ - Blog Analytics: `app/(admin)/admin/(protected)/blog/analytics/page.tsx`
+ - Preview: `app/(admin)/admin/(protected)/blog/preview/[id]/page.tsx`
+ - Media: `app/(admin)/admin/(protected)/media/page.tsx`
+ - Experiments: `app/(admin)/admin/(protected)/experiments/page.tsx`
+ - System Health: `app/(admin)/admin/(protected)/system/health/page.tsx`
+ - Settings: `app/(admin)/admin/(protected)/settings/page.tsx`
+ - Content: `app/(admin)/admin/(protected)/content/page.tsx`
+ - Content Editor: `app/(admin)/admin/(protected)/content/editor/page.tsx`
+ - Content Calendar: `app/(admin)/admin/(protected)/content/calendar/page.tsx`
+ - Puppies (ex.: CRUD de filhotes): várias páginas/comp.
 
 ## Handlers de API (Admin)
 Principais entradas em `app/api/admin/**` (65 rotas mapeadas). Destaques:
@@ -52,15 +52,15 @@ Observações:
 
 ## Repositórios/DB & Adapters
 - Supabase clients:
-  - Admin: `src/lib/supabaseAdmin.ts` (service role; stub seguro se faltar credenciais)
-  - Público: `src/lib/supabasePublic.ts` / `src/lib/supabaseAnon.ts`
+ - Admin: `src/lib/supabaseAdmin.ts` (service role; stub seguro se faltar credenciais)
+ - Público: `src/lib/supabasePublic.ts` / `src/lib/supabaseAnon.ts`
 - Blog/Conteúdo:
-  - `src/lib/blogDb.ts` (consultas públicas)
-  - `src/lib/embeddings.store.blog.ts` (persistência embeddings)
-  - `src/lib/seo.core.ts`, `src/lib/seoSuggestions.ts`
-  - `src/lib/gamification.blog.ts` (regras/badges)
+ - `src/lib/blogDb.ts` (consultas públicas)
+ - `src/lib/embeddings.store.blog.ts` (persistência embeddings)
+ - `src/lib/seo.core.ts`, `src/lib/seoSuggestions.ts`
+ - `src/lib/gamification.blog.ts` (regras/badges)
 - Analytics:
-  - Endpoints dedicados em `app/api/admin/analytics/*` (fonte: tabelas Supabase `analytics_*`) e `tests/database.connection.test.ts`.
+ - Endpoints dedicados em `app/api/admin/analytics/*` (fonte: tabelas Supabase `analytics_*`) e `tests/database.connection.test.ts`.
 
 ## UI/UX (Admin)
 - Layout/Chrome: `AdminSidebar`, `AdminTopbar` (atalhos e navegação), `SkipLink`.

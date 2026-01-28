@@ -13,29 +13,29 @@ _expect.extend(_matchers as any);
 
 // Allow pointer interactions by default in the test DOM
 if (typeof document !== 'undefined' && document.body) {
-  document.body.style.pointerEvents = 'auto';
+ document.body.style.pointerEvents = 'auto';
 }
 
 const site_settings = {
-  id: 1,
-  weekly_post_goal: 3,
-  ga4_id: 'G-TEST12345',
-  meta_pixel_id: '1234567890',
-  robots_allow_indexing: true,
+ id: 1,
+ weekly_post_goal: 3,
+ ga4_id: 'G-TEST12345',
+ meta_pixel_id: '1234567890',
+ robots_allow_indexing: true,
 };
 
 vi.stubGlobal('supabaseAdmin', () => {
-  return {
-    from: (table: string) => ({
-      select: () => ({
-        single: async () => ({ data: table === 'site_settings' ? site_settings : null, error: null }),
-      }),
-      upsert: (payload: any) => ({
-        select: () => ({ single: async () => ({ data: payload, error: null }) }),
-      }),
-    }),
-    hasServiceRoleKey: () => true,
-  };
+ return {
+ from: (table: string) => ({
+ select: () => ({
+ single: async () => ({ data: table === 'site_settings' ? site_settings : null, error: null }),
+ }),
+ upsert: (payload: any) => ({
+ select: () => ({ single: async () => ({ data: payload, error: null }) }),
+ }),
+ }),
+ hasServiceRoleKey: () => true,
+ };
 });
 
 export {};

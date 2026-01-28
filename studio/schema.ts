@@ -12,6 +12,6 @@ const postTyped = post as unknown as SchemaTypeDefinition;
 const allTypes: SchemaTypeDefinition[] = [...schemaTypesTyped, authorTyped, postTyped];
 
 export default createSchema({
-  name: 'default',
-  types: allTypes,
+ name: 'default',
+ types: allTypes,
 });

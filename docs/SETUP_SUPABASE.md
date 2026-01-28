@@ -39,12 +39,12 @@ Invoke-RestMethod 'http://localhost:3000/api/diag/puppies' | ConvertTo-Json -Dep
 
 - Se as variáveis estiverem corretas, o endpoint deve retornar `ok: true` e uma amostra (`sample`) de registros.
 - Se ainda aparecer vazio, verifique:
-  - RLS / policies no Supabase (a migração do projeto adiciona políticas `public_read_puppies` etc.)
-  - Se os registros têm `status` igual a `disponivel` ou `reservado` (o catálogo filtra por esses status por padrão)
+ - RLS / policies no Supabase (a migração do projeto adiciona políticas `public_read_puppies` etc.)
+ - Se os registros têm `status` igual a `disponivel` ou `reservado` (o catálogo filtra por esses status por padrão)
 
 6. Dicas de debugging:
 - Para checar se as variáveis de ambiente estão carregadas no processo Node:
-  - `node -e "console.log(process.env.NEXT_PUBLIC_SUPABASE_URL)"`
+ - `node -e "console.log(process.env.NEXT_PUBLIC_SUPABASE_URL)"`
 - Para inspecionar o banco remoto, use o Dashboard do Supabase (Tables → public → puppies)
 
 7. Segurança

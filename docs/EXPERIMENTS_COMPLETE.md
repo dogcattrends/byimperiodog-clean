@@ -1,7 +1,7 @@
 # ✅ Experimentos A/B - Feature Completa
 
-**Data:** 26 de outubro de 2025  
-**Commit:** e9876fe  
+**Data:** 26 de outubro de 2025 
+**Commit:** e9876fe 
 **Status:** ✅ OPERACIONAL
 
 ---
@@ -18,13 +18,13 @@ A infraestrutura completa de **Experimentos A/B** foi implementada, testada e es
 - **Arquivo:** `sql/experiments.sql`
 - **Tabela:** `public.experiments`
 - **Colunas:**
-  - `id` (uuid, PK)
-  - `key` (text, unique) - identificador usado no tracking
-  - `name`, `description` (text)
-  - `status` (draft|running|paused|completed)
-  - `variants` (jsonb) - array de variantes com peso
-  - `starts_at`, `ends_at` (timestamptz)
-  - `created_at`, `updated_at` (timestamptz)
+ - `id` (uuid, PK)
+ - `key` (text, unique) - identificador usado no tracking
+ - `name`, `description` (text)
+ - `status` (draft|running|paused|completed)
+ - `variants` (jsonb) - array de variantes com peso
+ - `starts_at`, `ends_at` (timestamptz)
+ - `created_at`, `updated_at` (timestamptz)
 - **Indexes:** status, key
 - **Trigger:** auto-update de `updated_at`
 
@@ -37,34 +37,34 @@ A infraestrutura completa de **Experimentos A/B** foi implementada, testada e es
 ### 3. Metrics API ✅
 - **GET** `/api/experiments/[key]/metrics` - métricas públicas
 - **Dados retornados:**
-  - Total de views por variante
-  - Total de conversões por variante
-  - Taxa de conversão calculada
-  - Status do experimento
+ - Total de views por variante
+ - Total de conversões por variante
+ - Taxa de conversão calculada
+ - Status do experimento
 
 ### 4. Admin UI ✅
 - **Página:** `/admin/experiments`
 - **Features:**
-  - Listagem de todos experimentos com filtros por status
-  - Formulário de criação/edição
-  - Gerenciamento de variantes (adicionar/remover/pesos)
-  - Controle de status (draft → running → paused → completed)
-  - Dashboard de métricas por experimento
+ - Listagem de todos experimentos com filtros por status
+ - Formulário de criação/edição
+ - Gerenciamento de variantes (adicionar/remover/pesos)
+ - Controle de status (draft → running → paused → completed)
+ - Dashboard de métricas por experimento
 
 ### 5. Client-Side Tracking ✅
 - **Arquivo:** `src/lib/track.ts`
 - **Funções:**
-  - `experimentView(key, variant)` - registra visualização
-  - `experimentConversion(key, variant, value?)` - registra conversão
+ - `experimentView(key, variant)` - registra visualização
+ - `experimentConversion(key, variant, value?)` - registra conversão
 - **Integração:** analytics_events table
 
 ### 6. Client Helpers ✅
 - **Arquivo:** `src/lib/experiments.ts`
 - **Função:** `chooseVariant(experimentKey, variants)`
 - **Features:**
-  - Sticky assignment via localStorage
-  - Weighted random distribution
-  - TypeScript types
+ - Sticky assignment via localStorage
+ - Weighted random distribution
+ - TypeScript types
 
 ### 7. Documentation ✅
 - **docs/EXPERIMENTS.md** - guia de uso completo
@@ -96,9 +96,9 @@ npm run seed
 - **Name:** CTA do Hero
 - **Status:** draft
 - **Variantes:**
-  - `control` (50%) - "Conheça nossos filhotes"
-  - `variant-a` (30%) - "Encontre seu novo amigo"
-  - `variant-b` (20%) - "Filhotes disponíveis agora"
+ - `control` (50%) - "Conheça nossos filhotes"
+ - `variant-a` (30%) - "Encontre seu novo amigo"
+ - `variant-b` (20%) - "Filhotes disponíveis agora"
 
 ---
 
@@ -122,37 +122,37 @@ import { experimentView, experimentConversion } from '@/lib/track';
 import { useEffect, useState } from 'react';
 
 export default function HeroSection() {
-  const [ctaText, setCtaText] = useState('Carregando...');
+ const [ctaText, setCtaText] = useState('Carregando...');
 
-  useEffect(() => {
-    const variants = [
-      { key: 'control', label: 'Conheça nossos filhotes', weight: 50 },
-      { key: 'variant-a', label: 'Encontre seu novo amigo', weight: 30 },
-      { key: 'variant-b', label: 'Filhotes disponíveis agora', weight: 20 }
-    ];
-    
-    const chosen = chooseVariant('hero-cta', variants);
-    setCtaText(chosen.label);
-    
-    // Track view
-    experimentView('hero-cta', chosen.key);
-  }, []);
+ useEffect(() => {
+ const variants = [
+ { key: 'control', label: 'Conheça nossos filhotes', weight: 50 },
+ { key: 'variant-a', label: 'Encontre seu novo amigo', weight: 30 },
+ { key: 'variant-b', label: 'Filhotes disponíveis agora', weight: 20 }
+ ];
+ 
+ const chosen = chooseVariant('hero-cta', variants);
+ setCtaText(chosen.label);
+ 
+ // Track view
+ experimentView('hero-cta', chosen.key);
+ }, []);
 
-  const handleClick = () => {
-    const variant = localStorage.getItem('exp_hero-cta');
-    if (variant) {
-      // Track conversion
-      experimentConversion('hero-cta', variant);
-    }
-    // ... resto do código
-  };
+ const handleClick = () => {
+ const variant = localStorage.getItem('exp_hero-cta');
+ if (variant) {
+ // Track conversion
+ experimentConversion('hero-cta', variant);
+ }
+ // ... resto do código
+ };
 
-  return (
-    <div>
-      <h1>Bem-vindo ao Império Dog</h1>
-      <button onClick={handleClick}>{ctaText}</button>
-    </div>
-  );
+ return (
+ <div>
+ <h1>Bem-vindo ao Império Dog</h1>
+ <button onClick={handleClick}>{ctaText}</button>
+ </div>
+ );
 }
 ```
 
@@ -161,9 +161,9 @@ export default function HeroSection() {
 1. Acesse /admin/experiments
 2. Clique no experimento desejado
 3. Veja métricas:
-   - Views por variante
-   - Conversões por variante
-   - Taxa de conversão (%)
+ - Views por variante
+ - Conversões por variante
+ - Taxa de conversão (%)
 4. Pause ou complete o experimento
 ```
 
@@ -275,16 +275,16 @@ git log --oneline -1
 
 A feature de **Experimentos A/B** está **100% completa e operacional**. Todo o código foi testado, validado e commitado. A infraestrutura permite:
 
-✅ Criar experimentos via admin UI  
-✅ Definir variantes com pesos customizados  
-✅ Track views e conversões automaticamente  
-✅ Analisar métricas em tempo real  
+✅ Criar experimentos via admin UI 
+✅ Definir variantes com pesos customizados 
+✅ Track views e conversões automaticamente 
+✅ Analisar métricas em tempo real 
 ✅ Controlar ciclo de vida (draft → running → completed)
 
 **Status:** PRONTO PARA PRODUÇÃO 🚀
 
 ---
 
-**Última atualização:** 26 de outubro de 2025  
-**Responsável:** GitHub Copilot  
+**Última atualização:** 26 de outubro de 2025 
+**Responsável:** GitHub Copilot 
 **Commit:** e9876fe

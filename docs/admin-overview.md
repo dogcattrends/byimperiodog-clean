@@ -12,15 +12,15 @@ Diagnóstico textual (sem código) das rotas e páginas admin atuais. Foco: prop
 ## /admin/puppies
 - **Objetivo**: gestão de filhotes (listar, alterar status, criar/editar).
 - **Dados Supabase**:
-  - Página principal usa `listPuppiesCatalog` (Supabase `puppies` + normalização) com limite 200, inclui datas e status.
-  - Edições/criação usam API `/api/admin/puppies/manage` para status e `/api/admin/puppies`/`/api/admin/puppies/manage` para persistir (supabase tables `puppies`, `puppy_media` etc.).
-  - Formulário converte URLs de storage Supabase para público.
+ - Página principal usa `listPuppiesCatalog` (Supabase `puppies` + normalização) com limite 200, inclui datas e status.
+ - Edições/criação usam API `/api/admin/puppies/manage` para status e `/api/admin/puppies`/`/api/admin/puppies/manage` para persistir (supabase tables `puppies`, `puppy_media` etc.).
+ - Formulário converte URLs de storage Supabase para público.
 - **Ações**: mudar status via tabela; navegar para `/admin/puppies/new`, `/edit/[id]`, `/[id]` para detalhes. Uploads e reorder de mídia via `MediaManager` (chama APIs admin de upload/presign). Edit page chama `/api/admin/puppies?id=...`.
 - **Dependências**: `listPuppiesCatalog`, client components `PuppiesTable`, `PuppiesPageClient`, `_components` (Form, MediaManager, ColorSelector, PriceInputMasked), API routes `app/api/admin/puppies/*`.
 - **Pendências/bugs**:
-  - Build atual falha em `/api/admin/puppies/route.ts` (type guard fraco: assume `entry.url` em um objeto tipado `{}`) – precisa ajustar union/string/objeto antes de acesso.
-  - Lead counts passados como `{}` (sem integração real).
-  - Algumas páginas extras (`page.tsx` vs `pageClient.tsx`, `PuppiesBoard`, `PuppiesView`) parecem redundantes/não usadas na rota principal.
+ - Build atual falha em `/api/admin/puppies/route.ts` (type guard fraco: assume `entry.url` em um objeto tipado `{}`) – precisa ajustar union/string/objeto antes de acesso.
+ - Lead counts passados como `{}` (sem integração real).
+ - Algumas páginas extras (`page.tsx` vs `pageClient.tsx`, `PuppiesBoard`, `PuppiesView`) parecem redundantes/não usadas na rota principal.
 
 ## /admin/leads
 - **Objetivo**: mini-CRM para funil de leads.
@@ -28,20 +28,20 @@ Diagnóstico textual (sem código) das rotas e páginas admin atuais. Foco: prop
 - **Ações**: alterar status via `/api/admin/leads/status`; gerar “IA” via `/api/admin/leads/intel`; links para WhatsApp com mensagem padrão; filtros de cidade/cor/status; ordenar por risco/status; abrir detalhe.
 - **Dependências**: `LeadsCRM`, `computeLeadRisk`, UI badges (`LeadFraudBadge`, `LeadCrossMatchCard`, etc.), API routes admin de leads.
 - **Pendências/bugs**:
-  - Recentemente havia erro de tipo “anchor” por index inválido; foi normalizado para map fixo de status (ok).
-  - Campos de IA usam estado local; podem estar desconectados de backend (sinais guardados apenas no cliente).
-  - `mock-data.ts` existe (mock), mas página principal já usa Supabase; precisa remover/garantir não usado.
+ - Recentemente havia erro de tipo “anchor” por index inválido; foi normalizado para map fixo de status (ok).
+ - Campos de IA usam estado local; podem estar desconectados de backend (sinais guardados apenas no cliente).
+ - `mock-data.ts` existe (mock), mas página principal já usa Supabase; precisa remover/garantir não usado.
 
 ## /admin/analytics
 - **Objetivo**: visão analítica (leads, interações, estoque, IA, SEO autopilot).
 - **Dados Supabase**:
-  - `leads` (fetch limitado e desde data), `lead_interactions` (tempo de resposta, mensagens), `puppies`, `catalog_ai_events`.
-  - Usa vários módulos de IA (conversion analyzer, dashboard narrative, deep insights, decisions, demand prediction, catalog analytics, autopilot SEO) que combinam dados supabase.
+ - `leads` (fetch limitado e desde data), `lead_interactions` (tempo de resposta, mensagens), `puppies`, `catalog_ai_events`.
+ - Usa vários módulos de IA (conversion analyzer, dashboard narrative, deep insights, decisions, demand prediction, catalog analytics, autopilot SEO) que combinam dados supabase.
 - **Ações**: leitura; não há ações de escrita. Renderiza cards, gráficos e narrativas.
 - **Dependências**: `supabaseAdmin`, AI libs citadas, chart components (`MetricCard`, `BarChart`, `LineChart`, `PieChart`).
 - **Pendências/risco**:
-  - Grande quantidade de IA custom; validar que tabelas (`lead_interactions`, `catalog_ai_events`) existem/populadas.
-  - Se tabelas vazias, cards ficam vazios; não há mocks explícitos.
+ - Grande quantidade de IA custom; validar que tabelas (`lead_interactions`, `catalog_ai_events`) existem/populadas.
+ - Se tabelas vazias, cards ficam vazios; não há mocks explícitos.
 
 ## /admin/config
 - **Objetivo**: gerenciar config de marca/SEO/contato.
@@ -59,15 +59,15 @@ Diagnóstico textual (sem código) das rotas e páginas admin atuais. Foco: prop
 
 ## /admin/analytics (subrotas blog)
 - `/admin/blog/analytics`, `/admin/blog/comments`, `/admin/blog/editor`, `/admin/blog/preview/[id]`, `/admin/blog/schedule`: blog tooling.
-- **Dados**: maioria menciona TODO/mocks (analytics page tem TODO comentário; comments page TODO). Editor/preview integram Supabase `blog_posts` via compile; preview carrega dados de Supabase/MDX.
+- **Dados**: maioria menciona TODO/mocks (analytics page tem TODO comentário; comments page TODO). Editor/preview devem integrar Sanity; Supabase fica para dados operacionais (comentários, revisões, embeddings, schedule).
 - **Pendências**: vários arquivos duplicados/antigos (`page.old.tsx`), wizard; verificar quais realmente expostos no menu. Muitos podem ser legados e não referenciados.
 
 ## /admin/content, /admin/media, /admin/web-stories, /admin/relatorios, /admin/system/health, /admin/experiments, /admin/pixel-experiments
 - **Objetivo**: utilitários diversos (editor, calendário, web stories, relatórios, health).
 - **Dados**: vários são mocks ou placeholders:
-  - `/admin/content` exibe texto “Tabela de conteúdo (mock)”.
-  - `/admin/settings` (não confundir com config) menciona “UI mock”.
-  - Web stories/new, media, relatorios, experiments, pixel-experiments: parecem estáticos/dummy; não vi chamadas supabase.
+ - `/admin/content` exibe texto “Tabela de conteúdo (mock)”.
+ - `/admin/settings` (não confundir com config) menciona “UI mock”.
+ - Web stories/new, media, relatorios, experiments, pixel-experiments: parecem estáticos/dummy; não vi chamadas supabase.
 - **Pendências**: ligar a bancos/rotas reais ou ocultar.
 
 ## /admin/login e layouts

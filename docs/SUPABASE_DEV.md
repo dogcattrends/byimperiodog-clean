@@ -131,11 +131,11 @@ Edite o arquivo gerado em `supabase/migrations/<timestamp>_add_puppies_table.sql
 
 ```sql
 create table public.puppies (
-  id uuid primary key default gen_random_uuid(),
-  name text not null,
-  breed text,
-  status text check (status in ('disponivel', 'reservado', 'vendido', 'indisponivel')),
-  created_at timestamptz default now()
+ id uuid primary key default gen_random_uuid(),
+ name text not null,
+ breed text,
+ status text check (status in ('disponivel', 'reservado', 'vendido', 'indisponivel')),
+ created_at timestamptz default now()
 );
 ```
 
@@ -218,11 +218,11 @@ Para alternar entre local e remoto, comente/descomente as linhas apropriadas ou 
 
 ```
 supabase/
-├── config.toml          # Configuração do CLI (portas, features, etc.)
-├── seed.sql             # Script de seed executado após db reset
-├── migrations/          # Migrações SQL versionadas (aplicadas em ordem)
-│   └── <timestamp>_<nome>.sql
-└── functions/           # Edge Functions (Deno runtime)
+├── config.toml # Configuração do CLI (portas, features, etc.)
+├── seed.sql # Script de seed executado após db reset
+├── migrations/ # Migrações SQL versionadas (aplicadas em ordem)
+│ └── <timestamp>_<nome>.sql
+└── functions/ # Edge Functions (Deno runtime)
 ```
 
 ---

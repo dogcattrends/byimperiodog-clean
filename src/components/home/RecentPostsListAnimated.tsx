@@ -1,6 +1,7 @@
 // src/components/home/RecentPostsListAnimated.tsx
 'use client';
 import { motion, useReducedMotion } from 'framer-motion';
+import { ArrowUpRight, BookOpen, Calendar, GraduationCap, HeartPulse, PawPrint, ShieldCheck, Sparkles } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -25,6 +26,7 @@ export default function RecentPostsListAnimated({ posts }: { posts: RecentPostIt
 				const dateIso = p.published_at ? new Date(p.published_at).toISOString() : undefined;
 				const dateFormatted = p.published_at ? new Date(p.published_at).toLocaleDateString('pt-BR') : '—';
 				const readingTime = p.reading_time || 5;
+				const topic = getTopicBadge(p.title);
 				return (
 					<motion.li
 						key={p.id}
@@ -35,7 +37,7 @@ export default function RecentPostsListAnimated({ posts }: { posts: RecentPostIt
 						className="group relative flex flex-col overflow-hidden rounded-2xl ring-1 ring-zinc-200/70 dark:ring-zinc-800 bg-white dark:bg-zinc-900 shadow-sm transition-shadow hover:shadow-md focus-within:ring-emerald-500/50"
 					>
 						<Link href={`/blog/${p.slug}`} className="focus:outline-none" aria-label={`Ler artigo: ${p.title}`}>
-						<div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-800">
+						<div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-800">
 							{p.cover_url ? (
 								<Image
 									src={p.cover_url}
@@ -57,9 +59,26 @@ export default function RecentPostsListAnimated({ posts }: { posts: RecentPostIt
 									Sem capa
 								</div>
 							)}
-							<span className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/35 to-transparent" aria-hidden="true" />
 						</div>
-							<div className="flex flex-1 flex-col p-4">
+							<div className="flex flex-1 flex-col p-4 sm:p-5">
+								<div className="mb-3 flex flex-wrap items-center gap-2 text-[11px] font-semibold text-emerald-700">
+									<span className="inline-flex items-center gap-1 rounded-full border border-emerald-100 bg-emerald-50 px-2 py-1 leading-none">
+										<BookOpen className="h-3 w-3" aria-hidden="true" />
+										Blog By Império
+									</span>
+									<span className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 leading-none ${topic.className}`}>
+										<topic.icon className="h-3 w-3" aria-hidden="true" />
+										{topic.label}
+									</span>
+									<span className="inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-white px-2 py-1 leading-none text-zinc-600">
+										<Calendar className="h-3 w-3" aria-hidden="true" />
+										<time dateTime={dateIso}>{dateFormatted}</time>
+									</span>
+									<span className="inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-white px-2 py-1 leading-none text-zinc-600" aria-label={`Tempo de leitura estimado ${readingTime} minutos`}>
+										<Sparkles className="h-3 w-3" aria-hidden="true" />
+										Leitura {readingTime} min
+									</span>
+								</div>
 								<h3 className="line-clamp-2 font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 group-hover:text-emerald-700 transition-colors">
 									{p.title}
 								</h3>
@@ -68,9 +87,9 @@ export default function RecentPostsListAnimated({ posts }: { posts: RecentPostIt
 										{p.excerpt}
 									</p>
 								)}
-								<div className="mt-3 flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-400">
-									<time dateTime={dateIso}>{dateFormatted}</time>
-									<span aria-label={`Tempo de leitura estimado ${readingTime} minutos`}>{readingTime} min</span>
+								<div className="mt-4 inline-flex items-center gap-2 self-start rounded-full bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-md transition duration-300 group-hover:bg-emerald-500 group-hover:-translate-y-0.5">
+									Ler artigo
+									<ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5" aria-hidden="true" />
 								</div>
 							</div>
 						</Link>
@@ -79,4 +98,21 @@ export default function RecentPostsListAnimated({ posts }: { posts: RecentPostIt
 			})}
 		</ul>
 	);
+}
+
+function getTopicBadge(title: string) {
+	const t = title.toLowerCase();
+	if (t.includes("saude") || t.includes("saúde") || t.includes("veterin")) {
+		return { label: "Saúde", icon: HeartPulse, className: "border-rose-200 bg-rose-50 text-rose-700" };
+	}
+	if (t.includes("pelo") || t.includes("higiene") || t.includes("banho") || t.includes("tosa")) {
+		return { label: "Higiene", icon: PawPrint, className: "border-amber-200 bg-amber-50 text-amber-700" };
+	}
+	if (t.includes("educa") || t.includes("treino") || t.includes("comport")) {
+		return { label: "Comportamento", icon: GraduationCap, className: "border-sky-200 bg-sky-50 text-sky-700" };
+	}
+	if (t.includes("guia") || t.includes("passo") || t.includes("como")) {
+		return { label: "Guia", icon: ShieldCheck, className: "border-emerald-200 bg-emerald-50 text-emerald-700" };
+	}
+	return { label: "Dicas", icon: Sparkles, className: "border-zinc-200 bg-white text-zinc-700" };
 }

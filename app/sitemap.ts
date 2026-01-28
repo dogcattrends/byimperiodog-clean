@@ -23,130 +23,130 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "https:
  * Exclui: /admin/*, drafts, preview, API routes
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const now = new Date();
-  const lastModified = now.toISOString();
+ const now = new Date();
+ const lastModified = now.toISOString();
 
-  // ============================================================================
-  // 1. Páginas estáticas principais
-  // ============================================================================
-  const staticPages: MetadataRoute.Sitemap = [
-    { url: `${SITE_URL}/`, lastModified, changeFrequency: "daily", priority: 1.0 },
-    { url: `${SITE_URL}/filhotes`, lastModified, changeFrequency: "daily", priority: 0.9 },
-    { url: `${SITE_URL}/blog`, lastModified, changeFrequency: "daily", priority: 0.8 },
-    { url: `${SITE_URL}/sobre`, lastModified, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${SITE_URL}/about/source`, lastModified, changeFrequency: "yearly", priority: 0.3 },
-    { url: `${SITE_URL}/contato`, lastModified, changeFrequency: "monthly", priority: 0.6 },
-    { url: `${SITE_URL}/reserve-seu-filhote`, lastModified, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${SITE_URL}/faq-do-tutor`, lastModified, changeFrequency: "weekly", priority: 0.6 },
-    { url: `${SITE_URL}/politica-de-privacidade`, lastModified, changeFrequency: "yearly", priority: 0.3 },
-    { url: `${SITE_URL}/politica-editorial`, lastModified, changeFrequency: "yearly", priority: 0.3 },
-    { url: `${SITE_URL}/termos-de-uso`, lastModified, changeFrequency: "yearly", priority: 0.3 },
-  ];
+ // ============================================================================
+ // 1. Páginas estáticas principais
+ // ============================================================================
+ const staticPages: MetadataRoute.Sitemap = [
+ { url: `${SITE_URL}/`, lastModified, changeFrequency: "daily", priority: 1.0 },
+ { url: `${SITE_URL}/filhotes`, lastModified, changeFrequency: "daily", priority: 0.9 },
+ { url: `${SITE_URL}/blog`, lastModified, changeFrequency: "daily", priority: 0.8 },
+ { url: `${SITE_URL}/sobre`, lastModified, changeFrequency: "monthly", priority: 0.7 },
+ { url: `${SITE_URL}/about/source`, lastModified, changeFrequency: "yearly", priority: 0.3 },
+ { url: `${SITE_URL}/contato`, lastModified, changeFrequency: "monthly", priority: 0.6 },
+ { url: `${SITE_URL}/reserve-seu-filhote`, lastModified, changeFrequency: "monthly", priority: 0.7 },
+ { url: `${SITE_URL}/faq-do-tutor`, lastModified, changeFrequency: "weekly", priority: 0.6 },
+ { url: `${SITE_URL}/politica-de-privacidade`, lastModified, changeFrequency: "yearly", priority: 0.3 },
+ { url: `${SITE_URL}/politica-editorial`, lastModified, changeFrequency: "yearly", priority: 0.3 },
+ { url: `${SITE_URL}/termos-de-uso`, lastModified, changeFrequency: "yearly", priority: 0.3 },
+ ];
 
-  // ============================================================================
-  // 2. Intent pages (SEO)
-  // ============================================================================
-  const intentPages: MetadataRoute.Sitemap = [
-    { url: `${SITE_URL}/comprar-spitz-anao`, lastModified, changeFrequency: "weekly", priority: 0.8 },
-    { url: `${SITE_URL}/preco-spitz-anao`, lastModified, changeFrequency: "weekly", priority: 0.8 },
-    { url: `${SITE_URL}/criador-spitz-confiavel`, lastModified, changeFrequency: "weekly", priority: 0.8 },
-  ];
+ // ============================================================================
+ // 2. Intent pages (SEO)
+ // ============================================================================
+ const intentPages: MetadataRoute.Sitemap = [
+ { url: `${SITE_URL}/comprar-spitz-anao`, lastModified, changeFrequency: "weekly", priority: 0.8 },
+ { url: `${SITE_URL}/preco-spitz-anao`, lastModified, changeFrequency: "weekly", priority: 0.8 },
+ { url: `${SITE_URL}/criador-spitz-confiavel`, lastModified, changeFrequency: "weekly", priority: 0.8 },
+ ];
 
-  // ============================================================================
-  // 3. Páginas de cores (/spitz-anao/cor/[color])
-  // ============================================================================
-  const colorPages: MetadataRoute.Sitemap = Object.keys(PUPPY_COLORS).map((colorKey) => ({
-    url: `${SITE_URL}/spitz-anao/cor/${colorKey}`,
-    lastModified,
-    changeFrequency: "weekly" as const,
-    priority: 0.7,
-  }));
+ // ============================================================================
+ // 3. Páginas de cores (/spitz-anao/cor/[color])
+ // ============================================================================
+ const colorPages: MetadataRoute.Sitemap = Object.keys(PUPPY_COLORS).map((colorKey) => ({
+ url: `${SITE_URL}/spitz-anao/cor/${colorKey}`,
+ lastModified,
+ changeFrequency: "weekly" as const,
+ priority: 0.7,
+ }));
 
-  // ============================================================================
-  // 4. Páginas de cidades (/spitz-anao/[city])
-  // ============================================================================
-  const cityPages: MetadataRoute.Sitemap = Object.keys(CITIES).map((slug) => ({
-    url: `${SITE_URL}/spitz-anao/${slug}`,
-    lastModified,
-    changeFrequency: "weekly" as const,
-    priority: 0.8,
-  }));
+ // ============================================================================
+ // 4. Páginas de cidades (/spitz-anao/[city])
+ // ============================================================================
+ const cityPages: MetadataRoute.Sitemap = Object.keys(CITIES).map((slug) => ({
+ url: `${SITE_URL}/spitz-anao/${slug}`,
+ lastModified,
+ changeFrequency: "weekly" as const,
+ priority: 0.8,
+ }));
 
-  // ============================================================================
-  // 5. Blog posts publicados
-  // ============================================================================
-  let blogPosts: MetadataRoute.Sitemap = [];
-  try {
-    const { posts } = await listPublicPosts({ page: 1, pageSize: 200 });
-    blogPosts = posts.map((post) => ({
-      url: `${SITE_URL}/blog/${post.slug}`,
-      lastModified: post.updated_at || post.published_at || lastModified,
-      changeFrequency: "monthly" as const,
-      priority: 0.6,
-    }));
-  } catch (err) {
-    console.error("Erro ao buscar blog posts para sitemap:", err);
-  }
+ // ============================================================================
+ // 5. Blog posts publicados
+ // ============================================================================
+ let blogPosts: MetadataRoute.Sitemap = [];
+ try {
+ const { posts } = await listPublicPosts({ page: 1, pageSize: 200 });
+ blogPosts = posts.map((post) => ({
+ url: `${SITE_URL}/blog/${post.slug}`,
+ lastModified: post.updated_at || post.published_at || lastModified,
+ changeFrequency: "monthly" as const,
+ priority: 0.6,
+ }));
+ } catch (err) {
+ console.error("Erro ao buscar blog posts para sitemap:", err);
+ }
 
-  // ============================================================================
-  // 6. Puppies disponíveis (status=disponivel)
-  // ============================================================================
-  let puppyPages: MetadataRoute.Sitemap = [];
-  try {
-    const sb = supabasePublic();
-    const { data, error } = await sb
-      .from("puppies")
-      .select("slug, updated_at")
-      .in("status", ["disponivel", "reservado"])
-      .order("created_at", { ascending: false });
+ // ============================================================================
+ // 6. Puppies disponíveis (status=disponivel)
+ // ============================================================================
+ let puppyPages: MetadataRoute.Sitemap = [];
+ try {
+ const sb = supabasePublic();
+ const { data, error } = await sb
+ .from("puppies")
+ .select("slug, updated_at")
+ .in("status", ["disponivel", "reservado"])
+ .order("created_at", { ascending: false });
 
-    if (!error && data) {
-      puppyPages = data.map((puppy: { slug: string; updated_at?: string | null }) => ({
-        url: `${SITE_URL}/filhotes/${puppy.slug}`,
-        lastModified: puppy.updated_at || lastModified,
-        changeFrequency: "daily" as const,
-        priority: 0.8,
-      }));
-    }
-  } catch (err) {
-    console.error("Erro ao buscar puppies para sitemap:", err);
-  }
+ if (!error && data) {
+ puppyPages = data.map((puppy: { slug: string; updated_at?: string | null }) => ({
+ url: `${SITE_URL}/filhotes/${puppy.slug}`,
+ lastModified: puppy.updated_at || lastModified,
+ changeFrequency: "daily" as const,
+ priority: 0.8,
+ }));
+ }
+ } catch (err) {
+ console.error("Erro ao buscar puppies para sitemap:", err);
+ }
 
-  // ============================================================================
-  // 7. Web Stories publicadas
-  // ============================================================================
-  let webStories: MetadataRoute.Sitemap = [];
-  try {
-    const sb = supabasePublic();
-    const { data, error } = await sb
-      .from("web_stories")
-      .select("slug, updated_at")
-      .eq("status", "published")
-      .order("updated_at", { ascending: false });
+ // ============================================================================
+ // 7. Web Stories publicadas
+ // ============================================================================
+ let webStories: MetadataRoute.Sitemap = [];
+ try {
+ const sb = supabasePublic();
+ const { data, error } = await sb
+ .from("web_stories")
+ .select("slug, updated_at")
+ .eq("status", "published")
+ .order("updated_at", { ascending: false });
 
-    if (!error && data) {
-      webStories = data.map((story: { slug: string; updated_at?: string | null }) => ({
-        url: `${SITE_URL}/web-stories/${story.slug}`,
-        lastModified: story.updated_at || lastModified,
-        changeFrequency: "monthly" as const,
-        priority: 0.5,
-      }));
-    }
-  } catch (err) {
-    console.error("Erro ao buscar web stories para sitemap:", err);
-  }
+ if (!error && data) {
+ webStories = data.map((story: { slug: string; updated_at?: string | null }) => ({
+ url: `${SITE_URL}/web-stories/${story.slug}`,
+ lastModified: story.updated_at || lastModified,
+ changeFrequency: "monthly" as const,
+ priority: 0.5,
+ }));
+ }
+ } catch (err) {
+ console.error("Erro ao buscar web stories para sitemap:", err);
+ }
 
-  // ============================================================================
-  // 8. Consolidar e retornar
-  // ============================================================================
-  return [
-    ...staticPages,
-    ...intentPages,
-    ...colorPages,
-    ...cityPages,
-    ...blogPosts,
-    ...puppyPages,
-    ...webStories,
-  ];
+ // ============================================================================
+ // 8. Consolidar e retornar
+ // ============================================================================
+ return [
+ ...staticPages,
+ ...intentPages,
+ ...colorPages,
+ ...cityPages,
+ ...blogPosts,
+ ...puppyPages,
+ ...webStories,
+ ];
 }
 

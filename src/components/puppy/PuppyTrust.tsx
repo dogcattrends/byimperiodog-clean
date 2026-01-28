@@ -1,4 +1,4 @@
-﻿/**
+/**
  * PuppyTrust v2.0 - Design System Refactor
  * Bloco de confianÃ§a: garantias, transparÃªncia, processo
  * UX: ReduÃ§Ã£o de fricÃ§Ã£o no funil de conversÃ£o
@@ -13,112 +13,112 @@ import { CheckCircle2, FileText, ShieldCheck, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui";
 
 export function PuppyTrust() {
-  return (
-    <section aria-labelledby="trust-heading" className="space-y-6">
-      <div className="text-center">
-        <h2 id="trust-heading" className="text-2xl font-bold text-zinc-900">
-          Por que escolher a By ImpÃ©rio Dog?
-        </h2>
-        <p className="mt-2 text-base text-zinc-600">
-          TransparÃªncia total em cada etapa do processo
-        </p>
-      </div>
+ return (
+ <section aria-labelledby="trust-heading" className="space-y-6">
+ <div className="text-center">
+ <h2 id="trust-heading" className="text-2xl font-bold text-zinc-900">
+ Por que escolher a By ImpÃ©rio Dog?
+ </h2>
+ <p className="mt-2 text-base text-zinc-600">
+ TransparÃªncia total em cada etapa do processo
+ </p>
+ </div>
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <Card variant="outline" className="bg-gradient-to-br from-white to-zinc-50">
-          <CardContent className="p-6 text-center">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100">
-              <ShieldCheck className="h-7 w-7 text-emerald-600" aria-hidden="true" />
-            </div>
-            <h3 className="mt-4 text-base font-semibold text-zinc-900">Garantia de 30 dias</h3>
-            <p className="mt-2 text-sm text-zinc-600">
-              Cobertura completa para problemas congÃªnitos com suporte veterinÃ¡rio
-            </p>
-          </CardContent>
-        </Card>
+ <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+ <Card variant="outline" className="bg-gradient-to-br from-white to-zinc-50">
+ <CardContent className="p-6 text-center">
+ <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100">
+ <ShieldCheck className="h-7 w-7 text-emerald-600" aria-hidden="true" />
+ </div>
+ <h3 className="mt-4 text-base font-semibold text-zinc-900">Garantia de 30 dias</h3>
+ <p className="mt-2 text-sm text-zinc-600">
+ Cobertura completa para problemas congÃªnitos com suporte veterinÃ¡rio
+ </p>
+ </CardContent>
+ </Card>
 
-        <Card variant="outline" className="bg-gradient-to-br from-white to-zinc-50">
-          <CardContent className="p-6 text-center">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-blue-100">
-              <FileText className="h-7 w-7 text-blue-600" aria-hidden="true" />
-            </div>
-            <h3 className="mt-4 text-base font-semibold text-zinc-900">Contrato detalhado</h3>
-            <p className="mt-2 text-sm text-zinc-600">
-              Todos os direitos e deveres documentados com clareza e seguranÃ§a jurÃ­dica
-            </p>
-          </CardContent>
-        </Card>
+ <Card variant="outline" className="bg-gradient-to-br from-white to-zinc-50">
+ <CardContent className="p-6 text-center">
+ <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-blue-100">
+ <FileText className="h-7 w-7 text-blue-600" aria-hidden="true" />
+ </div>
+ <h3 className="mt-4 text-base font-semibold text-zinc-900">Contrato detalhado</h3>
+ <p className="mt-2 text-sm text-zinc-600">
+ Todos os direitos e deveres documentados com clareza e seguranÃ§a jurÃ­dica
+ </p>
+ </CardContent>
+ </Card>
 
-        <Card variant="outline" className="bg-gradient-to-br from-white to-zinc-50">
-          <CardContent className="p-6 text-center">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-purple-100">
-              <CheckCircle2 className="h-7 w-7 text-purple-600" aria-hidden="true" />
-            </div>
-            <h3 className="mt-4 text-base font-semibold text-zinc-900">Origem rastreÃ¡vel</h3>
-            <p className="mt-2 text-sm text-zinc-600">
-              Pedigree Pedigree com histÃ³rico completo da linhagem e exames dos pais
-            </p>
-          </CardContent>
-        </Card>
+ <Card variant="outline" className="bg-gradient-to-br from-white to-zinc-50">
+ <CardContent className="p-6 text-center">
+ <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-purple-100">
+ <CheckCircle2 className="h-7 w-7 text-purple-600" aria-hidden="true" />
+ </div>
+ <h3 className="mt-4 text-base font-semibold text-zinc-900">Origem rastreÃ¡vel</h3>
+ <p className="mt-2 text-sm text-zinc-600">
+ Pedigree Pedigree com histÃ³rico completo da linhagem e exames dos pais
+ </p>
+ </CardContent>
+ </Card>
 
-        <Card variant="outline" className="bg-gradient-to-br from-white to-zinc-50">
-          <CardContent className="p-6 text-center">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-rose-100">
-              <Users className="h-7 w-7 text-rose-600" aria-hidden="true" />
-            </div>
-            <h3 className="mt-4 text-base font-semibold text-zinc-900">Suporte vitalÃ­cio</h3>
-            <p className="mt-2 text-sm text-zinc-600">
-              Grupo exclusivo de tutores com check-ins mensais e orientaÃ§Ã£o contÃ­nua
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+ <Card variant="outline" className="bg-gradient-to-br from-white to-zinc-50">
+ <CardContent className="p-6 text-center">
+ <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-rose-100">
+ <Users className="h-7 w-7 text-rose-600" aria-hidden="true" />
+ </div>
+ <h3 className="mt-4 text-base font-semibold text-zinc-900">Suporte vitalÃ­cio</h3>
+ <p className="mt-2 text-sm text-zinc-600">
+ Grupo exclusivo de tutores com check-ins mensais e orientaÃ§Ã£o contÃ­nua
+ </p>
+ </CardContent>
+ </Card>
+ </div>
 
-      <Card variant="outline" className="border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-white">
-        <CardContent className="p-6">
-          <h3 className="text-lg font-semibold text-emerald-900">
-            ✓ Processo completo de aquisição responsável
-          </h3>
-          <ol className="mt-4 space-y-2 text-sm text-zinc-700">
-          <li className="flex items-start gap-2">
-            <span className="font-semibold text-emerald-700">1.</span>
-            <span>
-              <strong>Entrevista inicial:</strong> conhecemos sua rotina, expectativas e preparamos vocÃª para a chegada
-            </span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="font-semibold text-emerald-700">2.</span>
-            <span>
-              <strong>Visita online:</strong> chamadas de vÃ­deo para ver o filhote, tirar dÃºvidas e criar vÃ­nculo
-            </span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="font-semibold text-emerald-700">3.</span>
-            <span>
-              <strong>Contrato e reserva:</strong> documentaÃ§Ã£o clara, pagamento seguro e cronograma definido
-            </span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="font-semibold text-emerald-700">4.</span>
-            <span>
-              <strong>Acompanhamento prÃ©-entrega:</strong> updates semanais com fotos, vÃ­deos e orientaÃ§Ãµes
-            </span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="font-semibold text-emerald-700">5.</span>
-            <span>
-              <strong>Entrega humanizada:</strong> transporte especializado ou retirada com kit completo
-            </span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="font-semibold text-emerald-700">6.</span>
-            <span>
-            <strong>Suporte pós-compra:</strong> WhatsApp direto, grupo de tutores e check-ins mensais
-            </span>
-          </li>
-          </ol>
-        </CardContent>
-      </Card>
-    </section>
-  );
+ <Card variant="outline" className="border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-white">
+ <CardContent className="p-6">
+ <h3 className="text-lg font-semibold text-emerald-900">
+ ✓ Processo completo de aquisição responsável
+ </h3>
+ <ol className="mt-4 space-y-2 text-sm text-zinc-700">
+ <li className="flex items-start gap-2">
+ <span className="font-semibold text-emerald-700">1.</span>
+ <span>
+ <strong>Entrevista inicial:</strong> conhecemos sua rotina, expectativas e preparamos vocÃª para a chegada
+ </span>
+ </li>
+ <li className="flex items-start gap-2">
+ <span className="font-semibold text-emerald-700">2.</span>
+ <span>
+ <strong>Visita online:</strong> chamadas de vÃ­deo para ver o filhote, tirar dÃºvidas e criar vÃ­nculo
+ </span>
+ </li>
+ <li className="flex items-start gap-2">
+ <span className="font-semibold text-emerald-700">3.</span>
+ <span>
+ <strong>Contrato e reserva:</strong> documentaÃ§Ã£o clara, pagamento seguro e cronograma definido
+ </span>
+ </li>
+ <li className="flex items-start gap-2">
+ <span className="font-semibold text-emerald-700">4.</span>
+ <span>
+ <strong>Acompanhamento prÃ©-entrega:</strong> updates semanais com fotos, vÃ­deos e orientaÃ§Ãµes
+ </span>
+ </li>
+ <li className="flex items-start gap-2">
+ <span className="font-semibold text-emerald-700">5.</span>
+ <span>
+ <strong>Entrega humanizada:</strong> transporte especializado ou retirada com kit completo
+ </span>
+ </li>
+ <li className="flex items-start gap-2">
+ <span className="font-semibold text-emerald-700">6.</span>
+ <span>
+ <strong>Suporte pós-compra:</strong> WhatsApp direto, grupo de tutores e check-ins mensais
+ </span>
+ </li>
+ </ol>
+ </CardContent>
+ </Card>
+ </section>
+ );
 }

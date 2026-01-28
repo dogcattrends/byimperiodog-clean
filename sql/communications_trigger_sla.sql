@@ -2,12 +2,12 @@
 create or replace function public.set_first_response_time()
 returns trigger language plpgsql as $$
 begin
-  if new.lead_id is not null and new.direction = 'outbound' then
-    update leads
-      set first_responded_at = coalesce(first_responded_at, new.created_at)
-      where id = new.lead_id;
-  end if;
-  return new;
+ if new.lead_id is not null and new.direction = 'outbound' then
+ update leads
+ set first_responded_at = coalesce(first_responded_at, new.created_at)
+ where id = new.lead_id;
+ end if;
+ return new;
 end;
 $$;
 

@@ -20,18 +20,18 @@ Vá para `/admin` e clique no card **"Web Stories AMP"** na dashboard.
 ### 2. Crie uma Nova Web Story
 1. Clique em **"+ Nova Web Story"**
 2. Preencha os metadados obrigatórios:
-   - **Título**: Máximo 70 caracteres (ex: "Filhote Spitz Alemão Branco")
-   - **Slug**: URL da story (ex: `filhote-spitz-alemao-branco`)
-   - **Publisher**: Nome do site (ex: "By Império Dog")
-   - **Imagem de Capa**: Mínimo 640x853px (proporção 3:4)
-   - **Logotipo**: Mínimo 96x96px (proporção 1:1)
-   - **Status**: Rascunho ou Publicada
+ - **Título**: Máximo 70 caracteres (ex: "Filhote Spitz Alemão Branco")
+ - **Slug**: URL da story (ex: `filhote-spitz-alemao-branco`)
+ - **Publisher**: Nome do site (ex: "By Império Dog")
+ - **Imagem de Capa**: Mínimo 640x853px (proporção 3:4)
+ - **Logotipo**: Mínimo 96x96px (proporção 1:1)
+ - **Status**: Rascunho ou Publicada
 
 3. Adicione páginas à story:
-   - **Tipo**: Imagem ou Vídeo
-   - **URL da Mídia**: Link completo (https://...)
-   - **Texto**: Opcional, máximo ~280 caracteres
-   - **Duração**: Para imagens, tempo em segundos
+ - **Tipo**: Imagem ou Vídeo
+ - **URL da Mídia**: Link completo (https://...)
+ - **Texto**: Opcional, máximo ~280 caracteres
+ - **Duração**: Para imagens, tempo em segundos
 
 4. Clique em **"Criar Web Story"**
 
@@ -45,46 +45,46 @@ Vá para `/admin` e clique no card **"Web Stories AMP"** na dashboard.
 ```
 app/
 ├── (admin)/
-│   └── admin/
-│       └── (protected)/
-│           ├── dashboard/
-│           │   └── page.tsx          # Card Web Stories adicionado
-│           └── web-stories/
-│               ├── page.tsx           # Lista de Web Stories
-│               └── new/
-│                   └── page.tsx       # Formulário de criação
+│ └── admin/
+│ └── (protected)/
+│ ├── dashboard/
+│ │ └── page.tsx # Card Web Stories adicionado
+│ └── web-stories/
+│ ├── page.tsx # Lista de Web Stories
+│ └── new/
+│ └── page.tsx # Formulário de criação
 ├── api/
-│   └── admin/
-│       └── web-stories/
-│           ├── route.ts               # GET (listar) e POST (criar)
-│           └── [id]/
-│               └── route.ts           # DELETE (excluir)
+│ └── admin/
+│ └── web-stories/
+│ ├── route.ts # GET (listar) e POST (criar)
+│ └── [id]/
+│ └── route.ts # DELETE (excluir)
 ├── web-stories/
-│   └── [slug]/
-│       └── page.tsx                   # Página AMP pública
-└── sitemap.ts                         # Atualizado com Web Stories
+│ └── [slug]/
+│ └── page.tsx # Página AMP pública
+└── sitemap.ts # Atualizado com Web Stories
 
 sql/
 └── migrations/
-    └── create_web_stories_table.sql   # Tabela Supabase
+ └── create_web_stories_table.sql # Tabela Supabase
 ```
 
 ## 🗄️ Banco de Dados
 
 ### Tabela: `web_stories`
 
-| Campo        | Tipo       | Descrição                                  |
+| Campo | Tipo | Descrição |
 |--------------|------------|--------------------------------------------|
-| `id`         | UUID       | Identificador único                        |
-| `title`      | TEXT       | Título da story (máx. 70 caracteres)      |
-| `slug`       | TEXT       | URL amigável (único)                       |
-| `publisher`  | TEXT       | Nome do editor/site                        |
-| `poster_url` | TEXT       | URL da imagem de capa (640x853px)         |
-| `logo_url`   | TEXT       | URL do logotipo (96x96px)                  |
-| `status`     | TEXT       | `draft` ou `published`                     |
-| `pages`      | JSONB      | Array de páginas da story                  |
-| `created_at` | TIMESTAMPTZ| Data de criação                            |
-| `updated_at` | TIMESTAMPTZ| Data da última atualização                 |
+| `id` | UUID | Identificador único |
+| `title` | TEXT | Título da story (máx. 70 caracteres) |
+| `slug` | TEXT | URL amigável (único) |
+| `publisher` | TEXT | Nome do editor/site |
+| `poster_url` | TEXT | URL da imagem de capa (640x853px) |
+| `logo_url` | TEXT | URL do logotipo (96x96px) |
+| `status` | TEXT | `draft` ou `published` |
+| `pages` | JSONB | Array de páginas da story |
+| `created_at` | TIMESTAMPTZ| Data de criação |
+| `updated_at` | TIMESTAMPTZ| Data da última atualização |
 
 ### Executar Migration
 
@@ -97,19 +97,19 @@ sql/migrations/create_web_stories_table.sql
 
 ```json
 [
-  {
-    "id": "page-1",
-    "type": "image",
-    "media_url": "https://exemplo.com/imagem.jpg",
-    "text": "Texto opcional para exibir sobre a imagem",
-    "duration": 5
-  },
-  {
-    "id": "page-2",
-    "type": "video",
-    "media_url": "https://exemplo.com/video.mp4",
-    "text": "Vídeo do filhote brincando"
-  }
+ {
+ "id": "page-1",
+ "type": "image",
+ "media_url": "https://exemplo.com/imagem.jpg",
+ "text": "Texto opcional para exibir sobre a imagem",
+ "duration": 5
+ },
+ {
+ "id": "page-2",
+ "type": "video",
+ "media_url": "https://exemplo.com/video.mp4",
+ "text": "Vídeo do filhote brincando"
+ }
 ]
 ```
 

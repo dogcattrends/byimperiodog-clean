@@ -84,9 +84,9 @@ Se `/blog` ou `/blog/[slug]` não exibirem posts:
 5. API de debug (local ou deploy):
 	- Defina `DEBUG_TOKEN="algum-segredo"`.
 	- Requisição:
-	  ```bash
-	  curl -H "x-debug-token: $DEBUG_TOKEN" http://localhost:3000/api/debug/blog
-	  ```
+	 ```bash
+	 curl -H "x-debug-token: $DEBUG_TOKEN" http://localhost:3000/api/debug/blog
+	 ```
 6. RLS (caso esqueceu migrations): execute `sql/blog.sql` para criar política:
 	- Política esperada: `blog_posts_public_read` (SELECT usando `status = 'published'`).
 
@@ -140,8 +140,8 @@ curl -X POST \
 
 Publicar todos os drafts/review de uma vez:
 ```bash
-node scripts/blog-publish-all.mjs --dry   # mostra o que seria publicado
-node scripts/blog-publish-all.mjs         # executa
+node scripts/blog-publish-all.mjs --dry # mostra o que seria publicado
+node scripts/blog-publish-all.mjs # executa
 ```
 
 ### Diagnóstico de Variáveis

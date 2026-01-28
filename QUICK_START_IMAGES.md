@@ -21,13 +21,13 @@ Crie pastas dentro de `raw-images/` seguindo este padrão:
 ```
 raw-images/
 ├── spitz-branco-macho/
-│   ├── foto1.jpg
-│   ├── foto2.png
-│   └── ...
+│ ├── foto1.jpg
+│ ├── foto2.png
+│ └── ...
 ├── spitz-laranja-femea/
-│   └── foto.jpg
+│ └── foto.jpg
 └── lulu-caramelo-macho/
-    └── hero.jpg
+ └── hero.jpg
 ```
 
 **Padrão da pasta**: `{slug}-{cor}-{sexo}`
@@ -67,12 +67,12 @@ npm run images:process
 
 ```
 📸 Processando: spitz-branco-macho
-  ✅ hero-uuid.webp (78 KB)
-  ✅ hero-uuid.jpg (145 KB)
-  ✅ card-uuid.webp (32 KB)
-  ✅ card-uuid.jpg (68 KB)
-  ✅ thumbnail-uuid.webp (14 KB)
-  ✅ thumbnail-uuid.jpg (28 KB)
+ ✅ hero-uuid.webp (78 KB)
+ ✅ hero-uuid.jpg (145 KB)
+ ✅ card-uuid.webp (32 KB)
+ ✅ card-uuid.jpg (68 KB)
+ ✅ thumbnail-uuid.webp (14 KB)
+ ✅ thumbnail-uuid.jpg (28 KB)
 
 ✅ Sucesso: 6 imagens | ❌ Erros: 0
 ```
@@ -88,12 +88,12 @@ import { getNextImageProps } from '@/lib/images';
 import Image from 'next/image';
 
 export default function PuppyPage() {
-  // Buscar props automáticas (width, height, src, srcSet)
-  const imageProps = getNextImageProps('spitz-branco', 'hero', {
-    priority: true, // LCP otimizado
-  });
+ // Buscar props automáticas (width, height, src, srcSet)
+ const imageProps = getNextImageProps('spitz-branco', 'hero', {
+ priority: true, // LCP otimizado
+ });
 
-  return <Image {...imageProps} alt="Filhote Spitz Branco" />;
+ return <Image {...imageProps} alt="Filhote Spitz Branco" />;
 }
 ```
 
@@ -103,13 +103,13 @@ export default function PuppyPage() {
 import { getPictureProps } from '@/lib/images';
 
 export default function PuppyCard() {
-  const pictureProps = getPictureProps(
-    'spitz-branco',
-    'Filhote Spitz Branco',
-    'card'
-  );
+ const pictureProps = getPictureProps(
+ 'spitz-branco',
+ 'Filhote Spitz Branco',
+ 'card'
+ );
 
-  return <picture {...pictureProps} />;
+ return <picture {...pictureProps} />;
 }
 ```
 
@@ -164,7 +164,7 @@ SUPABASE_SERVICE_ROLE_KEY=eyJxxx...
 import { getPuppyImages } from '@/lib/images';
 
 const images = getPuppyImages('spitz-branco', {
-  useSupabase: true, // URLs do CDN
+ useSupabase: true, // URLs do CDN
 });
 
 console.log(images.hero.webp); 
@@ -216,8 +216,8 @@ npm install --platform=win32 sharp
 Verifique estrutura da pasta:
 ```
 raw-images/
-└── nome-cor-sexo/   ← Padrão correto
-    └── foto.jpg
+└── nome-cor-sexo/ ← Padrão correto
+ └── foto.jpg
 ```
 
 ### Erro de permissão

@@ -2,33 +2,33 @@
 
 ## 1) Árvore de Pastas (nível 3)
 - app/
-  - (site)/: páginas públicas e blog
-    - blog/, categorias/, autores/, filhotes/, etc.
-  - (admin)/admin/: painel (auth/protected) e páginas administrativas
-    - (auth)/, (protected)/, puppies/, blog/, settings/
-  - api/: rotas HTTP (admin, blog, search, qa, analytics, leads, pixels)
-  - robots.ts, sitemap.ts, og/, rss.xml/
+ - (site)/: páginas públicas e blog
+ - blog/, categorias/, autores/, filhotes/, etc.
+ - (admin)/admin/: painel (auth/protected) e páginas administrativas
+ - (auth)/, (protected)/, puppies/, blog/, settings/
+ - api/: rotas HTTP (admin, blog, search, qa, analytics, leads, pixels)
+ - robots.ts, sitemap.ts, og/, rss.xml/
 - src/
-  - components/: UI e features
-    - Navbar.tsx, Footer.tsx, Hero.tsx, Testimonials.tsx, WhatsAppButton.tsx
-    - blog/: PostCard.tsx, Toc.tsx, GamificationWidget.tsx
-    - dashboard/: Sidebar.tsx, Header.tsx, DataTable.tsx, Main.tsx
-    - ui/: button.tsx, dialog.tsx, input.tsx, toast.tsx, tooltip.tsx
-  - lib/: utilitários e integrações
-    - seo.core.ts, seo.blog.ts, jsonld.ts, route.ts
-    - content.ts, internalLinks.ts, topicClusters.ts
-    - supabasePublic.ts, supabaseAdmin.ts, meili.ts, rateLimit.ts
-    - rag.ts, embeddings.store.blog.ts, analytics.ts, track.ts
-    - adminAuth.ts, adminFetch.ts, settings.ts, getSettings.ts
-  - types/: declarações auxiliares (blog, meilisearch, contentlayer)
+ - components/: UI e features
+ - Navbar.tsx, Footer.tsx, Hero.tsx, Testimonials.tsx, WhatsAppButton.tsx
+ - blog/: PostCard.tsx, Toc.tsx, GamificationWidget.tsx
+ - dashboard/: Sidebar.tsx, Header.tsx, DataTable.tsx, Main.tsx
+ - ui/: button.tsx, dialog.tsx, input.tsx, toast.tsx, tooltip.tsx
+ - lib/: utilitários e integrações
+ - seo.core.ts, seo.blog.ts, jsonld.ts, route.ts
+ - content.ts, internalLinks.ts, topicClusters.ts
+ - supabasePublic.ts, supabaseAdmin.ts, meili.ts, rateLimit.ts
+ - rag.ts, embeddings.store.blog.ts, analytics.ts, track.ts
+ - adminAuth.ts, adminFetch.ts, settings.ts, getSettings.ts
+ - types/: declarações auxiliares (blog, meilisearch, contentlayer)
 - design-system/
-  - tokens.css, theme-provider.tsx, motion.ts
+ - tokens.css, theme-provider.tsx, motion.ts
 - public/
-  - imagens, logos, ícones
+ - imagens, logos, ícones
 - scripts/
-  - seed, seo-audit, embeddings-index, apply-migrations, utilitários
+ - seed, seo-audit, embeddings-index, apply-migrations, utilitários
 - docs/
-  - relatórios e auditorias (PROJECT_AUDIT.md, BLOG_REPORT.md)
+ - relatórios e auditorias (PROJECT_AUDIT.md, BLOG_REPORT.md)
 
 ## 2) Dependências entre módulos (alto nível)
 - Páginas (app/*) → componentes (src/components/*) → utilitários (src/lib/*)

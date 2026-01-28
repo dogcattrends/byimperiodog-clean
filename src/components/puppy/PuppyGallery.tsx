@@ -18,170 +18,170 @@ import { useRef, useState } from "react";
 import { Button } from "@/components/ui";
 
 type Props = {
-  images: string[];
-  name: string;
-  postersByUrl?: Record<string, string | undefined>;
+ images: string[];
+ name: string;
+ postersByUrl?: Record<string, string | undefined>;
 };
 
 export function PuppyGallery({ images, name, postersByUrl }: Props) {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+ const [activeIndex, setActiveIndex] = useState(0);
+ const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
-  if (!images || images.length === 0) {
-    return (
-      <section className="rounded-2xl border border-zinc-200 bg-zinc-50 p-10 text-center" aria-label="Galeria de fotos">
-        <p className="text-sm text-zinc-500">Nenhuma foto disponível</p>
-      </section>
-    );
-  }
+ if (!images || images.length === 0) {
+ return (
+ <section className="rounded-2xl border border-zinc-200 bg-zinc-50 p-10 text-center" aria-label="Galeria de fotos">
+ <p className="text-sm text-zinc-500">Nenhuma foto disponível</p>
+ </section>
+ );
+ }
 
-  const currentMedia = images[activeIndex];
-  const isVideoFile = isVideo(currentMedia);
-  const isGifFile = isGif(currentMedia);
-  const poster = postersByUrl?.[currentMedia];
+ const currentMedia = images[activeIndex];
+ const isVideoFile = isVideo(currentMedia);
+ const isGifFile = isGif(currentMedia);
+ const poster = postersByUrl?.[currentMedia];
 
-  const goToPrevious = () => {
-    setActiveIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-  };
+ const goToPrevious = () => {
+ setActiveIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+ };
 
-  const goToNext = () => {
-    setActiveIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
-  };
+ const goToNext = () => {
+ setActiveIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+ };
 
-  const handleTouchStart = (event: React.TouchEvent) => {
-    if (event.touches.length !== 1) return;
-    const t = event.touches[0];
-    touchStartRef.current = { x: t.clientX, y: t.clientY };
-  };
+ const handleTouchStart = (event: React.TouchEvent) => {
+ if (event.touches.length !== 1) return;
+ const t = event.touches[0];
+ touchStartRef.current = { x: t.clientX, y: t.clientY };
+ };
 
-  const handleTouchEnd = (event: React.TouchEvent) => {
-    const start = touchStartRef.current;
-    touchStartRef.current = null;
-    if (!start) return;
-    const t = event.changedTouches[0];
-    if (!t) return;
-    const dx = t.clientX - start.x;
-    const dy = t.clientY - start.y;
-    const absDx = Math.abs(dx);
-    const absDy = Math.abs(dy);
+ const handleTouchEnd = (event: React.TouchEvent) => {
+ const start = touchStartRef.current;
+ touchStartRef.current = null;
+ if (!start) return;
+ const t = event.changedTouches[0];
+ if (!t) return;
+ const dx = t.clientX - start.x;
+ const dy = t.clientY - start.y;
+ const absDx = Math.abs(dx);
+ const absDy = Math.abs(dy);
 
-    // Só navega quando o gesto é claramente horizontal (evita conflito com scroll vertical do modal)
-    if (absDx < 48) return;
-    if (absDx < absDy * 1.5) return;
-    if (dx < 0) goToNext();
-    else goToPrevious();
-  };
+ // Só navega quando o gesto é claramente horizontal (evita conflito com scroll vertical do modal)
+ if (absDx < 48) return;
+ if (absDx < absDy * 1.5) return;
+ if (dx < 0) goToNext();
+ else goToPrevious();
+ };
 
-  return (
-    <section className="space-y-4" aria-label="Galeria de fotos e vídeos do filhote">
-      {/* Imagem/vídeo principal */}
-      <div
-        className="group relative h-[70dvh] touch-pan-y overflow-hidden rounded-none border border-[var(--border)] bg-[var(--surface-2)] shadow-sm sm:h-[56dvh] sm:rounded-2xl lg:h-[58dvh] xl:h-[62dvh]"
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        aria-roledescription="carrossel"
-      >
-        {isVideoFile ? (
-          <video
-            key={currentMedia}
-            className="h-full w-full object-contain"
-            controls
-            poster={poster}
-            aria-label={`Vídeo ${activeIndex + 1} de ${images.length} - ${name}`}
-          >
-            <source src={currentMedia} />
-            <track kind="captions" />
-            Seu navegador não suporta vídeo.
-          </video>
-        ) : isGifFile ? (
-          // GIF precisa manter animação -> usar <img> ao invés de next/image
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={currentMedia}
-            alt={`GIF ${activeIndex + 1} de ${images.length} do filhote ${name}`}
-            className="absolute inset-0 h-full w-full object-contain"
-            loading="eager"
-          />
-        ) : (
-          <Image
-            src={currentMedia}
-            alt={`Foto ${activeIndex + 1} de ${images.length} do filhote ${name}`}
-            fill
-            className="object-contain"
-            sizes="(max-width: 640px) 100vw, (max-width: 1280px) 80vw, 900px"
-            priority
-          />
-        )}
+ return (
+ <section className="space-y-4" aria-label="Galeria de fotos e vídeos do filhote">
+ {/* Imagem/vídeo principal */}
+ <div
+ className="group relative h-[70dvh] touch-pan-y overflow-hidden rounded-none border border-[var(--border)] bg-[var(--surface-2)] shadow-sm sm:h-[56dvh] sm:rounded-2xl lg:h-[58dvh] xl:h-[62dvh]"
+ onTouchStart={handleTouchStart}
+ onTouchEnd={handleTouchEnd}
+ aria-roledescription="carrossel"
+ >
+ {isVideoFile ? (
+ <video
+ key={currentMedia}
+ className="h-full w-full object-contain"
+ controls
+ poster={poster}
+ aria-label={`Vídeo ${activeIndex + 1} de ${images.length} - ${name}`}
+ >
+ <source src={currentMedia} />
+ <track kind="captions" />
+ Seu navegador não suporta vídeo.
+ </video>
+ ) : isGifFile ? (
+ // GIF precisa manter animação -> usar <img> ao invés de next/image
+ // eslint-disable-next-line @next/next/no-img-element
+ <img
+ src={currentMedia}
+ alt={`GIF ${activeIndex + 1} de ${images.length} do filhote ${name}`}
+ className="absolute inset-0 h-full w-full object-contain"
+ loading="eager"
+ />
+ ) : (
+ <Image
+ src={currentMedia}
+ alt={`Foto ${activeIndex + 1} de ${images.length} do filhote ${name}`}
+ fill
+ className="object-contain"
+ sizes="(max-width: 640px) 100vw, (max-width: 1280px) 80vw, 900px"
+ priority
+ />
+ )}
 
-        {/* Controles de navegação (apenas se houver mais de uma mídia) */}
-        {images.length > 1 && (
-          <>
-            <Button
-              onClick={goToPrevious}
-              variant="outline"
-              size="icon"
-              className="absolute left-3 top-1/2 hidden h-10 w-10 -translate-y-1/2 rounded-full bg-white/90 shadow-lg backdrop-blur-sm opacity-0 transition-opacity hover:bg-white focus-visible:opacity-100 sm:inline-flex sm:group-hover:opacity-100"
-              aria-label="Foto anterior"
-            >
-              <ChevronLeft className="h-6 w-6" aria-hidden="true" />
-            </Button>
-            <Button
-              onClick={goToNext}
-              variant="outline"
-              size="icon"
-              className="absolute right-3 top-1/2 hidden h-10 w-10 -translate-y-1/2 rounded-full bg-white/90 shadow-lg backdrop-blur-sm opacity-0 transition-opacity hover:bg-white focus-visible:opacity-100 sm:inline-flex sm:group-hover:opacity-100"
-              aria-label="Próxima foto"
-            >
-              <ChevronRight className="h-6 w-6" aria-hidden="true" />
-            </Button>
-          </>
-        )}
-      </div>
+ {/* Controles de navegação (apenas se houver mais de uma mídia) */}
+ {images.length > 1 && (
+ <>
+ <Button
+ onClick={goToPrevious}
+ variant="outline"
+ size="icon"
+ className="absolute left-3 top-1/2 hidden h-10 w-10 -translate-y-1/2 rounded-full bg-white/90 shadow-lg backdrop-blur-sm opacity-0 transition-opacity hover:bg-white focus-visible:opacity-100 sm:inline-flex sm:group-hover:opacity-100"
+ aria-label="Foto anterior"
+ >
+ <ChevronLeft className="h-6 w-6" aria-hidden="true" />
+ </Button>
+ <Button
+ onClick={goToNext}
+ variant="outline"
+ size="icon"
+ className="absolute right-3 top-1/2 hidden h-10 w-10 -translate-y-1/2 rounded-full bg-white/90 shadow-lg backdrop-blur-sm opacity-0 transition-opacity hover:bg-white focus-visible:opacity-100 sm:inline-flex sm:group-hover:opacity-100"
+ aria-label="Próxima foto"
+ >
+ <ChevronRight className="h-6 w-6" aria-hidden="true" />
+ </Button>
+ </>
+ )}
+ </div>
 
-      {/* Miniaturas */}
-      {images.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto pb-2" role="tablist" aria-label="Miniaturas da galeria">
-          {images.map((item, index) => {
-            const isActive = index === activeIndex;
-            const isVid = isVideo(item);
+ {/* Miniaturas */}
+ {images.length > 1 && (
+ <div className="flex gap-2 overflow-x-auto pb-2" role="tablist" aria-label="Miniaturas da galeria">
+ {images.map((item, index) => {
+ const isActive = index === activeIndex;
+ const isVid = isVideo(item);
 
-            return (
-              <button
-                key={`${item}-${index}`}
-                type="button"
-                role="tab"
-                aria-selected={isActive}
-                aria-label={isVid ? `Selecionar vídeo ${index + 1}` : `Selecionar foto ${index + 1}`}
-                onClick={() => setActiveIndex(index)}
-                className={`relative h-20 w-32 shrink-0 overflow-hidden rounded-lg border-2 bg-zinc-100 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 ${
-                  isActive
-                    ? "border-emerald-600 ring-2 ring-emerald-600/40 shadow-md"
-                    : "border-zinc-300 hover:border-zinc-400"
-                }`}
-              >
-                {isVid ? (
-                  <div className="flex h-full w-full items-center justify-center bg-zinc-900 text-white">
-                    <Video className="h-6 w-6" aria-hidden="true" />
-                  </div>
-                ) : (
-                  <Image src={item} alt="" fill className="object-contain" sizes="96px" />
-                )}
-                <span className="absolute bottom-1 right-1 rounded bg-black/70 px-1.5 py-0.5 text-[10px] font-medium text-white">
-                  {isVid ? "Vídeo" : "Foto"}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      )}
-    </section>
-  );
+ return (
+ <button
+ key={`${item}-${index}`}
+ type="button"
+ role="tab"
+ aria-selected={isActive}
+ aria-label={isVid ? `Selecionar vídeo ${index + 1}` : `Selecionar foto ${index + 1}`}
+ onClick={() => setActiveIndex(index)}
+ className={`relative h-20 w-32 shrink-0 overflow-hidden rounded-lg border-2 bg-zinc-100 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 ${
+ isActive
+ ? "border-emerald-600 ring-2 ring-emerald-600/40 shadow-md"
+ : "border-zinc-300 hover:border-zinc-400"
+ }`}
+ >
+ {isVid ? (
+ <div className="flex h-full w-full items-center justify-center bg-zinc-900 text-white">
+ <Video className="h-6 w-6" aria-hidden="true" />
+ </div>
+ ) : (
+ <Image src={item} alt="" fill className="object-contain" sizes="96px" />
+ )}
+ <span className="absolute bottom-1 right-1 rounded bg-black/70 px-1.5 py-0.5 text-[10px] font-medium text-white">
+ {isVid ? "Vídeo" : "Foto"}
+ </span>
+ </button>
+ );
+ })}
+ </div>
+ )}
+ </section>
+ );
 }
 
 function isVideo(url: string): boolean {
-  return /\.(mp4|webm|ogg|mov)$/i.test(url);
+ return /\.(mp4|webm|ogg|mov)$/i.test(url);
 }
 
 function isGif(url: string): boolean {
-  return /\.(gif)(\?.*)?$/i.test(url);
+ return /\.(gif)(\?.*)?$/i.test(url);
 }

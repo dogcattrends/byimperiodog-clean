@@ -1,8 +1,8 @@
 # 🔍 Auditoria UX/UI + Acessibilidade - Painel Admin
 
-**Data:** 1 de dezembro de 2025  
-**Auditor:** Lead Product Engineer  
-**Escopo:** Admin Dashboard - By Império Dog  
+**Data:** 1 de dezembro de 2025 
+**Auditor:** Lead Product Engineer 
+**Escopo:** Admin Dashboard - By Império Dog 
 **Metodologia:** Nielsen Heuristics + WCAG 2.2 AA/AAA + Best Practices
 
 ---
@@ -33,20 +33,20 @@
 ### 🔴 CRÍTICO
 
 #### 1.1. Visibilidade do Estado do Sistema
-**Problema:** Falta feedback visual em operações assíncronas  
-**Localização:** `PuppiesTable.tsx` - inline status update  
+**Problema:** Falta feedback visual em operações assíncronas 
+**Localização:** `PuppiesTable.tsx` - inline status update 
 **Evidência:**
 ```tsx
 const handleStatus = (id: string, status: string) => {
-  setMutatingId(id);
-  startTransition(async () => {
-    // Sem indicador visual claro durante mutação
-    const res = await fetch("/api/admin/puppies/status", {...});
-  });
+ setMutatingId(id);
+ startTransition(async () => {
+ // Sem indicador visual claro durante mutação
+ const res = await fetch("/api/admin/puppies/status", {...});
+ });
 };
 ```
 
-**Impacto:**  
+**Impacto:** 
 - Usuário não sabe se ação foi registrada
 - Cliques duplos acidentais
 - Frustração em conexões lentas
@@ -55,37 +55,37 @@ const handleStatus = (id: string, status: string) => {
 ```tsx
 // Adicionar skeleton + toast persistente
 <select 
-  disabled={mutatingId === p.id}
-  aria-busy={mutatingId === p.id}
-  className={mutatingId === p.id ? 'opacity-50 cursor-wait' : ''}
+ disabled={mutatingId === p.id}
+ aria-busy={mutatingId === p.id}
+ className={mutatingId === p.id ? 'opacity-50 cursor-wait' : ''}
 >
-  {/* ... */}
+ {/* ... */}
 </select>
 {mutatingId === p.id && (
-  <span className="absolute inset-0 flex items-center justify-center bg-white/80">
-    <Spinner size="sm" />
-  </span>
+ <span className="absolute inset-0 flex items-center justify-center bg-white/80">
+ <Spinner size="sm" />
+ </span>
 )}
 ```
 
-**Severidade:** 🔴 Crítico  
-**Esforço:** 2h  
+**Severidade:** 🔴 Crítico 
+**Esforço:** 2h 
 **Heurística:** #1 - Visibility of system status
 
 ---
 
 #### 1.2. Prevenção de Erros
-**Problema:** Falta confirmação antes de ações destrutivas  
-**Localização:** `PuppyForm.tsx` - mudança de status para "sold"  
+**Problema:** Falta confirmação antes de ações destrutivas 
+**Localização:** `PuppyForm.tsx` - mudança de status para "sold" 
 **Evidência:**
 ```tsx
 <Select
-  label="Status *"
-  value={values.status}
-  onChange={(v) => set("status", v as PuppyStatus)}
-  options={[
-    { value: "sold", label: "Vendido" }, // SEM CONFIRMAÇÃO
-  ]}
+ label="Status *"
+ value={values.status}
+ onChange={(v) => set("status", v as PuppyStatus)}
+ options={[
+ { value: "sold", label: "Vendido" }, // SEM CONFIRMAÇÃO
+ ]}
 />
 ```
 
@@ -98,34 +98,34 @@ const handleStatus = (id: string, status: string) => {
 ```tsx
 // Adicionar modal de confirmação para status "sold" e "reserved"
 const [confirmDialog, setConfirmDialog] = useState<{
-  show: boolean;
-  newStatus: PuppyStatus;
+ show: boolean;
+ newStatus: PuppyStatus;
 } | null>(null);
 
 const handleStatusChange = (newStatus: PuppyStatus) => {
-  if (newStatus === 'sold' || newStatus === 'reserved') {
-    setConfirmDialog({ show: true, newStatus });
-  } else {
-    set('status', newStatus);
-  }
+ if (newStatus === 'sold' || newStatus === 'reserved') {
+ setConfirmDialog({ show: true, newStatus });
+ } else {
+ set('status', newStatus);
+ }
 };
 
 {confirmDialog && (
-  <ConfirmDialog
-    title={`Confirmar ${confirmDialog.newStatus === 'sold' ? 'venda' : 'reserva'}?`}
-    description="Esta ação irá alterar o status do filhote. Leads existentes serão mantidos."
-    confirmLabel="Sim, alterar"
-    onConfirm={() => {
-      set('status', confirmDialog.newStatus);
-      setConfirmDialog(null);
-    }}
-    onCancel={() => setConfirmDialog(null)}
-  />
+ <ConfirmDialog
+ title={`Confirmar ${confirmDialog.newStatus === 'sold' ? 'venda' : 'reserva'}?`}
+ description="Esta ação irá alterar o status do filhote. Leads existentes serão mantidos."
+ confirmLabel="Sim, alterar"
+ onConfirm={() => {
+ set('status', confirmDialog.newStatus);
+ setConfirmDialog(null);
+ }}
+ onCancel={() => setConfirmDialog(null)}
+ />
 )}
 ```
 
-**Severidade:** 🔴 Crítico  
-**Esforço:** 4h  
+**Severidade:** 🔴 Crítico 
+**Esforço:** 4h 
 **Heurística:** #5 - Error prevention
 
 ---
@@ -133,8 +133,8 @@ const handleStatusChange = (newStatus: PuppyStatus) => {
 ### 🟠 ALTO
 
 #### 1.3. Flexibilidade e Eficiência de Uso
-**Problema:** Falta atalhos de teclado para ações frequentes  
-**Localização:** Todo o painel admin  
+**Problema:** Falta atalhos de teclado para ações frequentes 
+**Localização:** Todo o painel admin 
 **Evidência:**
 - Nenhuma navegação por teclado além de Tab
 - Sem shortcuts (ex: `n` para novo filhote, `/` para busca)
@@ -149,44 +149,44 @@ const handleStatusChange = (newStatus: PuppyStatus) => {
 ```tsx
 // Implementar hook useKeyboardShortcuts
 useEffect(() => {
-  const handler = (e: KeyboardEvent) => {
-    // Novo filhote
-    if (e.key === 'n' && (e.metaKey || e.ctrlKey)) {
-      e.preventDefault();
-      router.push('/admin/puppies/new');
-    }
-    // Focus na busca
-    if (e.key === '/' && !e.metaKey) {
-      e.preventDefault();
-      searchInputRef.current?.focus();
-    }
-    // Esc para limpar filtros
-    if (e.key === 'Escape') {
-      setSearchTerm('');
-      setSelectedStatus('');
-      setSelectedColor('');
-      setSelectedCity('');
-    }
-  };
-  window.addEventListener('keydown', handler);
-  return () => window.removeEventListener('keydown', handler);
+ const handler = (e: KeyboardEvent) => {
+ // Novo filhote
+ if (e.key === 'n' && (e.metaKey || e.ctrlKey)) {
+ e.preventDefault();
+ router.push('/admin/puppies/new');
+ }
+ // Focus na busca
+ if (e.key === '/' && !e.metaKey) {
+ e.preventDefault();
+ searchInputRef.current?.focus();
+ }
+ // Esc para limpar filtros
+ if (e.key === 'Escape') {
+ setSearchTerm('');
+ setSelectedStatus('');
+ setSelectedColor('');
+ setSelectedCity('');
+ }
+ };
+ window.addEventListener('keydown', handler);
+ return () => window.removeEventListener('keydown', handler);
 }, []);
 
 // Adicionar indicador visual de shortcuts
 <button>
-  Novo filhote <kbd className="ml-2 text-xs">⌘N</kbd>
+ Novo filhote <kbd className="ml-2 text-xs">⌘N</kbd>
 </button>
 ```
 
-**Severidade:** 🟠 Alto  
-**Esforço:** 6h  
+**Severidade:** 🟠 Alto 
+**Esforço:** 6h 
 **Heurística:** #7 - Flexibility and efficiency of use
 
 ---
 
 #### 1.4. Ajuda e Documentação
-**Problema:** Zero help text, tooltips ou documentação inline  
-**Localização:** Todas as páginas admin  
+**Problema:** Zero help text, tooltips ou documentação inline 
+**Localização:** Todas as páginas admin 
 **Evidência:**
 ```tsx
 // Campos sem explicação
@@ -205,37 +205,37 @@ useEffect(() => {
 **Recomendação:**
 ```tsx
 <Field 
-  label="Slug *" 
-  value={values.slug} 
-  onChange={...}
-  helpText="URL amigável, ex: thor-spitz-alemao-macho-laranja"
-  hint="Gerado automaticamente, mas você pode personalizar"
+ label="Slug *" 
+ value={values.slug} 
+ onChange={...}
+ helpText="URL amigável, ex: thor-spitz-alemao-macho-laranja"
+ hint="Gerado automaticamente, mas você pode personalizar"
 />
 
 <Field 
-  label="Preço *" 
-  type="number"
-  value={values.priceCents / 100}
-  onChange={(v) => set('priceCents', Math.round(Number(v) * 100))}
-  prefix="R$"
-  helpText="Preço em reais. Exemplo: 3500 = R$ 3.500,00"
+ label="Preço *" 
+ type="number"
+ value={values.priceCents / 100}
+ onChange={(v) => set('priceCents', Math.round(Number(v) * 100))}
+ prefix="R$"
+ helpText="Preço em reais. Exemplo: 3500 = R$ 3.500,00"
 />
 ```
 
-**Severidade:** 🟠 Alto  
-**Esforço:** 8h  
+**Severidade:** 🟠 Alto 
+**Esforço:** 8h 
 **Heurística:** #10 - Help and documentation
 
 ---
 
 #### 1.5. Reconhecimento em vez de Recordação
-**Problema:** Filtros sem indicador visual de estado ativo  
-**Localização:** `PuppiesTable.tsx`, `LeadsListClient.tsx`  
+**Problema:** Filtros sem indicador visual de estado ativo 
+**Localização:** `PuppiesTable.tsx`, `LeadsListClient.tsx` 
 **Evidência:**
 ```tsx
 <select value={selectedStatus} onChange={...}>
-  <option value="">Todos</option>
-  {/* Sem badge mostrando filtros ativos */}
+ <option value="">Todos</option>
+ {/* Sem badge mostrando filtros ativos */}
 </select>
 ```
 
@@ -248,39 +248,39 @@ useEffect(() => {
 ```tsx
 // Badge de filtros ativos
 <div className="flex items-center gap-2">
-  {selectedStatus && (
-    <Badge variant="brand" size="sm">
-      Status: {STATUSES.find(s => s.value === selectedStatus)?.label}
-      <button onClick={() => setSelectedStatus('')} aria-label="Remover filtro">×</button>
-    </Badge>
-  )}
-  {selectedColor && (
-    <Badge variant="brand" size="sm">
-      Cor: {selectedColor}
-      <button onClick={() => setSelectedColor('')}>×</button>
-    </Badge>
-  )}
-  {(selectedStatus || selectedColor || selectedCity) && (
-    <button 
-      onClick={() => {
-        setSelectedStatus('');
-        setSelectedColor('');
-        setSelectedCity('');
-      }}
-      className="text-xs text-rose-600 hover:underline"
-    >
-      Limpar todos
-    </button>
-  )}
+ {selectedStatus && (
+ <Badge variant="brand" size="sm">
+ Status: {STATUSES.find(s => s.value === selectedStatus)?.label}
+ <button onClick={() => setSelectedStatus('')} aria-label="Remover filtro">×</button>
+ </Badge>
+ )}
+ {selectedColor && (
+ <Badge variant="brand" size="sm">
+ Cor: {selectedColor}
+ <button onClick={() => setSelectedColor('')}>×</button>
+ </Badge>
+ )}
+ {(selectedStatus || selectedColor || selectedCity) && (
+ <button 
+ onClick={() => {
+ setSelectedStatus('');
+ setSelectedColor('');
+ setSelectedCity('');
+ }}
+ className="text-xs text-rose-600 hover:underline"
+ >
+ Limpar todos
+ </button>
+ )}
 </div>
 
 <p className="text-xs text-muted">
-  Exibindo {filtered.length} de {items.length} filhotes
+ Exibindo {filtered.length} de {items.length} filhotes
 </p>
 ```
 
-**Severidade:** 🟠 Alto  
-**Esforço:** 3h  
+**Severidade:** 🟠 Alto 
+**Esforço:** 3h 
 **Heurística:** #6 - Recognition rather than recall
 
 ---
@@ -288,8 +288,8 @@ useEffect(() => {
 ### 🟡 MÉDIO
 
 #### 1.6. Consistência e Padrões
-**Problema:** Inconsistência na formatação de datas  
-**Localização:** `dashboard/page.tsx` vs `PuppiesTable.tsx`  
+**Problema:** Inconsistência na formatação de datas 
+**Localização:** `dashboard/page.tsx` vs `PuppiesTable.tsx` 
 **Evidência:**
 ```tsx
 // Dashboard: sem formatação
@@ -307,45 +307,45 @@ useEffect(() => {
 // Criar helper centralizado
 // src/lib/format.ts
 export const formatDate = (date: string | Date | null) => {
-  if (!date) return '—';
-  return new Date(date).toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
+ if (!date) return '—';
+ return new Date(date).toLocaleDateString('pt-BR', {
+ day: '2-digit',
+ month: 'short',
+ year: 'numeric',
+ });
 };
 
 export const formatDateTime = (date: string | Date | null) => {
-  if (!date) return '—';
-  return new Date(date).toLocaleString('pt-BR', {
-    day: '2-digit',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+ if (!date) return '—';
+ return new Date(date).toLocaleString('pt-BR', {
+ day: '2-digit',
+ month: 'short',
+ hour: '2-digit',
+ minute: '2-digit',
+ });
 };
 
 export const formatRelativeTime = (date: string | Date) => {
-  const rtf = new Intl.RelativeTimeFormat('pt-BR', { numeric: 'auto' });
-  const diff = Date.now() - new Date(date).getTime();
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  
-  if (days === 0) return 'Hoje';
-  if (days === 1) return 'Ontem';
-  if (days < 7) return `Há ${days} dias`;
-  return formatDate(date);
+ const rtf = new Intl.RelativeTimeFormat('pt-BR', { numeric: 'auto' });
+ const diff = Date.now() - new Date(date).getTime();
+ const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+ 
+ if (days === 0) return 'Hoje';
+ if (days === 1) return 'Ontem';
+ if (days < 7) return `Há ${days} dias`;
+ return formatDate(date);
 };
 ```
 
-**Severidade:** 🟡 Médio  
-**Esforço:** 2h  
+**Severidade:** 🟡 Médio 
+**Esforço:** 2h 
 **Heurística:** #4 - Consistency and standards
 
 ---
 
 #### 1.7. Correspondência com o Mundo Real
-**Problema:** Termos técnicos sem tradução  
-**Localização:** `PuppyForm.tsx`, mensagens de erro  
+**Problema:** Termos técnicos sem tradução 
+**Localização:** `PuppyForm.tsx`, mensagens de erro 
 **Evidência:**
 ```tsx
 <Field label="Slug *" /> // Termo técnico
@@ -355,49 +355,49 @@ throw new Error("status"); // Erro genérico
 **Recomendação:**
 ```tsx
 <Field 
-  label="Nome na URL *" 
-  sublabel="(slug)"
-  helpText="Como este filhote aparecerá no link do site"
+ label="Nome na URL *" 
+ sublabel="(slug)"
+ helpText="Como este filhote aparecerá no link do site"
 />
 
 // Mensagens de erro humanizadas
 const ERROR_MESSAGES = {
-  status: 'Não foi possível atualizar o status do filhote. Tente novamente.',
-  network: 'Sem conexão. Verifique sua internet.',
-  validation: 'Alguns campos estão incorretos. Revise os destacados em vermelho.',
+ status: 'Não foi possível atualizar o status do filhote. Tente novamente.',
+ network: 'Sem conexão. Verifique sua internet.',
+ validation: 'Alguns campos estão incorretos. Revise os destacados em vermelho.',
 };
 ```
 
-**Severidade:** 🟡 Médio  
-**Esforço:** 3h  
+**Severidade:** 🟡 Médio 
+**Esforço:** 3h 
 **Heurística:** #2 - Match between system and real world
 
 ---
 
 #### 1.8-1.13. Outros problemas médios (listagem compacta)
 
-**1.8. Falta undo/redo em edições**  
-- Severidade: 🟡 Médio | Esforço: 8h  
+**1.8. Falta undo/redo em edições** 
+- Severidade: 🟡 Médio | Esforço: 8h 
 - Adicionar histórico de alterações com botão "Desfazer"
 
-**1.9. Sem indicador de campos obrigatórios consistente**  
-- Severidade: 🟡 Médio | Esforço: 2h  
+**1.9. Sem indicador de campos obrigatórios consistente** 
+- Severidade: 🟡 Médio | Esforço: 2h 
 - Padronizar `*` ou `(obrigatório)` em todos os campos
 
-**1.10. Falta validação em tempo real**  
-- Severidade: 🟡 Médio | Esforço: 6h  
+**1.10. Falta validação em tempo real** 
+- Severidade: 🟡 Médio | Esforço: 6h 
 - Validar campos onBlur, não apenas onSubmit
 
-**1.11. Sem preview antes de salvar**  
-- Severidade: 🟡 Médio | Esforço: 12h  
+**1.11. Sem preview antes de salvar** 
+- Severidade: 🟡 Médio | Esforço: 12h 
 - Modal de preview do filhote como aparecerá no site
 
-**1.12. Mensagens de sucesso genéricas**  
-- Severidade: 🟡 Médio | Esforço: 1h  
+**1.12. Mensagens de sucesso genéricas** 
+- Severidade: 🟡 Médio | Esforço: 1h 
 - "Thor foi criado com sucesso!" vs "Filhote criado."
 
-**1.13. Falta paginação**  
-- Severidade: 🟡 Médio | Esforço: 4h  
+**1.13. Falta paginação** 
+- Severidade: 🟡 Médio | Esforço: 4h 
 - PuppiesTable e LeadsListClient limitados a 100-200 itens
 
 ---
@@ -406,9 +406,9 @@ const ERROR_MESSAGES = {
 
 #### 1.14-1.17. Problemas de baixa prioridade
 
-**1.14. Sem dark mode no admin**  
-**1.15. Falta personalização de colunas visíveis**  
-**1.16. Sem export CSV/Excel**  
+**1.14. Sem dark mode no admin** 
+**1.15. Falta personalização de colunas visíveis** 
+**1.16. Sem export CSV/Excel** 
 **1.17. Falta drag-and-drop para reordenar**
 
 ---
@@ -418,17 +418,17 @@ const ERROR_MESSAGES = {
 ### 🔴 CRÍTICO
 
 #### 2.1. Mobile: Menu Hamburger Ausente
-**Problema:** No mobile, sidebar desaparece mas não há menu alternativo  
-**Localização:** `layout.tsx`  
+**Problema:** No mobile, sidebar desaparece mas não há menu alternativo 
+**Localização:** `layout.tsx` 
 **Evidência:**
 ```tsx
 <aside className="hidden w-60 shrink-0 ... md:block">
-  {/* Sidebar só aparece em md+ */}
+ {/* Sidebar só aparece em md+ */}
 </aside>
 
 <div className="mb-4 flex ... md:hidden">
-  {/* Header mobile SEM menu de navegação */}
-  <a href="/admin/logout">Sair</a>
+ {/* Header mobile SEM menu de navegação */}
+ <a href="/admin/logout">Sair</a>
 </div>
 ```
 
@@ -443,24 +443,24 @@ const ERROR_MESSAGES = {
 const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
 <div className="md:hidden">
-  <button 
-    onClick={() => setMobileMenuOpen(true)}
-    aria-label="Abrir menu"
-    aria-expanded={mobileMenuOpen}
-  >
-    <Menu className="h-5 w-5" />
-  </button>
+ <button 
+ onClick={() => setMobileMenuOpen(true)}
+ aria-label="Abrir menu"
+ aria-expanded={mobileMenuOpen}
+ >
+ <Menu className="h-5 w-5" />
+ </button>
 </div>
 
 {mobileMenuOpen && (
-  <Dialog onClose={() => setMobileMenuOpen(false)}>
-    <AdminNav />
-    <button onClick={() => {/* logout */}}>Sair</button>
-  </Dialog>
+ <Dialog onClose={() => setMobileMenuOpen(false)}>
+ <AdminNav />
+ <button onClick={() => {/* logout */}}>Sair</button>
+ </Dialog>
 )}
 ```
 
-**Severidade:** 🔴 Crítico  
+**Severidade:** 🔴 Crítico 
 **Esforço:** 4h
 
 ---
@@ -468,8 +468,8 @@ const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 ### 🟠 ALTO
 
 #### 2.2. Breadcrumbs Ausentes
-**Problema:** Sem indicador de localização em páginas profundas  
-**Localização:** `/admin/puppies/edit/[id]`, `/admin/leads/[id]`  
+**Problema:** Sem indicador de localização em páginas profundas 
+**Localização:** `/admin/puppies/edit/[id]`, `/admin/leads/[id]` 
 **Evidência:**
 - URL: `/admin/puppies/edit/abc-123`
 - Página mostra apenas "Editar filhote" sem contexto
@@ -483,20 +483,20 @@ const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 ```tsx
 // Componente Breadcrumb reutilizável
 <Breadcrumb>
-  <BreadcrumbItem href="/admin/dashboard">Admin</BreadcrumbItem>
-  <BreadcrumbItem href="/admin/puppies">Filhotes</BreadcrumbItem>
-  <BreadcrumbItem current>Editar: {puppy.name}</BreadcrumbItem>
+ <BreadcrumbItem href="/admin/dashboard">Admin</BreadcrumbItem>
+ <BreadcrumbItem href="/admin/puppies">Filhotes</BreadcrumbItem>
+ <BreadcrumbItem current>Editar: {puppy.name}</BreadcrumbItem>
 </Breadcrumb>
 ```
 
-**Severidade:** 🟠 Alto  
+**Severidade:** 🟠 Alto 
 **Esforço:** 3h
 
 ---
 
 #### 2.3. Ações em Massa Ausentes
-**Problema:** Impossível operar múltiplos filhotes simultaneamente  
-**Localização:** `PuppiesTable.tsx`  
+**Problema:** Impossível operar múltiplos filhotes simultaneamente 
+**Localização:** `PuppiesTable.tsx` 
 **Evidência:**
 - Para marcar 10 filhotes como "vendido": 10 ações individuais
 - Sem checkbox para seleção múltipla
@@ -511,41 +511,41 @@ const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 const [selected, setSelected] = useState<Set<string>>(new Set());
 
 <thead>
-  <th>
-    <input 
-      type="checkbox"
-      checked={selected.size === filtered.length}
-      onChange={(e) => {
-        setSelected(e.target.checked 
-          ? new Set(filtered.map(p => p.id)) 
-          : new Set()
-        );
-      }}
-    />
-  </th>
+ <th>
+ <input 
+ type="checkbox"
+ checked={selected.size === filtered.length}
+ onChange={(e) => {
+ setSelected(e.target.checked 
+ ? new Set(filtered.map(p => p.id)) 
+ : new Set()
+ );
+ }}
+ />
+ </th>
 </thead>
 
 {selected.size > 0 && (
-  <div className="fixed bottom-4 right-4 bg-white shadow-lg p-4 rounded-lg">
-    <p>{selected.size} selecionado{selected.size > 1 ? 's' : ''}</p>
-    <button onClick={() => handleBulkStatus('sold')}>
-      Marcar como vendido
-    </button>
-    <button onClick={() => handleBulkDelete()}>
-      Excluir
-    </button>
-  </div>
+ <div className="fixed bottom-4 right-4 bg-white shadow-lg p-4 rounded-lg">
+ <p>{selected.size} selecionado{selected.size > 1 ? 's' : ''}</p>
+ <button onClick={() => handleBulkStatus('sold')}>
+ Marcar como vendido
+ </button>
+ <button onClick={() => handleBulkDelete()}>
+ Excluir
+ </button>
+ </div>
 )}
 ```
 
-**Severidade:** 🟠 Alto  
+**Severidade:** 🟠 Alto 
 **Esforço:** 8h
 
 ---
 
 #### 2.4. Links Quebrados em Leads
-**Problema:** Dashboard mostra link `/admin/leads/{id}` mas rota não existe  
-**Localização:** `dashboard/page.tsx`  
+**Problema:** Dashboard mostra link `/admin/leads/{id}` mas rota não existe 
+**Localização:** `dashboard/page.tsx` 
 **Evidência:**
 ```tsx
 <a href={`/admin/leads/${lead.id}`}>Ver</a>
@@ -569,7 +569,7 @@ const [selected, setSelected] = useState<Set<string>>(new Set());
 <button onClick={() => setSelectedLead(lead)}>Ver</button>
 ```
 
-**Severidade:** 🟠 Alto  
+**Severidade:** 🟠 Alto 
 **Esforço:** 6h (Opção 1) | 1h (Opção 2)
 
 ---
@@ -578,31 +578,31 @@ const [selected, setSelected] = useState<Set<string>>(new Set());
 
 #### 2.5-2.9. Outros problemas de fluxo (listagem compacta)
 
-**2.5. Sem link rápido do filhote para seus leads**  
-- Tabela mostra "5 leads" mas não é clicável  
+**2.5. Sem link rápido do filhote para seus leads** 
+- Tabela mostra "5 leads" mas não é clicável 
 - Esforço: 2h
 
-**2.6. Falta botão "Criar lead" a partir de um filhote**  
-- Fluxo: ver filhote → criar lead manualmente  
+**2.6. Falta botão "Criar lead" a partir de um filhote** 
+- Fluxo: ver filhote → criar lead manualmente 
 - Esforço: 4h
 
-**2.7. Sem histórico de alterações (audit log)**  
-- Impossível saber quem/quando alterou status  
+**2.7. Sem histórico de alterações (audit log)** 
+- Impossível saber quem/quando alterou status 
 - Esforço: 12h
 
-**2.8. Falta busca global (cross-entity)**  
-- Buscar "Thor" só em filhotes, não em leads  
+**2.8. Falta busca global (cross-entity)** 
+- Buscar "Thor" só em filhotes, não em leads 
 - Esforço: 10h
 
-**2.9. Sem favoritos/pins para acesso rápido**  
-- Toda navegação via sidebar  
+**2.9. Sem favoritos/pins para acesso rápido** 
+- Toda navegação via sidebar 
 - Esforço: 6h
 
 ---
 
 ### 🟢 BAIXO
 
-**2.10. Falta recentes/histórico de navegação**  
+**2.10. Falta recentes/histórico de navegação** 
 **2.11. Sem notificações de novos leads em tempo real**
 
 ---
@@ -612,17 +612,17 @@ const [selected, setSelected] = useState<Set<string>>(new Set());
 ### 🔴 CRÍTICO - Bloqueadores de Uso
 
 #### 3.1. Tabelas Sem Contexto Semântico
-**Problema:** Falta `<caption>` e headers associados  
-**Localização:** `PuppiesTable.tsx`, `LeadsListClient.tsx`  
+**Problema:** Falta `<caption>` e headers associados 
+**Localização:** `PuppiesTable.tsx`, `LeadsListClient.tsx` 
 **Evidência:**
 ```tsx
 <table className="...">
-  {/* ❌ Sem <caption> */}
-  <thead>
-    <tr>
-      <th>Nome</th> {/* ❌ Sem scope="col" */}
-    </tr>
-  </thead>
+ {/* ❌ Sem <caption> */}
+ <thead>
+ <tr>
+ <th>Nome</th> {/* ❌ Sem scope="col" */}
+ </tr>
+ </thead>
 </table>
 ```
 
@@ -634,34 +634,34 @@ const [selected, setSelected] = useState<Set<string>>(new Set());
 **Recomendação:**
 ```tsx
 <table aria-label="Lista de filhotes cadastrados">
-  <caption className="sr-only">
-    Tabela com {filtered.length} filhotes, mostrando nome, cor, status e ações
-  </caption>
-  <thead>
-    <tr>
-      <th scope="col">Nome</th>
-      <th scope="col">Cor</th>
-      <th scope="col">Status</th>
-    </tr>
-  </thead>
+ <caption className="sr-only">
+ Tabela com {filtered.length} filhotes, mostrando nome, cor, status e ações
+ </caption>
+ <thead>
+ <tr>
+ <th scope="col">Nome</th>
+ <th scope="col">Cor</th>
+ <th scope="col">Status</th>
+ </tr>
+ </thead>
 </table>
 ```
 
-**Severidade:** 🔴 Crítico (WCAG A)  
+**Severidade:** 🔴 Crítico (WCAG A) 
 **Esforço:** 1h
 
 ---
 
 #### 3.2. Campos de Formulário Sem Labels Explícitos
-**Problema:** Labels visuais, mas não associados semanticamente  
-**Localização:** `LeadsListClient.tsx`, `PuppiesTable.tsx`  
+**Problema:** Labels visuais, mas não associados semanticamente 
+**Localização:** `LeadsListClient.tsx`, `PuppiesTable.tsx` 
 **Evidência:**
 ```tsx
 <label className="text-sm ...">
-  Status
-  <select value={selectedStatus} onChange={...}>
-    {/* ❌ Input não tem id/htmlFor */}
-  </select>
+ Status
+ <select value={selectedStatus} onChange={...}>
+ {/* ❌ Input não tem id/htmlFor */}
+ </select>
 </label>
 ```
 
@@ -673,27 +673,27 @@ const [selected, setSelected] = useState<Set<string>>(new Set());
 **Recomendação:**
 ```tsx
 <label htmlFor="filter-status" className="text-sm ...">
-  Status
-  <select 
-    id="filter-status"
-    name="status"
-    value={selectedStatus}
-    onChange={...}
-    aria-label="Filtrar por status"
-  >
-    <option value="">Todos os status</option>
-  </select>
+ Status
+ <select 
+ id="filter-status"
+ name="status"
+ value={selectedStatus}
+ onChange={...}
+ aria-label="Filtrar por status"
+ >
+ <option value="">Todos os status</option>
+ </select>
 </label>
 ```
 
-**Severidade:** 🔴 Crítico (WCAG A)  
+**Severidade:** 🔴 Crítico (WCAG A) 
 **Esforço:** 2h
 
 ---
 
 #### 3.3. Contraste Insuficiente em Texto Mutado
-**Problema:** `--text-muted: #5a4d42` sobre `--bg: #faf5ef` = 4.2:1  
-**Localização:** Todo o painel (labels, helpers)  
+**Problema:** `--text-muted: #5a4d42` sobre `--bg: #faf5ef` = 4.2:1 
+**Localização:** Todo o painel (labels, helpers) 
 **Evidência:**
 ```css
 /* globals.css */
@@ -713,23 +713,23 @@ const [selected, setSelected] = useState<Set<string>>(new Set());
 
 /* Ou usar variante bold */
 .text-sm.text-muted {
-  font-weight: 500; /* Bold tem requisito menor: 3:1 */
+ font-weight: 500; /* Bold tem requisito menor: 3:1 */
 }
 ```
 
-**Severidade:** 🔴 Crítico (WCAG AA)  
+**Severidade:** 🔴 Crítico (WCAG AA) 
 **Esforço:** 1h
 
 ---
 
 #### 3.4. Live Regions Ausentes para Atualizações Dinâmicas
-**Problema:** Mudanças de conteúdo não anunciadas  
-**Localização:** `PuppiesTable.tsx` - inline status update  
+**Problema:** Mudanças de conteúdo não anunciadas 
+**Localização:** `PuppiesTable.tsx` - inline status update 
 **Evidência:**
 ```tsx
 // Status muda mas screen reader não anuncia
 setLocalItems((prev) => prev.map((p) => 
-  p.id === id ? { ...p, status } : p
+ p.id === id ? { ...p, status } : p
 ));
 ```
 
@@ -741,16 +741,16 @@ setLocalItems((prev) => prev.map((p) =>
 ```tsx
 // Adicionar live region para anúncios
 <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
-  {announceMessage}
+ {announceMessage}
 </div>
 
 const handleStatus = (id, status) => {
-  // ... fetch
-  setAnnounceMessage(`Status do filhote ${name} alterado para ${status}`);
+ // ... fetch
+ setAnnounceMessage(`Status do filhote ${name} alterado para ${status}`);
 };
 ```
 
-**Severidade:** 🔴 Crítico (WCAG AA)  
+**Severidade:** 🔴 Crítico (WCAG AA) 
 **Esforço:** 2h
 
 ---
@@ -758,14 +758,14 @@ const handleStatus = (id, status) => {
 ### 🟠 ALTO - Impacto Significativo
 
 #### 3.5. Navegação por Teclado Incompleta
-**Problema:** Impossível navegar filtros sem mouse  
-**Localização:** `PuppiesTable.tsx`, `LeadsListClient.tsx`  
+**Problema:** Impossível navegar filtros sem mouse 
+**Localização:** `PuppiesTable.tsx`, `LeadsListClient.tsx` 
 **Evidência:**
 ```tsx
 // Filtros in-line sem teclas de atalho
 <label className="text-sm ...">
-  Cor
-  <select>...</select>
+ Cor
+ <select>...</select>
 </label>
 // Tab funciona, mas sem skip navigation
 ```
@@ -779,27 +779,27 @@ const handleStatus = (id, status) => {
 ```tsx
 // Adicionar skip link para conteúdo
 <a href="#puppies-table-content" className="sr-only focus:not-sr-only">
-  Pular para tabela
+ Pular para tabela
 </a>
 
 // Atalho para limpar filtros
 <button 
-  onClick={clearAllFilters}
-  accessKey="c"
-  aria-keyshortcuts="Alt+C"
+ onClick={clearAllFilters}
+ accessKey="c"
+ aria-keyshortcuts="Alt+C"
 >
-  Limpar filtros <kbd>Alt+C</kbd>
+ Limpar filtros <kbd>Alt+C</kbd>
 </button>
 ```
 
-**Severidade:** 🟠 Alto (WCAG A)  
+**Severidade:** 🟠 Alto (WCAG A) 
 **Esforço:** 3h
 
 ---
 
 #### 3.6. Foco Invisível em Alguns Elementos
-**Problema:** Outline padrão sobrescrito sem alternativa  
-**Localização:** Vários componentes  
+**Problema:** Outline padrão sobrescrito sem alternativa 
+**Localização:** Vários componentes 
 **Evidência:**
 ```css
 /* globals.css - bom */
@@ -813,65 +813,65 @@ a:focus-visible { outline: 2px solid var(--brand); }
 ```css
 /* Garantir foco sempre visível */
 *:focus-visible {
-  outline: 2px solid var(--brand);
-  outline-offset: 2px;
+ outline: 2px solid var(--brand);
+ outline-offset: 2px;
 }
 
 /* Permitir remoção APENAS se houver alternativa */
 .btn:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px var(--brand-light);
+ outline: none;
+ box-shadow: 0 0 0 3px var(--brand-light);
 }
 ```
 
-**Severidade:** 🟠 Alto (WCAG AA)  
+**Severidade:** 🟠 Alto (WCAG AA) 
 **Esforço:** 2h
 
 ---
 
 #### 3.7. Ícones Sem Texto Alternativo
-**Problema:** Ícones sozinhos sem label  
-**Localização:** `PuppiesTable.tsx` - botão "Mais ações"  
+**Problema:** Ícones sozinhos sem label 
+**Localização:** `PuppiesTable.tsx` - botão "Mais ações" 
 **Evidência:**
 ```tsx
 <button type="button">
-  <MoreVertical className="h-4 w-4" aria-hidden />
-  {/* ❌ Sem aria-label no button */}
+ <MoreVertical className="h-4 w-4" aria-hidden />
+ {/* ❌ Sem aria-label no button */}
 </button>
 ```
 
 **Recomendação:**
 ```tsx
 <button 
-  type="button" 
-  aria-label={`Ações para ${puppy.name}`}
-  aria-haspopup="menu"
+ type="button" 
+ aria-label={`Ações para ${puppy.name}`}
+ aria-haspopup="menu"
 >
-  <MoreVertical className="h-4 w-4" aria-hidden="true" />
+ <MoreVertical className="h-4 w-4" aria-hidden="true" />
 </button>
 ```
 
-**Severidade:** 🟠 Alto (WCAG A)  
+**Severidade:** 🟠 Alto (WCAG A) 
 **Esforço:** 1h
 
 ---
 
 #### 3.8-3.11. Outros problemas alto (compacto)
 
-**3.8. Modais sem foco trap**  
-- Toast fecha, foco some no void  
+**3.8. Modais sem foco trap** 
+- Toast fecha, foco some no void 
 - Esforço: 4h
 
-**3.9. Falta landmarks ARIA**  
-- Sem `<nav>`, `<main>`, `<aside>` semânticos  
+**3.9. Falta landmarks ARIA** 
+- Sem `<nav>`, `<main>`, `<aside>` semânticos 
 - Esforço: 1h
 
-**3.10. Campos de busca sem role="search"**  
-- `<input type="search">` mas sem container `<form role="search">`  
+**3.10. Campos de busca sem role="search"** 
+- `<input type="search">` mas sem container `<form role="search">` 
 - Esforço: 30min
 
-**3.11. Tabelas sem row headers**  
-- `<th scope="row">` ausente em primeira coluna  
+**3.11. Tabelas sem row headers** 
+- `<th scope="row">` ausente em primeira coluna 
 - Esforço: 1h
 
 ---
@@ -879,8 +879,8 @@ a:focus-visible { outline: 2px solid var(--brand); }
 ### 🟡 MÉDIO
 
 #### 3.12. Mensagens de Erro Não Associadas
-**Problema:** Erro aparece visualmente mas não está linkado ao campo  
-**Localização:** `PuppyForm.tsx`  
+**Problema:** Erro aparece visualmente mas não está linkado ao campo 
+**Localização:** `PuppyForm.tsx` 
 **Evidência:**
 ```tsx
 <Field label="Nome *" value={...} error={errors.name} />
@@ -890,53 +890,53 @@ a:focus-visible { outline: 2px solid var(--brand); }
 **Recomendação:**
 ```tsx
 <div>
-  <label htmlFor="puppy-name">Nome *</label>
-  <input 
-    id="puppy-name"
-    aria-invalid={!!errors.name}
-    aria-describedby={errors.name ? 'name-error' : undefined}
-  />
-  {errors.name && (
-    <p id="name-error" role="alert" className="text-rose-600">
-      {errors.name}
-    </p>
-  )}
+ <label htmlFor="puppy-name">Nome *</label>
+ <input 
+ id="puppy-name"
+ aria-invalid={!!errors.name}
+ aria-describedby={errors.name ? 'name-error' : undefined}
+ />
+ {errors.name && (
+ <p id="name-error" role="alert" className="text-rose-600">
+ {errors.name}
+ </p>
+ )}
 </div>
 ```
 
-**Severidade:** 🟡 Médio (WCAG AA)  
+**Severidade:** 🟡 Médio (WCAG AA) 
 **Esforço:** 2h
 
 ---
 
 #### 3.13-3.17. Outros problemas médio
 
-**3.13. Sem heading hierarchy**  
-- `<h1>` em todas as páginas, sem `<h2>`, `<h3>`  
+**3.13. Sem heading hierarchy** 
+- `<h1>` em todas as páginas, sem `<h2>`, `<h3>` 
 - Esforço: 2h
 
-**3.14. Links sem estados hover/focus distinguíveis**  
-- `hover:underline` mas sem mudança de cor  
+**3.14. Links sem estados hover/focus distinguíveis** 
+- `hover:underline` mas sem mudança de cor 
 - Esforço: 1h
 
-**3.15. Timeouts não configuráveis**  
-- Toast desaparece em 3s fixo  
+**3.15. Timeouts não configuráveis** 
+- Toast desaparece em 3s fixo 
 - Esforço: 30min
 
-**3.16. Sem modo de alto contraste**  
-- Depende do SO, sem toggle manual  
+**3.16. Sem modo de alto contraste** 
+- Depende do SO, sem toggle manual 
 - Esforço: 8h
 
-**3.17. Animações sem prefers-reduced-motion**  
-- Spinners animam sempre  
+**3.17. Animações sem prefers-reduced-motion** 
+- Spinners animam sempre 
 - Esforço: 1h
 
 ---
 
 ### 🟢 BAIXO
 
-**3.18. Sem suporte a leitores de tela em português**  
-**3.19. Falta lang="pt-BR" em campos dinâmicos**  
+**3.18. Sem suporte a leitores de tela em português** 
+**3.19. Falta lang="pt-BR" em campos dinâmicos** 
 **3.20. Sem tooltip acessível (role="tooltip")**
 
 ---
@@ -946,13 +946,13 @@ a:focus-visible { outline: 2px solid var(--brand); }
 ### 🟠 ALTO
 
 #### 4.1. Botões com Estilos Inconsistentes
-**Problema:** Múltiplos padrões de botão coexistem  
-**Localização:** Comparação entre páginas  
+**Problema:** Múltiplos padrões de botão coexistem 
+**Localização:** Comparação entre páginas 
 **Evidência:**
 ```tsx
 // Página 1: classe utility inline
 <a className="rounded-full bg-emerald-600 px-4 py-2 text-sm ...">
-  Novo filhote
+ Novo filhote
 </a>
 
 // Página 2: componente Button do DS
@@ -973,21 +973,21 @@ a:focus-visible { outline: 2px solid var(--brand); }
 import { Button } from '@/components/ui';
 
 <Button variant="solid" size="md" href="/admin/puppies/new">
-  Novo filhote
+ Novo filhote
 </Button>
 
 // Remover classes utilitárias inline
 // Deprecar .btn-* do globals.css
 ```
 
-**Severidade:** 🟠 Alto  
+**Severidade:** 🟠 Alto 
 **Esforço:** 6h
 
 ---
 
 #### 4.2. Spacing Sem Sistema
-**Problema:** Valores mágicos de espaçamento  
-**Localização:** Layout, cards, forms  
+**Problema:** Valores mágicos de espaçamento 
+**Localização:** Layout, cards, forms 
 **Evidência:**
 ```tsx
 <div className="space-y-6"> {/* 24px */}
@@ -1004,12 +1004,12 @@ import { Button } from '@/components/ui';
 // Definir escala de spacing
 // design-system/tokens.css
 :root {
-  --space-xs: 0.25rem;   /* 4px */
-  --space-sm: 0.5rem;    /* 8px */
-  --space-md: 1rem;      /* 16px */
-  --space-lg: 1.5rem;    /* 24px */
-  --space-xl: 2rem;      /* 32px */
-  --space-2xl: 3rem;     /* 48px */
+ --space-xs: 0.25rem; /* 4px */
+ --space-sm: 0.5rem; /* 8px */
+ --space-md: 1rem; /* 16px */
+ --space-lg: 1.5rem; /* 24px */
+ --space-xl: 2rem; /* 32px */
+ --space-2xl: 3rem; /* 48px */
 }
 
 // Usar tokens consistentes
@@ -1021,14 +1021,14 @@ import { Button } from '@/components/ui';
 .space-y-lg > * + * { margin-top: var(--space-lg); }
 ```
 
-**Severidade:** 🟠 Alto  
+**Severidade:** 🟠 Alto 
 **Esforço:** 4h
 
 ---
 
 #### 4.3. Cores Hardcoded vs Tokens
-**Problema:** Cores inline ignoram design system  
-**Localização:** Várias páginas  
+**Problema:** Cores inline ignoram design system 
+**Localização:** Várias páginas 
 **Evidência:**
 ```tsx
 // ✅ Bom: usa token
@@ -1045,10 +1045,10 @@ import { Button } from '@/components/ui';
 ```css
 /* Adicionar tokens semânticos */
 :root {
-  --color-danger: #dc2626;
-  --color-danger-hover: #b91c1c;
-  --color-success-bg: #d1fae5;
-  --color-success-text: #065f46;
+ --color-danger: #dc2626;
+ --color-danger-hover: #b91c1c;
+ --color-success-bg: #d1fae5;
+ --color-success-text: #065f46;
 }
 
 /* Criar utilities */
@@ -1056,7 +1056,7 @@ import { Button } from '@/components/ui';
 .hover\:text-danger:hover { color: var(--color-danger-hover); }
 ```
 
-**Severidade:** 🟠 Alto  
+**Severidade:** 🟠 Alto 
 **Esforço:** 5h
 
 ---
@@ -1065,36 +1065,36 @@ import { Button } from '@/components/ui';
 
 #### 4.4-4.8. Outros problemas de consistência
 
-**4.4. Border-radius inconsistente**  
-- `rounded-lg` (8px), `rounded-xl` (12px), `rounded-2xl` (16px), `rounded-full`  
-- Padronizar: card = 12px, button = 8px, pill = full  
+**4.4. Border-radius inconsistente** 
+- `rounded-lg` (8px), `rounded-xl` (12px), `rounded-2xl` (16px), `rounded-full` 
+- Padronizar: card = 12px, button = 8px, pill = full 
 - Esforço: 2h
 
-**4.5. Shadows sem sistema**  
-- `shadow-sm`, `shadow`, inline box-shadow  
-- Definir elevations: 0 (flat), 1 (hover), 2 (modal), 3 (dropdown)  
+**4.5. Shadows sem sistema** 
+- `shadow-sm`, `shadow`, inline box-shadow 
+- Definir elevations: 0 (flat), 1 (hover), 2 (modal), 3 (dropdown) 
 - Esforço: 3h
 
-**4.6. Tipografia com tamanhos arbitrários**  
-- `text-xs`, `text-sm`, `text-2xl` misturados  
-- Definir scale: caption/body/lead/h1/h2/h3  
+**4.6. Tipografia com tamanhos arbitrários** 
+- `text-xs`, `text-sm`, `text-2xl` misturados 
+- Definir scale: caption/body/lead/h1/h2/h3 
 - Esforço: 4h
 
-**4.7. Ícones de bibliotecas diferentes**  
-- lucide-react + possível heroicons  
-- Padronizar em lucide-react apenas  
+**4.7. Ícones de bibliotecas diferentes** 
+- lucide-react + possível heroicons 
+- Padronizar em lucide-react apenas 
 - Esforço: 2h
 
-**4.8. Estados hover/focus diferentes**  
-- Alguns com `hover:bg-*`, outros com `hover:brightness-*`  
-- Padronizar interações  
+**4.8. Estados hover/focus diferentes** 
+- Alguns com `hover:bg-*`, outros com `hover:brightness-*` 
+- Padronizar interações 
 - Esforço: 3h
 
 ---
 
 ### 🟢 BAIXO
 
-**4.9. Falta variantes de formulários (ghost, outline, etc)**  
+**4.9. Falta variantes de formulários (ghost, outline, etc)** 
 **4.10. Sem componente de skeleton loader padronizado**
 
 ---
@@ -1104,8 +1104,8 @@ import { Button } from '@/components/ui';
 ### 🟠 ALTO
 
 #### 5.1. Ações Destrutivas Sem Padrão Visual
-**Problema:** "Excluir" vs "Sair" têm mesmo peso visual  
-**Localização:** Vários botões  
+**Problema:** "Excluir" vs "Sair" têm mesmo peso visual 
+**Localização:** Vários botões 
 **Evidência:**
 ```tsx
 // Ambos vermelhos, sem hierarquia
@@ -1117,26 +1117,26 @@ import { Button } from '@/components/ui';
 ```tsx
 // Padrão 1: Sair (outline ghost)
 <Button variant="ghost" color="danger" size="sm">
-  Sair
+ Sair
 </Button>
 
 // Padrão 2: Excluir (solid danger)
 <Button variant="solid" color="danger" size="md" destructive>
-  <Trash2 className="h-4 w-4" />
-  Excluir permanentemente
+ <Trash2 className="h-4 w-4" />
+ Excluir permanentemente
 </Button>
 
 // Sempre com modal de confirmação
 ```
 
-**Severidade:** 🟠 Alto  
+**Severidade:** 🟠 Alto 
 **Esforço:** 3h
 
 ---
 
 #### 5.2. Feedback de Loading Imprevisível
-**Problema:** Cada componente tem seu próprio spinner  
-**Localização:** PuppyForm, LeadsTable, etc  
+**Problema:** Cada componente tem seu próprio spinner 
+**Localização:** PuppyForm, LeadsTable, etc 
 **Evidência:**
 ```tsx
 // Spinner 1: Loader2 do lucide
@@ -1164,7 +1164,7 @@ import { Spinner, InlineSpinner } from '@/components/ui';
 <TableSkeleton rows={5} columns={6} />
 ```
 
-**Severidade:** 🟠 Alto  
+**Severidade:** 🟠 Alto 
 **Esforço:** 4h
 
 ---
@@ -1173,29 +1173,29 @@ import { Spinner, InlineSpinner } from '@/components/ui';
 
 #### 5.3-5.7. Outros problemas de previsibilidade
 
-**5.3. Estados de erro variados**  
-- Toast vs inline vs banner  
-- Padronizar: validação = inline, network = toast, critical = banner  
+**5.3. Estados de erro variados** 
+- Toast vs inline vs banner 
+- Padronizar: validação = inline, network = toast, critical = banner 
 - Esforço: 3h
 
-**5.4. Confirmações inconsistentes**  
-- Às vezes modal, às vezes toast "Tem certeza?"  
-- Sempre modal para destrutivo  
+**5.4. Confirmações inconsistentes** 
+- Às vezes modal, às vezes toast "Tem certeza?" 
+- Sempre modal para destrutivo 
 - Esforço: 5h
 
-**5.5. Ordenação de tabela não indicada**  
-- Usuário não sabe se está ordenando por nome, data, etc  
-- Adicionar setas ↑↓ nos headers clicáveis  
+**5.5. Ordenação de tabela não indicada** 
+- Usuário não sabe se está ordenando por nome, data, etc 
+- Adicionar setas ↑↓ nos headers clicáveis 
 - Esforço: 4h
 
-**5.6. Paginação vs infinite scroll**  
-- Mistura de abordagens  
-- Escolher uma: paginação para admin  
+**5.6. Paginação vs infinite scroll** 
+- Mistura de abordagens 
+- Escolher uma: paginação para admin 
 - Esforço: 6h
 
-**5.7. Falta estados vazios consistentes**  
-- "Sem leads recentes" vs placeholder genérico  
-- Empty state com ilustração + CTA  
+**5.7. Falta estados vazios consistentes** 
+- "Sem leads recentes" vs placeholder genérico 
+- Empty state com ilustração + CTA 
 - Esforço: 8h
 
 ---
@@ -1205,12 +1205,12 @@ import { Spinner, InlineSpinner } from '@/components/ui';
 ### 🔴 CRÍTICO
 
 #### 6.1. Tabelas Renderizam Todos os Itens (Sem Virtualização)
-**Problema:** 200 filhotes = 200 linhas DOM = lag  
-**Localização:** `PuppiesTable.tsx`, `LeadsListClient.tsx`  
+**Problema:** 200 filhotes = 200 linhas DOM = lag 
+**Localização:** `PuppiesTable.tsx`, `LeadsListClient.tsx` 
 **Evidência:**
 ```tsx
 {filtered.map((p) => (
-  <tr key={p.id}>...</tr>
+ <tr key={p.id}>...</tr>
 ))}
 // ❌ Renderiza TODAS as linhas, mesmo fora da tela
 ```
@@ -1224,53 +1224,53 @@ import { Spinner, InlineSpinner } from '@/components/ui';
 ```tsx
 // Opção 1: Paginação server-side
 const { puppies, total } = await listPuppiesCatalog(
-  filters, 
-  sort, 
-  { limit: 50, offset: page * 50 }
+ filters, 
+ sort, 
+ { limit: 50, offset: page * 50 }
 );
 
 <Pagination 
-  currentPage={page}
-  totalPages={Math.ceil(total / 50)}
-  onPageChange={setPage}
+ currentPage={page}
+ totalPages={Math.ceil(total / 50)}
+ onPageChange={setPage}
 />
 
 // Opção 2: Virtualização client-side
 import { useVirtualizer } from '@tanstack/react-virtual';
 
 const virtualizer = useVirtualizer({
-  count: filtered.length,
-  getScrollElement: () => tableRef.current,
-  estimateSize: () => 60, // altura da linha
+ count: filtered.length,
+ getScrollElement: () => tableRef.current,
+ estimateSize: () => 60, // altura da linha
 });
 
 {virtualizer.getVirtualItems().map((virtualRow) => {
-  const puppy = filtered[virtualRow.index];
-  return <tr key={puppy.id} style={{ height: virtualRow.size }}>...</tr>;
+ const puppy = filtered[virtualRow.index];
+ return <tr key={puppy.id} style={{ height: virtualRow.size }}>...</tr>;
 })}
 ```
 
-**Severidade:** 🔴 Crítico (escalabilidade)  
+**Severidade:** 🔴 Crítico (escalabilidade) 
 **Esforço:** 12h (paginação) | 20h (virtualização)
 
 ---
 
 #### 6.2. Falta Índices de Busca (Linear Search)
-**Problema:** Busca percorre array completo  
-**Localização:** Todos os filtros  
+**Problema:** Busca percorre array completo 
+**Localização:** Todos os filtros 
 **Evidência:**
 ```tsx
 const filtered = useMemo(() => {
-  return localItems.filter((p) => {
-    // ❌ O(n) - varre TODOS os itens a cada mudança
-    if (selectedStatus && p.status !== selectedStatus) return false;
-    if (selectedColor && p.color !== selectedColor) return false;
-    if (query) {
-      const haystack = `${p.name} ${p.slug} ${p.color}`.toLowerCase();
-      if (!haystack.includes(query)) return false;
-    }
-    return true;
-  });
+ return localItems.filter((p) => {
+ // ❌ O(n) - varre TODOS os itens a cada mudança
+ if (selectedStatus && p.status !== selectedStatus) return false;
+ if (selectedColor && p.color !== selectedColor) return false;
+ if (query) {
+ const haystack = `${p.name} ${p.slug} ${p.color}`.toLowerCase();
+ if (!haystack.includes(query)) return false;
+ }
+ return true;
+ });
 }, [localItems, selectedStatus, selectedColor, query]);
 ```
 
@@ -1283,30 +1283,30 @@ const filtered = useMemo(() => {
 ```tsx
 // Opção 1: Busca server-side com índices Supabase
 const { puppies } = await supabase
-  .from('puppies')
-  .select()
-  .textSearch('fts', searchTerm) // Full-text search
-  .eq('status', selectedStatus);
+ .from('puppies')
+ .select()
+ .textSearch('fts', searchTerm) // Full-text search
+ .eq('status', selectedStatus);
 
 // Opção 2: Índice client-side com Fuse.js
 import Fuse from 'fuse.js';
 
 const fuse = useMemo(() => new Fuse(items, {
-  keys: ['name', 'slug', 'color'],
-  threshold: 0.3,
+ keys: ['name', 'slug', 'color'],
+ threshold: 0.3,
 }), [items]);
 
 const filtered = searchTerm 
-  ? fuse.search(searchTerm).map(r => r.item)
-  : items;
+ ? fuse.search(searchTerm).map(r => r.item)
+ : items;
 
 // Opção 3: Web Worker para não bloquear UI
 const searchWorker = useMemo(() => 
-  new Worker('/workers/search.js'), []
+ new Worker('/workers/search.js'), []
 );
 ```
 
-**Severidade:** 🔴 Crítico (performance)  
+**Severidade:** 🔴 Crítico (performance) 
 **Esforço:** 8h (server-side) | 16h (client optimizado)
 
 ---
@@ -1314,8 +1314,8 @@ const searchWorker = useMemo(() =>
 ### 🟠 ALTO
 
 #### 6.3. Sem Sistema de Cache (Fetches Redundantes)
-**Problema:** Mesmos dados carregados múltiplas vezes  
-**Localização:** Navegação entre páginas  
+**Problema:** Mesmos dados carregados múltiplas vezes 
+**Localização:** Navegação entre páginas 
 **Evidência:**
 - Abrir `/admin/puppies` → fetch 200 filhotes
 - Editar filhote → voltar → **fetch 200 filhotes novamente**
@@ -1327,26 +1327,26 @@ const searchWorker = useMemo(() =>
 import { useQuery } from '@tanstack/react-query';
 
 function usePuppies(filters) {
-  return useQuery({
-    queryKey: ['puppies', filters],
-    queryFn: () => fetchPuppies(filters),
-    staleTime: 5 * 60 * 1000, // 5 min
-    cacheTime: 10 * 60 * 1000, // 10 min
-  });
+ return useQuery({
+ queryKey: ['puppies', filters],
+ queryFn: () => fetchPuppies(filters),
+ staleTime: 5 * 60 * 1000, // 5 min
+ cacheTime: 10 * 60 * 1000, // 10 min
+ });
 }
 
 // Ou usar Next.js cache tags
 export const revalidate = 60; // ISR 1 min
 ```
 
-**Severidade:** 🟠 Alto  
+**Severidade:** 🟠 Alto 
 **Esforço:** 12h
 
 ---
 
 #### 6.4. Estado Local Não Persiste (Filtros Perdidos)
-**Problema:** Aplicar filtros → editar filhote → voltar → **filtros resetados**  
-**Localização:** Todos os filtros  
+**Problema:** Aplicar filtros → editar filhote → voltar → **filtros resetados** 
+**Localização:** Todos os filtros 
 **Evidência:**
 ```tsx
 const [selectedStatus, setSelectedStatus] = useState("");
@@ -1360,55 +1360,55 @@ import { useSearchParams } from 'next/navigation';
 
 const searchParams = useSearchParams();
 const [selectedStatus, setSelectedStatus] = useState(
-  searchParams.get('status') || ''
+ searchParams.get('status') || ''
 );
 
 useEffect(() => {
-  const params = new URLSearchParams(searchParams);
-  if (selectedStatus) {
-    params.set('status', selectedStatus);
-  } else {
-    params.delete('status');
-  }
-  router.push(`?${params.toString()}`, { scroll: false });
+ const params = new URLSearchParams(searchParams);
+ if (selectedStatus) {
+ params.set('status', selectedStatus);
+ } else {
+ params.delete('status');
+ }
+ router.push(`?${params.toString()}`, { scroll: false });
 }, [selectedStatus]);
 
 // ✅ URL fica: /admin/puppies?status=sold&color=creme
 // ✅ Compartilhável, refresh mantém filtros
 ```
 
-**Severidade:** 🟠 Alto  
+**Severidade:** 🟠 Alto 
 **Esforço:** 6h
 
 ---
 
 #### 6.5-6.8. Outros problemas de escalabilidade
 
-**6.5. Imagens não otimizadas (sem CDN)**  
-- Links diretos do Supabase Storage  
-- Implementar Image Optimization API ou Cloudinary  
+**6.5. Imagens não otimizadas (sem CDN)** 
+- Links diretos do Supabase Storage 
+- Implementar Image Optimization API ou Cloudinary 
 - Esforço: 10h
 
-**6.6. Sem debounce em inputs de busca**  
-- Cada keystroke = re-render + fetch  
-- Adicionar `useDebouncedValue(searchTerm, 300)`  
+**6.6. Sem debounce em inputs de busca** 
+- Cada keystroke = re-render + fetch 
+- Adicionar `useDebouncedValue(searchTerm, 300)` 
 - Esforço: 2h
 
-**6.7. Bundle JS não otimizado**  
-- Admin carrega libs do site público  
-- Code splitting por rota  
+**6.7. Bundle JS não otimizado** 
+- Admin carrega libs do site público 
+- Code splitting por rota 
 - Esforço: 8h
 
-**6.8. Sem lazy loading de componentes pesados**  
-- PuppyForm carrega mesmo em list view  
-- Dynamic imports  
+**6.8. Sem lazy loading de componentes pesados** 
+- PuppyForm carrega mesmo em list view 
+- Dynamic imports 
 - Esforço: 4h
 
 ---
 
 ### 🟡 MÉDIO
 
-**6.9. Falta rollback de alterações**  
+**6.9. Falta rollback de alterações** 
 **6.10. Sem sistema de jobs para operações longas**
 
 ---

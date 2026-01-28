@@ -21,73 +21,73 @@ const sourceImage = join(publicDir, 'spitz-hero-desktop-original.webp');
 
 // Verificar se arquivo fonte existe
 if (!existsSync(sourceImage)) {
-  console.error(`❌ Imagem fonte não encontrada: ${sourceImage}`);
-  process.exit(1);
+ console.error(`❌ Imagem fonte não encontrada: ${sourceImage}`);
+ process.exit(1);
 }
 
-console.log('🖼️  Otimizando imagens hero para LCP...\n');
+console.log('🖼️ Otimizando imagens hero para LCP...\n');
 
 const optimizations = [
-  {
-    name: 'spitz-hero-mobile.webp',
-    width: 640,
-    quality: 80,
-    targetSize: '~100KB',
-    description: 'Mobile (até 640px)'
-  },
-  {
-    name: 'spitz-hero-tablet.webp',
-    width: 1024,
-    quality: 82,
-    targetSize: '~150KB',
-    description: 'Tablet (640-1024px)'
-  },
-  {
-    name: 'spitz-hero-desktop.webp',
-    width: 1400,
-    quality: 85,
-    targetSize: '~200KB',
-    description: 'Desktop (1024px+)'
-  }
+ {
+ name: 'spitz-hero-mobile.webp',
+ width: 640,
+ quality: 80,
+ targetSize: '~100KB',
+ description: 'Mobile (até 640px)'
+ },
+ {
+ name: 'spitz-hero-tablet.webp',
+ width: 1024,
+ quality: 82,
+ targetSize: '~150KB',
+ description: 'Tablet (640-1024px)'
+ },
+ {
+ name: 'spitz-hero-desktop.webp',
+ width: 1400,
+ quality: 85,
+ targetSize: '~200KB',
+ description: 'Desktop (1024px+)'
+ }
 ];
 
 async function optimizeImage({ name, width, quality, targetSize, description }) {
-  const outputPath = join(publicDir, name);
-  
-  try {
-    const startTime = Date.now();
-    
-    await sharp(sourceImage)
-      .resize(width, null, { 
-        fit: 'inside',
-        withoutEnlargement: true 
-      })
-      .webp({ 
-        quality,
-        effort: 6 // 0-6, maior = melhor compressão mas mais lento
-      })
-      .toFile(outputPath);
-    
-    const stats = await sharp(outputPath).metadata();
-    const sizeKB = Math.round(Buffer.byteLength(readFileSync(outputPath)) / 1024);
-    const duration = Date.now() - startTime;
-    
-    console.log(`✅ ${name}`);
-    console.log(`   ${description}`);
-    console.log(`   Dimensões: ${stats.width}x${stats.height}px`);
-    console.log(`   Tamanho: ${sizeKB}KB (meta: ${targetSize})`);
-    console.log(`   Tempo: ${duration}ms\n`);
-    
-    return { name, sizeKB, width: stats.width, height: stats.height };
-  } catch (error) {
-    console.error(`❌ Erro ao otimizar ${name}:`, error.message);
-    return null;
-  }
+ const outputPath = join(publicDir, name);
+ 
+ try {
+ const startTime = Date.now();
+ 
+ await sharp(sourceImage)
+ .resize(width, null, { 
+ fit: 'inside',
+ withoutEnlargement: true 
+ })
+ .webp({ 
+ quality,
+ effort: 6 // 0-6, maior = melhor compressão mas mais lento
+ })
+ .toFile(outputPath);
+ 
+ const stats = await sharp(outputPath).metadata();
+ const sizeKB = Math.round(Buffer.byteLength(readFileSync(outputPath)) / 1024);
+ const duration = Date.now() - startTime;
+ 
+ console.log(`✅ ${name}`);
+ console.log(` ${description}`);
+ console.log(` Dimensões: ${stats.width}x${stats.height}px`);
+ console.log(` Tamanho: ${sizeKB}KB (meta: ${targetSize})`);
+ console.log(` Tempo: ${duration}ms\n`);
+ 
+ return { name, sizeKB, width: stats.width, height: stats.height };
+ } catch (error) {
+ console.error(`❌ Erro ao otimizar ${name}:`, error.message);
+ return null;
+ }
 }
 
 // Otimizar todas as variantes
 const results = await Promise.all(
-  optimizations.map(opt => optimizeImage(opt))
+ optimizations.map(opt => optimizeImage(opt))
 );
 
 const successful = results.filter(Boolean);
@@ -103,12 +103,12 @@ const HERO_IMAGE_SIZES = "(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 14
 
 // Use srcSet para servir imagem correta:
 <Image
-  src="/spitz-hero-desktop.webp"
-  alt="..."
-  fill
-  priority
-  sizes={HERO_IMAGE_SIZES}
-  className="object-cover"
+ src="/spitz-hero-desktop.webp"
+ alt="..."
+ fill
+ priority
+ sizes={HERO_IMAGE_SIZES}
+ className="object-cover"
 />
 `;
 

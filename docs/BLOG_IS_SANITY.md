@@ -1,6 +1,6 @@
 # Sanity é o Blog, Ponto 📝
 
-**Status:** 🟢 Canonical - Source of Truth  
+**Status:** 🟢 Canonical - Source of Truth 
 **Última atualização:** 7 de janeiro de 2026
 
 ---
@@ -18,27 +18,27 @@ Dados de blog (posts, slugs, metadados, conteúdo em Portable Text) vivem no San
 ### Content Model (Sanity)
 - **Type:** `post`
 - **Fields:**
-  - `title` (string) - Título do artigo
-  - `slug` (slug) - URL-safe slug
-  - `description` / `excerpt` - Meta description
-  - `content` / `body` (array de Portable Text blocks) - Conteúdo editável
-  - `publishedAt` (datetime) - Data de publicação
-  - `coverUrl` / `coverImage` - Imagem destaque
-  - `answerSnippet`, `tldr`, `keyTakeaways` - Metadados SEO
-  - `faq`, `sources` - Estruturado para IA
-  - `author` (reference) - Autor do post
-  - `categories` (array de references) - Categorização
-  - `status` - Draft / Published
+ - `title` (string) - Título do artigo
+ - `slug` (slug) - URL-safe slug
+ - `description` / `excerpt` - Meta description
+ - `content` / `body` (array de Portable Text blocks) - Conteúdo editável
+ - `publishedAt` (datetime) - Data de publicação
+ - `coverUrl` / `coverImage` - Imagem destaque
+ - `answerSnippet`, `tldr`, `keyTakeaways` - Metadados SEO
+ - `faq`, `sources` - Estruturado para IA
+ - `author` (reference) - Autor do post
+ - `categories` (array de references) - Categorização
+ - `status` - Draft / Published
 
 ### Data Queries (App)
 - **Single source:** `src/lib/sanity/blogRepo.ts`
 - **Fragments:** `src/lib/sanity/queries.ts`
-  - `SANITY_POST_LIST_FIELDS` - Para listagens
-  - `SANITY_POST_DETAIL_FIELDS` - Para páginas individuais
+ - `SANITY_POST_LIST_FIELDS` - Para listagens
+ - `SANITY_POST_DETAIL_FIELDS` - Para páginas individuais
 - **Consumer:** Qualquer rota que exiba blog
-  - `app/blog/page.tsx` - Listagem
-  - `app/blog/[slug]/page.tsx` - Detalhe
-  - Componentes React que consomem posts
+ - `app/blog/page.tsx` - Listagem
+ - `app/blog/[slug]/page.tsx` - Detalhe
+ - Componentes React que consomem posts
 
 ### What NOT to do ❌
 - ❌ Armazenar `content` (Portable Text) em Supabase
@@ -58,9 +58,9 @@ Sanity Studio → Editar post → Publicar ("Publish" button)
 ### 2️⃣ Sistema (automático)
 - Sanity webhook dispara `POST /api/webhooks/sanity`
 - App incrementa ISR revalidation para:
-  - `/blog` (listagem)
-  - `/blog/[slug]` (página do post)
-  - `/blog/[slug]/comments` (se houver)
+ - `/blog` (listagem)
+ - `/blog/[slug]` (página do post)
+ - `/blog/[slug]/comments` (se houver)
 - Cache atualizado em ~5-30 segundos (depende do Vercel/Next.js)
 
 ### 3️⃣ Verificação
@@ -79,12 +79,12 @@ curl -H "Accept: application/json" https://byimperiodog.com.br/api/og?slug=seu-s
 ### Opção 1: Via Webhook Manual (Dev)
 ```bash
 curl -X POST http://localhost:3000/api/webhooks/sanity \
-  -H "Content-Type: application/json" \
-  -d '{
-    "type": "post",
-    "slug": "seu-slug",
-    "action": "publish"
-  }'
+ -H "Content-Type: application/json" \
+ -d '{
+ "type": "post",
+ "slug": "seu-slug",
+ "action": "publish"
+ }'
 ```
 
 ### Opção 2: Via CLI Next.js (Production)
@@ -106,7 +106,7 @@ curl https://byimperiodog.com.br/api/revalidate?path=/blog/seu-slug
 ### 🔒 Admin & Studio Access
 - **Middleware:** `middleware.ts` valida `admin_role` para `/(admin)/*` routes
 - **Noindex:** `app/(admin)/layout.tsx` aplica `robots: { index: false, follow: false }`
-  - Evita indexação acidental de painéis internos
+ - Evita indexação acidental de painéis internos
 - **Headers:** `headers.ts` pode adicionar `X-Robots-Tag: noindex` se necessário
 
 ### 🔐 Blog Publishing
@@ -145,27 +145,27 @@ curl https://byimperiodog.com.br/api/revalidate?path=/blog/seu-slug
 ```typescript
 // src/lib/sanity/blogRepo.ts
 async function getPostBySlug(slug: string) {
-  const client = sanityClient();
-  return client.fetch(`*[_type == "post" && slug.current == $slug][0]`, 
-    { slug }, 
-    { perspective: 'published' }
-  );
+ const client = sanityClient();
+ return client.fetch(`*[_type == "post" && slug.current == $slug][0]`, 
+ { slug }, 
+ { perspective: 'published' }
+ );
 }
 
 // app/blog/[slug]/page.tsx
 export async function generateMetadata({ params }) {
-  const post = await getPostBySlug(params.slug);
-  return buildPostMetadata(params.slug);
+ const post = await getPostBySlug(params.slug);
+ return buildPostMetadata(params.slug);
 }
 
 export default async function PostPage({ params }) {
-  const post = await getPostBySlug(params.slug);
-  return (
-    <>
-      <h1>{post.title}</h1>
-      <PortableText value={post.content} />
-    </>
-  );
+ const post = await getPostBySlug(params.slug);
+ return (
+ <>
+ <h1>{post.title}</h1>
+ <PortableText value={post.content} />
+ </>
+ );
 }
 ```
 

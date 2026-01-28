@@ -20,19 +20,19 @@ Implementação de formulário avançado de captura de leads com:
 ```sql
 -- Tabela completa com 30+ colunas
 create table public.leads (
-  -- Dados do Lead
-  nome, telefone, cidade, estado,
-  sexo_preferido, cor_preferida, prazo_aquisicao,
-  mensagem,
-  
-  -- LGPD
-  consent_lgpd boolean not null,
-  consent_version text default '1.0',
-  consent_timestamp timestamptz,
-  
-  -- Tracking (UTM + IP + User Agent)
-  -- Status & Assignment
-  -- Índices e RLS
+ -- Dados do Lead
+ nome, telefone, cidade, estado,
+ sexo_preferido, cor_preferida, prazo_aquisicao,
+ mensagem,
+ 
+ -- LGPD
+ consent_lgpd boolean not null,
+ consent_version text default '1.0',
+ consent_timestamp timestamptz,
+ 
+ -- Tracking (UTM + IP + User Agent)
+ -- Status & Assignment
+ -- Índices e RLS
 )
 ```
 
@@ -48,15 +48,15 @@ create table public.leads (
 **Validação Zod:**
 ```typescript
 const schema = z.object({
-  nome: z.string().min(2),
-  telefone: z.string().min(10).regex(/^\d{10,11}$/),
-  cidade: z.string().min(2),
-  estado: z.string().length(2).toUpperCase(),
-  sexo_preferido: z.enum(["macho", "femea", "tanto_faz"]).optional(),
-  cor_preferida: z.string().optional(),
-  prazo_aquisicao: z.enum(["imediato", "1_mes", "2_3_meses", "3_mais"]).optional(),
-  mensagem: z.string().optional(),
-  consent_lgpd: z.literal(true), // ⚠️ OBRIGATÓRIO
+ nome: z.string().min(2),
+ telefone: z.string().min(10).regex(/^\d{10,11}$/),
+ cidade: z.string().min(2),
+ estado: z.string().length(2).toUpperCase(),
+ sexo_preferido: z.enum(["macho", "femea", "tanto_faz"]).optional(),
+ cor_preferida: z.string().optional(),
+ prazo_aquisicao: z.enum(["imediato", "1_mes", "2_3_meses", "3_mais"]).optional(),
+ mensagem: z.string().optional(),
+ consent_lgpd: z.literal(true), // ⚠️ OBRIGATÓRIO
 });
 ```
 
@@ -101,31 +101,31 @@ Minhas observações: [MENSAGEM]
 **Validação Server-Side:**
 ```typescript
 const leadSchema = z.object({
-  // Mesmos campos do client + server validation
-  consent_lgpd: z.boolean(), // DEVE ser true
+ // Mesmos campos do client + server validation
+ consent_lgpd: z.boolean(), // DEVE ser true
 });
 ```
 
 **Dados Salvos:**
 ```typescript
 {
-  // Formulário
-  nome, telefone, cidade, estado,
-  sexo_preferido, cor_preferida, prazo_aquisicao, mensagem,
-  
-  // LGPD
-  consent_lgpd: true,
-  consent_version: "1.0",
-  consent_timestamp: "2025-10-23T12:34:56.789Z",
-  
-  // Tracking
-  utm_source, utm_medium, utm_campaign, utm_content, utm_term,
-  referer, page, gclid, fbclid,
-  ip_address: "192.168.1.1",
-  user_agent: "Mozilla/5.0...",
-  
-  // Status
-  status: "pending" (default)
+ // Formulário
+ nome, telefone, cidade, estado,
+ sexo_preferido, cor_preferida, prazo_aquisicao, mensagem,
+ 
+ // LGPD
+ consent_lgpd: true,
+ consent_version: "1.0",
+ consent_timestamp: "2025-10-23T12:34:56.789Z",
+ 
+ // Tracking
+ utm_source, utm_medium, utm_campaign, utm_content, utm_term,
+ referer, page, gclid, fbclid,
+ ip_address: "192.168.1.1",
+ user_agent: "Mozilla/5.0...",
+ 
+ // Status
+ status: "pending" (default)
 }
 ```
 
@@ -142,30 +142,30 @@ const leadSchema = z.object({
 ### ✅ Requisitos Atendidos
 
 1. **Consentimento Explícito**
-   - Checkbox obrigatório (z.literal(true))
-   - Texto claro: "Li e aceito a Política de Privacidade..."
-   - Link para `/politica-de-privacidade`
+ - Checkbox obrigatório (z.literal(true))
+ - Texto claro: "Li e aceito a Política de Privacidade..."
+ - Link para `/politica-de-privacidade`
 
 2. **Versão da Política**
-   - `consent_version: "1.0"` salvo no banco
-   - Permite invalidar consents antigos se política mudar
+ - `consent_version: "1.0"` salvo no banco
+ - Permite invalidar consents antigos se política mudar
 
 3. **Timestamp do Consentimento**
-   - `consent_timestamp` salvo em ISO 8601
-   - Prova de quando o usuário aceitou
+ - `consent_timestamp` salvo em ISO 8601
+ - Prova de quando o usuário aceitou
 
 4. **Finalidade Clara**
-   - Texto: "...autorizo o uso dos meus dados para contato sobre os filhotes"
-   - Footer: "Seus dados são protegidos conforme LGPD"
+ - Texto: "...autorizo o uso dos meus dados para contato sobre os filhotes"
+ - Footer: "Seus dados são protegidos conforme LGPD"
 
 5. **Minimização de Dados**
-   - Apenas campos necessários são obrigatórios (nome, telefone, cidade, UF, consent)
-   - Demais campos são opcionais
+ - Apenas campos necessários são obrigatórios (nome, telefone, cidade, UF, consent)
+ - Demais campos são opcionais
 
 6. **Segurança**
-   - RLS ativado no Supabase
-   - Rate limiting contra abuso
-   - IP e User Agent para auditoria
+ - RLS ativado no Supabase
+ - Rate limiting contra abuso
+ - IP e User Agent para auditoria
 
 ---
 
@@ -181,22 +181,22 @@ trackLeadFormSubmit('lead-form-main');
 **Google Analytics 4:**
 ```javascript
 gtag('event', 'lead_form_submit', {
-  event_category: 'Lead',
-  event_label: 'lead-form-main',
+ event_category: 'Lead',
+ event_label: 'lead-form-main',
 });
 ```
 
 **Facebook Pixel:**
 ```javascript
 fbq('track', 'Lead', {
-  content_name: 'lead-form-main',
+ content_name: 'lead-form-main',
 });
 ```
 
 **TikTok Pixel (preparado):**
 ```javascript
 ttq.track('SubmitForm', {
-  content_name: 'lead-form-main',
+ content_name: 'lead-form-main',
 });
 ```
 
@@ -234,14 +234,14 @@ ttq.track('SubmitForm', {
 
 ```typescript
 setTimeout(() => {
-  const mensagemWhatsApp = `
+ const mensagemWhatsApp = `
 Olá! Acabei de preencher o formulário no site.
 Meu nome é *${data.nome}* e estou interessado(a) em conhecer os filhotes disponíveis.
 ${data.mensagem ? `\n\nMinhas observações: ${data.mensagem}` : ""}
-  `.trim();
-  
-  const whatsappURL = buildWhatsAppLink(mensagemWhatsApp);
-  window.open(whatsappURL, "_blank");
+ `.trim();
+ 
+ const whatsappURL = buildWhatsAppLink(mensagemWhatsApp);
+ window.open(whatsappURL, "_blank");
 }, 2000);
 ```
 
@@ -294,22 +294,22 @@ SELECT nome, consent_lgpd, consent_version, consent_timestamp FROM leads;
 ```typescript
 // tests/lead-form.test.tsx
 describe('LeadForm', () => {
-  it('valida campos obrigatórios', () => {
-    // submit vazio → errors.nome, errors.telefone...
-  });
-  
-  it('valida regex de telefone', () => {
-    // telefone: "abc" → error
-  });
-  
-  it('exige consentimento LGPD', () => {
-    // consent_lgpd: false → error
-  });
-  
-  it('envia tracking em sucesso', async () => {
-    // mock trackLeadFormSubmit
-    // submit válido → expect(trackLeadFormSubmit).toHaveBeenCalled()
-  });
+ it('valida campos obrigatórios', () => {
+ // submit vazio → errors.nome, errors.telefone...
+ });
+ 
+ it('valida regex de telefone', () => {
+ // telefone: "abc" → error
+ });
+ 
+ it('exige consentimento LGPD', () => {
+ // consent_lgpd: false → error
+ });
+ 
+ it('envia tracking em sucesso', async () => {
+ // mock trackLeadFormSubmit
+ // submit válido → expect(trackLeadFormSubmit).toHaveBeenCalled()
+ });
 });
 ```
 
@@ -340,10 +340,10 @@ describe('LeadForm', () => {
 ```sql
 -- Leads por origem (últimos 30 dias)
 SELECT
-  utm_source,
-  COUNT(*) as total_leads,
-  COUNT(CASE WHEN status = 'converted' THEN 1 END) as converted,
-  ROUND(COUNT(CASE WHEN status = 'converted' THEN 1 END)::numeric / COUNT(*) * 100, 2) as conversion_rate
+ utm_source,
+ COUNT(*) as total_leads,
+ COUNT(CASE WHEN status = 'converted' THEN 1 END) as converted,
+ ROUND(COUNT(CASE WHEN status = 'converted' THEN 1 END)::numeric / COUNT(*) * 100, 2) as conversion_rate
 FROM leads
 WHERE created_at >= NOW() - INTERVAL '30 days'
 GROUP BY utm_source
@@ -380,18 +380,18 @@ SELECT * FROM leads LIMIT 1;
 ```bash
 # POST válido
 curl -X POST http://localhost:3000/api/leads \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nome": "Ana Souza",
-    "telefone": "11999887766",
-    "cidade": "Bragança Paulista",
-    "estado": "SP",
-    "consent_lgpd": true
-  }'
+ -H "Content-Type: application/json" \
+ -d '{
+ "nome": "Ana Souza",
+ "telefone": "11999887766",
+ "cidade": "Bragança Paulista",
+ "estado": "SP",
+ "consent_lgpd": true
+ }'
 
 # Rate limit (4ª requisição)
 for i in {1..4}; do
-  curl -X POST http://localhost:3000/api/leads -H "Content-Type: application/json" -d '{"nome":"Test","telefone":"11999887766","cidade":"SP","estado":"SP","consent_lgpd":true}'
+ curl -X POST http://localhost:3000/api/leads -H "Content-Type: application/json" -d '{"nome":"Test","telefone":"11999887766","cidade":"SP","estado":"SP","consent_lgpd":true}'
 done
 ```
 
@@ -412,26 +412,26 @@ SUPABASE_SERVICE_ROLE_KEY=eyJxxx...
 ### Proteções Implementadas
 
 1. **Rate Limiting**
-   - 3 requests/min por IP
-   - Previne spam e ataques DoS
+ - 3 requests/min por IP
+ - Previne spam e ataques DoS
 
 2. **Validação Dupla**
-   - Client-side (UX) + Server-side (segurança)
-   - Zod em ambos os lados
+ - Client-side (UX) + Server-side (segurança)
+ - Zod em ambos os lados
 
 3. **RLS (Row Level Security)**
-   - Insert: apenas anon (formulário)
-   - Select/Update: apenas authenticated (admin)
+ - Insert: apenas anon (formulário)
+ - Select/Update: apenas authenticated (admin)
 
 4. **Sanitização**
-   - Zod trimeia strings
-   - Estado uppercase automático
-   - Telefone: apenas dígitos (regex)
+ - Zod trimeia strings
+ - Estado uppercase automático
+ - Telefone: apenas dígitos (regex)
 
 5. **Auditoria**
-   - IP e User Agent salvos
-   - Timestamp de criação/atualização
-   - Referer e Page salvos
+ - IP e User Agent salvos
+ - Timestamp de criação/atualização
+ - Referer e Page salvos
 
 ### Considerações de Privacidade
 
@@ -445,7 +445,7 @@ SUPABASE_SERVICE_ROLE_KEY=eyJxxx...
 -- Política de retenção (sugestão: 2 anos)
 DELETE FROM leads
 WHERE created_at < NOW() - INTERVAL '2 years'
-  AND status IN ('lost', 'converted');
+ AND status IN ('lost', 'converted');
 ```
 
 ---

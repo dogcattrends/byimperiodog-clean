@@ -1,42 +1,52 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
-import { supabaseAdmin, hasServiceRoleKey } from "@/lib/supabaseAdmin";
+import { requireAdmin } from "@/lib/adminAuth";
+import { sanityClient } from "@/lib/sanity/client";
 
-export async function POST() {
-  if (!hasServiceRoleKey()) {
-    return NextResponse.json({ message: "Configuração ausente" }, { status: 500 });
-  }
-  const sb = supabaseAdmin();
-  const now = new Date().toISOString();
+export async function POST(req: Request) {
+ const auth = requireAdmin(req);
+ if (auth) return auth;
 
-  const { data: due } = await sb
-    .from("blog_posts")
-    .select("id,slug")
-    .lte("scheduled_at", now)
-    .eq("status", "scheduled");
+ if (!process.env.SANITY_TOKEN) {
+ return NextResponse.json({ message: "SANITY_TOKEN ausente (necessário para publicar)" }, { status: 500 });
+ }
 
-  if (!due || due.length === 0) {
-    return NextResponse.json({ updated: 0 });
-  }
+ const due = await sanityClient.fetch<Array<{ id: string; slug: string }>>(
+ `*[_type == "post" && status == "scheduled" && defined(publishedAt) && publishedAt <= now()]{
+ "id": _id,
+ "slug": slug.current
+ }`,
+ {}
+ );
 
-  const ids = due.map((d: { id: string }) => d.id);
-  const { error } = await sb
-    .from("blog_posts")
-    .update({ status: "published", published_at: new Date().toISOString() })
-    .in("id", ids);
+ if (!due || due.length === 0) {
+ return NextResponse.json({ updated: 0 });
+ }
 
-  if (error) {
-    return NextResponse.json({ message: "Falha ao publicar", error: String(error.message) }, { status: 500 });
-  }
+ const updatedAt = new Date().toISOString();
+ const results = await Promise.all(
+ due.map(async (doc) => {
+ try {
+ await sanityClient
+ .patch(doc.id)
+ .set({ status: "published", publishedAt: updatedAt })
+ .commit({ autoGenerateArrayKeys: true });
+ return { id: doc.id, ok: true };
+ } catch (e) {
+ return { id: doc.id, ok: false };
+ }
+ })
+ );
+ const okCount = results.filter((r) => r.ok).length;
 
-  // Revalidate listing and each post so the Sanity source of truth appears instantly on the public site.
-  // This webhook flow is documented in docs/BLOG_ARCHITECTURE.md.
-  try {
-    revalidatePath("/blog");
-    for (const d of due) revalidatePath(`/blog/${d.slug}`);
-  } catch (e) { /* ignore revalidate errors */ }
+ // Revalidate listing and each post so the Sanity source of truth appears instantly on the public site.
+ // This webhook flow is documented in docs/BLOG_ARCHITECTURE.md.
+ try {
+ revalidatePath("/blog");
+ for (const d of due) revalidatePath(`/blog/${d.slug}`);
+ } catch (e) { /* ignore revalidate errors */ }
 
-  return NextResponse.json({ updated: due.length });
+ return NextResponse.json({ updated: okCount, attempted: due.length });
 }
 

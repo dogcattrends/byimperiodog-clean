@@ -1,43 +1,9 @@
-import { createClient } from '@supabase/supabase-js'
+/* eslint-disable no-console */
+import 'dotenv/config'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://npmnuihgydadihktglrd.supabase.co'
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+console.log('[create-test-post] Script legado descontinuado (posts agora vivem no Sanity).')
+console.log('[create-test-post] Opções:')
+console.log(' 1) Use a rota admin de seed: POST /api/admin/blog/seed-demo')
+console.log(' 2) Crie um post no Sanity Studio e rode: npm run embeddings:index')
 
-if (!supabaseServiceKey) {
-  throw new Error('SUPABASE_SERVICE_ROLE_KEY ausente. Defina a chave no ambiente para executar este script.')
-}
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey)
-
-async function createTestPost() {
-  try {
-    // Criar post de teste
-    const testPost = {
-      title: 'Post de Teste para Embeddings',
-      slug: 'post-teste-embeddings',
-      content_mdx: '# Post de Teste\n\nEste é um post de teste para verificar o funcionamento do sistema de embeddings.\n\n## Conteúdo\n\nO sistema de embeddings ajuda na busca semântica de conteúdo, permitindo encontrar posts relacionados mesmo quando não compartilham as mesmas palavras-chave exatas.\n\nPor exemplo, se alguém buscar por "machine learning" ou "inteligência artificial", este post poderia aparecer nos resultados por causa da menção a embeddings e busca semântica.',
-      excerpt: 'Post de teste para verificar o funcionamento do sistema de embeddings e busca semântica.',
-      status: 'published',
-      author_id: null, // opcional
-      published_at: new Date().toISOString()
-    }
-
-    const { data: post, error } = await supabase
-      .from('blog_posts')
-      .insert(testPost)
-      .select()
-      .single()
-
-    if (error) {
-      console.error('Erro ao criar post:', error)
-      return
-    }
-
-    console.log('✅ Post de teste criado com sucesso:', post.id)
-
-  } catch (err) {
-    console.error('Erro geral:', err)
-  }
-}
-
-createTestPost()
+process.exit(0)

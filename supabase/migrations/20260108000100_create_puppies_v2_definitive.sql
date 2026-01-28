@@ -14,66 +14,66 @@ create extension if not exists pgcrypto;
 -- Enum para sexo (novo schema). Não conflita com public.sexo_type existente.
 do $$
 begin
-  if not exists (select 1 from pg_type where typname = 'puppy_gender') then
-    create type public.puppy_gender as enum ('macho', 'femea');
-  end if;
+ if not exists (select 1 from pg_type where typname = 'puppy_gender') then
+ create type public.puppy_gender as enum ('macho', 'femea');
+ end if;
 end $$;
 
 -- A enum public.puppy_status já existe no projeto; garantimos por segurança.
 do $$
 begin
-  if not exists (select 1 from pg_type where typname = 'puppy_status') then
-    create type public.puppy_status as enum ('disponivel', 'reservado', 'vendido');
-  end if;
+ if not exists (select 1 from pg_type where typname = 'puppy_status') then
+ create type public.puppy_status as enum ('disponivel', 'reservado', 'vendido');
+ end if;
 end $$;
 
 create table if not exists public.puppies_v2 (
-  id uuid primary key default gen_random_uuid(),
+ id uuid primary key default gen_random_uuid(),
 
-  name text not null,
-  breed text not null,
-  color text,
-  gender public.puppy_gender not null,
+ name text not null,
+ breed text not null,
+ color text,
+ gender public.puppy_gender not null,
 
-  price integer not null check (price >= 0),
-  status public.puppy_status not null default 'disponivel'::public.puppy_status,
+ price integer not null check (price >= 0),
+ status public.puppy_status not null default 'disponivel'::public.puppy_status,
 
-  city text,
-  state text,
+ city text,
+ state text,
 
-  description text,
+ description text,
 
-  -- features: objeto JSONB com flags booleanas (pedigree, video, entrega_segura)
-  features jsonb not null default '{}'::jsonb
-    check (jsonb_typeof(features) = 'object')
-    check (
-      (not (features ? 'pedigree') or jsonb_typeof(features->'pedigree') = 'boolean')
-      and (not (features ? 'video') or jsonb_typeof(features->'video') = 'boolean')
-      and (not (features ? 'entrega_segura') or jsonb_typeof(features->'entrega_segura') = 'boolean')
-    ),
+ -- features: objeto JSONB com flags booleanas (pedigree, video, entrega_segura)
+ features jsonb not null default '{}'::jsonb
+ check (jsonb_typeof(features) = 'object')
+ check (
+ (not (features ? 'pedigree') or jsonb_typeof(features->'pedigree') = 'boolean')
+ and (not (features ? 'video') or jsonb_typeof(features->'video') = 'boolean')
+ and (not (features ? 'entrega_segura') or jsonb_typeof(features->'entrega_segura') = 'boolean')
+ ),
 
-  -- images: array JSONB de strings (URLs do Supabase Storage)
-  images jsonb not null default '[]'::jsonb
-    check (jsonb_typeof(images) = 'array')
-    check (not jsonb_path_exists(images, '$[*] ? (@.type() != "string")')),
+ -- images: array JSONB de strings (URLs do Supabase Storage)
+ images jsonb not null default '[]'::jsonb
+ check (jsonb_typeof(images) = 'array')
+ check (not jsonb_path_exists(images, '$[*] ? (@.type() != "string")')),
 
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+ created_at timestamptz not null default now(),
+ updated_at timestamptz not null default now()
 );
 
 -- updated_at (função public.set_updated_at já existe no schema remoto)
 do $$
 begin
-  if not exists (
-    select 1
-    from pg_trigger
-    where tgname = 'trg_puppies_v2_set_updated_at'
-  ) then
-    create trigger trg_puppies_v2_set_updated_at
-    before update on public.puppies_v2
-    for each row
-    execute function public.set_updated_at();
-  end if;
+ if not exists (
+ select 1
+ from pg_trigger
+ where tgname = 'trg_puppies_v2_set_updated_at'
+ ) then
+ create trigger trg_puppies_v2_set_updated_at
+ before update on public.puppies_v2
+ for each row
+ execute function public.set_updated_at();
+ end if;
 end $$;
 
 -- Índices
@@ -113,7 +113,7 @@ as permissive
 for select
 to anon, authenticated
 using (
-  status = any (array['disponivel'::public.puppy_status, 'reservado'::public.puppy_status])
+ status = any (array['disponivel'::public.puppy_status, 'reservado'::public.puppy_status])
 );
 
 -- Escrita apenas via service_role (admin/server). Observação: service_role normalmente bypassa RLS.

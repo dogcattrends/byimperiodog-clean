@@ -5,15 +5,15 @@ import {structureTool} from 'sanity/structure'
 import {schemaTypes} from './schemaTypes'
 
 export default defineConfig({
-  name: 'default',
-  title: 'By-Imperio-Dog',
+ name: 'default',
+ title: 'By-Imperio-Dog',
 
-  projectId: 'mgw96j4i',
-  dataset: 'production',
+ projectId: 'mgw96j4i',
+ dataset: 'production',
 
-  plugins: [structureTool(), visionTool()],
+ plugins: [structureTool(), visionTool()],
 
-  schema: {
-    types: schemaTypes,
-  },
+ schema: {
+ types: schemaTypes,
+ },
 })

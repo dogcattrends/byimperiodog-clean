@@ -1,7 +1,7 @@
 # 🔍 AUDITORIA COMPLETA DO CÓDIGO - By Império Dog
 
-**Data:** 01/12/2025  
-**Auditor:** GitHub Copilot (Claude Sonnet 4.5)  
+**Data:** 01/12/2025 
+**Auditor:** GitHub Copilot (Claude Sonnet 4.5) 
 **Escopo:** Análise completa de código, arquitetura, duplicações e gaps
 
 ---
@@ -47,7 +47,7 @@
 
 ### 2. ARQUIVO DELETADO RECENTEMENTE
 
-**Arquivo:** `src/lib/schema/puppy.ts`  
+**Arquivo:** `src/lib/schema/puppy.ts` 
 **Status:** ❌ DELETADO (comando terminal: `Remove-Item -Path "src/lib/schema/puppy.ts" -Force`)
 
 **Impacto:**
@@ -106,25 +106,25 @@
 
 **Rotas problemáticas:**
 ```
-/filhotes/page.tsx         ⚠️ Metadata OK, mas sem generateStaticParams
-/filhotes/[slug]/page.tsx  ❌ NÃO EXISTE - rota dinâmica ausente
-/spitz-anao/cor/[color]/page.tsx  ❌ NÃO EXISTE
-/spitz-anao/[city]/page.tsx       ❌ NÃO EXISTE
+/filhotes/page.tsx ⚠️ Metadata OK, mas sem generateStaticParams
+/filhotes/[slug]/page.tsx ❌ NÃO EXISTE - rota dinâmica ausente
+/spitz-anao/cor/[color]/page.tsx ❌ NÃO EXISTE
+/spitz-anao/[city]/page.tsx ❌ NÃO EXISTE
 ```
 
 **TODO:**
 ```typescript
 // TODO: CRIAR ROTAS DINÂMICAS FALTANTES
 // 1. app/filhotes/[slug]/page.tsx
-//    - generateStaticParams() com lista de puppies
-//    - generateMetadata() dinâmico
-//    - JSON-LD Product schema
+// - generateStaticParams() com lista de puppies
+// - generateMetadata() dinâmico
+// - JSON-LD Product schema
 // 2. app/spitz-anao/cor/[color]/page.tsx
-//    - generateStaticParams() com COLORS taxonomy
-//    - Filtrar puppies por cor via service
+// - generateStaticParams() com COLORS taxonomy
+// - Filtrar puppies por cor via service
 // 3. app/spitz-anao/[city]/page.tsx
-//    - generateStaticParams() com CITIES taxonomy
-//    - Filtrar puppies por cidade via service
+// - generateStaticParams() com CITIES taxonomy
+// - Filtrar puppies por cidade via service
 ```
 
 ### 6. ADMIN SEM CRUD COMPLETO
@@ -139,16 +139,16 @@
 ```typescript
 // TODO: IMPLEMENTAR ADMIN CRUD COMPLETO
 // 1. app/(admin)/admin/(protected)/puppies/new/page.tsx
-//    - Form com validação Zod
-//    - Upload de imagens
-//    - Preview antes de salvar
+// - Form com validação Zod
+// - Upload de imagens
+// - Preview antes de salvar
 // 2. app/(admin)/admin/(protected)/puppies/[id]/edit/page.tsx
-//    - Form pré-preenchido
-//    - Upload adicional de imagens
-//    - Histórico de alterações
+// - Form pré-preenchido
+// - Upload adicional de imagens
+// - Histórico de alterações
 // 3. Melhorar confirmação de delete
-//    - Modal com warning
-//    - Soft delete (status = deleted)
+// - Modal com warning
+// - Soft delete (status = deleted)
 ```
 
 ---
@@ -221,7 +221,7 @@
 - id, slug, name, description
 - price_cents, color, gender, birth_date
 - images (jsonb), city, state
-- is_partner_breeder, breeder_name  ⚠️ NUNCA USAR NO FRONT
+- is_partner_breeder, breeder_name ⚠️ NUNCA USAR NO FRONT
 - status, aggregate_rating, review_count
 ```
 
@@ -236,16 +236,16 @@
 ```typescript
 // TODO: ALINHAR SCHEMA DB COM DOMAIN
 // Opção 1: Migration SQL para renomear colunas
-//   - gender → sex
-//   - is_partner_breeder → source (enum: 'own-breeding' | 'external-breeder')
-//   - breeder_name → internal_source_id
+// - gender → sex
+// - is_partner_breeder → source (enum: 'own-breeding' | 'external-breeder')
+// - breeder_name → internal_source_id
 // Opção 2: Criar VIEW no Supabase que faz o mapeamento
 // Opção 3: Normalização robusta em normalize.ts
 ```
 
 ### 11. CAMPOS `is_partner_breeder` EXPOSTOS NO FRONT
 
-**⚠️ VIOLAÇÃO DA REGRA DE NEGÓCIO:**  
+**⚠️ VIOLAÇÃO DA REGRA DE NEGÓCIO:** 
 Domain diz: "NUNCA expor criador parceiro ao público"
 
 **Problema encontrado:**
@@ -270,10 +270,10 @@ Domain diz: "NUNCA expor criador parceiro ao público"
 **Arquivos identificados:**
 ```
 archive_routes/
-  app_site_backup/filhote/actions.ts   ⚠️ Server actions antigas
-  app_site_backup/filhote/page.tsx     ⚠️ Rota antiga duplicada
-  app_search/                          ⚠️ Search route antiga
-  app_site_blog_rollback/              ⚠️ Backup de blog
+ app_site_backup/filhote/actions.ts ⚠️ Server actions antigas
+ app_site_backup/filhote/page.tsx ⚠️ Rota antiga duplicada
+ app_search/ ⚠️ Search route antiga
+ app_site_blog_rollback/ ⚠️ Backup de blog
 ```
 
 **TODO:**
@@ -315,31 +315,31 @@ archive_routes/
 ```typescript
 // TODO: ADMIN DE LEADS COMPLETO
 // 1. app/(admin)/admin/(protected)/leads/page.tsx
-//    - Lista com filtros (status, UTM, período)
-//    - Exportar CSV
+// - Lista com filtros (status, UTM, período)
+// - Exportar CSV
 // 2. app/(admin)/admin/(protected)/leads/[id]/page.tsx
-//    - Detalhes completos do lead
-//    - Histórico de interações
-//    - Botão "Marcar como Contatado/Convertido"
+// - Detalhes completos do lead
+// - Histórico de interações
+// - Botão "Marcar como Contatado/Convertido"
 // 3. API route: PATCH /api/admin/leads/[id]
-//    - Atualizar status
-//    - Adicionar notas internas
+// - Atualizar status
+// - Adicionar notas internas
 ```
 
 ### 15. ADMIN SEM RBAC (ROLE-BASED ACCESS CONTROL)
 
-**Problema:** Sistema usa senha única para admin (`ADMIN_PASS`).  
+**Problema:** Sistema usa senha única para admin (`ADMIN_PASS`). 
 Não há diferenciação de roles (admin vs moderador vs editor).
 
 **TODO:**
 ```typescript
 // TODO: IMPLEMENTAR RBAC BÁSICO
 // 1. Tabela Supabase: admin_users
-//    - id, email, role (admin | editor | viewer)
+// - id, email, role (admin | editor | viewer)
 // 2. Middleware verifica role antes de permitir ação
 // 3. Admin: full access
-//    Editor: pode criar/editar puppies/blog
-//    Viewer: apenas leitura
+// Editor: pode criar/editar puppies/blog
+// Viewer: apenas leitura
 ```
 
 ---
@@ -376,13 +376,13 @@ Não há diferenciação de roles (admin vs moderador vs editor).
 // TODO: METADATA DINÂMICO PARA PUPPIES
 // app/filhotes/[slug]/page.tsx:
 // export async function generateMetadata({ params }): Promise<Metadata> {
-//   const puppy = await service.getPuppyBySlug(params.slug);
-//   return {
-//     title: PuppyHelpers.generateSeoTitle(puppy),
-//     description: PuppyHelpers.generateSeoDescription(puppy),
-//     keywords: PuppyHelpers.generateSeoKeywords(puppy),
-//     openGraph: { ... },
-//   };
+// const puppy = await service.getPuppyBySlug(params.slug);
+// return {
+// title: PuppyHelpers.generateSeoTitle(puppy),
+// description: PuppyHelpers.generateSeoDescription(puppy),
+// keywords: PuppyHelpers.generateSeoKeywords(puppy),
+// openGraph: { ... },
+// };
 // }
 ```
 
@@ -485,15 +485,15 @@ Não há diferenciação de roles (admin vs moderador vs editor).
 ```typescript
 // TODO: TESTES CRÍTICOS
 // 1. src/domain/puppy.test.ts
-//    - PuppyPrice.fromCents()
-//    - PuppyAge.getDays()
-//    - PuppyHelpers.generateSlug()
+// - PuppyPrice.fromCents()
+// - PuppyAge.getDays()
+// - PuppyHelpers.generateSlug()
 // 2. src/lib/catalog/service.test.ts
-//    - listPuppies()
-//    - filters
+// - listPuppies()
+// - filters
 // 3. app/api/leads/route.test.ts
-//    - Validação de schema
-//    - Rate limiting
+// - Validação de schema
+// - Rate limiting
 ```
 
 ### 24. E2E TESTS DESATUALIZADOS
@@ -506,17 +506,17 @@ Não há diferenciação de roles (admin vs moderador vs editor).
 ```typescript
 // TODO: E2E CRÍTICOS
 // tests/e2e/catalog.spec.ts:
-//   - Visitar /filhotes
-//   - Filtrar por cor
-//   - Abrir detalhes de puppy
+// - Visitar /filhotes
+// - Filtrar por cor
+// - Abrir detalhes de puppy
 // tests/e2e/lead-form.spec.ts:
-//   - Preencher formulário
-//   - Submit
-//   - Verificar redirect WhatsApp
+// - Preencher formulário
+// - Submit
+// - Verificar redirect WhatsApp
 // tests/e2e/admin.spec.ts:
-//   - Login
-//   - Criar puppy
-//   - Editar puppy
+// - Login
+// - Criar puppy
+// - Editar puppy
 ```
 
 ---
@@ -627,10 +627,10 @@ Não há diferenciação de roles (admin vs moderador vs editor).
 # TODO: CRIAR .github/workflows/ci.yml
 # on: [push, pull_request]
 # jobs:
-#   - lint (eslint)
-#   - type-check (tsc --noEmit)
-#   - test (vitest run)
-#   - build (next build)
+# - lint (eslint)
+# - type-check (tsc --noEmit)
+# - test (vitest run)
+# - build (next build)
 ```
 
 ---

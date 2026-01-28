@@ -25,7 +25,7 @@
 - **`tracking_settings`** (`sql/tracking_settings.sql`): IDs de pixel por ambiente e auditoria log. **Risco:** IDs expostos; RLS habilita. **Oportunidade:** UI `/admin/tracking` e forms `TrackingSettingsPage` com diagnostico e health/checks.
 - **`site_settings`/`admin_config`** (`sql/site_settings.sql`, `sql/admin_config.sql`): branding, mensagens, tokens CAPI. **Risco:** tokens no client; only server writes. **Oportunidade:** centralizar `ConfigTabs` com logs.
 - **`ai_generation_sessions`, `ai_tasks`** (`sql/blog_ai_infra.sql`, `sql/ai_core.sql`): pipeline de IA. **Risco:** se tasks corrompidas, insights travam. **Oportunidade:** expor health/timeouts no dashboard, reprocessar via `createSessionWithTasks`.
-- **`blog_posts`, `blog_authors`, `blog_tags`, `blog_post_schedule_events`, `blog_post_versions`, `media_assets`, `post_media`**: históricos e compatibilidade com scripts de `app/api/blog/*`. **Risco:** duplicação com Sanity; `content_mdx` obsoleto. **Oportunidade:** migrar metadata e usar `RelatedLinks`.
+- **Blog (operacional)**: `blog_post_schedule_events`, `blog_post_versions`, `media_assets`, `post_media`, `blog_comments`, `blog_post_revisions`, `blog_post_embeddings` — **preferir chaves por `post_slug`/`entity_ref`**. **Risco:** duplicação se houver tabela editorial legada (`blog_posts`/`content_mdx`). **Oportunidade:** remover dependências restantes e manter Sanity como única fonte editorial.
 - **`admin_actions`, `webhooks`, `webhook_deliveries`**: logs e auditoria (routes + dispatcher). **Risco:** logs não indexados; mitigação com index e dashboards.
 
 ## Integrações

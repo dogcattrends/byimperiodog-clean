@@ -10,22 +10,22 @@ begin;
 create extension if not exists pgcrypto;
 
 create table if not exists public.puppies (
-  id uuid primary key default gen_random_uuid(),
-  slug text not null unique,
-  title text not null,
-  sex text not null check (sex in ('macho','femea')),
-  color text not null,
-  city text not null,
-  state text not null,
-  price_cents int not null,
-  status text not null default 'disponivel' check (status in ('disponivel','reservado','vendido')),
-  main_image_url text,
-  gallery jsonb not null default '[]'::jsonb,
-  badges jsonb not null default '[]'::jsonb,
-  description text,
-  is_active boolean not null default true,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+ id uuid primary key default gen_random_uuid(),
+ slug text not null unique,
+ title text not null,
+ sex text not null check (sex in ('macho','femea')),
+ color text not null,
+ city text not null,
+ state text not null,
+ price_cents int not null,
+ status text not null default 'disponivel' check (status in ('disponivel','reservado','vendido')),
+ main_image_url text,
+ gallery jsonb not null default '[]'::jsonb,
+ badges jsonb not null default '[]'::jsonb,
+ description text,
+ is_active boolean not null default true,
+ created_at timestamptz not null default now(),
+ updated_at timestamptz not null default now()
 );
 
 -- Índices úteis
@@ -39,8 +39,8 @@ returns trigger
 language plpgsql
 as $$
 begin
-  new.updated_at = now();
-  return new;
+ new.updated_at = now();
+ return new;
 end;
 $$;
 
@@ -59,8 +59,8 @@ on public.puppies
 for select
 to anon, authenticated
 using (
-  is_active = true
-  and status <> 'vendido'
+ is_active = true
+ and status <> 'vendido'
 );
 
 -- Sem políticas de insert/update/delete => negado para anon/authenticated.

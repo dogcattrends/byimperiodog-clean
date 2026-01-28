@@ -91,8 +91,8 @@ supabase db push sql/leads.sql
 ```typescript
 // app/api/leads/route.ts (após insert sucesso)
 await sendNotification({
-  type: 'new_lead',
-  data: { nome, telefone, cidade, utm_source },
+ type: 'new_lead',
+ data: { nome, telefone, cidade, utm_source },
 });
 ```
 
@@ -125,15 +125,15 @@ Equipe By Império Dog
 ```typescript
 // Hook useScrollTracking
 useEffect(() => {
-  const handleScroll = () => {
-    const scrollPercent = (window.scrollY / document.body.scrollHeight) * 100;
-    if (scrollPercent >= 25 && !tracked25) {
-      trackScrollDepth(slug, 25);
-      setTracked25(true);
-    }
-    // ... 50%, 75%, 100%
-  };
-  window.addEventListener('scroll', handleScroll);
+ const handleScroll = () => {
+ const scrollPercent = (window.scrollY / document.body.scrollHeight) * 100;
+ if (scrollPercent >= 25 && !tracked25) {
+ trackScrollDepth(slug, 25);
+ setTracked25(true);
+ }
+ // ... 50%, 75%, 100%
+ };
+ window.addEventListener('scroll', handleScroll);
 }, []);
 ```
 
@@ -198,15 +198,15 @@ useEffect(() => {
 **Arquivo:** `src/lib/jsonld.ts`
 ```typescript
 export const organizationSchema = {
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  name: "By Império Dog",
-  url: "https://byimperiodog.com.br",
-  logo: "https://byimperiodog.com.br/logo.png",
-  sameAs: [
-    "https://instagram.com/byimperiodog",
-    "https://facebook.com/byimperiodog",
-  ],
+ "@context": "https://schema.org",
+ "@type": "Organization",
+ name: "By Império Dog",
+ url: "https://byimperiodog.com.br",
+ logo: "https://byimperiodog.com.br/logo.png",
+ sameAs: [
+ "https://instagram.com/byimperiodog",
+ "https://facebook.com/byimperiodog",
+ ],
 };
 ```
 
@@ -374,6 +374,6 @@ export const organizationSchema = {
 
 ---
 
-**Última atualização:** 23 de outubro de 2025  
-**Versão:** 1.0  
+**Última atualização:** 23 de outubro de 2025 
+**Versão:** 1.0 
 **Mantenedor:** GitHub Copilot + Equipe By Império Dog

@@ -11,10 +11,10 @@
 - **Autenticação/RBAC atual**: cookies `adm`/`admin_auth` verificados em `middleware.ts` e helpers (`src/lib/adminAuth.ts`); não há roles, apenas flag booleana.
 - **Estado Global**: uso pontual de `localStorage` (streak, admin pass). Não há Redux/RTK/SWR configurados globalmente; fetchers manuais via `adminFetch`.
 - **Testes existentes**:
-  - Unitários (Vitest) em `tests/unit/**` e `tests/**/*.test.ts(x)` cobrindo libs e hooks.
-  - Integração/admin: `tests/admin/command-palette.test.tsx`.
-  - E2E (Playwright) em `tests/e2e/**`.
-  - Scripts auxiliares em `scripts/` (SEO, PSI, etc.).
+ - Unitários (Vitest) em `tests/unit/**` e `tests/**/*.test.ts(x)` cobrindo libs e hooks.
+ - Integração/admin: `tests/admin/command-palette.test.tsx`.
+ - E2E (Playwright) em `tests/e2e/**`.
+ - Scripts auxiliares em `scripts/` (SEO, PSI, etc.).
 - **CI/Pipeline**: scripts npm (`lint`, `typecheck`, `test`, `test:e2e`, `lh:ci`, `psi:validate`). Não há workflow YAML detectado aqui, mas `.github/` existe com pipelines (consultar ao iniciar CI hardening).
 
 ## Pontos de Risco
@@ -27,16 +27,16 @@
 
 ## Prioridades (Ganho x Esforço x Risco)
 
-| Prioridade | Item                                                                 | Ganho                              | Esforço | Risco |
+| Prioridade | Item | Ganho | Esforço | Risco |
 |------------|----------------------------------------------------------------------|------------------------------------|---------|-------|
-| **P0**     | Harden/admin layout: SEO off, landmarks, hotkeys padronizados        | Alto (conformidade SEO/A11y)       | Médio   | Baixo |
-| **P0**     | RBAC + validações Zod + rate limit (`safeAction`, `limiter`)         | Muito alto (segurança/dados)       | Alto    | Médio |
-| **P0**     | DataTable unificada com virtualização + bulk actions estáveis        | Alto (produtividade/perf)          | Médio   | Médio |
-| **P0**     | Wizard autosave/undo + toasts acessíveis                             | Médio (UX/A11y)                    | Médio   | Baixo |
-| **P0**     | Upload seguro (validar MIME, remover EXIF, sanitizar nomes)          | Alto (segurança)                   | Médio   | Médio |
-| **P1**     | Páginas públicas (FAQ JSON-LD, Privacidade, Termos) + navegação      | Alto (SEO/compliance)              | Médio   | Baixo |
-| **P1**     | Footer/Nav tap targets + contraste AA                                | Médio (A11y)                       | Baixo   | Baixo |
-| **P2**     | Sincronização com SWR/React Query + optimistic/rollback              | Alto (confiabilidade de dados)     | Alto    | Médio |
-| **P2**     | Revisão de componentes, remoção de CSS morto, tree-shaking           | Médio (manutenção/perf)            | Médio   | Baixo |
-| **P2**     | Pipeline CI full (lint→typecheck→test→build→e2e) com reports         | Alto (qualidade contínua)          | Médio   | Médio |
+| **P0** | Harden/admin layout: SEO off, landmarks, hotkeys padronizados | Alto (conformidade SEO/A11y) | Médio | Baixo |
+| **P0** | RBAC + validações Zod + rate limit (`safeAction`, `limiter`) | Muito alto (segurança/dados) | Alto | Médio |
+| **P0** | DataTable unificada com virtualização + bulk actions estáveis | Alto (produtividade/perf) | Médio | Médio |
+| **P0** | Wizard autosave/undo + toasts acessíveis | Médio (UX/A11y) | Médio | Baixo |
+| **P0** | Upload seguro (validar MIME, remover EXIF, sanitizar nomes) | Alto (segurança) | Médio | Médio |
+| **P1** | Páginas públicas (FAQ JSON-LD, Privacidade, Termos) + navegação | Alto (SEO/compliance) | Médio | Baixo |
+| **P1** | Footer/Nav tap targets + contraste AA | Médio (A11y) | Baixo | Baixo |
+| **P2** | Sincronização com SWR/React Query + optimistic/rollback | Alto (confiabilidade de dados) | Alto | Médio |
+| **P2** | Revisão de componentes, remoção de CSS morto, tree-shaking | Médio (manutenção/perf) | Médio | Baixo |
+| **P2** | Pipeline CI full (lint→typecheck→test→build→e2e) com reports | Alto (qualidade contínua) | Médio | Médio |
 

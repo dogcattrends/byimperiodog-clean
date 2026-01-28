@@ -23,16 +23,16 @@ Quando `process.env.SUPABASE_SERVICE_ROLE_KEY` está `undefined`, a função `su
 ```typescript
 // src/lib/supabaseAdmin.ts (linhas 38-48)
 export function supabaseAdmin() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY; // ❌ undefined
+ const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+ const key = process.env.SUPABASE_SERVICE_ROLE_KEY; // ❌ undefined
 
-  if (!url || !key) {
-    console.warn("[supabaseAdmin] Credenciais ausentes; retornando stub");
-    return { 
-      from: (_: string) => makeStubBuilder({ data: [], error: null }) // ⚠️ Sempre retorna []
-    } as any;
-  }
-  // ...
+ if (!url || !key) {
+ console.warn("[supabaseAdmin] Credenciais ausentes; retornando stub");
+ return { 
+ from: (_: string) => makeStubBuilder({ data: [], error: null }) // ⚠️ Sempre retorna []
+ } as any;
+ }
+ // ...
 }
 ```
 
@@ -65,16 +65,16 @@ curl http://localhost:3000/api/debug/blog-posts
 **Resposta esperada:**
 ```json
 {
-  "success": true,
-  "hasServiceKey": true,
-  "hasUrl": true,
-  "itemsCount": 2,
-  "total": 2,
-  "firstItem": {
-    "id": "...",
-    "slug": "saude-preventiva-do-spitz-alemao...",
-    "title": "Saúde Preventiva do Spitz Alemão..."
-  }
+ "success": true,
+ "hasServiceKey": true,
+ "hasUrl": true,
+ "itemsCount": 2,
+ "total": 2,
+ "firstItem": {
+ "id": "...",
+ "slug": "saude-preventiva-do-spitz-alemao...",
+ "title": "Saúde Preventiva do Spitz Alemão..."
+ }
 }
 ```
 
@@ -98,7 +98,7 @@ node scripts/test-blog-query.mjs
 - ❌ `supabaseAdmin()` retornando stub
 
 ### Depois
-- ✅ Admin mostrando "2 posts"  
+- ✅ Admin mostrando "2 posts" 
 - ✅ `blogRepo.listSummaries()` → `[post1, post2]`
 - ✅ `supabaseAdmin()` com client real
 
@@ -153,5 +153,5 @@ Remove-Item -Recurse -Force .next
 
 **Status:** ✅ **RESOLVIDO**
 
-**Data:** 2025-10-27  
+**Data:** 2025-10-27 
 **Versão:** 1.0.0

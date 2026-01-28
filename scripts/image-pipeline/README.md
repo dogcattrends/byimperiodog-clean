@@ -19,12 +19,12 @@ Sistema completo e automático para otimização de imagens de filhotes do proje
 
 O pipeline automatiza:
 
-✅ **Padronização** - Todas as imagens em tamanhos fixos (1200x1200, 600x600, 300x300)  
-✅ **Otimização** - WebP + JPEG fallback com compressão ideal  
-✅ **Qualidade** - Análise automática de nitidez, exposição e resolução  
-✅ **Performance** - Elimina CLS, melhora LCP, reduz tamanho em ~60%  
-✅ **Naming** - Padrão consistente: `{slug}-{size}-{uuid}.webp`  
-✅ **Ajustes** - Crop inteligente, correção de brilho/saturação, sharpening  
+✅ **Padronização** - Todas as imagens em tamanhos fixos (1200x1200, 600x600, 300x300) 
+✅ **Otimização** - WebP + JPEG fallback com compressão ideal 
+✅ **Qualidade** - Análise automática de nitidez, exposição e resolução 
+✅ **Performance** - Elimina CLS, melhora LCP, reduz tamanho em ~60% 
+✅ **Naming** - Padrão consistente: `{slug}-{size}-{uuid}.webp` 
+✅ **Ajustes** - Crop inteligente, correção de brilho/saturação, sharpening 
 
 ---
 
@@ -49,15 +49,15 @@ Coloque suas imagens brutas em pastas dentro de `raw-images/`:
 
 ```
 raw-images/
-  ├── spitz-branco-macho/
-  │   ├── foto1.jpg
-  │   ├── foto2.jpg
-  │   └── foto3.jpg
-  ├── lulu-laranja-femea/
-  │   ├── foto1.jpg
-  │   └── foto2.jpg
-  └── spitz-creme-macho/
-      └── foto1.jpg
+ ├── spitz-branco-macho/
+ │ ├── foto1.jpg
+ │ ├── foto2.jpg
+ │ └── foto3.jpg
+ ├── lulu-laranja-femea/
+ │ ├── foto1.jpg
+ │ └── foto2.jpg
+ └── spitz-creme-macho/
+ └── foto1.jpg
 ```
 
 **Padrão do nome da pasta:** `{slug}-{cor}-{sexo}`
@@ -83,13 +83,13 @@ Isso irá:
 
 ```
 public/puppies/
-  └── spitz-branco-macho/
-      ├── hero.webp         (1200x1200, ~80KB)
-      ├── hero.jpg          (1200x1200, ~150KB)
-      ├── card.webp         (600x600, ~35KB)
-      ├── card.jpg          (600x600, ~70KB)
-      ├── thumbnail.webp    (300x300, ~15KB)
-      └── thumbnail.jpg     (300x300, ~30KB)
+ └── spitz-branco-macho/
+ ├── hero.webp (1200x1200, ~80KB)
+ ├── hero.jpg (1200x1200, ~150KB)
+ ├── card.webp (600x600, ~35KB)
+ ├── card.jpg (600x600, ~70KB)
+ ├── thumbnail.webp (300x300, ~15KB)
+ └── thumbnail.jpg (300x300, ~30KB)
 ```
 
 ---
@@ -98,31 +98,31 @@ public/puppies/
 
 ```
 scripts/image-pipeline/
-├── config.ts              # Configurações globais
-├── quality-analyzer.ts    # Análise de qualidade
-├── processor.ts           # Processamento de imagens
-├── cli.ts                 # Interface de linha de comando
-└── supabase-storage.ts    # Upload para Supabase (opcional)
+├── config.ts # Configurações globais
+├── quality-analyzer.ts # Análise de qualidade
+├── processor.ts # Processamento de imagens
+├── cli.ts # Interface de linha de comando
+└── supabase-storage.ts # Upload para Supabase (opcional)
 
 src/lib/
-└── images.ts              # Helper functions para uso no app
+└── images.ts # Helper functions para uso no app
 ```
 
 ### Fluxo de Processamento
 
 ```
 Input Image
-    ↓
+ ↓
 Quality Analysis (blur, exposure, resolution)
-    ↓
+ ↓
 Resize + Crop (attention-based)
-    ↓
+ ↓
 Adjustments (brightness, saturation, sharpness)
-    ↓
+ ↓
 WebP Conversion (quality 80, effort 6)
-    ↓
+ ↓
 JPEG Fallback (quality 85, mozjpeg)
-    ↓
+ ↓
 Save to public/puppies/{slug}/
 ```
 
@@ -134,26 +134,26 @@ Save to public/puppies/{slug}/
 
 ```typescript
 export const IMAGE_CONFIG = {
-  sizes: {
-    hero: { width: 1200, height: 1200, quality: 85 },
-    card: { width: 600, height: 600, quality: 80 },
-    thumbnail: { width: 300, height: 300, quality: 75 },
-  },
+ sizes: {
+ hero: { width: 1200, height: 1200, quality: 85 },
+ card: { width: 600, height: 600, quality: 80 },
+ thumbnail: { width: 300, height: 300, quality: 75 },
+ },
 
-  adjustments: {
-    brightness: 1.05,    // +5% brilho
-    saturation: 1.1,     // +10% saturação
-    contrast: 1.02,      // +2% contraste
-    sharpness: 1.2,      // Sharpening leve
-  },
+ adjustments: {
+ brightness: 1.05, // +5% brilho
+ saturation: 1.1, // +10% saturação
+ contrast: 1.02, // +2% contraste
+ sharpness: 1.2, // Sharpening leve
+ },
 
-  quality: {
-    minWidth: 500,
-    minHeight: 500,
-    blurThreshold: 100,  // Laplacian variance
-    exposureMin: 30,     // Brightness min
-    exposureMax: 225,    // Brightness max
-  },
+ quality: {
+ minWidth: 500,
+ minHeight: 500,
+ blurThreshold: 100, // Laplacian variance
+ exposureMin: 30, // Brightness min
+ exposureMax: 225, // Brightness max
+ },
 };
 ```
 
@@ -182,14 +182,14 @@ import Image from 'next/image';
 import { getNextImageProps } from '@/lib/images';
 
 export function PuppyCard({ slug }: { slug: string }) {
-  const imageProps = getNextImageProps(slug, 'card');
+ const imageProps = getNextImageProps(slug, 'card');
 
-  return (
-    <Image
-      {...imageProps}
-      alt="Filhote Spitz Alemão"
-    />
-  );
+ return (
+ <Image
+ {...imageProps}
+ alt="Filhote Spitz Alemão"
+ />
+ );
 }
 ```
 
@@ -199,15 +199,15 @@ export function PuppyCard({ slug }: { slug: string }) {
 import { getNextImageProps } from '@/lib/images';
 
 export function PuppyHero({ slug }: { slug: string }) {
-  const imageProps = getNextImageProps(slug, 'hero', { priority: true });
+ const imageProps = getNextImageProps(slug, 'hero', { priority: true });
 
-  return (
-    <Image
-      {...imageProps}
-      alt="Filhote disponível para aquisição"
-      priority
-    />
-  );
+ return (
+ <Image
+ {...imageProps}
+ alt="Filhote disponível para aquisição"
+ priority
+ />
+ );
 }
 ```
 
@@ -217,16 +217,16 @@ export function PuppyHero({ slug }: { slug: string }) {
 import { getPictureProps } from '@/lib/images';
 
 export function OptimizedPicture({ slug, alt }: Props) {
-  const { sources, img } = getPictureProps(slug, alt, 'card');
+ const { sources, img } = getPictureProps(slug, alt, 'card');
 
-  return (
-    <picture>
-      {sources.map((source, i) => (
-        <source key={i} srcSet={source.srcSet} type={source.type} />
-      ))}
-      <img {...img} />
-    </picture>
-  );
+ return (
+ <picture>
+ {sources.map((source, i) => (
+ <source key={i} srcSet={source.srcSet} type={source.type} />
+ ))}
+ <img {...img} />
+ </picture>
+ );
 }
 ```
 
@@ -237,8 +237,8 @@ import { getPuppyImages } from '@/lib/images';
 
 const images = getPuppyImages('spitz-branco-macho');
 
-console.log(images.hero.src);      // /puppies/.../hero.webp
-console.log(images.card.src);      // /puppies/.../card.webp
+console.log(images.hero.src); // /puppies/.../hero.webp
+console.log(images.card.src); // /puppies/.../card.webp
 console.log(images.thumbnail.src); // /puppies/.../thumbnail.webp
 ```
 
@@ -289,9 +289,9 @@ Retorna conjunto completo de imagens otimizadas.
 ```typescript
 const images = getPuppyImages('spitz-branco-macho');
 // {
-//   hero: { src, width, height, srcSet },
-//   card: { src, width, height, srcSet },
-//   thumbnail: { src, width, height, srcSet }
+// hero: { src, width, height, srcSet },
+// card: { src, width, height, srcSet },
+// thumbnail: { src, width, height, srcSet }
 // }
 ```
 
@@ -310,9 +310,9 @@ Processa uma imagem em todos os tamanhos.
 
 ```typescript
 const result = await processImage('./raw.jpg', {
-  slug: 'spitz-branco',
-  color: 'branco',
-  sex: 'male',
+ slug: 'spitz-branco',
+ color: 'branco',
+ sex: 'male',
 });
 
 console.log(result.images); // Array de ProcessedImage
@@ -346,17 +346,17 @@ FID: 120ms
 ### Depois do Pipeline
 
 ```
-LCP: 1.8s (imagens ~80KB WebP)  ✅ -57%
-CLS: 0.02 (width/height fixos)   ✅ -94%
-FID: 45ms                        ✅ -62%
+LCP: 1.8s (imagens ~80KB WebP) ✅ -57%
+CLS: 0.02 (width/height fixos) ✅ -94%
+FID: 45ms ✅ -62%
 ```
 
 ### Melhorias implementadas:
 
-✅ **LCP:** WebP reduz tamanho em 60%, carregamento mais rápido  
-✅ **CLS:** width/height fixos em todas as imagens  
-✅ **FCP:** Lazy loading em cards, priority no hero  
-✅ **TTI:** Menos bytes = menos parsing  
+✅ **LCP:** WebP reduz tamanho em 60%, carregamento mais rápido 
+✅ **CLS:** width/height fixos em todas as imagens 
+✅ **FCP:** Lazy loading em cards, priority no hero 
+✅ **TTI:** Menos bytes = menos parsing 
 
 ---
 
@@ -378,12 +378,12 @@ O pipeline detecta automaticamente:
 
 ```
 📊 Análise de Qualidade: foto1.jpg
-   Resolução: 1920x1440
-   Tamanho: 834KB
-   Formato: jpeg
-   Brilho: 145/255
-   Nitidez: 187
-   ✅ Qualidade OK
+ Resolução: 1920x1440
+ Tamanho: 834KB
+ Formato: jpeg
+ Brilho: 145/255
+ Nitidez: 187
+ ✅ Qualidade OK
 ```
 
 ---
@@ -409,7 +409,7 @@ Ajuste em `config.ts`:
 
 ```typescript
 adjustments: {
-  brightness: 1.0,  // Sem ajuste (era 1.05)
+ brightness: 1.0, // Sem ajuste (era 1.05)
 }
 ```
 
@@ -467,9 +467,9 @@ adjustments: {
 ```typescript
 // No admin, após upload de arquivo
 const result = await processImage(uploadedFile, {
-  slug: puppy.slug,
-  color: puppy.color,
-  sex: puppy.sex,
+ slug: puppy.slug,
+ color: puppy.color,
+ sex: puppy.sex,
 });
 
 // Upload para Supabase
@@ -477,8 +477,8 @@ await uploadBatchToSupabase(result.images, puppy.id);
 
 // Salvar URLs no banco
 await updatePuppyImages(puppy.id, {
-  hero: result.images.find(i => i.size === 'hero')?.url,
-  card: result.images.find(i => i.size === 'card')?.url,
+ hero: result.images.find(i => i.size === 'hero')?.url,
+ card: result.images.find(i => i.size === 'card')?.url,
 });
 ```
 
@@ -488,9 +488,9 @@ await updatePuppyImages(puppy.id, {
 
 ```json
 {
-  "images:process": "tsx scripts/image-pipeline/cli.ts",
-  "images:analyze": "tsx scripts/image-pipeline/quality-analyzer.ts",
-  "images:clean": "rm -rf public/puppies/*"
+ "images:process": "tsx scripts/image-pipeline/cli.ts",
+ "images:analyze": "tsx scripts/image-pipeline/quality-analyzer.ts",
+ "images:clean": "rm -rf public/puppies/*"
 }
 ```
 

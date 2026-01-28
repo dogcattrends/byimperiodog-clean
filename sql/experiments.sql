@@ -1,17 +1,17 @@
 -- Experiments A/B tables for testing and optimizations
 
 create table if not exists public.experiments (
-  id uuid primary key default gen_random_uuid(),
-  key text unique not null,
-  name text not null,
-  description text,
-  status text not null default 'draft', -- 'draft'|'running'|'paused'|'completed'
-  audience text, -- optional targeting rules (JSON or simple tag)
-  variants jsonb not null default '[]'::jsonb, -- array of { key, label, weight }
-  starts_at timestamptz,
-  ends_at timestamptz,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+ id uuid primary key default gen_random_uuid(),
+ key text unique not null,
+ name text not null,
+ description text,
+ status text not null default 'draft', -- 'draft'|'running'|'paused'|'completed'
+ audience text, -- optional targeting rules (JSON or simple tag)
+ variants jsonb not null default '[]'::jsonb, -- array of { key, label, weight }
+ starts_at timestamptz,
+ ends_at timestamptz,
+ created_at timestamptz not null default now(),
+ updated_at timestamptz not null default now()
 );
 
 create index if not exists idx_experiments_status on public.experiments (status);

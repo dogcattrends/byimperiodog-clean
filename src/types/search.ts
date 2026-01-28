@@ -1,9 +1,9 @@
 export type SearchSuggestItem = {
-  url: string;
-  title: string;
-  reason: string;
+ url: string;
+ title: string;
+ reason: string;
 };
 
 export type SearchSuggestResponse = {
-  suggestions: SearchSuggestItem[];
+ suggestions: SearchSuggestItem[];
 };

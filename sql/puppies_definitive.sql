@@ -14,13 +14,13 @@ create extension if not exists pgcrypto;
 -- Enums
 DO $$
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'puppy_gender') THEN
-    CREATE TYPE public.puppy_gender AS ENUM ('macho', 'femea');
-  END IF;
+ IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'puppy_gender') THEN
+ CREATE TYPE public.puppy_gender AS ENUM ('macho', 'femea');
+ END IF;
 
-  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'puppy_status') THEN
-    CREATE TYPE public.puppy_status AS ENUM ('disponivel', 'reservado', 'vendido');
-  END IF;
+ IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'puppy_status') THEN
+ CREATE TYPE public.puppy_status AS ENUM ('disponivel', 'reservado', 'vendido');
+ END IF;
 END $$;
 
 -- Trigger helper (padrão já usado no repo)
@@ -29,59 +29,59 @@ returns trigger
 language plpgsql
 as $$
 begin
-  new.updated_at = now();
-  return new;
+ new.updated_at = now();
+ return new;
 end;
 $$;
 
 -- Tabela
 create table if not exists public.puppies (
-  id uuid primary key default gen_random_uuid(),
+ id uuid primary key default gen_random_uuid(),
 
-  name text not null,
-  breed text not null,
-  color text,
-  gender public.puppy_gender not null,
+ name text not null,
+ breed text not null,
+ color text,
+ gender public.puppy_gender not null,
 
-  price integer not null check (price >= 0),
-  status public.puppy_status not null default 'disponivel',
+ price integer not null check (price >= 0),
+ status public.puppy_status not null default 'disponivel',
 
-  city text,
-  state text,
+ city text,
+ state text,
 
-  description text,
+ description text,
 
-  -- features: objeto JSONB com flags booleanas (pedigree, video, entrega_segura)
-  features jsonb not null default '{}'::jsonb
-    check (jsonb_typeof(features) = 'object')
-    check (
-      (not (features ? 'pedigree') or jsonb_typeof(features->'pedigree') = 'boolean')
-      and (not (features ? 'video') or jsonb_typeof(features->'video') = 'boolean')
-      and (not (features ? 'entrega_segura') or jsonb_typeof(features->'entrega_segura') = 'boolean')
-    ),
+ -- features: objeto JSONB com flags booleanas (pedigree, video, entrega_segura)
+ features jsonb not null default '{}'::jsonb
+ check (jsonb_typeof(features) = 'object')
+ check (
+ (not (features ? 'pedigree') or jsonb_typeof(features->'pedigree') = 'boolean')
+ and (not (features ? 'video') or jsonb_typeof(features->'video') = 'boolean')
+ and (not (features ? 'entrega_segura') or jsonb_typeof(features->'entrega_segura') = 'boolean')
+ ),
 
-  -- images: array JSONB de strings (URLs do Supabase Storage)
-  images jsonb not null default '[]'::jsonb
-    check (jsonb_typeof(images) = 'array')
-    check (not jsonb_path_exists(images, '$[*] ? (@.type() != "string")')),
+ -- images: array JSONB de strings (URLs do Supabase Storage)
+ images jsonb not null default '[]'::jsonb
+ check (jsonb_typeof(images) = 'array')
+ check (not jsonb_path_exists(images, '$[*] ? (@.type() != "string")')),
 
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+ created_at timestamptz not null default now(),
+ updated_at timestamptz not null default now()
 );
 
 -- Trigger updated_at
 do $$
 begin
-  if not exists (
-    select 1
-    from pg_trigger
-    where tgname = 'trg_puppies_set_updated_at'
-  ) then
-    create trigger trg_puppies_set_updated_at
-    before update on public.puppies
-    for each row
-    execute function public.set_updated_at();
-  end if;
+ if not exists (
+ select 1
+ from pg_trigger
+ where tgname = 'trg_puppies_set_updated_at'
+ ) then
+ create trigger trg_puppies_set_updated_at
+ before update on public.puppies
+ for each row
+ execute function public.set_updated_at();
+ end if;
 end $$;
 
 -- Índices (mínimo útil para listagens e filtros)

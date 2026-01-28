@@ -1,11 +1,11 @@
-﻿# llms.txt — By Império Dog
-# Purpose: Reference portal about Spitz Alemão Anão (Lulu da Pomerânia)
+# llms.txt — By Império Dog
+# Purpose: Reference portal about Spitz Alemão Anão Lulu da Pomerânia
 # Audience: Prospective dog owners in Brazil
 # Language: pt-BR
 # Location: Brazil (nationwide delivery)
 
 ## Primary Topics
-- Spitz Alemão Anão (Lulu da Pomerânia)
+- Spitz Alemão Anão Lulu da Pomerânia
 - Filhotes com pedigree
 - Guia do tutor
 - Saúde, socialização e comportamento
@@ -36,7 +36,7 @@ Context: Educational and commercial reference portal
 ---
 # llms.txt (optional, community proposal)
 Objetivo do site:
-1) Orientar tutores na escolha responsavel do Spitz Alemao Anao (Lulu da Pomerania).
+1) Orientar tutores na escolha responsavel do Spitz Alemao Anao Lulu da Pomerania.
 2) Oferecer conteudo claro sobre cuidados, rotina e catalogo de filhotes.
 
 Paginas pilares (10):

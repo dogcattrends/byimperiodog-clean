@@ -10,30 +10,30 @@ import { mapDomainStatusToDb } from "./mapDbPuppyToDomain";
  * @param where - condição simples de igualdade { column, value } (opcional)
  */
 export async function updatePuppyRow(payload: Record<string, any>, where?: { column: string; value: any }) {
-  const sb = supabaseAdmin();
-  const body = { ...payload };
-  if (body.status) {
-    body.status = mapDomainStatusToDb(body.status);
-  }
+ const sb = supabaseAdmin();
+ const body = { ...payload };
+ if (body.status) {
+ body.status = mapDomainStatusToDb(body.status);
+ }
 
-  let query = sb.from("puppies").update(body).select();
-  if (where) query = query.eq(where.column, where.value as any);
+ let query = sb.from("puppies").update(body).select();
+ if (where) query = query.eq(where.column, where.value as any);
 
-  const { data, error } = await query.maybeSingle();
-  if (error) throw new Error(error.message);
-  return data;
+ const { data, error } = await query.maybeSingle();
+ if (error) throw new Error(error.message);
+ return data;
 }
 
 /**
  * Insere um novo registro em `puppies`, convertendo `status` quando informado.
  */
 export async function insertPuppyRow(payload: Record<string, any>) {
-  const sb = supabaseAdmin();
-  const body = { ...payload };
-  if (body.status) body.status = mapDomainStatusToDb(body.status);
-  const { data, error } = await sb.from("puppies").insert(body).select().maybeSingle();
-  if (error) throw new Error(error.message);
-  return data;
+ const sb = supabaseAdmin();
+ const body = { ...payload };
+ if (body.status) body.status = mapDomainStatusToDb(body.status);
+ const { data, error } = await sb.from("puppies").insert(body).select().maybeSingle();
+ if (error) throw new Error(error.message);
+ return data;
 }
 
 const dbWrites = { updatePuppyRow, insertPuppyRow };

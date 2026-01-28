@@ -1,7 +1,7 @@
 # 🔍 Relatório de Auditoria SEO e Core Web Vitals
 
-**Data:** ${new Date().toISOString().split('T')[0]}  
-**Projeto:** By Império Dog  
+**Data:** ${new Date().toISOString().split('T')[0]} 
+**Projeto:** By Império Dog 
 **Escopo:** SEO técnico, Core Web Vitals, acessibilidade básica
 
 ---
@@ -42,25 +42,25 @@
 **Configuração Otimizada:**
 ```tsx
 <Image
-  src={heroDesktop}
-  alt="Filhotes de Spitz Alemão Anão saudáveis em ambiente acolhedor"
-  fill
-  priority
-  fetchPriority="high"
-  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 48vw, 560px"
-  className="object-cover"
-  placeholder="blur"
+ src={heroDesktop}
+ alt="Filhotes de Spitz Alemão Anão saudáveis em ambiente acolhedor"
+ fill
+ priority
+ fetchPriority="high"
+ sizes="(max-width: 640px) 100vw, (max-width: 1024px) 48vw, 560px"
+ className="object-cover"
+ placeholder="blur"
 />
 ```
 
 **Preload Adicionado:**
 ```html
 <link 
-  rel="preload" 
-  as="image" 
-  href="/spitz-hero-desktop.avif" 
-  type="image/avif" 
-  fetchPriority="high" 
+ rel="preload" 
+ as="image" 
+ href="/spitz-hero-desktop.avif" 
+ type="image/avif" 
+ fetchPriority="high" 
 />
 ```
 
@@ -138,37 +138,37 @@ Sitemap: https://www.byimperiodog.com.br/sitemap.xml
 **Categorias Incluídas:**
 
 1. **Páginas Estáticas (10):**
-   - `/` (priority: 1.0, changeFrequency: daily)
-   - `/filhotes` (priority: 0.9, changeFrequency: daily)
-   - `/blog` (priority: 0.8, changeFrequency: daily)
-   - `/sobre`, `/contato`, `/reserve-seu-filhote`, `/faq-do-tutor`
-   - Políticas de privacidade, editorial, termos
+ - `/` (priority: 1.0, changeFrequency: daily)
+ - `/filhotes` (priority: 0.9, changeFrequency: daily)
+ - `/blog` (priority: 0.8, changeFrequency: daily)
+ - `/sobre`, `/contato`, `/reserve-seu-filhote`, `/faq-do-tutor`
+ - Políticas de privacidade, editorial, termos
 
 2. **Intent Pages (3):**
-   - `/comprar-spitz-anao`
-   - `/preco-spitz-anao`
-   - `/criador-spitz-confiavel`
-   - (priority: 0.8, changeFrequency: weekly)
+ - `/comprar-spitz-anao`
+ - `/preco-spitz-anao`
+ - `/criador-spitz-confiavel`
+ - (priority: 0.8, changeFrequency: weekly)
 
 3. **Cores Dinâmicas:** Via `COLORS` taxonomy (filtrado por `isActive`)
-   - Ex: `/spitz-anao/cor/branco`, `/spitz-anao/cor/laranja`
-   - (priority: 0.7, changeFrequency: weekly)
+ - Ex: `/spitz-anao/cor/branco`, `/spitz-anao/cor/laranja`
+ - (priority: 0.7, changeFrequency: weekly)
 
 4. **Cidades Dinâmicas:** Via `CITIES` taxonomy (filtrado por `isActive`)
-   - Ex: `/spitz-anao/sao-paulo`, `/spitz-anao/rio-de-janeiro`
-   - (priority: 0.7, changeFrequency: weekly)
+ - Ex: `/spitz-anao/sao-paulo`, `/spitz-anao/rio-de-janeiro`
+ - (priority: 0.7, changeFrequency: weekly)
 
-5. **Blog Posts:** Supabase `blog_posts` table (status=published)
-   - `lastModified` usa `updated_at` ou `published_at`
-   - (priority: 0.6, changeFrequency: monthly)
+5. **Blog Posts:** Sanity `post` (status=published)
+ - `lastModified` usa `publishedAt` / `_updatedAt` conforme disponibilidade
+ - (priority: 0.6, changeFrequency: monthly)
 
 6. **Puppies:** Supabase `puppies` table (status=available)
-   - Ex: `/filhotes/charlie-spitz-alemao-anao`
-   - (priority: 0.8, changeFrequency: daily)
+ - Ex: `/filhotes/charlie-spitz-alemao-anao`
+ - (priority: 0.8, changeFrequency: daily)
 
 7. **Web Stories:** Supabase `web_stories` table (status=published)
-   - Ex: `/web-stories/cuidados-spitz-alemao`
-   - (priority: 0.5, changeFrequency: monthly)
+ - Ex: `/web-stories/cuidados-spitz-alemao`
+ - (priority: 0.5, changeFrequency: monthly)
 
 **Total Estimado:** ~50-200 URLs (dependendo de posts publicados e puppies disponíveis)
 
@@ -184,14 +184,14 @@ Sitemap: https://www.byimperiodog.com.br/sitemap.xml
 
 **Fontes Carregadas:**
 - **DM Sans:** Primary font (body text)
-  - Arquivos: `dm-sans-latin.woff2`, `dm-sans-latin-ext.woff2`
-  - `display: "swap"`, `preload: true`, `variable: "--font-dm-sans"`
-  - Weights: 400-700
+ - Arquivos: `dm-sans-latin.woff2`, `dm-sans-latin-ext.woff2`
+ - `display: "swap"`, `preload: true`, `variable: "--font-dm-sans"`
+ - Weights: 400-700
 
 - **Inter:** Secondary/fallback font
-  - Arquivos: `inter-latin.woff2`, `inter-latin-ext.woff2`
-  - `display: "swap"`, `preload: false`, `variable: "--font-inter"`
-  - Weights: 400-700
+ - Arquivos: `inter-latin.woff2`, `inter-latin-ext.woff2`
+ - `display: "swap"`, `preload: false`, `variable: "--font-inter"`
+ - Weights: 400-700
 
 **Verificação de Arquivos:**
 ```
@@ -283,27 +283,27 @@ Sitemap: https://www.byimperiodog.com.br/sitemap.xml
 ## 🔧 Ferramentas de Validação
 
 1. **Google Search Console:**
-   - Enviar sitemap: `https://www.byimperiodog.com.br/sitemap.xml`
-   - Monitorar erros de indexação
-   - Validar Core Web Vitals no relatório
+ - Enviar sitemap: `https://www.byimperiodog.com.br/sitemap.xml`
+ - Monitorar erros de indexação
+ - Validar Core Web Vitals no relatório
 
 2. **Lighthouse (Chrome DevTools):**
-   - Performance: 90+
-   - Accessibility: 95+
-   - Best Practices: 95+
-   - SEO: 100
+ - Performance: 90+
+ - Accessibility: 95+
+ - Best Practices: 95+
+ - SEO: 100
 
 3. **PageSpeed Insights:**
-   - Desktop: 90+ (Performance)
-   - Mobile: 80+ (Performance)
+ - Desktop: 90+ (Performance)
+ - Mobile: 80+ (Performance)
 
 4. **Rich Results Test:**
-   - Validar JSON-LD (Organization, LocalBusiness, Article, FAQ, Breadcrumb, OfferCatalog)
-   - URL: https://search.google.com/test/rich-results
+ - Validar JSON-LD (Organization, LocalBusiness, Article, FAQ, Breadcrumb, OfferCatalog)
+ - URL: https://search.google.com/test/rich-results
 
 5. **Vercel Speed Insights:**
-   - Monitorar Real User Metrics (RUM)
-   - Identificar páginas com CWV abaixo do threshold
+ - Monitorar Real User Metrics (RUM)
+ - Identificar páginas com CWV abaixo do threshold
 
 ---
 
@@ -336,7 +336,7 @@ Sitemap: https://www.byimperiodog.com.br/sitemap.xml
 - 🔲 `app/blog/[slug]/page.tsx`: Ainda apresenta encoding corrompido (verificado)
 - 🔲 Outras páginas dinâmicas: Pendente verificação
 
-**Causa Raiz:** Arquivos salvos com encoding incorreto (Windows-1252 ou ISO-8859-1)  
+**Causa Raiz:** Arquivos salvos com encoding incorreto (Windows-1252 ou ISO-8859-1) 
 **Solução:** Re-salvar com UTF-8 BOM ou UTF-8 sem BOM via VS Code
 
 ### **Lazy Loading:**
@@ -374,5 +374,5 @@ Sitemap: https://www.byimperiodog.com.br/sitemap.xml
 
 ---
 
-**Gerado por:** GitHub Copilot (Claude Sonnet 4.5)  
+**Gerado por:** GitHub Copilot (Claude Sonnet 4.5) 
 **Última Atualização:** ${new Date().toISOString()}

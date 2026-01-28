@@ -10,8 +10,8 @@ Sumário rápido
 Ambiente
 - Node/npm: executar `npm run dev` ou a build estática conforme necessário.
 - Ferramentas de leitor de tela:
-  - Windows: NVDA (https://www.nvaccess.org) - Atalho para iniciar/pausar NVDA: `Insert+Ctrl+N` (ou leia a documentação do NVDA).
-  - macOS: VoiceOver - Ativar: `Cmd+F5` (ou `VO+F5`), navegação com `VO` (caps lock) modifiers.
+ - Windows: NVDA (https://www.nvaccess.org) - Atalho para iniciar/pausar NVDA: `Insert+Ctrl+N` (ou leia a documentação do NVDA).
+ - macOS: VoiceOver - Ativar: `Cmd+F5` (ou `VO+F5`), navegação com `VO` (caps lock) modifiers.
 - Recomendação: abrir o painel administrativo em uma janela só (ex.: /admin) e usar uma segunda tela/terminal para registrar resultados.
 
 Comandos úteis (resumo)
@@ -41,12 +41,12 @@ Objetivo: garantir que toda a navegação possível com mouse funcione também c
 Passos:
 - Focar a página (clique na área principal ou pressione `Tab` até o primeiro elemento focável).
 - Percorra a barra de navegação superior (`AdminNav`) usando `Tab` e `Shift+Tab`.
-  - Esperado: cada item recebe foco visível (outline/foco), os submenus abrem com `Enter`/`Space` e é possível navegar por itens internos com `Tab`.
-  - No `details/summary` a interação com `Enter` ou `Space` deve expandir/colapsar.
+ - Esperado: cada item recebe foco visível (outline/foco), os submenus abrem com `Enter`/`Space` e é possível navegar por itens internos com `Tab`.
+ - No `details/summary` a interação com `Enter` ou `Space` deve expandir/colapsar.
 - Testar CTA: `Novo filhote` e `Ver estoque` devem ser alcançáveis e acionáveis por Enter.
 - Acessar o submenu `Filhotes / Estoque`:
-  - Ao abrir, press `Tab` para navegar pelos links internos (`Listar`, `Novo filhote`, `Importar`, `Mídias`).
-  - `Esc` deve fechar submenu (se aplicável). Se não fecha automaticamente, garantir que foco retorna para summary.
+ - Ao abrir, press `Tab` para navegar pelos links internos (`Listar`, `Novo filhote`, `Importar`, `Mídias`).
+ - `Esc` deve fechar submenu (se aplicável). Se não fecha automaticamente, garantir que foco retorna para summary.
 - Abrir o diálogo de `Sair` (Logout) via tecla e testar navegação com `Tab` dentro do dialog e usar `Enter` para confirmar/Cancelar.
 
 Critérios de aceitação teclado:
@@ -79,9 +79,9 @@ Critérios de aceitação leitor de tela:
 4) Testes específicos do `PuppyForm` (create/edit)
 - Acesse `/admin/filhotes/novo`.
 - Tab até `Nome`, deixe vazio e tente `Salvar`:
-  - Esperado: mensagem de status visível e anunciada (`aria-live`), campo `name` recebe foco, e erro aparece com id `name-error`; leitor de tela anuncia "Obrigatório".
+ - Esperado: mensagem de status visível e anunciada (`aria-live`), campo `name` recebe foco, e erro aparece com id `name-error`; leitor de tela anuncia "Obrigatório".
 - Preencher `Nome` e `Preço` inválido (0) e `Salvar`:
-  - Esperado: erro de `priceCents` anunciado e foco em `priceCents`.
+ - Esperado: erro de `priceCents` anunciado e foco em `priceCents`.
 - Simular resposta do servidor com `fieldErrors` (se possível usar rota de teste): ver se erros do servidor são exibidos e vinculados.
 - Mídia: teste upload via `MediaManager`, remover uma foto e salvar — verificar que `deletedPhotoUrls` é enviada e anúncio de sucesso após salvar.
 
@@ -95,11 +95,11 @@ Critérios de aceitação do formulário:
 
 6) Registro de problemas
 - Para cada falha, registre:
-  - Local (ex: `AdminNav > Filhotes submenu`)
-  - Passo para reproduzir
-  - Comportamento observado
-  - Comportamento esperado
-  - Captura de tela / gravação curta (opcional)
+ - Local (ex: `AdminNav > Filhotes submenu`)
+ - Passo para reproduzir
+ - Comportamento observado
+ - Comportamento esperado
+ - Captura de tela / gravação curta (opcional)
 
 Modelo de relatório (exemplo):
 - Local: `PuppyForm` ao submeter sem `priceCents`.
@@ -109,8 +109,8 @@ Modelo de relatório (exemplo):
 
 7) Automação / smoke checks (opcional)
 - Recomendo criar testes E2E simples com Playwright para cobrir:
-  - Navegação por teclado no `AdminNav` e abertura dos submenus.
-  - Submissões do `PuppyForm` verificando foco e mensagens.
+ - Navegação por teclado no `AdminNav` e abertura dos submenus.
+ - Submissões do `PuppyForm` verificando foco e mensagens.
 - Exemplo de comando (Playwright):
 ```bash
 npx playwright test tests/admin-a11y.spec.ts

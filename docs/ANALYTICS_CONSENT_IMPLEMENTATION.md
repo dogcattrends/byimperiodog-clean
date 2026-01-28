@@ -1,6 +1,6 @@
 # Sistema de Analytics, Tracking e Consent Mode LGPD
 
-**Data:** 23 de outubro de 2025  
+**Data:** 23 de outubro de 2025 
 **Status:** ✅ Implementado e integrado
 
 ---
@@ -18,62 +18,62 @@
 ### Novos Arquivos
 
 1. **`src/lib/consent.ts`**
-   - Gerenciamento de preferências de consentimento (LGPD)
-   - localStorage para persistência
-   - Integração com Google Consent Mode v2
-   - Tipos: `ConsentCategory`, `ConsentPreferences`, `ConsentState`
-   - Funções: `loadConsent()`, `saveConsent()`, `acceptAllConsent()`, `rejectAllConsent()`, `hasConsent()`, `getCurrentConsent()`, `setDefaultConsent()`
+ - Gerenciamento de preferências de consentimento (LGPD)
+ - localStorage para persistência
+ - Integração com Google Consent Mode v2
+ - Tipos: `ConsentCategory`, `ConsentPreferences`, `ConsentState`
+ - Funções: `loadConsent()`, `saveConsent()`, `acceptAllConsent()`, `rejectAllConsent()`, `hasConsent()`, `getCurrentConsent()`, `setDefaultConsent()`
 
 2. **`src/components/ConsentBanner.tsx`**
-   - Banner de cookies com UI/UX acessível
-   - Modo simples (aceitar/rejeitar/preferências)
-   - Modo avançado (configuração detalhada por categoria)
-   - Animações com framer-motion
-   - ARIA labels e roles apropriados
-   - Categorias:
-     - ✅ Necessários (sempre ativo)
-     - 🔧 Funcionais (preferências, tema)
-     - 📊 Analytics (GA4, Hotjar, Clarity)
-     - 📢 Marketing (Facebook, TikTok, Pinterest)
+ - Banner de cookies com UI/UX acessível
+ - Modo simples (aceitar/rejeitar/preferências)
+ - Modo avançado (configuração detalhada por categoria)
+ - Animações com framer-motion
+ - ARIA labels e roles apropriados
+ - Categorias:
+ - ✅ Necessários (sempre ativo)
+ - 🔧 Funcionais (preferências, tema)
+ - 📊 Analytics (GA4, Hotjar, Clarity)
+ - 📢 Marketing (Facebook, TikTok, Pinterest)
 
 3. **`src/lib/events.ts`**
-   - Tracking de eventos respeitando consentimento
-   - Funções:
-     - `trackWhatsAppClick(source, label)`
-     - `trackNewsletterSubscribe(source)`
-     - `trackShare(platform, content)`
-     - `trackLeadFormSubmit(formName)`
-     - `trackPuppyModalOpen(puppyId, puppyName)`
-     - `trackCTAClick(ctaName, location)`
-   - Integração com GA4 e Facebook Pixel
+ - Tracking de eventos respeitando consentimento
+ - Funções:
+ - `trackWhatsAppClick(source, label)`
+ - `trackNewsletterSubscribe(source)`
+ - `trackShare(platform, content)`
+ - `trackLeadFormSubmit(formName)`
+ - `trackPuppyModalOpen(puppyId, puppyName)`
+ - `trackCTAClick(ctaName, location)`
+ - Integração com GA4 e Facebook Pixel
 
 ### Arquivos Modificados
 
 1. **`app/api/newsletter/route.ts`**
-   - ✅ Rate limiting (3 req/min por IP)
-   - ✅ Validação com Zod
-   - ✅ Tratamento de unique_violation (23505)
-   - ✅ Respostas HTTP apropriadas (400, 429, 500)
-   - ✅ Remoção de console.logs
+ - ✅ Rate limiting (3 req/min por IP)
+ - ✅ Validação com Zod
+ - ✅ Tratamento de unique_violation (23505)
+ - ✅ Respostas HTTP apropriadas (400, 429, 500)
+ - ✅ Remoção de console.logs
 
 2. **`app/layout.tsx`**
-   - ✅ Import de `ConsentBanner`
-   - ✅ Renderiza `<ConsentBanner />` em rotas não-admin
-   - ✅ Ordem de imports corrigida
+ - ✅ Import de `ConsentBanner`
+ - ✅ Renderiza `<ConsentBanner />` em rotas não-admin
+ - ✅ Ordem de imports corrigida
 
 3. **`src/components/Footer.tsx`**
-   - ✅ Import de `trackWhatsAppClick` e `trackNewsletterSubscribe`
-   - ✅ Tracking no CTA principal do WhatsApp (footer-cta)
-   - ✅ Tracking no botão flutuante do WhatsApp (footer-floating)
-   - ✅ Tracking ao inscrever newsletter (footer-newsletter)
+ - ✅ Import de `trackWhatsAppClick` e `trackNewsletterSubscribe`
+ - ✅ Tracking no CTA principal do WhatsApp (footer-cta)
+ - ✅ Tracking no botão flutuante do WhatsApp (footer-floating)
+ - ✅ Tracking ao inscrever newsletter (footer-newsletter)
 
 4. **`src/components/blog/ShareButtons.tsx`**
-   - ✅ Import de `trackShare`
-   - ✅ Tracking em todos os botões de compartilhamento:
-     - WhatsApp
-     - Facebook
-     - Twitter
-     - Copy Link
+ - ✅ Import de `trackShare`
+ - ✅ Tracking em todos os botões de compartilhamento:
+ - WhatsApp
+ - Facebook
+ - Twitter
+ - Copy Link
 
 ---
 
@@ -92,20 +92,20 @@
 
 ```
 Usuário visita site
-    ↓
+ ↓
 ConsentBanner aparece (se não houver consentimento salvo)
-    ↓
+ ↓
 Opções:
-  - Aceitar Todos → salva all:true
-  - Rejeitar → salva only necessary:true
-  - Preferências → modal avançado com toggles
-    ↓
+ - Aceitar Todos → salva all:true
+ - Rejeitar → salva only necessary:true
+ - Preferências → modal avançado com toggles
+ ↓
 Salva em localStorage (byimperiodog_consent_v1)
-    ↓
+ ↓
 Atualiza Google Consent Mode (gtag('consent', 'update', ...))
-    ↓
+ ↓
 Dispara evento customizado 'consentUpdated'
-    ↓
+ ↓
 Pixels e trackers respeitam preferências
 ```
 
@@ -142,9 +142,9 @@ Exemplo de evento `whatsapp_click`:
 
 ```typescript
 {
-  event_category: 'conversion',
-  event_label: 'CTA Principal Footer',
-  source: 'footer-cta'
+ event_category: 'conversion',
+ event_label: 'CTA Principal Footer',
+ source: 'footer-cta'
 }
 ```
 
@@ -157,7 +157,7 @@ Exemplo de evento `whatsapp_click`:
 **Request Body:**
 ```json
 {
-  "email": "usuario@exemplo.com"
+ "email": "usuario@exemplo.com"
 }
 ```
 
@@ -212,9 +212,9 @@ Exemplo de evento `whatsapp_click`:
 2. Recarregar página
 3. Verificar aparecimento do banner
 4. Testar opções:
-   - **Aceitar Todos** → localStorage deve ter all:true
-   - **Rejeitar** → apenas necessary:true
-   - **Preferências** → modal com toggles funcionando
+ - **Aceitar Todos** → localStorage deve ter all:true
+ - **Rejeitar** → apenas necessary:true
+ - **Preferências** → modal com toggles funcionando
 
 ### 2. Google Consent Mode
 
@@ -240,9 +240,9 @@ window.gtag('config', '<GA4_ID>', { debug_mode: true });
 ```bash
 # Fazer 4 requests rápidas
 for i in {1..4}; do
-  curl -X POST http://localhost:3000/api/newsletter \
-    -H "Content-Type: application/json" \
-    -d '{"email":"test@example.com"}'
+ curl -X POST http://localhost:3000/api/newsletter \
+ -H "Content-Type: application/json" \
+ -d '{"email":"test@example.com"}'
 done
 ```
 
@@ -320,5 +320,5 @@ Visualização → CTA Click → WhatsApp → Lead
 
 ---
 
-**Autor:** GitHub Copilot  
+**Autor:** GitHub Copilot 
 **Revisão:** Aguardando testes em staging e validação do usuário

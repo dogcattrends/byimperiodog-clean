@@ -1,51 +1,83 @@
 #!/usr/bin/env tsx
 /* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 import 'dotenv/config';
-import { createClient } from '@supabase/supabase-js';
+import { sanityClient } from '../src/lib/sanity/client';
+import { blocksToPlainText, type SanityBlock } from '../src/lib/sanity/blocks';
 
-const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || '';
 
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-	console.error('[seo-audit] Missing Supabase env vars (SUPABASE_URL / SUPABASE_ANON_KEY). Skipping audit.');
-	process.exit(0);
+type SanityPostRow = {
+	_id: string;
+	slug?: string | null;
+	title?: string | null;
+	status?: string | null;
+	publishedAt?: string | null;
+	author?: { _ref?: string } | null;
+	tldr?: string | null;
+	keyTakeaways?: string[] | null;
+	canonicalUrl?: string | null;
+	seoDescription?: string | null;
+	description?: string | null;
+	content?: SanityBlock[];
+	body?: SanityBlock[];
+};
+
+function hasText(value: unknown, minLen = 1) {
+	if (typeof value !== 'string') return false;
+	return value.trim().length >= minLen;
 }
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: false } });
+function deriveCanonical(post: SanityPostRow) {
+	if (hasText(post.canonicalUrl)) return String(post.canonicalUrl);
+	if (!SITE_URL || !hasText(post.slug)) return null;
+	return `${SITE_URL.replace(/\/$/,'')}/blog/${post.slug}`;
+}
+
+function derivePostText(post: SanityPostRow) {
+	const bodyText = blocksToPlainText(post.content ?? post.body);
+	return bodyText;
+}
 
 async function run() {
 	console.log('[seo-audit] Starting SEO audit for published posts...');
 	try {
-		const { data, error } = await supabase
-			.from('blog_posts')
-			.select('id,slug,title,author_id,tldr,key_takeaways,seo_description,excerpt,content_mdx,published_at,status')
-			.eq('status', 'published');
+		const query = `*[_type=="post" && (status=="published" || defined(publishedAt))]{
+ _id,
+ "slug": slug.current,
+ title,
+ status,
+ publishedAt,
+ author,
+ tldr,
+ keyTakeaways,
+ canonicalUrl,
+ seoDescription,
+ description,
+ content,
+ body
+}`;
 
-		if (error) {
-			console.error('[seo-audit] Supabase error:', error);
-			return;
-		}
-
-		const posts = Array.isArray(data) ? data : [];
+		const posts = await sanityClient.fetch<SanityPostRow[]>(query);
 		const report: { id: string; slug?: string | null; title?: string | null; missing: string[] }[] = [];
 
-		for (const p of posts) {
+		for (const p of Array.isArray(posts) ? posts : []) {
 			const missing: string[] = [];
 
-			if (!p.author_id) missing.push('author');
+			if (!p.author?._ref) missing.push('author');
 
-			if (!p.tldr || String(p.tldr).trim().length < 20) missing.push('tldr');
+			if (!hasText(p.tldr, 20)) missing.push('tldr');
 
-			if (!Array.isArray(p.key_takeaways) || p.key_takeaways.length === 0) missing.push('key_takeaways');
+			if (!Array.isArray(p.keyTakeaways) || p.keyTakeaways.length === 0) missing.push('key_takeaways');
 
-			if (!SITE_URL || !p.slug) missing.push('canonical');
+			const canonical = deriveCanonical(p);
+			if (!canonical) missing.push('canonical');
 
-			const hasJsonLd = Boolean(p.title && (p.seo_description || p.excerpt || (p.content_mdx && p.content_mdx.length > 20)));
+			const postText = derivePostText(p);
+			const hasJsonLd = Boolean(hasText(p.title) && (hasText(p.seoDescription) || hasText(p.description) || postText.length > 20));
 			if (!hasJsonLd) missing.push('json_ld');
 
 			if (missing.length) {
-				report.push({ id: p.id, slug: p.slug, title: p.title, missing });
+				report.push({ id: p._id, slug: p.slug, title: p.title, missing });
 			}
 		}
 

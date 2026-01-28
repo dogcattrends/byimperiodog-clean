@@ -3,9 +3,9 @@
 // TODO: Atualizar todos os imports para usar '@/lib/seo' diretamente
 
 export {
-  canonical as blogCanonical,
-  baseBlogMetadata,
-  buildBlogPostMetadata,
-  blogJsonLdOrg,
-  SITE_ORIGIN,
+ canonical as blogCanonical,
+ baseBlogMetadata,
+ buildBlogPostMetadata,
+ blogJsonLdOrg,
+ SITE_ORIGIN,
 } from "./seo";

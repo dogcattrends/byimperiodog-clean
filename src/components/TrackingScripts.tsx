@@ -6,195 +6,195 @@ import { useEffect } from "react";
 import { initWebVitals, logEvent } from "@/lib/analytics";
 
 export default function TrackingScripts() {
-  useEffect(() => {
-    type PixelWindow = Window & {
-      gtag?: (...args: unknown[]) => void;
-      fbq?: (...args: unknown[]) => void;
-      ttq?: { page?: () => void; track?: (...args: unknown[]) => void };
-      pintrk?: (...args: unknown[]) => void;
-      dataLayer?: Array<Record<string, unknown>>;
-    };
-    const win = window as unknown as PixelWindow;
+ useEffect(() => {
+ type PixelWindow = Window & {
+ gtag?: (...args: unknown[]) => void;
+ fbq?: (...args: unknown[]) => void;
+ ttq?: { page?: () => void; track?: (...args: unknown[]) => void };
+ pintrk?: (...args: unknown[]) => void;
+ dataLayer?: Array<Record<string, unknown>>;
+ };
+ const win = window as unknown as PixelWindow;
 
-    const waitFor = <T,>(opts: {
-      getter: () => T | undefined;
-      onReady: (value: T) => void;
-      onFail?: () => void;
-      label: string;
-      maxAttempts?: number;
-      intervalMs?: number;
-    }): number => {
-      const { getter, onReady, onFail, label, maxAttempts = 20, intervalMs = 300 } = opts;
-      let attempts = 0;
-      const timer = setInterval(() => {
-        const target = getter();
-        if (target) {
-          clearInterval(timer);
-          onReady(target);
-        } else if (attempts++ > maxAttempts) {
-          clearInterval(timer);
-          onFail?.();
-          // eslint-disable-next-line no-console
-          console.warn(`[pixel-test] ${label} não carregou para teste`);
-        }
-      }, intervalMs);
-      return timer as unknown as number;
-    };
+ const waitFor = <T,>(opts: {
+ getter: () => T | undefined;
+ onReady: (value: T) => void;
+ onFail?: () => void;
+ label: string;
+ maxAttempts?: number;
+ intervalMs?: number;
+ }): number => {
+ const { getter, onReady, onFail, label, maxAttempts = 20, intervalMs = 300 } = opts;
+ let attempts = 0;
+ const timer = setInterval(() => {
+ const target = getter();
+ if (target) {
+ clearInterval(timer);
+ onReady(target);
+ } else if (attempts++ > maxAttempts) {
+ clearInterval(timer);
+ onFail?.();
+ // eslint-disable-next-line no-console
+ console.warn(`[pixel-test] ${label} não carregou para teste`);
+ }
+ }, intervalMs);
+ return timer as unknown as number;
+ };
 
-    const sendPageView = () => {
-      const url = window.location.href;
-      const pathname = window.location.pathname;
-      const search = window.location.search ? window.location.search.replace(/^\?/, "") : "";
+ const sendPageView = () => {
+ const url = window.location.href;
+ const pathname = window.location.pathname;
+ const search = window.location.search ? window.location.search.replace(/^\?/, "") : "";
 
-      // GA4 / Ads (gtag)
-      const gtag = win.gtag;
-      if (typeof gtag === "function") {
-        gtag("event", "page_view", {
-          page_location: url,
-          page_path: pathname + (search ? `?${search}` : ""),
-        });
-      }
+ // GA4 / Ads (gtag)
+ const gtag = win.gtag;
+ if (typeof gtag === "function") {
+ gtag("event", "page_view", {
+ page_location: url,
+ page_path: pathname + (search ? `?${search}` : ""),
+ });
+ }
 
-      // Meta Pixel
-      const fbq = win.fbq;
-      if (typeof fbq === "function") fbq("track", "PageView");
+ // Meta Pixel
+ const fbq = win.fbq;
+ if (typeof fbq === "function") fbq("track", "PageView");
 
-      // TikTok
-      const ttq = win.ttq;
-      if (ttq && typeof ttq.page === "function") ttq.page();
+ // TikTok
+ const ttq = win.ttq;
+ if (ttq && typeof ttq.page === "function") ttq.page();
 
-      // Pinterest
-      const pintrk = win.pintrk;
-      if (typeof pintrk === "function") pintrk("page");
-    };
+ // Pinterest
+ const pintrk = win.pintrk;
+ if (typeof pintrk === "function") pintrk("page");
+ };
 
-    // Defer tracking para não bloquear main thread
-    // RequestIdleCallback para melhor TBT/INP
-    if ('requestIdleCallback' in window) {
-      requestIdleCallback(() => {
-        sendPageView();
-        initWebVitals();
-      }, { timeout: 2000 });
-    } else {
-      // Fallback para navegadores sem suporte
-      setTimeout(() => {
-        sendPageView();
-        initWebVitals();
-      }, 1);
-    }
+ // Defer tracking para não bloquear main thread
+ // RequestIdleCallback para melhor TBT/INP
+ if ('requestIdleCallback' in window) {
+ requestIdleCallback(() => {
+ sendPageView();
+ initWebVitals();
+ }, { timeout: 2000 });
+ } else {
+ // Fallback para navegadores sem suporte
+ setTimeout(() => {
+ sendPageView();
+ initWebVitals();
+ }, 1);
+ }
 
-    // Delegated clicks for CTR (cards, toc, share)
-      const onClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (!target) return;
-      const el = target.closest('[data-evt]') as HTMLElement | null;
-      if (!el) return;
-      const name = el.getAttribute('data-evt');
-      if (!name) return;
-      const meta: Record<string, unknown> = {};
-      const id = el.getAttribute('data-id'); if (id) meta.id = id;
-      const label = el.getAttribute('aria-label') || el.textContent?.trim()?.slice(0,80) || undefined;
-      if (label) meta.label = label;
-      if (name === 'card_click' || name === 'toc_click' || name === 'share_click') {
-        logEvent(name, meta);
-      }
-    };
-    document.addEventListener('click', onClick, true);
+ // Delegated clicks for CTR (cards, toc, share)
+ const onClick = (e: MouseEvent) => {
+ const target = e.target as HTMLElement | null;
+ if (!target) return;
+ const el = target.closest('[data-evt]') as HTMLElement | null;
+ if (!el) return;
+ const name = el.getAttribute('data-evt');
+ if (!name) return;
+ const meta: Record<string, unknown> = {};
+ const id = el.getAttribute('data-id'); if (id) meta.id = id;
+ const label = el.getAttribute('aria-label') || el.textContent?.trim()?.slice(0,80) || undefined;
+ if (label) meta.label = label;
+ if (name === 'card_click' || name === 'toc_click' || name === 'share_click') {
+ logEvent(name, meta);
+ }
+ };
+ document.addEventListener('click', onClick, true);
 
-    // Teste disparado via querystring para uso pelo admin (/admin/pixels -> nova aba pública)
-    const params = new URLSearchParams(window.location.search);
-    const pixelTest = params.get("pixel_test");
-    const pixelId = params.get("pixel_id");
-    let waitHandle: number | undefined;
+ // Teste disparado via querystring para uso pelo admin (/admin/pixels -> nova aba pública)
+ const params = new URLSearchParams(window.location.search);
+ const pixelTest = params.get("pixel_test");
+ const pixelId = params.get("pixel_id");
+ let waitHandle: number | undefined;
 
-      if (pixelTest && pixelId) {
-      if (pixelTest === "meta") {
-        waitHandle = waitFor(
-          {
-            getter: () => win.fbq as ((...args: unknown[]) => void) | undefined,
-            onReady: (fbq) => {
-              fbq("track", "TestEvent", { source: "public_test", pixel_id: pixelId });
-              window.opener?.postMessage(
-                { source: "pixel_test", ok: true, pixel: "meta" },
-                window.location.origin
-              );
-            },
-            onFail: () => window.opener?.postMessage({ source: "pixel_test", ok: false, pixel: "meta" }, window.location.origin),
-            label: "fbq",
-          }
-        );
-      } else if (pixelTest === "ga4") {
-        waitHandle = waitFor(
-          {
-            getter: () => win.gtag as ((...args: unknown[]) => void) | undefined,
-            onReady: (gtag) => {
-              gtag("event", "test_event", {
-                event_category: "admin_test",
-                event_label: "GA4 public test",
-                value: 1,
-                send_to: pixelId,
-              });
-              window.opener?.postMessage(
-                { source: "pixel_test", ok: true, pixel: "ga4" },
-                window.location.origin
-              );
-            },
-            onFail: () => window.opener?.postMessage({ source: "pixel_test", ok: false, pixel: "ga4" }, window.location.origin),
-            label: "gtag",
-          }
-        );
-      } else if (pixelTest === "gtm") {
-        waitHandle = waitFor(
-          {
-            getter: () => win.dataLayer as Array<unknown> | undefined,
-            onReady: (dl) => {
-              dl.push({
-                event: "test_event",
-                event_category: "admin_test",
-                event_label: "GTM public test",
-              });
-              window.opener?.postMessage(
-                { source: "pixel_test", ok: true, pixel: "gtm" },
-                window.location.origin
-              );
-            },
-            onFail: () => window.opener?.postMessage({ source: "pixel_test", ok: false, pixel: "gtm" }, window.location.origin),
-            label: "dataLayer",
-          }
-        );
-      } else if (pixelTest === "tiktok") {
-        waitHandle = waitFor(
-          {
-            getter: () => win.ttq as { track?: (...args: unknown[]) => void } | undefined,
-            onReady: (ttq) => {
-              ttq.track?.("TestEvent", { source: "admin_test" });
-              window.opener?.postMessage(
-                { source: "pixel_test", ok: true, pixel: "tiktok" },
-                window.location.origin
-              );
-            },
-            onFail: () =>
-              window.opener?.postMessage({ source: "pixel_test", ok: false, pixel: "tiktok" }, window.location.origin),
-            label: "ttq",
-          }
-        );
-      }
-    }
+ if (pixelTest && pixelId) {
+ if (pixelTest === "meta") {
+ waitHandle = waitFor(
+ {
+ getter: () => win.fbq as ((...args: unknown[]) => void) | undefined,
+ onReady: (fbq) => {
+ fbq("track", "TestEvent", { source: "public_test", pixel_id: pixelId });
+ window.opener?.postMessage(
+ { source: "pixel_test", ok: true, pixel: "meta" },
+ window.location.origin
+ );
+ },
+ onFail: () => window.opener?.postMessage({ source: "pixel_test", ok: false, pixel: "meta" }, window.location.origin),
+ label: "fbq",
+ }
+ );
+ } else if (pixelTest === "ga4") {
+ waitHandle = waitFor(
+ {
+ getter: () => win.gtag as ((...args: unknown[]) => void) | undefined,
+ onReady: (gtag) => {
+ gtag("event", "test_event", {
+ event_category: "admin_test",
+ event_label: "GA4 public test",
+ value: 1,
+ send_to: pixelId,
+ });
+ window.opener?.postMessage(
+ { source: "pixel_test", ok: true, pixel: "ga4" },
+ window.location.origin
+ );
+ },
+ onFail: () => window.opener?.postMessage({ source: "pixel_test", ok: false, pixel: "ga4" }, window.location.origin),
+ label: "gtag",
+ }
+ );
+ } else if (pixelTest === "gtm") {
+ waitHandle = waitFor(
+ {
+ getter: () => win.dataLayer as Array<unknown> | undefined,
+ onReady: (dl) => {
+ dl.push({
+ event: "test_event",
+ event_category: "admin_test",
+ event_label: "GTM public test",
+ });
+ window.opener?.postMessage(
+ { source: "pixel_test", ok: true, pixel: "gtm" },
+ window.location.origin
+ );
+ },
+ onFail: () => window.opener?.postMessage({ source: "pixel_test", ok: false, pixel: "gtm" }, window.location.origin),
+ label: "dataLayer",
+ }
+ );
+ } else if (pixelTest === "tiktok") {
+ waitHandle = waitFor(
+ {
+ getter: () => win.ttq as { track?: (...args: unknown[]) => void } | undefined,
+ onReady: (ttq) => {
+ ttq.track?.("TestEvent", { source: "admin_test" });
+ window.opener?.postMessage(
+ { source: "pixel_test", ok: true, pixel: "tiktok" },
+ window.location.origin
+ );
+ },
+ onFail: () =>
+ window.opener?.postMessage({ source: "pixel_test", ok: false, pixel: "tiktok" }, window.location.origin),
+ label: "ttq",
+ }
+ );
+ }
+ }
 
-    // listen for SPA navigation
-    const onPop = () => sendPageView();
-    window.addEventListener("popstate", onPop);
-    window.addEventListener(("pushstate" as unknown) as string, onPop);
+ // listen for SPA navigation
+ const onPop = () => sendPageView();
+ window.addEventListener("popstate", onPop);
+ window.addEventListener(("pushstate" as unknown) as string, onPop);
 
-    return () => {
-      window.removeEventListener("popstate", onPop);
-      window.removeEventListener(("pushstate" as unknown) as string, onPop);
-      document.removeEventListener('click', onClick, true);
-      if (waitHandle) {
-        clearInterval(waitHandle);
-      }
-    };
-  }, []);
+ return () => {
+ window.removeEventListener("popstate", onPop);
+ window.removeEventListener(("pushstate" as unknown) as string, onPop);
+ document.removeEventListener('click', onClick, true);
+ if (waitHandle) {
+ clearInterval(waitHandle);
+ }
+ };
+ }, []);
 
-  return null;
+ return null;
 }

@@ -1,6 +1,6 @@
 # 🎯 Melhorias Implementadas - By Império Dog
 
-**Data:** 1 de dezembro de 2025  
+**Data:** 1 de dezembro de 2025 
 **Status:** ✅ Em Progresso
 
 ---
@@ -19,14 +19,14 @@
 - **Problema:** Query string muito longa causava erro 500
 - **Solução:** Adicionado suporte a POST request com body JSON
 - **Código:**
-  ```typescript
-  // Agora aceita GET e POST
-  export async function POST(req: NextRequest) {
-    const body = await req.json();
-    const slugs = body.slugs; // Array no body
-    return fetchAndCountLeads(slugs);
-  }
-  ```
+ ```typescript
+ // Agora aceita GET e POST
+ export async function POST(req: NextRequest) {
+ const body = await req.json();
+ const slugs = body.slugs; // Array no body
+ return fetchAndCountLeads(slugs);
+ }
+ ```
 - **Frontend atualizado:** `PuppiesTable.tsx` agora usa POST
 
 #### 3. Contraste de Cores WCAG AA ✅
@@ -37,18 +37,18 @@
 #### 4. Headers de Segurança ✅
 - **Implementado em:** `next.config.mjs`
 - **Headers adicionados:**
-  - `X-Frame-Options: DENY` (previne clickjacking)
-  - `X-Content-Type-Options: nosniff` (previne MIME sniffing)
-  - `Referrer-Policy: strict-origin-when-cross-origin`
-  - `Permissions-Policy: camera=(), microphone=(), geolocation=()`
+ - `X-Frame-Options: DENY` (previne clickjacking)
+ - `X-Content-Type-Options: nosniff` (previne MIME sniffing)
+ - `Referrer-Policy: strict-origin-when-cross-origin`
+ - `Permissions-Policy: camera=(), microphone=(), geolocation=()`
 
 #### 5. Focus States Globais ✅
 - **Problema:** Links sem indicador visual de foco
 - **Solução:** Adicionado CSS global
-  ```css
-  a:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
-  button:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
-  ```
+ ```css
+ a:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+ button:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+ ```
 
 #### 6. Touch Targets - 44px Mínimo ✅
 - **Problema:** Botões com altura ~32px (abaixo do mínimo WCAG)
@@ -90,11 +90,11 @@ Criados 3 novos schemas para SEO avançado:
 ```tsx
 // Adicionar width/height explícitos
 <Image 
-  src="..." 
-  width={800} 
-  height={600} 
-  alt="..."
-  className="w-full h-auto"
+ src="..." 
+ width={800} 
+ height={600} 
+ alt="..."
+ className="w-full h-auto"
 />
 ```
 
@@ -105,23 +105,23 @@ import { buildProductLD } from '@/lib/schemas/product';
 import { buildBreadcrumbLD } from '@/lib/schemas/breadcrumb';
 
 export default async function PuppyPage({ params }) {
-  const puppy = await getPuppy(params.slug);
-  const productSchema = buildProductLD(puppy);
-  const breadcrumbSchema = buildBreadcrumbLD([
-    { name: 'Início', href: '/' },
-    { name: 'Filhotes', href: '/filhotes' },
-    { name: puppy.name, href: `/filhotes/${puppy.slug}` },
-  ]);
-  
-  return (
-    <>
-      <script type="application/ld+json" 
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }} />
-      <script type="application/ld+json" 
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
-      {/* ... */}
-    </>
-  );
+ const puppy = await getPuppy(params.slug);
+ const productSchema = buildProductLD(puppy);
+ const breadcrumbSchema = buildBreadcrumbLD([
+ { name: 'Início', href: '/' },
+ { name: 'Filhotes', href: '/filhotes' },
+ { name: puppy.name, href: `/filhotes/${puppy.slug}` },
+ ]);
+ 
+ return (
+ <>
+ <script type="application/ld+json" 
+ dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }} />
+ <script type="application/ld+json" 
+ dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+ {/* ... */}
+ </>
+ );
 }
 ```
 
@@ -203,9 +203,9 @@ npm run a11y:contrast
 - Abrir Chrome DevTools > Performance
 - Gravar página carregando
 - Verificar métricas:
-  - LCP < 2.5s ✅
-  - CLS < 0.1 ⚠️ (verificar grids)
-  - FID < 100ms ✅
+ - LCP < 2.5s ✅
+ - CLS < 0.1 ⚠️ (verificar grids)
+ - FID < 100ms ✅
 
 ---
 
@@ -272,9 +272,9 @@ Antes de fazer deploy em produção:
 
 ## ✅ Conclusão
 
-**Total de Melhorias:** 8 implementadas ✅  
-**Impacto Estimado:** +15% Lighthouse Score, -60% erros a11y  
-**Tempo de Implementação:** ~2 horas  
+**Total de Melhorias:** 8 implementadas ✅ 
+**Impacto Estimado:** +15% Lighthouse Score, -60% erros a11y 
+**Tempo de Implementação:** ~2 horas 
 
 **Próximo Sprint:**
 - Implementar schemas nas páginas (Product, Breadcrumb)

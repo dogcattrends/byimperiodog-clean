@@ -1,4 +1,4 @@
-﻿# ðŸŽ¨ CatÃ¡logo de Filhotes Premium v2.0
+# ðŸŽ¨ CatÃ¡logo de Filhotes Premium v2.0
 
 ## ðŸ“‹ VisÃ£o Geral
 
@@ -17,18 +17,18 @@ Redesign completo do mÃ³dulo de catÃ¡logo de filhotes com foco em:
 ### Componentes Criados
 
 1. **`PuppyCardPremium.tsx`** (`src/components/catalog/`)
-   - Card individual de filhote
-   - Design premium com micro-interaÃ§Ãµes
-   - JSON-LD de produto integrado
-   - Estados de CTA (idle, loading, hover, pressed)
-   - Acessibilidade completa
+ - Card individual de filhote
+ - Design premium com micro-interaÃ§Ãµes
+ - JSON-LD de produto integrado
+ - Estados de CTA (idle, loading, hover, pressed)
+ - Acessibilidade completa
 
 2. **`PuppiesGridPremium.tsx`** (`src/components/`)
-   - Grid responsivo mobile-first
-   - Sistema de filtros integrado
-   - Estados: loading, empty, error
-   - Busca em tempo real
-   - Contagem de resultados
+ - Grid responsivo mobile-first
+ - Sistema de filtros integrado
+ - Estados: loading, empty, error
+ - Busca em tempo real
+ - Contagem de resultados
 
 ### IntegraÃ§Ã£o
 
@@ -54,13 +54,13 @@ A home page (`app/page.tsx`) agora usa o componente premium:
 #### ConteÃºdo SemÃ¢ntico
 ```html
 <article itemScope itemType="https://schema.org/Product">
-  <h3 itemprop="name">Nome do Filhote</h3>
-  <div itemprop="color">Cor â€¢ Sexo â€¢ Idade</div>
-  <ul aria-label="BenefÃ­cios inclusos">
-    <li>Pedigree Pedigree + Microchip</li>
-    <li>Vacinas e vermÃ­fugos em dia</li>
-    <li>Mentoria vitalÃ­cia</li>
-  </ul>
+ <h3 itemprop="name">Nome do Filhote</h3>
+ <div itemprop="color">Cor â€¢ Sexo â€¢ Idade</div>
+ <ul aria-label="BenefÃ­cios inclusos">
+ <li>Pedigree Pedigree + Microchip</li>
+ <li>Vacinas e vermÃ­fugos em dia</li>
+ <li>Mentoria vitalÃ­cia</li>
+ </ul>
 </article>
 ```
 
@@ -78,21 +78,21 @@ A home page (`app/page.tsx`) agora usa o componente premium:
 - **Detalhes**: Abre modal
 
 #### Acessibilidade
-- âœ… `aria-label` em todos os botÃµes
-- âœ… `aria-pressed` no favorito
-- âœ… Foco visÃ­vel (`focus-visible:ring-2`)
-- âœ… Contraste mÃ­nimo 4.5:1
-- âœ… Hierarquia de headings (h2 â†’ h3)
-- âœ… `role="status"` nos badges
-- âœ… Textos alternativos descritivos
+ - ✓ `aria-label` em todos os botões
+ - ✓ `aria-pressed` no favorito
+ - ✓ Foco visível (`focus-visible:ring-2`)
+ - ✓ Contraste mínimo 4.5:1
+ - ✓ Hierarquia de headings (h2 → h3)
+ - ✓ `role="status"` nos badges
+ - ✓ Textos alternativos descritivos
 
 ### Grid Premium
 
 #### Filtros
-- **Busca**: Nome, cor, caracterÃ­sticas
-- **Sexo**: Macho / FÃªmea
-- **Cor**: Dropdown dinÃ¢mico
-- **Status**: DisponÃ­vel / Reservado
+ - **Busca**: Nome, cor, características
+ - **Sexo**: Macho / Fêmea
+ - **Cor**: Dropdown dinâmico
+ - **Status**: Disponível / Reservado
 
 #### Estados
 - **Loading**: 8 skeleton cards animados
@@ -101,9 +101,9 @@ A home page (`app/page.tsx`) agora usa o componente premium:
 
 #### Performance
 - `lazy` loading em imagens (exceto 4 primeiras)
-- `priority` nas primeiras 4 imagens
-- Filtros com `useTransition` (nÃ£o bloqueia UI)
-- MemoizaÃ§Ã£o de listas filtradas
+ - `priority` nas primeiras 4 imagens
+ - Filtros com `useTransition` (não bloqueia UI)
+ - Memoização de listas filtradas
 
 ---
 
@@ -115,27 +115,27 @@ Cada card gera structured data completa:
 
 ```json
 {
-  "@context": "https://schema.org",
-  "@type": "Product",
-  "name": "Filhote Spitz AlemÃ£o AnÃ£o Branco FÃªmea",
-  "description": "...",
-  "image": "https://...",
-  "brand": {
-    "@type": "Brand",
-    "name": "By ImpÃ©rio Dog"
-  },
-  "offers": {
-    "@type": "Offer",
-    "priceCurrency": "BRL",
-    "price": 7500,
-    "availability": "https://schema.org/InStock",
-    "itemCondition": "https://schema.org/NewCondition"
-  },
-  "additionalProperty": [
-    { "@type": "PropertyValue", "name": "Cor", "value": "Branco" },
-    { "@type": "PropertyValue", "name": "Sexo", "value": "FÃªmea" },
-    { "@type": "PropertyValue", "name": "Idade", "value": "2 meses" }
-  ]
+ "@context": "https://schema.org",
+ "@type": "Product",
+ "name": "Filhote Spitz Alemão Anão Branco Fêmea",
+ "description": "...",
+ "image": "https://...",
+ "brand": {
+ "@type": "Brand",
+ "name": "By Império Dog"
+ },
+ "offers": {
+ "@type": "Offer",
+ "priceCurrency": "BRL",
+ "price": 7500,
+ "availability": "https://schema.org/InStock",
+ "itemCondition": "https://schema.org/NewCondition"
+ },
+ "additionalProperty": [
+ { "@type": "PropertyValue", "name": "Cor", "value": "Branco" },
+ { "@type": "PropertyValue", "name": "Sexo", "value": "Fêmea" },
+ { "@type": "PropertyValue", "name": "Idade", "value": "2 meses" }
+ ]
 }
 ```
 
@@ -143,11 +143,11 @@ Cada card gera structured data completa:
 
 ```html
 <article itemScope itemType="https://schema.org/Product">
-  <h3 itemprop="name">...</h3>
-  <div itemprop="offers" itemScope itemType="https://schema.org/Offer">
-    <meta itemprop="priceCurrency" content="BRL" />
-    <meta itemprop="price" content="7500" />
-  </div>
+ <h3 itemprop="name">...</h3>
+ <div itemprop="offers" itemScope itemType="https://schema.org/Offer">
+ <meta itemprop="priceCurrency" content="BRL" />
+ <meta itemprop="price" content="7500" />
+ </div>
 </article>
 ```
 
@@ -158,9 +158,9 @@ Cada card gera structured data completa:
 ### Cores
 
 **Status Badges**:
-- DisponÃ­vel: `bg-emerald-100 text-emerald-800 ring-emerald-300`
-- Reservado: `bg-amber-100 text-amber-800 ring-amber-300`
-- Vendido: `bg-rose-100 text-rose-800 ring-rose-300`
+ - Disponível: `bg-emerald-100 text-emerald-800 ring-emerald-300`
+ - Reservado: `bg-amber-100 text-amber-800 ring-amber-300`
+ - Vendido: `bg-rose-100 text-rose-800 ring-rose-300`
 
 **CTAs**:
 - PrimÃ¡rio: `bg-gradient-to-r from-emerald-600 to-emerald-500`
@@ -289,26 +289,26 @@ Validar:
 
 ```typescript
 track.event?.("puppy_like_toggle", {
-  puppy_id: string,
-  liked: boolean,
-  placement: "catalog_premium"
+ puppy_id: string,
+ liked: boolean,
+ placement: "catalog_premium"
 });
 
 track.event?.("whatsapp_click", {
-  placement: "catalog_card_premium",
-  action: "main_cta" | "video" | "visit",
-  puppy_id: string
+ placement: "catalog_card_premium",
+ action: "main_cta" | "video" | "visit",
+ puppy_id: string
 });
 
 track.event?.("open_details", {
-  placement: "catalog_card_premium",
-  puppy_id: string,
-  target: "modal"
+ placement: "catalog_card_premium",
+ puppy_id: string,
+ target: "modal"
 });
 
 track.event?.("list_loaded", {
-  count: number,
-  version: "premium"
+ count: number,
+ version: "premium"
 });
 ```
 
@@ -319,30 +319,30 @@ track.event?.("list_loaded", {
 ### Melhorias Futuras
 
 1. **Galeria de Imagens**
-   - Carrossel no card (swipe mobile)
-   - Thumbnails secundÃ¡rias
+ - Carrossel no card (swipe mobile)
+ - Thumbnails secundÃ¡rias
 
 2. **ComparaÃ§Ã£o**
-   - Checkbox para selecionar
-   - Modal comparativo
+ - Checkbox para selecionar
+ - Modal comparativo
 
 3. **Wishlist Persistente**
-   - LocalStorage
-   - Sync com conta
+ - LocalStorage
+ - Sync com conta
 
 4. **Realtime**
-   - Websocket para status
-   - NotificaÃ§Ã£o "novo filhote"
+ - Websocket para status
+ - NotificaÃ§Ã£o "novo filhote"
 
 5. **Filtros AvanÃ§ados**
-   - Faixa de preÃ§o (slider)
-   - Idade (mÃ­n/mÃ¡x)
-   - OrdenaÃ§Ã£o (preÃ§o, data, popularidade)
+ - Faixa de preÃ§o (slider)
+ - Idade (mÃ­n/mÃ¡x)
+ - OrdenaÃ§Ã£o (preÃ§o, data, popularidade)
 
 6. **Social Proof**
-   - Badge "Mais popular"
-   - "X pessoas visualizaram hoje"
-   - Reviews e ratings
+ - Badge "Mais popular"
+ - "X pessoas visualizaram hoje"
+ - Reviews e ratings
 
 ---
 
@@ -389,7 +389,7 @@ Para dÃºvidas ou ajustes:
 2. Revise comentÃ¡rios no cÃ³digo
 3. Teste em ambiente local
 
-**VersÃ£o**: 2.0.0  
-**Data**: Dezembro 2025  
+**VersÃ£o**: 2.0.0 
+**Data**: Dezembro 2025 
 **Status**: âœ… Production Ready
 
