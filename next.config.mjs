@@ -36,6 +36,9 @@ const nextConfig = {
  { protocol: "https", hostname: "dummyimage.com" },
  { protocol: "https", hostname: "cdn.sanity.io", pathname: "/images/**" },
  { protocol: "https", hostname: "clinicavetspitz.com.br", pathname: "/**" },
+ // Supabase Storage (blobs, images, media)
+ { protocol: "https", hostname: "npmnuihgydadihktglrd.supabase.co", pathname: "/storage/v1/object/public/**" },
+ { protocol: "https", hostname: "*.supabase.co", pathname: "/storage/v1/object/public/**" },
  ...(supabaseHostname
  ? [
  {
