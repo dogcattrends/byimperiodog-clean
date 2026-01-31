@@ -302,7 +302,7 @@ function buildStepMessage({
     {
       name: puppy?.name ?? "Spitz exclusivo",
       color: puppy?.color ?? strategy.triggers.find((t) => t.startsWith("cor:"))?.split(":")[1] ?? lead.cor_preferida ?? null,
-      sex: puppy?.sex ?? strategy.triggers.find((t) => t.startsWith("sexo:"))?.split(":")[1] ?? lead.sexo_preferido ?? null,
+      sex: puppy?.sexo ?? strategy.triggers.find((t) => t.startsWith("sexo:"))?.split(":")[1] ?? lead.sexo_preferido ?? null,
       price_cents: puppy?.price_cents ?? undefined,
     },
     step.tone,

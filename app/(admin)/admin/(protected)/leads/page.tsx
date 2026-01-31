@@ -4,7 +4,7 @@ import { createLogger } from "@/lib/logger";
 
 import LeadsCRM from "./LeadsCRM";
 import { fetchAdminLeads, parseLeadFilters } from "./queries";
-import { AdminErrorState } from "../ui/AdminErrorState";
+import { AdminErrorState } from "@/components/admin/ui/AdminErrorState";
 
 export const metadata: Metadata = {
   title: "Leads | Admin",

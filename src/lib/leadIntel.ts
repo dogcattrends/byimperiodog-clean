@@ -6,11 +6,12 @@ import { z } from "zod";
 
 import { createLogger } from "@/lib/logger";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+
 import type { Database } from "@/types/supabase";
 
 type LeadRow = Database["public"]["Tables"]["leads"]["Row"];
 type PuppyRow = Database["public"]["Tables"]["puppies"]["Row"];
-type InsightRow = Database["public"]["Tables"]["lead_ai_insights"]["Row"];
+// type InsightRow = Database["public"]["Tables"]["lead_ai_insights"]["Row"]; // Removido temporariamente
 
 export type LeadRecord = LeadRow & {
   cor_preferida?: string | null;
@@ -67,7 +68,7 @@ const AI_RESPONSE_SCHEMA = z.object({
 const COLORS = ["branco", "creme", "preto", "laranja", "particolor", "sable", "chocolate", "azul"];
 const SEX_MAP: Record<string, string> = { macho: "macho", machos: "macho", fêmea: "femea", femea: "femea", femeas: "femea" };
 const CACHE_TTL_MS = 5 * 60 * 1000;
-const runtimeCache = new Map<string, { expiresAt: number; data: InsightRow }>();
+const runtimeCache = new Map<string, { expiresAt: number; data: any }>();
 
 const OPENAI_ENDPOINT = process.env.OPENAI_BASE_URL?.trim() || "https://api.openai.com/v1/chat/completions";
 const OPENAI_MODEL = process.env.OPENAI_LEAD_MODEL?.trim() || "gpt-4o-mini";
@@ -160,7 +161,7 @@ function recommendPuppies(puppies: PuppyRow[], prefs: { color?: string | null; s
         score += 30;
         reasons.push("Cor desejada");
       }
-      if (prefs.sex && normalize(p.sex) === normalize(prefs.sex)) {
+      if (prefs.sex && normalize(p.sexo) === normalize(prefs.sex)) {
         score += 20;
         reasons.push("Sexo desejado");
       }
@@ -354,7 +355,7 @@ function getRuntimeCache(key: string) {
   return entry.data;
 }
 
-function setRuntimeCache(key: string, data: InsightRow) {
+function setRuntimeCache(key: string, data: any) {
   runtimeCache.set(key, { data, expiresAt: Date.now() + CACHE_TTL_MS });
 }
 
@@ -414,7 +415,7 @@ export async function processLeadIntel(leadId: string, force = false) {
     throw error;
   }
 
-  const stored = upserted ?? (payload as InsightRow);
+  const stored = upserted ?? (payload as any);
   setRuntimeCache(runtimeKey, stored);
   logger.info("lead_intel_generated", { leadId, score: stored.score, intent: stored.intent, matched: stored.matched_puppy_id });
   return stored;

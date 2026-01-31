@@ -91,7 +91,7 @@ export async function recalcPricingForPuppy(puppyId: string): Promise<PricingRes
 
   // Interesse (leads) e conversão
   const interested = (leads ?? []).length;
-  const conversions = (leads ?? []).filter((l) => l.status === "fechado").length;
+  const conversions = (leads ?? []).filter((l: { status?: string | null }) => l.status === "fechado").length;
   const convRate = interested > 0 ? conversions / interested : 0;
   if (interested > 8 && convRate < 0.1) {
     ideal = Math.round(ideal * 0.95);

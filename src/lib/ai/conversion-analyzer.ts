@@ -67,7 +67,7 @@ export function analyzeConversion(leads: Lead[], puppies: Puppy[], interactions:
   });
   const colorLosses = Array.from(colorLossMap.entries())
     .map(([color, v]) => ({ color, rate: (v.lost / Math.max(1, v.total)) * 100 }))
-    .filter((c) => c.rate > 40 && c.total > 3);
+    .filter((c) => c.rate > 40);
   colorLosses.forEach((c) => losses.push(`Cor ${c.color} tem abandono alto (${c.rate.toFixed(1)}%).`));
 
   // Faixa de preço com baixa conversão

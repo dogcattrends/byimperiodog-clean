@@ -203,11 +203,11 @@ export default function PuppyDetailsModal({ id, onClose }: Props) {
                     </span>
                   </div>
                 )}
-                {puppy.aggregate_rating && (
+                {puppy.averageRating && (
                   <div className="flex items-center gap-2">
                     <PawPrint className="h-4 w-4 text-amber-500" aria-hidden="true" />
                     <span className="text-[var(--text)]">
-                      {puppy.aggregate_rating.toFixed(1)} ({puppy.review_count ?? 0} avaliações)
+                      {puppy.averageRating.toFixed(1)} ({puppy.reviewCount ?? 0} avaliações)
                     </span>
                   </div>
                 )}
@@ -314,8 +314,28 @@ function normalize(p: any): Puppy {
     city: p.city,
     state: p.state,
     status: p.status,
-    aggregate_rating: p.aggregate_rating,
-    review_count: p.review_count,
+    // Campos obrigatórios de Puppy preenchidos com valores padrão se ausentes
+    breed: p.breed || "Spitz Alemão Anão",
+    size: p.size || "mini",
+    title: p.title || name,
+    currency: p.currency || "BRL",
+    isHighlighted: p.isHighlighted ?? false,
+    isFeatured: p.isFeatured ?? false,
+    isBestSeller: p.isBestSeller ?? false,
+    isNewArrival: p.isNewArrival ?? false,
+    seoKeywords: p.seoKeywords || [],
+    hasPedigree: p.hasPedigree ?? true,
+    vaccinationStatus: p.vaccinationStatus || "up-to-date",
+    hasMicrochip: p.hasMicrochip ?? false,
+    reviewCount: p.reviewCount ?? 0,
+    averageRating: p.averageRating ?? 0,
+    viewCount: p.viewCount ?? 0,
+    favoriteCount: p.favoriteCount ?? 0,
+    shareCount: p.shareCount ?? 0,
+    inquiryCount: p.inquiryCount ?? 0,
+    source: p.source || "own-breeding",
+    createdAt: p.createdAt ? new Date(p.createdAt) : new Date(),
+    updatedAt: p.updatedAt ? new Date(p.updatedAt) : new Date(),
   } as Puppy;
 }
 

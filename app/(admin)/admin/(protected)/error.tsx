@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { TriangleAlert } from "lucide-react";
 
-import { AdminErrorState } from "./ui/AdminErrorState";
+import { AdminErrorState } from "@/components/admin/ui/AdminErrorState";
 
 export default function AdminError({ error, reset }: { error: Error; reset: () => void }) {
   useEffect(() => {

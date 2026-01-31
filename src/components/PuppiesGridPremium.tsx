@@ -28,12 +28,9 @@ import PuppyDetailsModal from "./PuppyDetailsModal";
 
 type RankingFlag = "hot" | "normal" | "slow";
 
-type AiSeoCopy = {
-  shortTitle?: string | null;
-  shortDescription?: string | null;
-  altText?: string | null;
-  seoKeywords?: string[] | null;
-};
+import type { CatalogSeoOutput } from "@/lib/ai/catalog-seo";
+
+type AiSeoCopy = CatalogSeoOutput;
 
 type RankingSource = "catalog_ai" | "fallback";
 
@@ -56,8 +53,8 @@ type CatalogPuppy = Puppy & {
   badges?: CatalogBadge[];
   aiBadges?: AiBadgeId[];
   aiFlags?: string[];
-  aiSeo?: AiSeoCopy | null;
-  catalogSeo?: AiSeoCopy | null;
+  aiSeo?: CatalogSeoOutput | null;
+  catalogSeo?: CatalogSeoOutput | null;
 };
 
 type SortOption = "recommended" | "newest" | "price-asc" | "price-desc";
@@ -134,7 +131,7 @@ const extractImages = (row: any): string[] => {
         if (item && typeof item.url === "string") return item.url;
         return null;
       })
-      .filter((item): item is string => Boolean(item));
+      .filter((item: any): item is string => Boolean(item));
   }
   if (Array.isArray(row.media)) {
     return row.media
@@ -143,7 +140,7 @@ const extractImages = (row: any): string[] => {
         if (item && typeof item.url === "string") return item.url;
         return null;
       })
-      .filter((item): item is string => Boolean(item));
+      .filter((item: any): item is string => Boolean(item));
   }
   return [];
 };
@@ -166,16 +163,19 @@ const parseAiBadges = (row: any): AiBadgeId[] | undefined => {
 
 const parseAiFlags = (row: any): string[] | undefined => parseStringArray(row.ai_flags ?? row.aiFlags);
 
-const parseAiSeo = (row: any): AiSeoCopy | null => {
+const parseAiSeo = (row: any): CatalogSeoOutput | null => {
   const value = row.ai_seo ?? row.aiSeo ?? row.catalogSeo ?? null;
   if (!value || typeof value !== "object") return null;
   return {
-    shortTitle: value.shortTitle ?? value.short_title ?? null,
-    shortDescription: value.shortDescription ?? value.short_description ?? null,
-    altText: value.altText ?? value.alt_text ?? null,
+    shortTitle: value.shortTitle ?? value.short_title ?? "",
+    shortDescription: value.shortDescription ?? value.short_description ?? "",
+    altText: value.altText ?? value.alt_text ?? "",
     seoKeywords: Array.isArray(value.seoKeywords ?? value.seo_keywords)
       ? (value.seoKeywords ?? value.seo_keywords)
-      : null,
+      : [],
+    focusedKeywords: Array.isArray(value.focusedKeywords) ? value.focusedKeywords : [],
+    structuredDataSnippets: value.structuredDataSnippets ?? {},
+    warnings: value.warnings ?? [],
   };
 };
 
@@ -1193,11 +1193,9 @@ export default function PuppiesGridPremium({ initialItems = [], initialFilters }
                     onOpenDetails={() => handleOpenDetails(puppy)}
                     onWhatsAppClick={() => handleWhatsAppClick(puppy)}
                     priority={index < 4}
-                    rankingFlags={puppy.rankingFlag}
-                    aiBadges={puppy.aiBadges}
-                    rankingPosition={index + 1}
-                    rankingReason={puppy.rankingReason}
-                    rankingSource={puppy.rankingSource ?? rankingSource}
+                    // rankingFlags removido: não existe em PuppyCardProps
+                    // aiBadges removido: não existe em PuppyCardProps
+                    // rankingPosition, rankingReason, rankingSource removidos: não existem em PuppyCardProps
                   />
                 </motion.div>
               ))}

@@ -16,7 +16,7 @@ import Image from "next/image";
 import { useMemo, useState } from "react";
 
 import { Badge, Button, Card, CardContent, CardHeader, StatusBadge } from "@/components/ui";
-import type { CatalogBadge } from "@/lib/ai/catalog-badges-ai";
+import type { CatalogBadge } from "@/lib/ai/catalog-badges";
 import type { CatalogSeoOutput } from "@/lib/ai/catalog-seo";
 import { getNextImageProps } from "@/lib/images";
 import { optimizePuppyCardImage } from "@/lib/optimize-image";
@@ -126,7 +126,16 @@ export default function PuppyCardPremium({
 
   const promoBadge = useMemo(() => {
     if (badges.length > 0) return badges[0];
-    if (age.months !== undefined && age.months < 1) return { key: "new", label: "Recém-chegado", icon: "🌱", priority: 50, ariaLabel: "Filhote recém-chegado", color: "#0f766e", bgColor: "#ecfeff", textColor: "#0f172a" } as CatalogBadge;
+    if (age.months !== undefined && age.months < 1) return {
+      key: "new",
+      label: "Recém-chegado",
+      icon: "🌱",
+      priority: 50,
+      ariaLabel: "Filhote recém-chegado",
+      color: "#0f766e",
+      bgColor: "#ecfeff",
+      textColor: "#0f172a"
+    };
     return null;
   }, [badges, age.months]);
 
@@ -193,9 +202,11 @@ export default function PuppyCardPremium({
 
       <CardHeader noPadding>
         <div className="relative aspect-[4/3] w-full overflow-hidden rounded-b-none rounded-t-3xl">
-          {imgProps ? (
+          {imgProps && typeof imgProps.src === "string" ? (
             <Image
-              {...imgProps}
+              src={imgProps.src}
+              width={imgProps.width}
+              height={imgProps.height}
               alt={seo.altText}
               priority={priority}
               fetchPriority={priority ? "high" : "auto"}
@@ -217,10 +228,13 @@ export default function PuppyCardPremium({
               {promoBadge && (
                 <span
                   className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold shadow-sm"
-                  style={{ backgroundColor: promoBadge.bgColor ?? "#ecfeff", color: promoBadge.textColor ?? "#0f172a" }}
-                  aria-label={promoBadge.ariaLabel ?? promoBadge.label}
+                  style={{
+                    backgroundColor: ("bgColor" in promoBadge && promoBadge.bgColor) ? promoBadge.bgColor : "#ecfeff",
+                    color: ("textColor" in promoBadge && promoBadge.textColor) ? promoBadge.textColor : "#0f172a"
+                  }}
+                  aria-label={"ariaLabel" in promoBadge && promoBadge.ariaLabel ? promoBadge.ariaLabel : promoBadge.label}
                 >
-                  <span aria-hidden>{(promoBadge as any).icon ?? "⭐"}</span>
+                  <span aria-hidden>{("icon" in promoBadge && promoBadge.icon) ? promoBadge.icon : "⭐"}</span>
                   {promoBadge.label}
                 </span>
               )}

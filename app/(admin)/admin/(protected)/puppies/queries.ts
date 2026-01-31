@@ -109,7 +109,7 @@ function normalizeStatus(value?: string | null): AdminPuppyStatus {
 }
 
 function normalizeSex(row: PuppyRow): "male" | "female" | null {
-  const sex = row.gender ?? row.sex ?? row.sexo;
+  const sex = row.gender ?? row.sexo;
   if (!sex) return null;
   const value = String(sex).toLowerCase();
   if (value === "male" || value.startsWith("mach")) return "male";
@@ -121,10 +121,13 @@ function normalizePrice(row: PuppyRow): number {
   const camelPrice = (row as { priceCents?: number | null }).priceCents;
   if (typeof camelPrice === "number") return camelPrice;
   if (typeof row.preco === "number") return Math.round(row.preco * 100);
-  if (typeof row.preco === "string" && row.preco.trim()) {
-    const normalized = row.preco.replace(/\./g, "").replace(/,/g, ".");
-    const parsed = Number(normalized);
-    if (Number.isFinite(parsed)) return Math.round(parsed * 100);
+  if (typeof row.preco === "string" && row.preco) {
+    const precoStr = String(row.preco).trim();
+    if (precoStr) {
+      const normalized = precoStr.replace(/\./g, "").replace(/,/g, ".");
+      const parsed = Number(normalized);
+      if (Number.isFinite(parsed)) return Math.round(parsed * 100);
+    }
   }
   return 0;
 }

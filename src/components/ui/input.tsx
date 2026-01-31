@@ -71,8 +71,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
               'shadow-sm',
               'focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]',
               'disabled:cursor-not-allowed disabled:opacity-50',
-              leftIcon && 'pl-10',
-              rightIcon && 'pr-10',
+              !!leftIcon && 'pl-10',
+              !!rightIcon && 'pr-10',
               error 
                 ? 'border-[var(--error)] focus:ring-[var(--error)]' 
                 : 'border-[var(--border)]',

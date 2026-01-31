@@ -101,7 +101,8 @@ function resolvePathname() {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const pathname = resolvePathname();
-  const isAdminRoute = pathname.startsWith("/admin") || pathname.includes("/admin/") || pathname === "/admin";
+  // Considera admin apenas se for exatamente /admin ou começar com /admin/
+  const isAdminRoute = pathname === "/admin" || pathname.startsWith("/admin/");
   // Ajustes dinamicos de canonical/OG URL. Em SSR inicial temos path disponivel.
   const metaRuntime = baseMetaOverrides(pathname);
 
@@ -248,7 +249,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
         {/* Preload da imagem de LCP para reduzir waterfall */}
         {/* AVIF tem melhor compressão que WebP (30-50% menor) */}
-        {!isAdminRoute && pathname === "/" && (
+        {!isAdminRoute && (
           <link
             rel="preload"
             as="image"

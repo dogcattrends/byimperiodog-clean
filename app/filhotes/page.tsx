@@ -113,7 +113,7 @@ async function fetchPuppies(filters: CatalogFilters): Promise<CatalogPuppy[]> {
       return [];
     }
 
-    return (data ?? []).map((raw) => ({
+    return (data ?? []).map((raw: any) => ({
       ...normalizePuppyFromDB(raw),
       rankingFlag: undefined,
       rankingScore: undefined,

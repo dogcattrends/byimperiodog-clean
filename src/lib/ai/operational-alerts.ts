@@ -51,7 +51,7 @@ export async function generateOperationalAlerts(): Promise<Alerts> {
   const alerts: Alerts = { critical: [], medium: [], low: [] };
   const puppyLeadCount = new Map<string, number>();
 
-  (leads ?? []).forEach((l) => {
+  (leads ?? []).forEach((l: { page_slug?: string | null; page?: string | null }) => {
     const slug = (l.page_slug || l.page || "").toString();
     if (!slug) return;
     puppyLeadCount.set(slug, (puppyLeadCount.get(slug) ?? 0) + 1);
@@ -60,14 +60,14 @@ export async function generateOperationalAlerts(): Promise<Alerts> {
   // Map estoque por cor para comparar com demanda
   const stockByColor = new Map<string, number>();
   (puppies ?? [])
-    .filter((p) => (p.status || "available") === "available")
-    .forEach((p) => {
+    .filter((p: { status?: string | null }) => (p.status || "available") === "available")
+    .forEach((p: { color?: string | null }) => {
       const c = (p.color || "desconhecida").toLowerCase();
       stockByColor.set(c, (stockByColor.get(c) ?? 0) + 1);
     });
 
   // Filhotes sem foto / sem preço / tempo de estoque
-  (puppies ?? []).forEach((p) => {
+  (puppies ?? []).forEach((p: PuppyRow) => {
     if (!p.midia || p.midia.length === 0) alerts.medium.push(`Filhote sem foto: ${p.name || p.slug || p.id}`);
     if (!p.price_cents || p.price_cents <= 0) alerts.medium.push(`Filhote sem preço: ${p.name || p.slug || p.id}`);
     if (daysBetween(p.created_at) > 90 && (p.status || "available") === "available") {
@@ -82,7 +82,7 @@ export async function generateOperationalAlerts(): Promise<Alerts> {
 
   // Leads sem resposta >2h
   const twoHoursAgo = Date.now() - 2 * 60 * 60 * 1000;
-  (leads ?? []).forEach((l) => {
+  (leads ?? []).forEach((l: LeadRow) => {
     const last = l.last_contact_at ? new Date(l.last_contact_at).getTime() : new Date(l.created_at).getTime();
     if ((!l.status || l.status === "novo") && last < twoHoursAgo) {
       alerts.medium.push(`Lead sem resposta >2h: ${l.id}`);
@@ -91,7 +91,7 @@ export async function generateOperationalAlerts(): Promise<Alerts> {
 
   // Demanda por cor > estoque
   const demandByColor = new Map<string, number>();
-  (leads ?? []).forEach((l) => {
+  (leads ?? []).forEach((l: LeadRow) => {
     const c = (l.cor_preferida || "desconhecida").toLowerCase();
     demandByColor.set(c, (demandByColor.get(c) ?? 0) + 1);
   });

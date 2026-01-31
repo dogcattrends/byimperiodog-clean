@@ -85,11 +85,20 @@ async function hydrateMedia(record: any, client: SupabaseClient) {
   const resolvedEntries = (
     await Promise.all(
       (mediaSource as unknown[]).map(async (entry) => {
-        const baseUrl = typeof entry === "string" ? entry : entry?.url ?? entry?.src ?? "";
+        let baseUrl = "";
+        if (typeof entry === "string") {
+          baseUrl = entry;
+        } else if (entry && typeof entry === "object") {
+          if ("url" in entry && typeof entry.url === "string") baseUrl = entry.url;
+          else if ("src" in entry && typeof entry.src === "string") baseUrl = entry.src;
+        }
         if (!baseUrl) return null;
         const resolvedUrl = await resolveMediaUrl(baseUrl, client);
         if (!resolvedUrl) return null;
-        const type = typeof entry === "object" && entry?.type === "video" ? "video" : "image";
+        let type: "image" | "video" = "image";
+        if (entry && typeof entry === "object" && "type" in entry && entry.type === "video") {
+          type = "video";
+        }
         return {
           url: resolvedUrl,
           type: type === "video" ? "video" : inferTypeFromUrl(resolvedUrl),

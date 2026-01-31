@@ -115,11 +115,11 @@ export async function recommendPuppiesForLead(leadId: string): Promise<PuppyReco
 
   const scored =
     puppies
-      ?.map((p) => {
+      ?.map((p: any) => {
         const { score, reason } = scorePuppy(p as PuppyRecord, prefs);
         return { ...p, score, reason };
       })
-      .sort((a, b) => b.score - a.score)
+      .sort((a: any, b: any) => b.score - a.score)
       .slice(0, 3) ?? [];
 
   const top = scored[0];
@@ -132,7 +132,7 @@ export async function recommendPuppiesForLead(leadId: string): Promise<PuppyReco
 
   return {
     puppyIdIdeal: top?.id ?? null,
-    top3Matches: scored.map((s) => ({ id: s.id, name: s.name, score: s.score, reason: s.reason })),
+    top3Matches: scored.map((s: any) => ({ id: s.id, name: s.name, score: s.score, reason: s.reason })),
     reasoningText,
     score: top?.score ?? 0,
     upsellOpportunity,

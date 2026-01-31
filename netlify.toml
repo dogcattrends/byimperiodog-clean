@@ -1,0 +1,25 @@
+# Netlify configuration for Next.js project
+[build]
+  command = "npm run build"
+  publish = ".next"
+  functions = "netlify/functions"
+
+[dev]
+  command = "npm run dev"
+  port = 8888
+  targetPort = 3000
+  autoLaunch = false
+
+# Redirect all requests to Next.js
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/server"
+  status = 200
+
+# Environment variables (add your Supabase keys and others here)
+#[[headers]]
+#  for = "/api/*"
+#  [headers.values]
+#    Access-Control-Allow-Origin = "*"
+
+# Add more configuration as needed for images, caching, etc.

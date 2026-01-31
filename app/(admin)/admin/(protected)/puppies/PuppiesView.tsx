@@ -2,17 +2,45 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import type { Puppy } from "@/domain/puppy";
+
+import type { AdminPuppyListItem } from "./queries";
 
 import { PuppiesBoard } from "./PuppiesBoard";
 import { PuppiesTable } from "./PuppiesTable";
 
-type Props = { items: Puppy[] };
+type Props = { items: any[] };
 
 export function PuppiesView({ items }: Props) {
   const [view, setView] = useState<"board" | "table">("board");
   const [leadCounts, setLeadCounts] = useState<Record<string, number>>({});
-  const [localItems, setLocalItems] = useState<Puppy[]>(items);
+  // Garantir que todos os itens tenham rawStatus
+  function toAdminPuppy(p: any): AdminPuppyListItem {
+    return {
+      id: p.id,
+      name: p.name,
+      slug: p.slug ?? null,
+      status: p.status ?? "available",
+      rawStatus: p.rawStatus ?? p.status ?? "",
+      color: p.color ?? null,
+      sex: p.sex ?? null,
+      city: p.city ?? null,
+      state: p.state ?? null,
+      priceCents: p.priceCents ?? 0,
+      createdAt: p.createdAt ?? new Date().toISOString(),
+      imageUrl: p.imageUrl ?? null,
+      demandScore: p.demandScore ?? null,
+      demandFlag: p.demandFlag ?? null,
+      demandReason: p.demandReason ?? null,
+    };
+  }
+  const [localItems, setLocalItems] = useState<AdminPuppyListItem[]>([]);
+
+  // Sincroniza localItems quando items mudar
+  useEffect(() => {
+    if (items && Array.isArray(items)) {
+      setLocalItems(items.map(toAdminPuppy));
+    }
+  }, [items]);
   const slugs = useMemo(
     () =>
       Array.from(
@@ -48,7 +76,7 @@ export function PuppiesView({ items }: Props) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, status }),
     });
-    setLocalItems((prev) => prev.map((p) => (p.id === id ? { ...p, status: status as any } : p)));
+    setLocalItems((prev) => prev.map((p) => (p.id === id ? { ...p, status: status as any, rawStatus: status as any } : p)));
   };
 
   return (

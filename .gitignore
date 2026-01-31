@@ -53,3 +53,6 @@ bkp*.zip
 # Temporary
 TEMP_*
 .vercel
+
+# Local Netlify folder
+.netlify

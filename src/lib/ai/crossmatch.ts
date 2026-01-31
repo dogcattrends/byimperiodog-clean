@@ -80,20 +80,20 @@ export async function runCrossMatch(leadId: string): Promise<CrossMatchSuggestio
     };
   }
 
-  const prices = puppies.map((p) => p.price_cents || 0).filter(Boolean);
-  const medianPrice = prices.sort((a, b) => a - b)[Math.floor(prices.length / 2)] || 0;
+  const prices = puppies.map((p: PuppyRow) => p.price_cents || 0).filter((price: number) => Boolean(price));
+  const medianPrice = prices.sort((a: number, b: number) => a - b)[Math.floor(prices.length / 2)] || 0;
 
-  const scored = puppies.map((p) => {
+  const scored = puppies.map((p: PuppyRow) => {
     const { score, type } = scorePuppy(lead, p, medianPrice);
     return { puppy: p, score, type };
   });
 
-  scored.sort((a, b) => b.score - a.score);
+  scored.sort((a: { puppy: PuppyRow; score: number; type: string }, b: { puppy: PuppyRow; score: number; type: string }) => b.score - a.score);
   const top = scored.slice(0, 3);
   const best = top[0];
 
   const acceptance = Math.max(5, Math.min(95, best?.score ?? 0));
-  const reasoningParts = [];
+  const reasoningParts: string[] = [];
   if (norm(lead.cor_preferida) && norm(lead.cor_preferida) === norm(best?.puppy.color)) reasoningParts.push("cor desejada");
   if (norm(lead.sexo_preferido) && norm(lead.sexo_preferido) === norm(best?.puppy.gender)) reasoningParts.push("sexo desejado");
   if ((best?.puppy.status || "available") === "available") reasoningParts.push("disponível imediato");
@@ -105,6 +105,6 @@ export async function runCrossMatch(leadId: string): Promise<CrossMatchSuggestio
     puppyName: best?.puppy.name,
     reasoning: reasoningParts.length ? `Combina por ${reasoningParts.join(", ")}.` : "Melhor afinidade disponível.",
     probability_of_acceptance: acceptance,
-    alternatives: top.map((t) => ({ id: t.puppy.id, name: t.puppy.name, score: t.score })),
+    alternatives: top.map((t: { puppy: PuppyRow; score: number; type: string }) => ({ id: t.puppy.id, name: t.puppy.name, score: t.score })),
   };
 }

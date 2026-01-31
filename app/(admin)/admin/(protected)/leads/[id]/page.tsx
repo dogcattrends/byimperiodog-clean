@@ -8,7 +8,7 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { LeadDetailClient, type LeadDetailData, type LeadHistoryEntry } from "../LeadDetailClient";
 import type { LeadPuppyMatch } from "../queries";
 import { normalizeLeadStatus } from "../queries";
-import { AdminErrorState } from "../ui/AdminErrorState";
+import { AdminErrorState } from "@/components/admin/ui/AdminErrorState";
 
 export const metadata: Metadata = {
   title: "Lead | Admin",

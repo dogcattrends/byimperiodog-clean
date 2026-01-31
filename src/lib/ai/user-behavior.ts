@@ -55,9 +55,12 @@ export function generateBehaviorRecommendations(events: BehaviorEvent[]): Behavi
       href: mapActionToHref(action),
       label: mapActionToLabel(action),
       reason: `Ação recorrente (${score}x)`,
+      score, // add dummy score for topK
     })),
     4,
-  ).filter((item) => item.href);
+  )
+    .filter((item) => item.href)
+    .map(({ score, ...rest }) => rest); // remove score after filtering
 
   // Zonas lentas: rotas com maior tempo médio
   const slowZones = Object.entries(routeDuration)

@@ -1,4 +1,4 @@
-﻿import "server-only";
+﻿
 
 export type AdvisorStatusSuggestion = "novo" | "em_conversa" | "followup" | "quase_fechado" | "fechado" | "perdido";
 export type AdvisorPriorityLevel = "alta" | "media" | "baixa";

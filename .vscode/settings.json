@@ -21,5 +21,10 @@
     "fs",
     "http",
     "net"
-  ]
+  ],
+  "chat.tools.terminal.autoApprove": {
+    "netlify": true,
+    "npm install": true,
+    "supabase": true
+  }
 }

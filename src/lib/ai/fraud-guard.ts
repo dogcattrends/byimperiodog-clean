@@ -107,7 +107,7 @@ export async function assessLeadFraud(leadId: string): Promise<FraudAssessment> 
       .select("mensagem")
       .neq("id", lead.id)
       .limit(20);
-    const dupMsg = (similar ?? []).some((s) => similarity(s.mensagem || "", lead.mensagem || "") > 0.8);
+    const dupMsg = (similar ?? []).some((s: { mensagem?: string | null }) => similarity(s.mensagem || "", lead.mensagem || "") > 0.8);
     if (dupMsg) {
       score += 25;
       actions.push("Mensagem repetida indica spam.");
