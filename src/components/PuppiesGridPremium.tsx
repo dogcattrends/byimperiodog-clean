@@ -133,15 +133,15 @@ const extractImages = (row: any): string[] => {
       })
       .filter((item: any): item is string => Boolean(item));
   }
-  if (Array.isArray(row.media)) {
-    return row.media
-      .map((item: any) => {
-        if (typeof item === "string") return item;
-        if (item && typeof item.url === "string") return item.url;
-        return null;
-      })
-      .filter((item: any): item is string => Boolean(item));
-  }
+  // if (Array.isArray(row.media)) {
+  //   return row.media
+  //     .map((item: any) => {
+  //       if (typeof item === "string") return item;
+  //       if (item && typeof item.url === "string") return item.url;
+  //       return null;
+  //     })
+  //     .filter((item: any): item is string => Boolean(item));
+  // }
   return [];
 };
 
