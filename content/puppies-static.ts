@@ -2,12 +2,11 @@
 export const staticPuppies = [
   {
     id: "static-macho1",
-    nome: "Macho 1",
+    name: "Macho 1",
     color: "branco",
-    gender: "macho",
+    gender: "male",
     status: "disponivel",
-    image_url: "/filhotes/macho1/1.png",
-    midia: [
+    images: [
       "/filhotes/macho1/1.png",
       "/filhotes/macho1/2.png",
       "/filhotes/macho1/3.png",
@@ -20,8 +19,8 @@ export const staticPuppies = [
       "/filhotes/macho1/10.png"
     ],
     price_cents: 350000,
-    descricao: "Filhote saudável, vacinado e microchipado.",
-    nascimento: "2026-01-01",
+    description: "Filhote saudável, vacinado e microchipado.",
+    birth_date: "2026-01-01",
     notes: "Teste de filhote fixo.",
     codigo: "TESTE1"
   }
