@@ -146,11 +146,23 @@ export default async function FilhotesPage({ searchParams }: PageProps) {
   const filters = buildFiltersFromSearchParams(searchParams);
   const puppies = await fetchPuppies(filters);
 
-  const normalizedStatuses = normalizeStatusFilter(filters.status);
+
+  // Corrige: status inicial deve ser em inglês para compatibilidade com todos os filhotes
+  let initialStatus = "";
+  if (filters.status) {
+    const statusArr = Array.isArray(filters.status) ? filters.status : [filters.status];
+    // Se o usuário passou um filtro, usa o valor original (em inglês)
+    if (statusArr.length === 1) {
+      initialStatus = statusArr[0];
+    }
+  } else {
+    // Default: mostra todos disponíveis e reservados (em inglês)
+    initialStatus = "";
+  }
   const initialFilters = {
     color: filters.color ?? "",
     gender: filters.gender ?? "",
-    status: normalizedStatuses.length === 1 ? normalizedStatuses[0] : "",
+    status: initialStatus,
   };
 
   return (
