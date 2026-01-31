@@ -79,7 +79,7 @@ async function hydrateMedia(record: any, client: SupabaseClient) {
   if (!record) return record;
 
   const rawMediaArray = Array.isArray(record.midia) ? record.midia : undefined;
-  const fallbackList = rawMediaArray && rawMediaArray.length ? [] : parseStringList(record.images ?? record.media ?? record.midia);
+  const fallbackList = rawMediaArray && rawMediaArray.length ? [] : parseStringList(record.images ?? record.midia);
   const mediaSource = rawMediaArray && rawMediaArray.length ? rawMediaArray : fallbackList;
 
   const resolvedEntries = (
@@ -132,7 +132,6 @@ async function hydrateMedia(record: any, client: SupabaseClient) {
     image_url: resolvedCover,
     video_url: videoUrls[0] ?? explicitVideo ?? null,
     images: finalImages,
-    media: finalImages,
     midia: resolvedEntries,
   };
 }
