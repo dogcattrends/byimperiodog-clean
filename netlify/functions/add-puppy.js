@@ -42,7 +42,16 @@ exports.handler = async function(event, context) {
   } catch (err) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Supabase JS Exception', exception: err && err.message, data })
+      body: JSON.stringify({
+        error: 'Supabase JS Exception',
+        exception: err && err.message,
+        stack: err && err.stack,
+        data,
+        env: {
+          SUPABASE_URL: SUPABASE_URL ? 'ok' : 'missing',
+          SUPABASE_ANON_KEY: SUPABASE_ANON_KEY ? 'ok' : 'missing'
+        }
+      })
     };
   }
   const { error, data: inserted } = result;
@@ -50,7 +59,15 @@ exports.handler = async function(event, context) {
   if (error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: error.message, supabaseError: error, sentData: data })
+      body: JSON.stringify({
+        error: error.message,
+        supabaseError: error,
+        sentData: data,
+        env: {
+          SUPABASE_URL: SUPABASE_URL ? 'ok' : 'missing',
+          SUPABASE_ANON_KEY: SUPABASE_ANON_KEY ? 'ok' : 'missing'
+        }
+      })
     };
   }
 
