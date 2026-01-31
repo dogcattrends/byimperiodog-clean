@@ -137,6 +137,7 @@ async function hydrateMedia(record: any, client: SupabaseClient) {
   };
 }
 
+
 export async function GET(req: NextRequest) {
   const guard = requireAdmin(req);
   if (guard) return guard;
@@ -155,4 +156,37 @@ export async function GET(req: NextRequest) {
 
   const hydrated = await hydrateMedia(data, supabase);
   return NextResponse.json({ puppy: hydrated });
+}
+
+export async function POST(req: NextRequest) {
+  const guard = requireAdmin(req);
+  if (guard) return guard;
+
+  let data;
+  try {
+    data = await req.json();
+  } catch (err) {
+    return NextResponse.json({ error: 'Invalid JSON', parseError: err && (err as any).message }, { status: 400 });
+  }
+
+  // Adapte os campos conforme sua tabela Supabase
+  const { nome, color, gender, status, nascimento, image_url, descricao, notes, video_url, midia, price_cents, codigo } = data;
+  const supabase = supabaseAdmin();
+  let result;
+  try {
+    result = await supabase
+      .from('puppies')
+      .insert([{ nome, color, gender, status, nascimento, image_url, descricao, notes, video_url, midia, price_cents, codigo }])
+      .select()
+      .maybeSingle();
+  } catch (err) {
+    return NextResponse.json({ error: 'Supabase JS Exception', exception: err && (err as any).message, data }, { status: 500 });
+  }
+  const { error, data: inserted } = result;
+
+  if (error) {
+    return NextResponse.json({ error: error.message, supabaseError: error, sentData: data }, { status: 500 });
+  }
+
+  return NextResponse.json({ ok: true, puppy: inserted, sentData: data });
 }

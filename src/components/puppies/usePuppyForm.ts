@@ -97,8 +97,15 @@ export function usePuppyForm({ mode, record, onSuccess }: UsePuppyFormOptions){
       let method: 'POST'|'PUT' = 'POST';
       if(isEdit){ method='PUT'; payload.id = record?.id; }
       const r = await adminFetch(url,{ method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
-      const j = await r.json();
-      if(!r.ok) throw new Error(j?.error || 'Erro');
+      const j = await r.json().catch(()=>null);
+      if(!r.ok) {
+        let msg = j?.error || 'Erro';
+        if(j?.supabaseError?.message) msg += `: ${j.supabaseError.message}`;
+        if(j?.exception) msg += ` (Exception: ${j.exception})`;
+        if(j?.sentData) msg += ` [sentData: ${JSON.stringify(j.sentData)}]`;
+        push({ type:'error', message: msg });
+        throw new Error(msg);
+      }
       push({ type:'success', message: isEdit? 'Filhote atualizado.' : `Filhote cadastrado${values.codigo? ' (#'+values.codigo+')':''}.` });
       onSuccess && onSuccess(j);
       if(!isEdit){
@@ -106,7 +113,9 @@ export function usePuppyForm({ mode, record, onSuccess }: UsePuppyFormOptions){
         setErrors({});
         setShowSummary(false);
       }
-    } catch(err:any){ push({ type:'error', message: err?.message || 'Erro ao salvar' }); }
+    } catch(err:any){
+      push({ type:'error', message: err?.message || 'Erro ao salvar' });
+    }
     finally { setSubmitting(false); }
   }
 
