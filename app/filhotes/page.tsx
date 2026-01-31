@@ -71,64 +71,8 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 async function fetchPuppies(filters: CatalogFilters): Promise<CatalogPuppy[]> {
-  try {
-    const normalizedStatuses = normalizeStatusFilter(filters.status);
-    const ranked = await getRankedPuppies({
-      status: normalizedStatuses,
-      color: filters.color,
-      gender: filters.gender,
-      city: filters.city,
-      state: filters.state,
-      limit: 60,
-    });
-
-    let dbPuppies: CatalogPuppy[] = [];
-    if (ranked.length > 0) {
-      dbPuppies = ranked.map((row) => {
-        const normalized = normalizePuppyFromDB(row);
-        return {
-          ...normalized,
-          rankingFlag: row.flag,
-          rankingScore: row.score,
-          rankingReason: row.reason,
-        };
-      });
-    } else {
-      const sb = supabaseAdmin();
-      let query = sb.from("puppies").select("*");
-
-      if (normalizedStatuses.length === 1) {
-        query = query.eq("status", normalizedStatuses[0]);
-      } else if (normalizedStatuses.length > 1) {
-        query = query.in("status", normalizedStatuses);
-      }
-
-      if (filters.color) query = query.eq("color", filters.color);
-      if (filters.gender) query = query.eq("gender", filters.gender);
-      if (filters.city) query = query.eq("city", filters.city);
-      if (filters.state) query = query.eq("state", filters.state);
-
-      const { data, error } = await query.order("created_at", { ascending: false }).limit(60);
-
-      if (error) {
-        console.error("[catalog] Erro ao buscar filhotes (fallback):", error);
-        dbPuppies = [];
-      } else {
-        dbPuppies = (data ?? []).map((raw: any) => ({
-          ...normalizePuppyFromDB(raw),
-          rankingFlag: undefined,
-          rankingScore: undefined,
-          rankingReason: undefined,
-        }));
-      }
-    }
-
-    // Junta os filhotes fixos RAW direto no topo, sem normalização
-    return [...RAW_STATIC_PUPPIES, ...dbPuppies];
-  } catch (error) {
-    console.error("[catalog] Exception ao buscar filhotes:", error);
-    return [];
-  }
+  // Fallback 100% estático: ignora Supabase e exibe apenas staticPuppies
+  return [...RAW_STATIC_PUPPIES];
 }
 
 type PageProps = {
