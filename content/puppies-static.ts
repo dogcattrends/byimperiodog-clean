@@ -1,12 +1,12 @@
 // content/puppies-static.ts
 export const staticPuppies = [
   {
-    id: "static-macho-preto",
-    name: "Macho Fixo Preto",
-    slug: "macho-fixo-preto",
-    title: "Spitz Alemão Anão Preto - Macho Fixo",
-    color: "preto",
-    cor: "preto",
+    id: "static-macho-azul",
+    name: "Fixo Teste Azul",
+    slug: "fixo-teste-azul",
+    title: "Spitz Alemão Anão Azul - Fixo Teste",
+    color: "azul",
+    cor: "azul",
     sex: "male",
     gender: "male",
     status: "available",
@@ -15,22 +15,22 @@ export const staticPuppies = [
     city: "braganca-paulista",
     state: "SP",
     images: [
-      "/filhotes/macho1/1.png"
+      "/filhotes/macho1/10.png"
     ],
-    price_cents: 350000,
-    priceCents: 350000,
+    price_cents: 123456,
+    priceCents: 123456,
     currency: "BRL",
-    description: "Filhote fixo preto, saudável, vacinado e microchipado.",
+    description: "Filhote fixo de teste, cor azul, exclusivo para validação visual.",
     birth_date: "2026-01-01",
     nascimento: "2026-01-01",
     availableForShipping: true,
     hasPedigree: true,
     vaccinationStatus: "up-to-date",
     hasMicrochip: true,
-    isHighlighted: false,
-    isFeatured: false,
+    isHighlighted: true,
+    isFeatured: true,
     isBestSeller: false,
-    isNewArrival: false,
+    isNewArrival: true,
     reviewCount: 0,
     averageRating: 0,
     viewCount: 0,
@@ -38,7 +38,7 @@ export const staticPuppies = [
     shareCount: 0,
     inquiryCount: 0,
     seoKeywords: [],
-    notes: "Teste de filhote fixo preto.",
-    codigo: "TESTE1"
+    notes: "Filhote fixo azul para teste visual.",
+    codigo: "TESTE-FIXO-AZUL"
   }
 ];
