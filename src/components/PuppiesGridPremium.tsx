@@ -918,7 +918,9 @@ export default function PuppiesGridPremium({ initialItems = [], initialFilters }
 
   // Filtrar itens
   const filtered = useMemo(() => {
-    let result = items;
+    // Filhotes fixos sempre aparecem, independente dos filtros
+    const alwaysShow = items.filter((p) => p.id && p.id.startsWith("static-"));
+    let result = items.filter((p) => !p.id || !p.id.startsWith("static-"));
 
     // Busca por texto
     if (searchQuery.trim()) {
@@ -950,7 +952,8 @@ export default function PuppiesGridPremium({ initialItems = [], initialFilters }
       result = result.filter((p) => p.status === target);
     }
 
-    return result;
+    // Junta os fixos (sempre visíveis) com os filtrados
+    return [...alwaysShow, ...result];
   }, [items, searchQuery, selectedGender, selectedColor, selectedStatus]);
 
   const sorted = useMemo(() => {
