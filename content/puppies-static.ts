@@ -8,7 +8,7 @@ export const staticPuppies = [
     cor: "branco",
     sex: "male",
     gender: "male",
-    status: "disponivel",
+    status: "available",
     breed: "Spitz Alemão Anão",
     size: "mini",
     city: "braganca-paulista",
