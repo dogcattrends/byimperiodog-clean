@@ -1,6 +1,7 @@
 
 import type { Metadata } from "next";
 import PuppiesGridPremium from "@/components/PuppiesGridPremium";
+import { staticPuppies as RAW_STATIC_PUPPIES } from "@/content/puppies-static";
 import type { Puppy } from "@/domain/puppy";
 import { getRankedPuppies, type RankedPuppy } from "@/lib/ai/catalog-ranking";
 import { normalizePuppyFromDB } from "@/lib/catalog/normalize";
@@ -122,16 +123,8 @@ async function fetchPuppies(filters: CatalogFilters): Promise<CatalogPuppy[]> {
       }
     }
 
-    // Adiciona filhotes fixos (mockados)
-    const staticPuppiesNormalized: CatalogPuppy[] = staticPuppies.map((raw, idx) => ({
-      ...normalizePuppyFromDB(raw),
-      rankingFlag: undefined,
-      rankingScore: undefined,
-      rankingReason: "Filhote fixo",
-    }));
-
-    // Junta os filhotes do banco e os fixos
-    return [...staticPuppiesNormalized, ...dbPuppies];
+    // Junta os filhotes fixos RAW direto no topo, sem normalização
+    return [...RAW_STATIC_PUPPIES, ...dbPuppies];
   } catch (error) {
     console.error("[catalog] Exception ao buscar filhotes:", error);
     return [];
