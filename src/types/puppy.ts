@@ -39,7 +39,7 @@ export interface RawPuppy {
   notes?: string | null;
   video_url?: string | null;
   midia?: MediaValue[];
-  media?: MediaValue[]; // legacy alias
+  // media?: MediaValue[]; // legacy alias
 }
 
 export interface PuppyDTO {

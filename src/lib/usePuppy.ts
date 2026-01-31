@@ -15,7 +15,7 @@ export type PuppyNorm = {
   imageUrl?: string | null;
   description?: string | null;
   delivery?: boolean | null;
-  media?: string[]; // midia/media
+  // media?: string[]; // midia/media
 };
 
 export function usePuppy(id: string | null) {
@@ -36,7 +36,7 @@ export function usePuppy(id: string | null) {
         const { data, error } = await s
           .from("puppies")
           .select(
-            "id,nome,name,cor,color,gender,status,price_cents,priceCents,nascimento,birthDate,descricao,description,midia,media,imageUrl,delivery"
+            "id,nome,name,cor,color,gender,status,price_cents,priceCents,nascimento,birthDate,descricao,description,midia,imageUrl,delivery"
           )
           .eq("id", id)
           .single();
@@ -57,7 +57,7 @@ export function usePuppy(id: string | null) {
           description: p.description ?? p.descricao ?? null,
           imageUrl: p.imageUrl ?? null,
           delivery: p.delivery ?? null,
-          media: (p.media ?? p.midia ?? []) as string[],
+          media: (p.midia ?? []) as string[],
         });
       } catch (e: any) {
         if (!abort) setErr(e?.message || "Erro ao carregar filhote");
