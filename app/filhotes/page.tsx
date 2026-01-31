@@ -1,10 +1,11 @@
-import type { Metadata } from "next";
 
+import type { Metadata } from "next";
 import PuppiesGridPremium from "@/components/PuppiesGridPremium";
 import type { Puppy } from "@/domain/puppy";
 import { getRankedPuppies, type RankedPuppy } from "@/lib/ai/catalog-ranking";
 import { normalizePuppyFromDB } from "@/lib/catalog/normalize";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { staticPuppies } from "@/content/puppies-static";
 
 type CatalogPuppy = Puppy & {
   rankingFlag?: RankedPuppy["flag"];
@@ -80,8 +81,9 @@ async function fetchPuppies(filters: CatalogFilters): Promise<CatalogPuppy[]> {
       limit: 60,
     });
 
+    let dbPuppies: CatalogPuppy[] = [];
     if (ranked.length > 0) {
-      return ranked.map((row) => {
+      dbPuppies = ranked.map((row) => {
         const normalized = normalizePuppyFromDB(row);
         return {
           ...normalized,
@@ -90,35 +92,46 @@ async function fetchPuppies(filters: CatalogFilters): Promise<CatalogPuppy[]> {
           rankingReason: row.reason,
         };
       });
+    } else {
+      const sb = supabaseAdmin();
+      let query = sb.from("puppies").select("*");
+
+      if (normalizedStatuses.length === 1) {
+        query = query.eq("status", normalizedStatuses[0]);
+      } else if (normalizedStatuses.length > 1) {
+        query = query.in("status", normalizedStatuses);
+      }
+
+      if (filters.color) query = query.eq("color", filters.color);
+      if (filters.gender) query = query.eq("gender", filters.gender);
+      if (filters.city) query = query.eq("city", filters.city);
+      if (filters.state) query = query.eq("state", filters.state);
+
+      const { data, error } = await query.order("created_at", { ascending: false }).limit(60);
+
+      if (error) {
+        console.error("[catalog] Erro ao buscar filhotes (fallback):", error);
+        dbPuppies = [];
+      } else {
+        dbPuppies = (data ?? []).map((raw: any) => ({
+          ...normalizePuppyFromDB(raw),
+          rankingFlag: undefined,
+          rankingScore: undefined,
+          rankingReason: undefined,
+        }));
+      }
     }
 
-    const sb = supabaseAdmin();
-    let query = sb.from("puppies").select("*");
-
-    if (normalizedStatuses.length === 1) {
-      query = query.eq("status", normalizedStatuses[0]);
-    } else if (normalizedStatuses.length > 1) {
-      query = query.in("status", normalizedStatuses);
-    }
-
-    if (filters.color) query = query.eq("color", filters.color);
-    if (filters.gender) query = query.eq("gender", filters.gender);
-    if (filters.city) query = query.eq("city", filters.city);
-    if (filters.state) query = query.eq("state", filters.state);
-
-    const { data, error } = await query.order("created_at", { ascending: false }).limit(60);
-
-    if (error) {
-      console.error("[catalog] Erro ao buscar filhotes (fallback):", error);
-      return [];
-    }
-
-    return (data ?? []).map((raw: any) => ({
+    // Adiciona filhotes fixos (mockados)
+    const staticPuppiesNormalized: CatalogPuppy[] = staticPuppies.map((raw, idx) => ({
       ...normalizePuppyFromDB(raw),
       rankingFlag: undefined,
       rankingScore: undefined,
-      rankingReason: undefined,
+      rankingReason: "Filhote fixo",
     }));
+
+    // Junta os filhotes do banco e os fixos
+    return [...staticPuppiesNormalized, ...dbPuppies];
   } catch (error) {
     console.error("[catalog] Exception ao buscar filhotes:", error);
     return [];
