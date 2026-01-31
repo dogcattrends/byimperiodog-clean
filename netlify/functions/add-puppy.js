@@ -30,12 +30,15 @@ exports.handler = async function(event, context) {
   }
 
   // Adapte os campos conforme sua tabela Supabase
-  const { name, color, gender, status, city, state } = data;
+  // Recebe todos os campos usados no admin
+  const {
+    nome, name, color, gender, status, nascimento, image_url, descricao, notes, video_url, midia, price_cents, codigo, city, state
+  } = data;
   let result;
   try {
     result = await client
       .from('puppies')
-      .insert([{ name, color, gender, status, city, state }]);
+      .insert([{ nome, name, color, gender, status, nascimento, image_url, descricao, notes, video_url, midia, price_cents, codigo, city, state }]);
   } catch (err) {
     return {
       statusCode: 500,
