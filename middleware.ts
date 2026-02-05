@@ -1,55 +1,84 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-// Middleware: força www em produção e mantém regras básicas do admin.
+/**
+ * Middleware para proteção de rotas /admin e regras globais
+ * 
+ * Rules:
+ * 1. Força www em produção se configurado
+ * 2. Protege /admin/* com cookie "admin_session"
+ * 3. Protege /api/admin/* com cookie ou header "x-admin-pass"
+ * 4. Remove indexação SEO de /admin (X-Robots-Tag)
+ */
 export function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
   const url = req.nextUrl.clone();
 
-  // 1) Forçar www apenas em produção (quando NEXT_PUBLIC_SITE_URL aponta para www)
+  // ============================================================================
+  // 1) REGRA: Forçar www em produção
+  // ============================================================================
   const targetBase = (process.env.NEXT_PUBLIC_SITE_URL || "").trim();
   const shouldForceWww = targetBase.startsWith("https://www.");
-  const { pathname } = url;
-  // Redirect canonical de /authors -> /autores (unificar idioma)
-  if (pathname.startsWith('/authors')) {
-    url.pathname = pathname.replace(/^\/authors/, '/autores');
-    return NextResponse.redirect(url, 308);
-  }
-  if (!pathname.startsWith('/api') && shouldForceWww && url.hostname === targetBase.replace(/^https?:\/\//, "").replace(/^www\./, "") ) {
-    // sem www (naked) -> redireciona para www
-    url.hostname = `www.${url.hostname}`;
-    return NextResponse.redirect(url, 308);
-  }
-
-  // 2) Regras de admin básicas (espelhando a versão antiga)
   
-  const adm = req.cookies.get("adm")?.value || "";
-  const authedCookie = adm === "true" || adm === "1";
-
-  if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
-    if (!authedCookie) {
-      const to = req.nextUrl.clone();
-      to.pathname = "/admin/login";
-      return NextResponse.redirect(to);
+  if (!pathname.startsWith("/api") && shouldForceWww) {
+    const nakedHost = targetBase.replace(/^https?:\/\//, "").replace(/^www\./, "");
+    if (url.hostname === nakedHost) {
+      url.hostname = `www.${url.hostname}`;
+      return NextResponse.redirect(url, 308);
     }
   }
 
-  if (pathname === "/admin/login" && authedCookie) {
-    const to = req.nextUrl.clone();
-    to.pathname = "/admin/dashboard";
-    return NextResponse.redirect(to);
+  // ============================================================================
+  // 2) REGRA: Redirect /authors → /autores (unificar idioma)
+  // ============================================================================
+  if (pathname.startsWith("/authors")) {
+    url.pathname = pathname.replace(/^\/authors/, "/autores");
+    return NextResponse.redirect(url, 308);
   }
 
+  // ============================================================================
+  // 3) REGRA: Proteção de rotas /admin/* (exigir cookie "admin_session")
+  // ============================================================================
+  const adminSession = req.cookies.get("admin_session")?.value || "";
+  const hasSession = adminSession.length > 0;
+  const isAdminPath = pathname.startsWith("/admin");
+  const isAdminLogin = pathname === "/admin/login";
+
+  if (isAdminPath) {
+    // Se é /admin/login e JÁ tem sessão, redirecionar para dashboard
+    if (isAdminLogin && hasSession) {
+      url.pathname = "/admin/dashboard";
+      return NextResponse.redirect(url);
+    }
+
+    // Se NÃO é /admin/login e NÃO tem sessão, redirecionar para login
+    if (!isAdminLogin && !hasSession) {
+      url.pathname = "/admin/login";
+      return NextResponse.redirect(url);
+    }
+  }
+
+  // ============================================================================
+  // 4) REGRA: Proteção de /api/admin/* (cookie OU header "x-admin-pass")
+  // ============================================================================
   if (pathname.startsWith("/api/admin") && pathname !== "/api/admin/login") {
-    const expected = process.env.NEXT_PUBLIC_ADMIN_PASS || process.env.ADMIN_PASS;
+    const expectedPass = process.env.NEXT_PUBLIC_ADMIN_PASS || process.env.ADMIN_PASS;
     const headerPass = req.headers.get("x-admin-pass");
-    const authedHeader = !!expected && headerPass === expected;
-    if (!(authedCookie || authedHeader)) {
-      return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+    const authedByHeader = !!expectedPass && headerPass === expectedPass;
+
+    // Rejeita se não tem sessão E não tem header válido
+    if (!hasSession && !authedByHeader) {
+      return NextResponse.json(
+        { ok: false, error: "Unauthorized" },
+        { status: 401 }
+      );
     }
   }
 
-  // 3) X-Robots-Tag para rotas de admin (SEO: noindex, nofollow)
-  if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
+  // ============================================================================
+  // 5) REGRA: SEO - Adicionar X-Robots-Tag para /admin (noindex, nofollow)
+  // ============================================================================
+  if (isAdminPath || pathname.startsWith("/api/admin")) {
     const res = NextResponse.next();
     res.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive, nosnippet");
     return res;

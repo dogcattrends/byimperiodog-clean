@@ -2,8 +2,33 @@ import type { Metadata } from 'next';
 
 import { supabasePublic } from './supabasePublic';
 
-// SITE base sem barra final
-export const SITE_ORIGIN = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.byimperiodog.com.br').replace(/\/$/, '');
+/**
+ * URL base do site (canonical origin)
+ * 
+ * Prioridade de resolução:
+ * 1. NEXT_PUBLIC_SITE_URL (variável de ambiente)
+ * 2. NEXT_PUBLIC_CANONICAL_ORIGIN (domínio custom para canonical)
+ * 3. Fallback: https://www.byimperiodog.com.br
+ * 
+ * Para usar domínio canilspitzalemao.com.br:
+ * Defina NEXT_PUBLIC_CANONICAL_ORIGIN=https://www.canilspitzalemao.com.br
+ */
+export const SITE_ORIGIN = (
+  process.env.NEXT_PUBLIC_CANONICAL_ORIGIN ||
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  'https://www.byimperiodog.com.br'
+).replace(/\/$/, '');
+
+/**
+ * Domínio alternativo (para redirects e alias)
+ * Usado em redirect rules e validações de domínio
+ */
+export const ALTERNATE_ORIGINS = [
+  'https://www.byimperiodog.com.br',
+  'https://byimperiodog.com.br',
+  'https://www.canilspitzalemao.com.br',
+  'https://canilspitzalemao.com.br',
+].map(url => url.replace(/\/$/, ''));
 
 export function canonical(path: string) {
   if (!path) return SITE_ORIGIN;
@@ -152,3 +177,20 @@ export function buildAuthorJsonLd(author: { name:string; slug:string; avatar_url
 export const adminNoIndexMetadata: Metadata = {
   robots: { index: false, follow: false },
 };
+
+/**
+ * ⚠️ HREFLANG NÃO IMPLEMENTADO
+ * 
+ * Motivos:
+ * 1. Não há multi-idioma/i18n configurado no projeto
+ * 2. Páginas em outros idiomas (ex: húngaro) foram bloqueadas via redirects
+ * 3. Incluir hreflang sem implementar i18n prejudica SEO (confunde crawlers)
+ * 
+ * SE IMPLEMENTAR I18N NO FUTURO:
+ * - Adicionar hreflang tags para cada variação de idioma
+ * - Incluir x-default para versão sem prefixo de idioma
+ * - Exemplo:
+ *   <link rel="alternate" hreflang="pt-BR" href="https://www.canilspitzalemao.com.br/..." />
+ *   <link rel="alternate" hreflang="en-US" href="https://www.canilspitzalemao.com.br/en/..." />
+ *   <link rel="alternate" hreflang="x-default" href="https://www.canilspitzalemao.com.br/..." />
+ */

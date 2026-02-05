@@ -1,5 +1,14 @@
 type TrackingEvent = "page_view" | "view_form" | "submit_start" | "submit_success" | "submit_error";
 
+/**
+ * Checks if a pathname belongs to the admin panel
+ * Prevents tracking of admin routes in analytics
+ */
+export function isAdminRoute(pathname?: string): boolean {
+  if (!pathname) return false;
+  return pathname.startsWith("/admin");
+}
+
 function safePushToDataLayer(event: string, payload: Record<string, any> = {}) {
   try {
     // GTM/GA4 via dataLayer
@@ -25,6 +34,10 @@ export function track(event: TrackingEvent, payload: Record<string, any> = {}) {
 }
 
 export function trackPageView(context: Record<string, any>) {
+  // Don't track pageviews from admin routes
+  if (isAdminRoute(context?.pathname)) {
+    return;
+  }
   track("page_view", context);
 }
 

@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 
 import { initWebVitals, logEvent } from "@/lib/analytics";
+import { isAdminRoute } from "@/lib/tracking";
 
 export default function TrackingScripts() {
   useEffect(() => {
@@ -35,6 +36,11 @@ export default function TrackingScripts() {
       const url = window.location.href;
       const pathname = window.location.pathname;
       const search = window.location.search ? window.location.search.replace(/^\?/, "") : "";
+
+      // Don't track pageviews from admin routes
+      if (isAdminRoute(pathname)) {
+        return;
+      }
 
       // GA4 / Ads (gtag)
       // @ts-ignore

@@ -45,6 +45,9 @@
     "images:clean": "node -e \"require('fs').rmSync('public/puppies', {recursive: true, force: true})\"",
     "autosales:worker": "tsx scripts/auto-sales-worker.ts",
     "autosales:worker:loop": "tsx scripts/auto-sales-worker.ts --loop",
+    "route:validate": "tsx scripts/route-validator.ts",
+    "route:validate:prod": "ROUTE_VALIDATOR_URL=https://www.canilspitzalemao.com.br tsx scripts/route-validator.ts",
+    "route:validate:staging": "ROUTE_VALIDATOR_URL=https://staging.canilspitzalemao.com.br tsx scripts/route-validator.ts",
     "postinstall": "echo \"Ready.\"",
     "vercel-build": "npm install && node scripts/contentlayer-build-wrapper.mjs && next build --no-lint"
   },

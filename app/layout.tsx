@@ -13,6 +13,7 @@ import Header from "@/components/common/Header";
 import SkipLink from "@/components/common/SkipLink";
 import Pixels from "@/components/Pixels";
 import ToastContainer from "@/components/Toast";
+import { SeoHeadServer } from "@/components/SeoHeadServer";
 import { getSiteSettings } from "@/lib/getSettings";
 import { getPixelsSettings, resolveActiveEnvironment, type PixelsSettings } from "@/lib/pixels";
 import { resolveRobots, baseMetaOverrides } from "@/lib/seo";
@@ -152,6 +153,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="pt-BR" className={`scroll-smooth ${dmSans.variable} ${inter.variable}`}>
       <head>
         <meta charSet="utf-8" />
+        
+        {/* ================================================================ */}
+        {/* SEO: Canonical tags e alternates (app router, metadata-based) */}
+        {/* ================================================================ */}
+        <SeoHeadServer pathname={pathname} skipCanonical={isAdminRoute} />
+        
         {/* ================================================================ */}
         {/* PERFORMANCE: Resource hints essenciais */}
         {/* ================================================================ */}
