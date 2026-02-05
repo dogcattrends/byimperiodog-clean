@@ -67,8 +67,8 @@ jq '.summary' reports/route-validation.json
 | Comando | Onde Testa | Uso |
 |---------|-----------|-----|
 | `npm run route:validate` | http://localhost:3000 | Desenvolvimento |
-| `npm run route:validate:prod` | https://www.canilspitzalemao.com.br | Produção |
-| `npm run route:validate:staging` | https://staging.canilspitzalemao.com.br | Staging |
+| `npm run route:validate:prod` | https://www.byimperiodog.com.br | Produção |
+| `npm run route:validate:staging` | https://staging.byimperiodog.com.br | Staging |
 
 ---
 

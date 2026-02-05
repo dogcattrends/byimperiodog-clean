@@ -6,32 +6,32 @@
 
 ## 1️⃣ Definir Domínio Principal
 
-### Option A: Usar `canilspitzalemao.com.br` (Novo)
+### Usar `www.byimperiodog.com.br` (Domínio Principal)
 
 **Vercel Dashboard:**
 ```
 Settings → Environment Variables → Add New
 
-NEXT_PUBLIC_CANONICAL_ORIGIN  = https://www.canilspitzalemao.com.br
-NEXT_PUBLIC_SITE_URL          = https://www.canilspitzalemao.com.br
+NEXT_PUBLIC_CANONICAL_ORIGIN  = https://www.byimperiodog.com.br
+NEXT_PUBLIC_SITE_URL          = https://www.byimperiodog.com.br
 ```
 
 **Netlify:**
 ```
 Site Settings → Build & deploy → Environment → Add a single variable
 
-NEXT_PUBLIC_CANONICAL_ORIGIN = https://www.canilspitzalemao.com.br
-NEXT_PUBLIC_SITE_URL = https://www.canilspitzalemao.com.br
+NEXT_PUBLIC_CANONICAL_ORIGIN = https://www.byimperiodog.com.br
+NEXT_PUBLIC_SITE_URL = https://www.byimperiodog.com.br
 ```
 
 **Local Development:**
 ```bash
 # .env.local
-NEXT_PUBLIC_CANONICAL_ORIGIN=https://www.canilspitzalemao.com.br
-NEXT_PUBLIC_SITE_URL=https://www.canilspitzalemao.com.br
+NEXT_PUBLIC_CANONICAL_ORIGIN=https://www.byimperiodog.com.br
+NEXT_PUBLIC_SITE_URL=https://www.byimperiodog.com.br
 ```
 
-### Option B: Manter `byimperiodog.com.br` (Atual)
+### Padrão (Sem Precisar Configurar)
 
 Sem mudar nada, o sistema usa automaticamente:
 ```typescript

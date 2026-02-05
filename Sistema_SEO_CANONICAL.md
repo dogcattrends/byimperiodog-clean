@@ -2,8 +2,7 @@
 
 **Data:** 5 de fevereiro de 2026  
 **Status:** ✅ Implementado  
-**Domínio Canonical:** `https://www.canilspitzalemao.com.br`  
-**Versão Fallback:** `https://www.byimperiodog.com.br`
+**Domínio Canonical:** `https://www.byimperiodog.com.br`
 
 ---
 
